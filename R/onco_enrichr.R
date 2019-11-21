@@ -70,26 +70,25 @@ init_report <- function(title = "Project Title",
   return(oncr_report)
 }
 
-#' Function that combines R markdown templates with the report object to produce and write an HTML report to file
+#' Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
+#' enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.
 #'
 #' @param query character vector with gene identifiers
 #' @param query_source character indicating source of query ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 #' @param p_title title of report
 #' @param p_owner name of project owner
-#' @param report_fname filename for report (no extension)
-#' @param background_fname filename for file with project background information
+#' @param report_fname filename prefix for HTML report
+#' @param background_fname filename for text file with project background information
 #' @param ppi_add_nodes number of nodes to add to protein-protein interaction network
 #' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment analysis
 #' @param background_enrichment_source character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 #' @param background_enrichment_description character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
-#' @param show_ppi logical indicating if report should contain protein-protein interaction network
-#' @param show_disease logical indicating if report should contain disease associations
-#' @param show_enrichment logical indicating if report should contain enrichment analysis
-#' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots
+#' @param show_ppi logical indicating if report should contain protein-protein interaction network (STRING)
+#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
+#' @param show_enrichment logical indicating if report should contain functional enrichment analysis (MSigDB (GO, KEGG, REACTOME etc.))
+#' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexp logical indicating if report should contain co-expression data of queryset with oncogenes/tumor suppressor genes (TCGA)
-#' @param show_gtex_coexp logical indicating if report should contain co-expression from GTex
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
-#' @param gtex_atlasassay_groups character vector of GTex tissue identifiers (for co-expression plots)
 #' @param report_name filename for report
 #' @param format file format of output (html/json)
 #' @export
@@ -99,7 +98,7 @@ generate_report <- function(query,
                             p_title = "Project Title",
                             p_owner = "Project Owner",
                             report_fname = "OncoEnrichR_TestReport",
-                            background_fname = "moncho_background.txt",
+                            background_fname = NULL,
                             ppi_add_nodes = 50,
                             background_enrichment = NULL,
                             background_enrichment_source = "symbol",
@@ -109,9 +108,9 @@ generate_report <- function(query,
                             show_enrichment = T,
                             show_tcga_aberration = T,
                             show_tcga_coexp = T,
-                            show_gtex_coexp = F,
-                            show_complex = T,
-                            gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
+                            #show_gtex_coexp = F,
+                            show_complex = T){
+                            #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
   stopifnot(is.character(query))
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
               query_source == "uniprot_acc" | query_source == "ensembl_gene_id" |
@@ -165,10 +164,13 @@ generate_report <- function(query,
       ge_report[['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 10)
   }
 
-  project_bg <- read.table(file=background_fname,stringsAsFactors = F,
-                           header=F,sep="\n",na.strings="",comment.char="")
-  colnames(project_bg) <- 'text'
-  ge_report$project_background$items <- project_bg
+  if(!is.null(background_fname) & file.exists(background_fname)){
+    project_bg <- read.table(file=background_fname,stringsAsFactors = F,
+                             header=F,sep="\n",na.strings="",comment.char="")
+    colnames(project_bg) <- 'text'
+    ge_report$project_background$items <- project_bg
+  }
+
 
   if(show_disease == T){
     ge_report[['target_disease']] <-
@@ -225,18 +227,6 @@ generate_report <- function(query,
                               TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
                               dbsource = db)
 
-  db <- 'ACSN2.0'
-  ge_report[['enrichment']][['results']][['acsn']] <-
-    oncoEnrichR::get_universal_enrichment(query_symbol,
-                              genedb = oncoEnrichR::genedb,
-                              background_entrez = background_entrez,
-                              minGSSize = ge_report[['enrichment']][['settings']][['min_gs_size']],
-                              q_value_cutoff = ge_report[['enrichment']][['settings']][['q_value_cutoff']],
-                              p_value_cutoff = ge_report[['enrichment']][['settings']][['p_value_cutoff']],
-                              TERM2GENE = oncoEnrichR::acsn$TERM2GENE,
-                              TERM2NAME = oncoEnrichR::acsn$TERM2NAME,
-                              TERM2SOURCE = oncoEnrichR::acsn$TERM2SOURCE,
-                              dbsource = db)
 
   if(show_gtex_coexp == T){
     gtex_results <-
@@ -273,7 +263,8 @@ generate_report <- function(query,
 
 }
 
-#' Function that combines R markdown templates with the report object to produce and write an HTML report to file
+#' Function that writes the contents in the oncoEnrichR report object to an interactive HTML report
+#'
 #' @param report object with oncoEnrichR report data (returned by oncoEnrichR::generate_report)
 #' @param project_directory working directory
 #' @param report_name filename for report
@@ -303,5 +294,7 @@ write_report <- function(report, project_directory, report_name, format = 'html'
                       clean = T,
                       intermediates_dir = project_directory,
                       quiet = T)
+  }else{
+    rlogging::message('JSON output not yet implemented')
   }
 }

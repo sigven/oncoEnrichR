@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{write_report}
 \alias{write_report}
-\title{Function that combines R markdown templates with the report object to produce and write an HTML report to file}
+\title{Function that writes the contents in the oncoEnrichR report object to an interactive HTML report}
 \usage{
 write_report(report, project_directory, report_name, format = "html")
 }
@@ -16,5 +16,5 @@ write_report(report, project_directory, report_name, format = "html")
 \item{format}{file format of output (html/json)}
 }
 \description{
-Function that combines R markdown templates with the report object to produce and write an HTML report to file
+Function that writes the contents in the oncoEnrichR report object to an interactive HTML report
 }

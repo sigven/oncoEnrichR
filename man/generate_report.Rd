@@ -2,7 +2,8 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{generate_report}
 \alias{generate_report}
-\title{Function that combines R markdown templates with the report object to produce and write an HTML report to file}
+\title{Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
+enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.}
 \usage{
 generate_report(
   query,
@@ -10,7 +11,7 @@ generate_report(
   p_title = "Project Title",
   p_owner = "Project Owner",
   report_fname = "OncoEnrichR_TestReport",
-  background_fname = "moncho_background.txt",
+  background_fname = NULL,
   ppi_add_nodes = 50,
   background_enrichment = NULL,
   background_enrichment_source = "symbol",
@@ -20,10 +21,7 @@ generate_report(
   show_enrichment = T,
   show_tcga_aberration = T,
   show_tcga_coexp = T,
-  show_gtex_coexp = F,
-  show_complex = T,
-  gtex_atlasassay_groups = c("g32", "g9", "g29", "g10", "g28", "g44", "g33", "g50",
-    "g37", "g38", "g42", "g35")
+  show_complex = T
 )
 }
 \arguments{
@@ -35,9 +33,9 @@ generate_report(
 
 \item{p_owner}{name of project owner}
 
-\item{report_fname}{filename for report (no extension)}
+\item{report_fname}{filename prefix for HTML report}
 
-\item{background_fname}{filename for file with project background information}
+\item{background_fname}{filename for text file with project background information}
 
 \item{ppi_add_nodes}{number of nodes to add to protein-protein interaction network}
 
@@ -47,26 +45,23 @@ generate_report(
 
 \item{background_enrichment_description}{character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')}
 
-\item{show_ppi}{logical indicating if report should contain protein-protein interaction network}
+\item{show_ppi}{logical indicating if report should contain protein-protein interaction network (STRING)}
 
-\item{show_disease}{logical indicating if report should contain disease associations}
+\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
 
-\item{show_enrichment}{logical indicating if report should contain enrichment analysis}
+\item{show_enrichment}{logical indicating if report should contain functional enrichment analysis (MSigDB (GO, KEGG, REACTOME etc.))}
 
-\item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots}
+\item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
 
 \item{show_tcga_coexp}{logical indicating if report should contain co-expression data of queryset with oncogenes/tumor suppressor genes (TCGA)}
 
-\item{show_gtex_coexp}{logical indicating if report should contain co-expression from GTex}
-
 \item{show_complex}{logical indicating if report should list proteins in known protein complexes}
-
-\item{gtex_atlasassay_groups}{character vector of GTex tissue identifiers (for co-expression plots)}
 
 \item{report_name}{filename for report}
 
 \item{format}{file format of output (html/json)}
 }
 \description{
-Function that combines R markdown templates with the report object to produce and write an HTML report to file
+Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
+enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.
 }

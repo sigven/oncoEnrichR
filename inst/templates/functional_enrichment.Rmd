@@ -144,31 +144,3 @@ crosstalk::bscols(
 cat('<i>No pathway signatures from the WikiPathway resource were enriched in the query set.</i>',sep='\n')
 cat('\n')
 ```
-
-#### Cancer Hallmarks - ACSN
-
-```{r table_browse_acsn, echo=F, results = "asis", eval = show_enrichment_filters[['acsn']]}
-library(crosstalk)
-
-enrichment_acsn_display <- gene_enrich_report[['enrichment']][['results']][['acsn']] %>%
-  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue,
-                Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, 
-                Gene_Ratio = gene_ratio, Count = count) %>%
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
-
-htmltools::br()
-crosstalk::bscols(
-  DT::datatable(enrichment_acsn_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
-)
-
-```
-
-
-```{r acsn_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['acsn']]}
-cat('<i>No pathway signatures from the Atlas of Cancer Signalling Networks resource were enriched in the query set.</i>',sep='\n')
-cat('\n')
-```
-<br><br>
