@@ -1,0 +1,77 @@
+### TCGA aberration frequency
+
+* The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated
+* Gene aberration frequency are plotted across two categories of mutation types
+    1. sCNA - amplifications
+    2. sCNA - homozygous deletions
+* Frequency is plotted pr. primary site as 
+  * *_percent_mutated_* (percent of all tumor samples with the gene mutated)
+* Frequencies across all subtypes are listed in an interactive table
+
+
+<br><br>
+```{r tcga_ampl_plot, echo = F, eval = T, fig.height = gene_enrich_report[['tcga_aberration']][['plot_height']], fig.width = 13}
+gene_enrich_report[['tcga_aberration']][['plot']][['cna_ampl']]
+
+```
+<br><br>
+```{r tcga_homdel_plot, echo = F, eval = T, fig.height = gene_enrich_report[['tcga_aberration']][['plot_height']], fig.width = 13}
+gene_enrich_report[['tcga_aberration']][['plot']][['cna_homdel']]
+
+```
+<br><br>
+
+
+
+
+```{r filter_tcga, echo=F, results='asis'}
+
+show_tcga_freqs <- FALSE
+missing_tcga_freqs <- TRUE
+all_targets_vtypes <- dplyr::bind_rows(gene_enrich_report[['tcga_aberration']][['table']][['cna_homdel']],
+                                       gene_enrich_report[['tcga_aberration']][['table']][['cna_ampl']])
+
+if(nrow(all_targets_vtypes) > 0){
+  show_tcga_freqs <- TRUE
+  missing_tcga_freqs <- FALSE
+}
+
+```
+
+
+```{r table_browse_tcga_freqs, echo=F, results = "asis", eval = show_tcga_freqs}
+library(crosstalk)
+
+all_targets_vtypes <- dplyr::bind_rows(gene_enrich_report[['tcga_aberration']][['table']][['cna_homdel']],
+                                       gene_enrich_report[['tcga_aberration']][['table']][['cna_ampl']]) %>%
+  dplyr::arrange(desc(percent_mutated))
+targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("primary_site", "Primary site/tissue", targets_tcga, ~primary_site),
+    crosstalk::filter_select("variant_type", "Aberration type", targets_tcga, ~variant_type),
+    crosstalk::filter_slider("percent_mutated", "Percent mutated", targets_tcga, ~percent_mutated)
+  ),
+  list(
+    crosstalk::filter_select("primary_diagnosis", "Diagnosis", targets_tcga, ~primary_diagnosis),
+    crosstalk::filter_slider("cohort_size", "Cohort Size", targets_tcga, ~cohort_size)
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(targets_tcga, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+
+```{r tcga_freqs_missing, echo=F, results = 'asis', eval = missing_tcga_freqs}
+cat('<i>No genes with tcga aberrations were found.</i>',sep='\n')
+cat('\n')
+```
+
+<br><br>

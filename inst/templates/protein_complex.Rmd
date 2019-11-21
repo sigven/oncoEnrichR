@@ -1,0 +1,18 @@
+### Protein complexes
+
+* Each protein in the target set is annotated with:
+   * Known protein complexes as found in [CORUM](https://mips.helmholtz-muenchen.de/corum/)
+   
+<br><br>
+
+```{r table_browse_complex, echo=F, results = "asis", eval = T}
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(gene_enrich_report[['protein_complex']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+<br><br>

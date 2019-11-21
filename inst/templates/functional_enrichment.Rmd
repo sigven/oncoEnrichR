@@ -1,0 +1,174 @@
+### Gene functional enrichment {.tabset}
+
+* Each protein in the target set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment with respect to:
+   * [Gene Ontology](https://geneontology.org). All three subontologies: _Molecular Function_ (GO_MF), _Cellular Component_ (GO_CC) & _Biological Process_ (GO_BP)
+   * Cellular pathways from [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), and other curated gene signatures from the [Molecular Signatures Database (MSIGdb)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
+   * [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
+  
+
+<br>
+
+* Enrichment test settings
+   * P-value cutoff: `r gene_enrich_report[['enrichment']][['settings']][['p_value_cutoff']]`
+   * Q-value cutoff: `r gene_enrich_report[['enrichment']][['settings']][['q_value_cutoff']]`
+   * Correction for multiple testing: `r gene_enrich_report[['enrichment']][['settings']][['p_adjust_method']]` (Benjamini & Hochberg)
+   * Minimal size of genes annotated by term for testing: `r gene_enrich_report[['enrichment']][['settings']][['min_gs_size']]`
+   * Background genes: `r gene_enrich_report[['enrichment']][['settings']][['background_set']]`
+   
+
+<br><br>
+
+
+```{r prepare_enrichment_data, echo=F, results='asis'}
+
+show_enrichment_filters <- list()
+missing_enrichment_items <- list()
+eitems <- list()
+for(type in c('go','msigdb','wikipathwaydb','acsn')){
+  show_enrichment_filters[[type]] <- F
+  missing_enrichment_items[[type]] <- T
+  if(NROW(gene_enrich_report[['enrichment']][['results']][[type]]) > 0){
+    show_enrichment_filters[[type]] <- T
+    missing_enrichment_items[[type]] <- F
+  }
+}
+
+```
+
+
+#### Gene Ontology
+
+```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
+library(crosstalk)
+
+enrichment_go_display <- gene_enrich_report[['enrichment']][['results']][['go']] %>%
+  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue, 
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+
+
+terms_go <- crosstalk::SharedData$new(enrichment_go_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_go, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Ontology", terms_go, ~DB)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(terms_go, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
+cat('<i>No gene ontology terms were enriched in the query set.</i>',sep='\n')
+cat('\n')
+```
+
+
+<br><br>
+
+#### Molecular Signatures Database
+
+```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
+library(crosstalk)
+
+enrichment_msigdb_display <- gene_enrich_report[['enrichment']][['results']][['msigdb']] %>%
+  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue,  P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+
+terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_msigdb, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Signature collection", terms_msigdb, ~DB)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(terms_msigdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+
+```{r msigdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['msigdb']]}
+cat('<i>No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.</i>',sep='\n')
+cat('\n')
+```
+
+
+<br><br>
+
+#### WikiPathways
+
+```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathwaydb']]}
+library(crosstalk)
+
+enrichment_wikidb_display <- gene_enrich_report[['enrichment']][['results']][['wikipathwaydb']] %>%
+  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(enrichment_wikidb_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+
+```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathwaydb']]}
+cat('<i>No pathway signatures from the WikiPathway resource were enriched in the query set.</i>',sep='\n')
+cat('\n')
+```
+
+#### Cancer Hallmarks - ACSN
+
+```{r table_browse_acsn, echo=F, results = "asis", eval = show_enrichment_filters[['acsn']]}
+library(crosstalk)
+
+enrichment_acsn_display <- gene_enrich_report[['enrichment']][['results']][['acsn']] %>%
+  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(enrichment_acsn_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+
+```{r acsn_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['acsn']]}
+cat('<i>No pathway signatures from the Atlas of Cancer Signalling Networks resource were enriched in the query set.</i>',sep='\n')
+cat('\n')
+```
+<br><br>

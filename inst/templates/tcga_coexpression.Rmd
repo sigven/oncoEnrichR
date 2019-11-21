@@ -1,0 +1,91 @@
+### Gene co-expression (cancer)
+
+* Each protein in the input target sets is annotated with:
+   * Known disease associations established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targevalidation.org)
+   * Target druggability (aka [_target tractability_](https://docs.targetvalidation.org/getting-started/target-tractability) )
+   * Status wrt. roles as tumor suppressors/proto-oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource
+
+```{r table_browse_targets, echo=F, results = "asis", eval = T}
+library(crosstalk)
+
+targets_shared <- crosstalk::SharedData$new(gene_enrich_report[['target_disease']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor", targets_shared, ~tumor_suppressor),
+    crosstalk::filter_select("proto_oncogene", "Proto-oncogene", targets_shared, ~proto_oncogene)
+  ),
+  list(
+    crosstalk::filter_select("disease_associations", "Associated diseases", targets_shared, ~disease_associations),
+    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
+    crosstalk::filter_select("target_tractability", "Tractability compound", targets_shared, ~target_tractability)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(targets_shared, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+<br><br>
+
+
+### Co-expression with known proto-oncogenes, tumor suppressors or cancer drivers (TCGA)
+
+* Using RNA-seq data from TCGA, a co-expression correlation matrix (Pearson rank correlation coefficent) was calculated, essentially indicating pairs of genes that have their expression patterns correlated in tumors
+* Here, only tumor suppressor genes or proto-oncogenes that have a **strong** correlation (negative or positive) with any protein in the target set is shown (across the main primary tumor sites)
+
+
+```{r table_browse_coexp, echo=F, results = "asis", eval = T}
+library(crosstalk)
+#library(summarywidget)
+
+coexp_genes1 <- dplyr::select(co_expressed_genes, symbol, symbol_partner, name, p_oncogene, tsgene, ot_tractability_compound, corrtype, correlation, r, p_value, tumor) %>%
+  dplyr::rename(target_gene = symbol, partner_gene = symbol_partner, partner_genename = name, proto_oncogene = p_oncogene, tumor_suppressor = tsgene, target_tractability = ot_tractability_compound) %>%
+  dplyr::filter(correlation != "Moderate positive" & correlation != "Moderate negative") %>%
+  dplyr::mutate(r = round(r, digits = 3)) %>%
+  dplyr::filter(stringr::str_detect(tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|OV|THCA|COAD|BLCA|STAD|KIRP")) %>%
+  dplyr::mutate(primary_site = "Breast") %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "LUAD","Lung (adenocarcinoma)", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "STAD","Stomach", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "BLCA","Bladder", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "SARC","Soft Tissue/Sarcoma", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "SKCM","Skin", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "COAD","Colorectal", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "PRAD","Prostate", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "THCA","Thyroid", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "KIRP","Kidney", as.character(primary_site))) %>%
+  dplyr::mutate(primary_site = dplyr::if_else(tumor == "OV","Ovary", as.character(primary_site)))
+
+#DT::datatable(target_genes)
+
+coexp_genes <- crosstalk::SharedData$new(coexp_genes1)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("target_gene", "Target gene",coexp_genes,~target_gene),
+    crosstalk::filter_select("correlation", "Type of correlation", coexp_genes, ~corrtype),
+    crosstalk::filter_slider("r", "Correlation coefficient (r)", coexp_genes, ~r, step = 0.1),
+    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes, ~tumor_suppressor)
+  ),
+  list(
+    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes, ~proto_oncogene),
+    crosstalk::filter_select("primary_site", "Primary site", coexp_genes, ~primary_site),
+    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes, ~target_tractability)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(coexp_genes, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+<br><br>
