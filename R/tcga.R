@@ -142,3 +142,65 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
 
   return(aberration_data)
 }
+
+tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
+
+  rlogging::message("TCGA: collecting co-expression data (strong negative and positive correlations)")
+  stopifnot(!is.null(genedb))
+  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(qsource == "symbol" | qsource == "entrezgene")
+  stopifnot(is.character(qgenes))
+  query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+  if(qsource == 'entrezgene'){
+    query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
+    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol),query_genes_df, by = "entrezgene") %>% dplyr::distinct()
+  }else{
+    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol), query_genes_df, by = "symbol") %>% dplyr::distinct()
+  }
+
+  coexp_target_1 <- oncoEnrichR::tcga_coexp_db %>%
+    dplyr::select(symbol, symbol_partner, corrtype, correlation, r, p_value, tumor) %>%
+    dplyr::left_join(query_genes_df, by = c("symbol" = "symbol")) %>%
+    dplyr::filter(!is.na(entrezgene))
+
+  coexp_target_tcga <- oncoEnrichR::tcga_coexp_db %>%
+    dplyr::select(symbol, symbol_partner, corrtype, correlation, r, p_value, tumor) %>%
+    dplyr::left_join(query_genes_df, by = c("symbol_partner" = "symbol")) %>%
+    dplyr::filter(!is.na(entrezgene)) %>%
+    dplyr::mutate(tmp = symbol) %>%
+    dplyr::mutate(symbol = symbol_partner) %>%
+    dplyr::mutate(symbol_partner = tmp) %>%
+    dplyr::select(-tmp) %>%
+    dplyr::bind_rows(coexp_target_1) %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(dplyr::select(genedb, name, p_oncogene, tsgene, symbol, ot_tractability_compound),
+                     by = c("symbol_partner" = "symbol")) %>%
+    dplyr::rename(target_gene = symbol, partner_gene = symbol_partner, proto_oncogene = p_oncogene, tumor_suppressor = tsgene,
+                  partner_genename = name, target_tractability = ot_tractability_compound) %>%
+    dplyr::mutate(r = round(r, digits = 3)) %>%
+    dplyr::filter(stringr::str_detect(tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|OV|THCA|COAD|BLCA|STAD|KIRP")) %>%
+    dplyr::mutate(primary_site = "Breast") %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "LUAD","Lung (adenocarcinoma)", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "STAD","Stomach", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "BLCA","Bladder", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "SARC","Soft Tissue/Sarcoma", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "SKCM","Skin", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "COAD","Colorectal", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "PRAD","Prostate", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "THCA","Thyroid", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "KIRP","Kidney", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "OV","Ovary", as.character(primary_site)))
+
+  coexp_target_tcga <- coexp_target_tcga %>%
+    dplyr::filter(stringr::str_detect(correlation,"Very") | proto_oncogene == T | tumor_suppressor == T) %>%
+    dplyr::arrange(desc(r))
+
+  coexp_target_tcga_positive <- dplyr::filter(coexp_target_tcga, corrtype == "Positive") %>% head(5000)
+  coexp_target_tcga_negative <- dplyr::filter(coexp_target_tcga, corrtype == "Negative") %>% head(5000)
+
+  coexp_target_tcga <- dplyr::bind_rows(coexp_target_tcga_negative, coexp_target_tcga_positive)
+
+
+  return(coexp_target_tcga)
+
+}

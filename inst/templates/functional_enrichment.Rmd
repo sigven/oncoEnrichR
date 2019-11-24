@@ -2,18 +2,19 @@
 
 * Each protein in the target set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment with respect to:
    * [Gene Ontology](https://geneontology.org). All three subontologies: _Molecular Function_ (GO_MF), _Cellular Component_ (GO_CC) & _Biological Process_ (GO_BP)
-   * Cellular pathways from [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), and other curated gene signatures from the [Molecular Signatures Database (MSIGdb)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
+   * Molecular signalling networks from [KEGG](https://www.genome.jp/kegg/pathway.html)
+   * Cellular pathways from [Reactome](https://reactome.org/), and other curated gene signature sets from the [Molecular Signatures Database (MSiGDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
    * [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
   
 
 <br>
 
 * Enrichment test settings
-   * P-value cutoff: `r gene_enrich_report[['enrichment']][['settings']][['p_value_cutoff']]`
-   * Q-value cutoff: `r gene_enrich_report[['enrichment']][['settings']][['q_value_cutoff']]`
-   * Correction for multiple testing: `r gene_enrich_report[['enrichment']][['settings']][['p_adjust_method']]` (Benjamini & Hochberg)
-   * Minimal size of genes annotated by term for testing: `r gene_enrich_report[['enrichment']][['settings']][['min_gs_size']]`
-   * Background genes: `r gene_enrich_report[['enrichment']][['settings']][['background_set']]`
+   * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
+   * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
+   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]` (Benjamini & Hochberg)
+   * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
+   * Background genes: `r onc_enrich_report[['config']][['enrichment']][['background_set']]`
    
 
 <br><br>
@@ -24,10 +25,10 @@
 show_enrichment_filters <- list()
 missing_enrichment_items <- list()
 eitems <- list()
-for(type in c('go','msigdb','wikipathwaydb','acsn')){
+for(type in c('go','msigdb','wikipathwaydb','keggdb')){
   show_enrichment_filters[[type]] <- F
   missing_enrichment_items[[type]] <- T
-  if(NROW(gene_enrich_report[['enrichment']][['results']][[type]]) > 0){
+  if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
     show_enrichment_filters[[type]] <- T
     missing_enrichment_items[[type]] <- F
   }
@@ -41,7 +42,7 @@ for(type in c('go','msigdb','wikipathwaydb','acsn')){
 ```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
 library(crosstalk)
 
-enrichment_go_display <- gene_enrich_report[['enrichment']][['results']][['go']] %>%
+enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue, 
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
@@ -77,12 +78,12 @@ cat('\n')
 
 <br><br>
 
-#### Molecular Signatures Database
+#### Molecular Signatures Database (MSigDB)
 
 ```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
 library(crosstalk)
 
-enrichment_msigdb_display <- gene_enrich_report[['enrichment']][['results']][['msigdb']] %>%
+enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] %>%
   dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue,  P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
@@ -118,12 +119,54 @@ cat('\n')
 
 <br><br>
 
+#### KEGG
+
+```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['keggdb']]}
+library(crosstalk)
+
+enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['keggdb']] %>%
+  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue,  P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+
+terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_keggdb, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Signature collection", terms_keggdb, ~DB)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+
+
+```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['keggdb']]}
+cat('<i>No pathways from KEGG were enriched in the query set.</i>',sep='\n')
+cat('\n')
+```
+
+
+<br><br>
+
+
 #### WikiPathways
 
 ```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathwaydb']]}
 library(crosstalk)
 
-enrichment_wikidb_display <- gene_enrich_report[['enrichment']][['results']][['wikipathwaydb']] %>%
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathwaydb']] %>%
   dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 

@@ -11,10 +11,7 @@ get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
   oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
-  for(var in c('symbol','entrezgene','p_oncogene','tsgene','cdriver','tcga_driver','ensembl_gene_id','name',
-             'gencode_gene_biotype','corum_id','ot_tractability_compound','signaling_pw','genename')){
-    stopifnot(var %in% colnames(genedb))
-  }
+
   network <- list()
   network$nodes <- NULL
   network$edges <- NULL

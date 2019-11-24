@@ -10,8 +10,8 @@
 ```{r co_expression_plots, echo = F}
 l <- htmltools::tagList()
 i <- 1
-for(g in names(gene_enrich_report[['co_expression_gtex']][['plots']])){
-  l[[i]] <- plotly::ggplotly(gene_enrich_report[['co_expression_gtex']][['plots']][[g]], width = 10 * 96, height = gene_enrich_report[['co_expression_gtex']][['plot_height']] * 96)
+for(g in names(onc_enrich_report[['data']][['co_expression_gtex']][['plots']])){
+  l[[i]] <- plotly::ggplotly(onc_enrich_report[['data']][['co_expression_gtex']][['plots']][[g]], width = 10 * 96, height = onc_enrich_report[['config']][['co_expression_gtex']][['plot_height']] * 96)
   i <- i + 1
   cat('\n\n')
 }

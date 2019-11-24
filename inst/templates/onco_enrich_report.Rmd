@@ -1,7 +1,7 @@
 ---
-title: "OncoEnrichR report - `r gene_enrich_report[['title']]`"
+title: "OncoEnrichR report - `r onc_enrich_report[['config']][['title']]`"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
-bibliography: bibliography.bib
+bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
 nocite: |
   @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk
 output: 
@@ -24,24 +24,27 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r project_background, child='project_background.Rmd', eval = T}
 ```
 
-```{r target_disease, child='disease_association.Rmd', eval = gene_enrich_report[['show_section']][['target_disease']]}
+```{r target_disease, child='disease_association.Rmd', eval = onc_enrich_report[['config']][['show']][['target_disease']]}
 ```
 
-```{r target_complex, child='protein_complex.Rmd', eval = gene_enrich_report[['show_section']][['complex']]}
+```{r target_complex, child='protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
 ```
 
-```{r target_ppi, child='ppi.Rmd', eval = gene_enrich_report[['show_section']][['ppi']]}
+```{r target_ppi, child='ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
 ```
 
-```{r target_enrichment, child='functional_enrichment.Rmd', eval = gene_enrich_report[['show_section']][['enrichment']]}
+```{r target_enrichment, child='functional_enrichment.Rmd', eval = onc_enrich_report[['config']][['show']][['enrichment']]}
 ```
 
-```{r target_co_expression, child='gtex_coexpression.Rmd', eval = gene_enrich_report[['show_section']][['gtex_coexp']]}
+```{r target_tcga_aberration, child='cancer_mutation_frequency.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_aberration']]}
 ```
 
-```{r target_tcga_aberration, child='cancer_mutation_frequency.Rmd', eval = gene_enrich_report[['show_section']][['tcga_aberration']]}
+```{r target_tcga_coexpression, child='tcga_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_coexpression']]}
 ```
 
+
+```{r documentation_workflow, child='documentation_workflow.Rmd', eval = T}
+```
 
 ### References
 

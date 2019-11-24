@@ -2,8 +2,8 @@
 
 * The target set is queried against known protein-protein interactions, as evident from the [STRING database (v11)](http://string-db.org)
   * Note that interactions in STRING are assembled from multiple sources, including co-expression, co-occurrence in the literature, experimental data, curated databases etc
-  * In addition to potential interactions within the target set, the network is expanded with n = `r gene_enrich_report[['ppi']][['stringdb']][['settings']][['add_nodes']] ` proteins that interact with a protein in the target set (this number can be modified)
-  * Network is restricted to interactions of high confidence (STRING association score > 900 (range 0-1000))
+  * In addition to potential interactions within the target set, the network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['stringdb']][['add_nodes']]`__ proteins that interact with proteins in the target set
+  * Network is here restricted to interactions with __STRING association score >= `r onc_enrich_report[['config']][['ppi']][['stringdb']][['minimum_score']]`__ (range 0-1000))
 
 <br>
 
@@ -16,7 +16,8 @@
 
 <br><br>
 ```{r ppi_high, echo = F, results = "asis", eval = T, fig.width = 12, fig.height=13}
-visNetwork::visNetwork(gene_enrich_report[['ppi']][['stringdb']][['network']]$nodes, gene_enrich_report[['ppi']][['stringdb']][['network']]$edges) %>%
+visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['stringdb']][['network']]$nodes, 
+                       onc_enrich_report[['data']][['ppi']][['stringdb']][['network']]$edges) %>%
   visNetwork::visPhysics(stabilization = FALSE) %>%
   visNetwork::visEdges(smooth = FALSE)
 

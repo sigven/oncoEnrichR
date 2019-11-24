@@ -10,13 +10,13 @@
 
 
 <br><br>
-```{r tcga_ampl_plot, echo = F, eval = T, fig.height = gene_enrich_report[['tcga_aberration']][['plot_height']], fig.width = 13}
-gene_enrich_report[['tcga_aberration']][['plot']][['cna_ampl']]
+```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13}
+onc_enrich_report[['data']][['tcga_aberration']][['plot']][['cna_ampl']]
 
 ```
 <br><br>
-```{r tcga_homdel_plot, echo = F, eval = T, fig.height = gene_enrich_report[['tcga_aberration']][['plot_height']], fig.width = 13}
-gene_enrich_report[['tcga_aberration']][['plot']][['cna_homdel']]
+```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13}
+onc_enrich_report[['data']][['tcga_aberration']][['plot']][['cna_homdel']]
 
 ```
 <br><br>
@@ -28,8 +28,8 @@ gene_enrich_report[['tcga_aberration']][['plot']][['cna_homdel']]
 
 show_tcga_freqs <- FALSE
 missing_tcga_freqs <- TRUE
-all_targets_vtypes <- dplyr::bind_rows(gene_enrich_report[['tcga_aberration']][['table']][['cna_homdel']],
-                                       gene_enrich_report[['tcga_aberration']][['table']][['cna_ampl']])
+all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_homdel']],
+                                       onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_ampl']])
 
 if(nrow(all_targets_vtypes) > 0){
   show_tcga_freqs <- TRUE
@@ -42,8 +42,8 @@ if(nrow(all_targets_vtypes) > 0){
 ```{r table_browse_tcga_freqs, echo=F, results = "asis", eval = show_tcga_freqs}
 library(crosstalk)
 
-all_targets_vtypes <- dplyr::bind_rows(gene_enrich_report[['tcga_aberration']][['table']][['cna_homdel']],
-                                       gene_enrich_report[['tcga_aberration']][['table']][['cna_ampl']]) %>%
+all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_homdel']],
+                                       onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_ampl']]) %>%
   dplyr::arrange(desc(percent_mutated))
 targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 
