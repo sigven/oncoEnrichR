@@ -1,0 +1,52 @@
+### Subcellular compartments {.tabset}
+
+* The target set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a cellular compartment-specific database of proteins, and results are here presented in two different views:
+
+   1. All subcellular compartment annotations pr. protein in the target set ("By Gene")
+   2. All unique subcellular compartment annotations and their target members ("By Compartment")
+
+<br><br>
+
+#### By Gene
+
+```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = T}
+library(crosstalk)
+
+
+subcell_comp_all <- crosstalk::SharedData$new(onc_enrich_report[['data']][['subcellcomp']][['all']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("target_gene", "Target gene",subcell_comp_all,~symbol),
+    crosstalk::filter_select("annotation_source", "Annotation source", subcell_comp_all, ~annotation_source)
+  ),
+  list(
+    crosstalk::filter_select("annotation_type", "Annotation type", subcell_comp_all, ~annotation_type)
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(subcell_comp_all, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+<br><br>
+
+#### By Compartment
+
+```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = T}
+library(crosstalk)
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['subcellcomp']][['grouped']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+  options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
+
+
+```
+<br><br>
+
+
+

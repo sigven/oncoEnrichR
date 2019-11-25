@@ -1,38 +1,110 @@
-### TCGA co-expression (RNAseq)
+### TCGA co-expression (RNAseq) {.tabset}
 
 * Using RNA-seq data from TCGA, a co-expression correlation matrix (Pearson rank correlation coefficent) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
 * Here, we are showing, across the main primary tumor sites:
   1) Genes with a **very strong** correlation (negative or positive) to genes in the target set
   2) Tumor suppressor genes or proto-oncogenes with a **strong/very strong** correlation (negative or positive) to genes in the target set
 
-```{r table_browse_tcga_coexp, echo=F, results = "asis", eval = T}
+
+<br><br>
+
+```{r filter_tcga_coexp, echo=F, results='asis'}
+
+show_tcga_coexp <- list()
+missing_tcga_coexp <- list()
+coexp_data <- list()
+
+for(n in c('Positive','Negative')){
+    show_tcga_coexp[[n]] <- TRUE
+    missing_tcga_coexp[[n]] <- FALSE
+    coexp_data[[n]] <- data.frame()
+  
+    coexp_data[[n]] <- onc_enrich_report[['data']][['co_expression_tcga']] %>% 
+      dplyr::filter(corrtype == n)
+  
+    if(nrow(coexp_data[[n]]) == 0){
+      missing_tcga_coexp[[n]] <- TRUE
+      show_tcga_coexp[[n]] <- FALSE
+    }
+}
+
+```
+
+
+#### Positive correlation
+
+```{r table_browse_tcga_coexp, echo=F, results = "asis", eval = show_tcga_coexp[['Positive']]}
 library(crosstalk)
 
 
-coexp_genes <- crosstalk::SharedData$new(onc_enrich_report[['data']][['co_expression_tcga']])
+coexp_genes_positive <- crosstalk::SharedData$new(coexp_data[['Positive']])
 
 crosstalk::bscols(
   list(
-    crosstalk::filter_select("target_gene", "Target gene",coexp_genes,~target_gene),
-    crosstalk::filter_select("correlation", "Type of correlation", coexp_genes, ~corrtype),
-    crosstalk::filter_slider("r", "Correlation coefficient (r)", coexp_genes, ~r, step = 0.2),
-    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes, ~tumor_suppressor)
+    crosstalk::filter_select("target_gene", "Target gene",coexp_genes_positive,~target_gene),
+    crosstalk::filter_select("correlation", "Type of correlation", coexp_genes_positive, ~corrtype),
+    crosstalk::filter_slider("r", "Correlation coefficient (r)", coexp_genes_positive, ~r, step = 0.05),
+    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes_positive, ~tumor_suppressor)
   ),
   list(
-    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes, ~proto_oncogene),
-    crosstalk::filter_select("primary_site", "Primary site", coexp_genes, ~primary_site),
-    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes, ~target_tractability)
+    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes_positive, ~proto_oncogene),
+    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_positive, ~primary_site),
+    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_positive, ~target_tractability)
 
   )
 )
 
 htmltools::br()
 crosstalk::bscols(
-  DT::datatable(coexp_genes, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+  DT::datatable(coexp_genes_positive, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
     options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
   )
 )
 
 ```
 <br><br>
+
+```{r coexp_missing_positive, echo=F, results = 'asis', eval = missing_tcga_coexp[['Positive']]}
+cat('<i>No genes in target set with positive correlations to other genes</i>',sep='\n')
+cat('\n')
+```
+
+
+#### Negative correlation
+
+```{r table_browse_tcga_coexp2, echo=F, results = "asis", eval = show_tcga_coexp[['Negative']]}
+library(crosstalk)
+
+
+coexp_genes_negative <- crosstalk::SharedData$new(coexp_data[['Negative']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("target_gene", "Target gene",coexp_genes_negative,~target_gene),
+    crosstalk::filter_select("correlation", "Type of correlation", coexp_genes_negative, ~corrtype),
+    crosstalk::filter_slider("r", "Correlation coefficient (r)", coexp_genes_negative, ~r, step = 0.05),
+    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes_negative, ~tumor_suppressor)
+  ),
+  list(
+    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes_negative, ~proto_oncogene),
+    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_negative, ~primary_site),
+    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_negative, ~target_tractability)
+
+  )
+)
+
+htmltools::br()
+crosstalk::bscols(
+  DT::datatable(coexp_genes_negative, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+  )
+)
+
+```
+<br><br>
+
+```{r coexp_missing_negative, echo=F, results = 'asis', eval = missing_tcga_coexp[['Negative']]}
+cat('<i>No genes in target set with negative correlation to other genes</i>',sep='\n')
+cat('\n')
+```
 

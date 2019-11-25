@@ -30,6 +30,9 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_complex, child='protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
 ```
 
+```{r target_subcell, child='subcell_comp.Rmd', eval = onc_enrich_report[['config']][['show']][['subcellcomp']]}
+```
+
 ```{r target_ppi, child='ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
 ```
 
