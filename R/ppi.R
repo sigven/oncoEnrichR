@@ -1,11 +1,4 @@
 
-#' Annotate geneset with protein complexes they are involved with
-#'
-#' @param qgenes character vector of human gene symbols
-#' @param genedb data frame with gene annotations
-#' @param settings oncoEnrichR report settings
-#' @return data frame with unique protein complexes and their associated members
-#'
 get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
 
   stopifnot(!is.null(settings))

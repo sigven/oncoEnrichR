@@ -11,6 +11,7 @@ init_report <- function(title = "Project Title",
                         show_enrichment = T,
                         show_tcga_aberration = T,
                         show_tcga_coexpression = T,
+                        show_subcell_comp = T,
                         #show_gtex_coexp = F,
                         show_complex = T){
 
@@ -35,6 +36,7 @@ init_report <- function(title = "Project Title",
   rep[['config']][['show']][['protein_complex']] <- show_complex
   rep[['config']][['show']][['tcga_aberration']] <- show_tcga_aberration
   rep[['config']][['show']][['tcga_coexpression']] <- show_tcga_coexpression
+  rep[['config']][['show']][['subcellcomp']] <- show_subcell_comp
   #rep[['config']][['show']][['gtex_coexp']] <- show_gtex_coexp
 
   ## report metadata - project owner, background, title
@@ -85,6 +87,9 @@ init_report <- function(title = "Project Title",
   rep[['data']][['co_expression_gtex']][['df']] <- data.frame()
   rep[['data']][['co_expression_tcga']] <- data.frame()
   rep[['data']][['protein_complex']] <- data.frame()
+  rep[['data']][['subcellcomp']] <- list()
+  rep[['data']][['subcellcomp']][['all']] <- data.frame()
+  rep[['data']][['subcellcomp']][['grouped']] <- data.frame()
   rep[['data']][['tcga_aberration']] <- list()
   rep[['data']][['tcga_aberration']][['table']] <- list()
   rep[['data']][['tcga_aberration']][['plot']] <- list()
@@ -117,6 +122,7 @@ init_report <- function(title = "Project Title",
 #' @param show_enrichment logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
+#' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
 #' @param report_name filename for report
 #' @param format file format of output (html/json)
@@ -139,6 +145,7 @@ generate_report_data <- function(query,
                             show_enrichment = T,
                             show_tcga_aberration = T,
                             show_tcga_coexpression = T,
+                            show_subcell_comp = T,
                             #show_gtex_coexp = F,
                             show_complex = T){
                             #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
@@ -176,18 +183,19 @@ generate_report_data <- function(query,
   query_symbol <- qgenes_match[['found']]$symbol
 
   onc_rep <- init_report(title = p_title,
-                                        project_owner = p_owner,
-                                        ppi_add_nodes = ppi_add_nodes,
-                                        show_ppi = show_ppi,
-                                        show_disease = show_disease,
-                                        show_enrichment = show_enrichment,
-                                        show_tcga_aberration = show_tcga_aberration,
-                                        show_tcga_coexpression = show_tcga_coexpression,
-                                        #show_gtex_coexp = show_gtex_coexp,
-                                        show_complex = show_complex,
-                                        background_enrichment_description = background_enrichment_description,
-                                        p_value_cutoff_enrichment = p_value_cutoff_enrichment,
-                                        q_value_cutoff_enrichment = q_value_cutoff_enrichment)
+                         project_owner = p_owner,
+                         ppi_add_nodes = ppi_add_nodes,
+                         show_ppi = show_ppi,
+                         show_disease = show_disease,
+                         show_enrichment = show_enrichment,
+                         show_tcga_aberration = show_tcga_aberration,
+                         show_tcga_coexpression = show_tcga_coexpression,
+                         #show_gtex_coexp = show_gtex_coexp,
+                         show_complex = show_complex,
+                         show_subcell_comp = show_subcell_comp,
+                         background_enrichment_description = background_enrichment_description,
+                         p_value_cutoff_enrichment = p_value_cutoff_enrichment,
+                         q_value_cutoff_enrichment = q_value_cutoff_enrichment)
 
   if(length(query_symbol) > 30){
     onc_rep[['config']][['tcga_aberration']][['plot_height']] <-
@@ -296,6 +304,18 @@ generate_report_data <- function(query,
                                             corum_db = oncoEnrichR::corumdb,
                                             uniprot_acc = oncoEnrichR::uniprot_xref)
   }
+
+  if(show_subcell_comp == T){
+     subcellcomp_annotations <-
+      oncoEnrichR::annotate_subcellular_compartments(query_symbol,
+                                            genedb = oncoEnrichR::genedb,
+                                            comppidb = oncoEnrichR::comppidb)
+
+     onc_rep[['data']][['subcellcomp']][['all']] <- subcellcomp_annotations[['all']]
+     onc_rep[['data']][['subcellcomp']][['grouped']] <- subcellcomp_annotations[['grouped']]
+
+  }
+
 
   if(show_tcga_aberration == T){
     for(v in c('cna_homdel','cna_ampl')){

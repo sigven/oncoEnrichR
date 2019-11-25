@@ -97,4 +97,10 @@ validate_db_df <- function(df, dbtype = "genedb"){
       stopifnot(var %in% colnames(df))
     }
   }
+
+  if(dbtype == "comppidb"){
+    for(var in c('symbol','entrezgene','uniprot_acc','go_id','go_term','go_ontology','annotation_source','annotation_type')){
+      stopifnot(var %in% colnames(df))
+    }
+  }
 }

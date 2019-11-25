@@ -44,9 +44,9 @@ annotate_protein_complex <- function(qgenes, genedb = NULL, corum_db = NULL, uni
         dplyr::left_join(dplyr::filter(dplyr::select(genedb, entrezgene, symbol),!is.na(entrezgene)),by=c("entrezgene")) %>%
         dplyr::mutate(genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
         dplyr::group_by(complex_name, disease_comment, complex_comment, protein_complex_purification_method, citation_link) %>%
-        dplyr::summarise(target_genes = paste(unique(target_gene),collapse=","), complex_genes = paste(unique(genelink),collapse=",")) %>%
-        dplyr::mutate(target_genes = stringr::str_replace_all(target_genes,",NA$|^NA,","")) %>%
-        dplyr::mutate(target_genes = stringr::str_replace_all(target_genes,",NA,",",")) %>%
+        dplyr::summarise(target_genes = paste(unique(target_gene),collapse=", "), complex_genes = paste(unique(genelink),collapse=", ")) %>%
+        dplyr::mutate(target_genes = stringr::str_replace_all(target_genes,", NA$|^NA, ","")) %>%
+        dplyr::mutate(target_genes = stringr::str_replace_all(target_genes,", NA,",", ")) %>%
         dplyr::rename(purification_method = protein_complex_purification_method, citation = citation_link) %>%
         dplyr::select(complex_name, target_genes, citation, complex_genes, disease_comment, complex_comment, purification_method) %>%
         dplyr::mutate(num_target_members = stringr::str_count(target_genes,",")) %>%

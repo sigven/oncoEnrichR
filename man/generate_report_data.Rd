@@ -23,6 +23,7 @@ generate_report_data(
   show_enrichment = T,
   show_tcga_aberration = T,
   show_tcga_coexpression = T,
+  show_subcell_comp = T,
   show_complex = T
 )
 }
@@ -60,6 +61,8 @@ generate_report_data(
 \item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
 
 \item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes}
+
+\item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations from ComPPI}
 
 \item{show_complex}{logical indicating if report should list proteins in known protein complexes}
 
