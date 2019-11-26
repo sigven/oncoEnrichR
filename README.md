@@ -7,7 +7,7 @@ The **oncoEnrichR** package is intended for exploratory analysis and prioritizat
   * Which diseases/tumor types are associated with genes in the target set? Are there druggable proteins in the target set?
   * Which protein complexes are relevant for proteins in the target set?
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant for proteins in the target set?
-  * Which protein-protein interactions are established within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)?
+  * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
   * Are there specific pathways or functional properties that are enriched within the target set, as compared to a reference/background set?
   * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, homozygous deletions/amplifications)?
   * Which members of the target set are co-expressed (strong negative or positive correlations) with proto-oncogenes or tumor suppressors in tumor sample cohorts (TCGA, RNAseq)?
