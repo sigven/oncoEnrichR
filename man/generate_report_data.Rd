@@ -2,8 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{generate_report_data}
 \alias{generate_report_data}
-\title{Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
-enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.}
+\title{Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance}
 \usage{
 generate_report_data(
   query,
@@ -12,12 +11,13 @@ generate_report_data(
   p_owner = "Project Owner",
   report_fname = "oncoEnrichR_Report",
   background_fname = NULL,
-  ppi_add_nodes = 50,
   background_enrichment = NULL,
   background_enrichment_source = "symbol",
   background_enrichment_description = "All protein-coding genes",
   p_value_cutoff_enrichment = 0.05,
   q_value_cutoff_enrichment = 0.01,
+  ppi_add_nodes = 50,
+  ppi_score_threshold = 900,
   show_ppi = T,
   show_disease = T,
   show_enrichment = T,
@@ -30,17 +30,15 @@ generate_report_data(
 \arguments{
 \item{query}{character vector with gene identifiers}
 
-\item{query_source}{character indicating source of query ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')}
+\item{query_source}{character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')}
 
 \item{p_title}{title of report}
 
 \item{p_owner}{name of project owner}
 
-\item{report_fname}{filename prefix for HTML report}
+\item{report_fname}{filename (prefix) for HTML report and JSON output}
 
 \item{background_fname}{filename for simple text file with project background information, one line per background item}
-
-\item{ppi_add_nodes}{number of nodes to add to protein-protein interaction network}
 
 \item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment analysis}
 
@@ -52,7 +50,11 @@ generate_report_data(
 
 \item{q_value_cutoff_enrichment}{cutoff q-value for enrichment analysis}
 
-\item{show_ppi}{logical indicating if report should contain protein-protein interaction network (STRING)}
+\item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network}
+
+\item{ppi_score_threshold}{minimum score (total) for included protein-protein interactions}
+
+\item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 
 \item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
 
@@ -66,11 +68,8 @@ generate_report_data(
 
 \item{show_complex}{logical indicating if report should list proteins in known protein complexes}
 
-\item{report_name}{filename for report}
-
 \item{format}{file format of output (html/json)}
 }
 \description{
-Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
-enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.
+Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
 }

@@ -1,19 +1,72 @@
 
-get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
+get_network_hubs <- function(edges = NULL, nodes = NULL, genedb = NULL){
+
+  stopifnot(!is.null(edges) & !is.null(nodes))
+  oncoEnrichR::validate_db_df(nodes, dbtype = "ppi_nodes")
+  oncoEnrichR::validate_db_df(edges, dbtype = "ppi_edges")
+
+  edges <- dplyr::select(edges, preferredName_A, preferredName_B, from, to, weight)
+  d <- igraph::graph_from_data_frame(d = edges, directed = F)
+
+  ## hub score (Kleinberg's hub centrality)
+  hscore <- igraph::hub_score(d)
+  hub_scores <- data.frame(symbol = names(sort(hscore$vector,decreasing = T)),
+                           hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),
+                           stringsAsFactors = F) %>%
+    dplyr::left_join(dplyr::select(genedb, symbol,name),by=c("symbol")) %>%
+    dplyr::select(symbol, name, hub_score) %>%
+    dplyr::distinct()
+
+  return(hub_scores)
+}
+
+
+get_network_communities <- function(edges = NULL, nodes = NULL){
+
+  stopifnot(!is.null(edges) & !is.null(nodes))
+  oncoEnrichR::validate_db_df(nodes, dbtype = "ppi_nodes")
+  oncoEnrichR::validate_db_df(edges, dbtype = "ppi_edges")
+
+  edges <- dplyr::select(edges, preferredName_A, preferredName_B, from, to, weight)
+
+  d <- igraph::graph_from_data_frame(d = edges, directed = F)
+
+
+  ## communities, fast greedy modularity optimization algorithm for finding community structure,
+  cties <- igraph::fastgreedy.community(d)
+  edges_communities <- data.frame()
+  if(length(cties) > 0){
+    n <- 1
+    while(n <= length(cties)){
+      members_community_n <- cties[[n]]
+      community <- dplyr::filter(ppi_edges, preferredName_A %in% members_community_n & preferredName_B %in% members_community_n) %>%
+        dplyr::mutate(community = n)
+
+      edges_communities <- edges_communities %>%
+        dplyr::bind_rows(community)
+      n <- n + 1
+    }
+  }
+
+  nodes_communities <- data.frame('id' = unique(c(unique(edges_communities$from),unique(edges_communities$to))), stringsAsFactors = F) %>%
+    dplyr::inner_join(nodes, by=c("id")) %>%
+    dplyr::distinct()
+
+  community_structure <- list()
+  community_structure[['edges']] <- edges_communities
+  community_structure[['nodes']] <- nodes_communities
+
+  return(community_structure)
+}
+
+get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settings = NULL){
 
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
+  stopifnot(settings$query_type == 'interaction_partners' | settings$query_type == 'network')
   oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
 
-  network <- list()
-  network$nodes <- NULL
-  network$edges <- NULL
-  if(settings$query_type != 'interaction_partners' & settings$query_type != 'network'){
-    return(network)
-  }
   query_list <- paste(qgenes, collapse="%0d")
-  rlogging::message("STRINGdb: retrieving protein-protein interaction network from (v11)")
-  rlogging::message(paste0("STRINGdb: Settings -  required_score = ",settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
   query_nodes <- data.frame('entrezgene' = qgenes, stringsAsFactors = F) %>%
     dplyr::distinct() %>%
@@ -23,7 +76,10 @@ get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
-  all_links <- jsonlite::fromJSON(paste0('https://string-db.org/api/json/',settings$query_type,'?identifiers=',query_list,'&required_score=',settings$minimum_score,'&add_nodes=',settings$add_nodes)) %>%
+  rlogging::message("STRINGdb: retrieving protein-protein interaction network from (v11)")
+  rlogging::message(paste0("STRINGdb: Settings -  required_score = ",settings$minimum_score,", add_nodes = ",settings$add_nodes))
+
+  all_edges <- jsonlite::fromJSON(paste0('https://string-db.org/api/json/',settings$query_type,'?identifiers=',query_list,'&required_score=',settings$minimum_score,'&add_nodes=',settings$add_nodes)) %>%
     dplyr::left_join(dplyr::select(genedb,entrezgene,symbol),by=c("preferredName_A" = "symbol")) %>%
     dplyr::filter(!is.na(entrezgene)) %>%
     dplyr::rename(entrezgene_a = entrezgene) %>%
@@ -44,7 +100,8 @@ get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
     dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by=c("preferredName_B" = "symbol")) %>%
     dplyr::rename(query_node_B = query_node) %>%
     dplyr::mutate(weight = score) %>%
-    dplyr::distinct()
+    dplyr::distinct() %>%
+    dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
 
   network_nodes <- data.frame('symbol' = c(all_links$preferredName_A, all_links$preferredName_B), stringsAsFactors = F) %>%
     dplyr::distinct() %>%
@@ -60,15 +117,15 @@ get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
     dplyr::mutate(query_node = dplyr::if_else(is.na(query_node),FALSE,as.logical(query_node)))
 
 
-  all_nodes <- all_nodes %>% dplyr::mutate(shape = dplyr::if_else(query_node == T,settings$visnetwork_shape,as.character("box")))
-  #all_nodes$shape  <- shape
+  all_nodes <- all_nodes %>%
+    dplyr::mutate(shape = dplyr::if_else(query_node == T,settings$visnetwork_shape,as.character("box")))
   all_nodes$shadow <- settings$visnetwork_shadow
 
   all_nodes$title <- unlist(lapply(stringr::str_match_all(all_nodes$genename,">.+<"),paste,collapse=","))
   all_nodes$title <- stringr::str_replace_all(all_nodes$title,">|<", "")
   all_nodes$label  <- all_nodes$symbol # Node label
 
-  all_links$width <- all_links$weight
+  all_edges$width <- all_links$weight
 
   all_nodes$gene_category <- 'protein_coding'
   all_nodes$size <- 25
@@ -78,11 +135,16 @@ get_string_ppi_network <- function(qgenes, genedb = NULL, settings = NULL){
     dplyr::mutate(color.background = dplyr::if_else(p_oncogene == T & tsgene == F,"darkolivegreen",as.character(color.background),as.character(color.background))) %>%
     dplyr::mutate(color.background = dplyr::if_else(p_oncogene == T & tsgene == T,"black",as.character(color.background),as.character(color.background))) %>%
     dplyr::mutate(color.border = 'black', color.highlight.background = 'orange', color.highlight.border = 'darkred', font.color = 'white') %>%
-    dplyr::mutate(font.color = dplyr::if_else(query_node == T,"black",as.character(font.color),as.character(font.color)))
+    dplyr::mutate(font.color = dplyr::if_else(query_node == T | color.background == "mistyrose","black",as.character(font.color),as.character(font.color)))
 
   network <- list()
-  network$nodes <- all_nodes
-  network$edges <- all_links
+  network[['source']] <- ppi_source
+  network[['complete_network']] <- list()
+  network[['complete_network']][['nodes']] <- all_nodes
+  network[['complete_network']][['edges']] <- all_edges
+  network[['community_network']] <- oncoEnrichR::get_network_communities(edges = all_edges, nodes = all_nodes)
+  network[['hubscores']] <- oncoEnrichR::get_network_hubs(edges = all_edges, nodes = all_nodes, genedb = genedb)
+
   return(network)
 
 }

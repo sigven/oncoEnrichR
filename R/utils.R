@@ -103,4 +103,24 @@ validate_db_df <- function(df, dbtype = "genedb"){
       stopifnot(var %in% colnames(df))
     }
   }
+
+  if(dbtype == "ppi_nodes"){
+    for(var in c('symbol','entrezgene','genename','name','gencode_gene_biotype',
+                 'ot_tractability_compound','signaling_pw','query_node','cdriver',
+                 'id','tsgene','p_oncogene')){
+      stopifnot(var %in% colnames(df))
+    }
+  }
+
+  if(dbtype == "ppi_edges"){
+    for(var in c('preferredName_A','preferredName_B','entrezgene_a',
+                 'entrezgene_b','p_oncogene_A','p_oncogene_B','tsgene_A','tsgene_B','tcga_driver_A',
+                 'tcga_driver_B','cdriver_A','cdriver_B','query_node_A','query_node_B','weight',
+                 'from','to','fscore','tscore','score','ascore','pscore','nscore','dscore','escore',
+                 'interaction_symbol')){
+      stopifnot(var %in% colnames(df))
+    }
+  }
+
+
 }

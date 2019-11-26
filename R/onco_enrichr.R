@@ -75,8 +75,9 @@ init_report <- function(title = "Project Title",
 
   rep[['data']][['target_disease']] <- data.frame()
   rep[['data']][['ppi']] <- list()
-  rep[['data']][['ppi']][['stringdb']] <- list()
-  rep[['data']][['ppi']][['stringdb']][['network']] <- NULL
+  rep[['data']][['ppi']][['complete_network']] <- NULL
+  rep[['data']][['ppi']][['hubscores']] <- data.frame()
+  rep[['data']][['ppi']][['community_network']] <- NULL
   rep[['data']][['enrichment']] <- list()
   for(c in c('go','msigdb','wikipathwaydb','keggdb')){
     rep[['data']][['enrichment']][[c]] <- data.frame()
@@ -102,29 +103,28 @@ init_report <- function(title = "Project Title",
   return(rep)
 }
 
-#' Function that interrogates a list of human protein-coding genes for known disease associations, protein-protein interactions,
-#' enrichment in gene ontology (GO), pathway databases and curated signatures, and aberration frequencies and co-expression patterns in tumor samples.
+#' Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
 #'
 #' @param query character vector with gene identifiers
-#' @param query_source character indicating source of query ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
+#' @param query_source character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
 #' @param p_title title of report
 #' @param p_owner name of project owner
-#' @param report_fname filename prefix for HTML report
+#' @param report_fname filename (prefix) for HTML report and JSON output
 #' @param background_fname filename for simple text file with project background information, one line per background item
-#' @param ppi_add_nodes number of nodes to add to protein-protein interaction network
 #' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment analysis
 #' @param background_enrichment_source character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 #' @param background_enrichment_description character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
 #' @param p_value_cutoff_enrichment cutoff p-value for enrichment analysis
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
-#' @param show_ppi logical indicating if report should contain protein-protein interaction network (STRING)
+#' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network
+#' @param ppi_score_threshold minimum score (total) for included protein-protein interactions
+#' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
-#' @param report_name filename for report
 #' @param format file format of output (html/json)
 #' @export
 #'
@@ -134,12 +134,13 @@ generate_report_data <- function(query,
                             p_owner = "Project Owner",
                             report_fname = "oncoEnrichR_Report",
                             background_fname = NULL,
-                            ppi_add_nodes = 50,
                             background_enrichment = NULL,
                             background_enrichment_source = "symbol",
                             background_enrichment_description = "All protein-coding genes",
                             p_value_cutoff_enrichment = 0.05,
                             q_value_cutoff_enrichment = 0.01,
+                            ppi_add_nodes = 50,
+                            ppi_score_threshold = 900,
                             show_ppi = T,
                             show_disease = T,
                             show_enrichment = T,
@@ -153,6 +154,7 @@ generate_report_data <- function(query,
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
               query_source == "uniprot_acc" | query_source == "ensembl_gene_id" |
               query_source == "any")
+  stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
 
   qgenes_match <-
     oncoEnrichR::verify_query_genes(query,
@@ -291,10 +293,11 @@ generate_report_data <- function(query,
   # }
 
   if(show_ppi == T){
-    onc_rep[['data']][['ppi']][['stringdb']][['network']] <-
-      oncoEnrichR::get_string_ppi_network(query_entrezgene,
-                                          genedb = oncoEnrichR::genedb,
-                                          settings = onc_rep[['config']][['ppi']][['stringdb']])
+    onc_rep[['data']][['ppi']] <-
+      oncoEnrichR::get_ppi_network(query_entrezgene,
+                                   ppi_source = 'STRING',
+                                   genedb = oncoEnrichR::genedb,
+                                   settings = onc_rep[['config']][['ppi']][['stringdb']])
   }
 
   if(show_complex == T){
