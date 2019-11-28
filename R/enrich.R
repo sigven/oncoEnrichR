@@ -18,13 +18,13 @@ get_go_enrichment <- function(query_entrez, background_entrez = NULL, ontology =
     stopifnot(is.character(background_entrez))
   }
   ego <- clusterProfiler::enrichGO(gene          = query_entrez,
-                                   universe      = background_entrez,
                                    OrgDb         = org.Hs.eg.db,
                                    ont           = ontology,
                                    minGSSize     = minGSSize,
                                    pAdjustMethod = "BH",
                                    pvalueCutoff  = p_value_cutoff,
                                    qvalueCutoff  = q_value_cutoff,
+                                   universe      = background_entrez,
                                    readable      = F,
                                    pool = pool)
 

@@ -14,6 +14,8 @@ get_network_hubs <- function(edges = NULL, nodes = NULL, genedb = NULL){
                            hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),
                            stringsAsFactors = F) %>%
     dplyr::left_join(dplyr::select(genedb, symbol,name),by=c("symbol")) %>%
+    dplyr::left_join(dplyr::select(nodes, symbol, query_node),by=c("symbol")) %>%
+    dplyr::filter(query_node == T) %>%
     dplyr::select(symbol, name, hub_score) %>%
     dplyr::distinct()
 
@@ -72,14 +74,14 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settin
     dplyr::distinct() %>%
     dplyr::left_join(genedb, by=c("entrezgene" = "entrezgene")) %>%
     dplyr::mutate(id = paste0("s",entrezgene)) %>%
-    dplyr::select(-c(corum_id,ensembl_gene_id)) %>%
+    dplyr::select(-ensembl_gene_id) %>%
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
   rlogging::message("STRINGdb: retrieving protein-protein interaction network from (v11)")
   rlogging::message(paste0("STRINGdb: Settings -  required_score = ",settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
-  all_edges <- jsonlite::fromJSON(paste0('https://string-db.org/api/json/',settings$query_type,'?identifiers=',query_list,'&required_score=',settings$minimum_score,'&add_nodes=',settings$add_nodes)) %>%
+  all_edges <- jsonlite::fromJSON(paste0('https://string-db.org/api/json/',settings$query_type,'?species=9606&identifiers=',query_list,'&required_score=',settings$minimum_score,'&add_nodes=',settings$add_nodes)) %>%
     dplyr::left_join(dplyr::select(genedb,entrezgene,symbol),by=c("preferredName_A" = "symbol")) %>%
     dplyr::filter(!is.na(entrezgene)) %>%
     dplyr::rename(entrezgene_a = entrezgene) %>%
@@ -103,10 +105,10 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settin
     dplyr::distinct() %>%
     dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
 
-  network_nodes <- data.frame('symbol' = c(all_links$preferredName_A, all_links$preferredName_B), stringsAsFactors = F) %>%
+  network_nodes <- data.frame('symbol' = unique(c(all_edges$preferredName_A, all_edges$preferredName_B)), stringsAsFactors = F) %>%
     dplyr::distinct() %>%
     dplyr::left_join(genedb, by=c("symbol" = "symbol")) %>%
-    dplyr::select(-c(corum_id,ensembl_gene_id)) %>%
+    dplyr::select(-ensembl_gene_id) %>%
     dplyr::filter(!is.na(entrezgene)) %>%
     dplyr::left_join(dplyr::select(query_nodes, symbol, query_node),by=c("symbol")) %>%
     dplyr::mutate(id = paste0("s",entrezgene)) %>%
@@ -125,7 +127,7 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settin
   all_nodes$title <- stringr::str_replace_all(all_nodes$title,">|<", "")
   all_nodes$label  <- all_nodes$symbol # Node label
 
-  all_edges$width <- all_links$weight
+  all_edges$width <- all_edges$weight
 
   all_nodes$gene_category <- 'protein_coding'
   all_nodes$size <- 25

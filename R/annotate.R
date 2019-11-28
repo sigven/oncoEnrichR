@@ -8,7 +8,6 @@ target_disease_associations <- function(qgenes, genedb = NULL, min_association_s
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
-      dplyr::select(-corum_id) %>%
       dplyr::distinct()
 
   rlogging::message(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))

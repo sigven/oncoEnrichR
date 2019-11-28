@@ -1,4 +1,4 @@
-verify_query_genes <- function(qgenes, qsource = "symbol", genedb = NULL, uniprot_acc = NULL){
+verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, genedb = NULL, uniprot_acc = NULL){
 
   stopifnot(qsource == "symbol" | qsource == "entrezgene" | qsource == "uniprot_acc" |
             qsource == "ensembl_gene_id" | qsource == "any")
@@ -24,55 +24,56 @@ verify_query_genes <- function(qgenes, qsource = "symbol", genedb = NULL, unipro
   if(qsource == 'entrezgene' | qsource == 'any'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "entrezgene")) %>%
-      dplyr::rename(entrezgene = qid) %>%
+      dplyr::mutate(entrezgene = qid) %>%
       dplyr::distinct()
   }
   if(qsource == 'symbol' | qsource == 'any'){
     target_genes <- dplyr::left_join(target_genes, gdb, by = c("qid" = "symbol")) %>%
-      dplyr::rename(symbol = qid) %>%
+      dplyr::mutate(symbol = qid) %>%
       dplyr::distinct()
 
   }
   if(qsource == 'uniprot_acc' | qsource == 'any'){
     target_genes <- target_genes %>%
       dplyr::left_join(uniprot_acc, by = c("qid" = "uniprot_acc")) %>%
-      dplyr::rename(uniprot_acc = qid) %>%
+      dplyr::mutate(uniprot_acc = qid) %>%
       dplyr::distinct()
   }
   if(qsource == 'ensembl_gene_id' | qsource == 'any'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "ensembl_gene_id")) %>%
-      dplyr::rename(ensembl_gene_id = qid) %>%
+      dplyr::mutate(ensembl_gene_id = qid) %>%
       dplyr::distinct()
   }
 
   found <- target_genes %>%
     dplyr::filter(!is.na(symbol) & !is.na(entrezgene) & !is.na(ensembl_gene_id))
 
-  if(nrow(found) > 0){
-    target_genes <- found %>%
-      dplyr::select(symbol, entrezgene) %>%
-      dplyr::mutate(entrezgene = as.character(entrezgene))
-
-    not_found <- target_genes %>%
-      dplyr::filter(is.na(symbol))
-  }
+  not_found <- target_genes %>%
+    dplyr::filter(is.na(symbol) | is.na(entrezgene) | is.na(ensembl_gene_id))
 
   result[['found']] <- found
   result[['not_found']] <- not_found
 
   if(nrow(not_found) > 0){
-    rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")),"\n")
-    result[['success']] <- -1
+    if(ignore_unknown == T){
+      rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
+    }else{
+      rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
+      result[['success']] <- -1
+    }
   }else{
     if(nrow(found) == length(qgenes)){
       rlogging::message(paste0('SUCCESS: Identified all genes (n = ',nrow(found),') in query set'))
     }
     else{
       rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(target_genes$qid,collapse=", ")," - wrong query_source (",qsource,")?"),"\n")
-      result[['success']] <- -1
+        result[['success']] <- -1
     }
   }
+
+  result[['found']]$qid <- NULL
+  result[['not_found']]$qid <- NULL
 
   return(result)
 
@@ -82,7 +83,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
   stopifnot(is.data.frame(df))
   if(dbtype == "genedb"){
     for(var in c('symbol','entrezgene','p_oncogene','tsgene','cdriver','tcga_driver','ensembl_gene_id','name',
-               'gencode_gene_biotype','corum_id','ot_tractability_compound','signaling_pw','genename')){
+               'gencode_gene_biotype','ot_tractability_compound','signaling_pw','genename')){
       stopifnot(var %in% colnames(df))
     }
   }

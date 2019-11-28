@@ -133,6 +133,7 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
     dplyr::select(symbol, primary_site, primary_diagnosis_very_simplified, variant_type,
                   samples_mutated, tot_samples, percent_mutated) %>%
     dplyr::rename(primary_diagnosis = primary_diagnosis_very_simplified, cohort_size = tot_samples) %>%
+    dplyr::filter(!stringr::str_detect(primary_diagnosis,"^Other")) %>%
     dplyr::left_join(dplyr::select(genedb, symbol, entrezgene),by=c("symbol")) %>%
     dplyr::inner_join(dplyr::select(query_genes_df, entrezgene),by=c("entrezgene")) %>%
     dplyr::distinct() %>%

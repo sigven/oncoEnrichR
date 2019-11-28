@@ -5,7 +5,7 @@ init_report <- function(title = "Project Title",
                         ppi_add_nodes = 50,
                         background_enrichment_description = "All protein-coding genes",
                         p_value_cutoff_enrichment = 0.05,
-                        q_value_cutoff_enrichment = 0.01,
+                        q_value_cutoff_enrichment = 0.2,
                         show_ppi = T,
                         show_disease = T,
                         show_enrichment = T,
@@ -71,7 +71,7 @@ init_report <- function(title = "Project Title",
   rep[['config']][['co_expression_gtex']] <- list()
   rep[['config']][['co_expression_gtex']][['plot_height']] <- 5
   rep[['config']][['tcga_aberration']] <- list()
-  rep[['config']][['tcga_aberration']][['plot_height']] <- 13
+  rep[['config']][['tcga_aberration']][['plot_height']] <- 14
 
   rep[['data']][['target_disease']] <- data.frame()
   rep[['data']][['ppi']] <- list()
@@ -105,8 +105,9 @@ init_report <- function(title = "Project Title",
 
 #' Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
 #'
-#' @param query character vector with gene identifiers
+#' @param query character vector with gene/query identifiers
 #' @param query_source character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
+#' @param ignore_unknown logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param p_title title of report
 #' @param p_owner name of project owner
 #' @param report_fname filename (prefix) for HTML report and JSON output
@@ -125,11 +126,11 @@ init_report <- function(title = "Project Title",
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
-#' @param format file format of output (html/json)
 #' @export
 #'
 generate_report_data <- function(query,
                             query_source = "symbol",
+                            ignore_unknown = FALSE,
                             p_title = "Project Title",
                             p_owner = "Project Owner",
                             report_fname = "oncoEnrichR_Report",
@@ -138,7 +139,7 @@ generate_report_data <- function(query,
                             background_enrichment_source = "symbol",
                             background_enrichment_description = "All protein-coding genes",
                             p_value_cutoff_enrichment = 0.05,
-                            q_value_cutoff_enrichment = 0.01,
+                            q_value_cutoff_enrichment = 0.2,
                             ppi_add_nodes = 50,
                             ppi_score_threshold = 900,
                             show_ppi = T,
@@ -151,14 +152,21 @@ generate_report_data <- function(query,
                             show_complex = T){
                             #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
   stopifnot(is.character(query))
+  if(length(query) > 200 | length(query) < 10){
+    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 10 query identifiers, and accepts a maximum of 200. Query contained n = ",length(query), " identifiers"))
+    return(NULL)
+  }
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
               query_source == "uniprot_acc" | query_source == "ensembl_gene_id" |
               query_source == "any")
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
+  stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
+  stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
 
   qgenes_match <-
     oncoEnrichR::verify_query_genes(query,
                                     qsource = query_source,
+                                    ignore_unknown = ignore_unknown,
                                     genedb = oncoEnrichR::genedb,
                                     uniprot_acc = oncoEnrichR::uniprot_xref)
 
@@ -174,15 +182,15 @@ generate_report_data <- function(query,
     if(background_genes_match[['success']] == -1){
       return(-1)
     }
-    background_entrez <- background_genes_match[['found']]$entrezgene
+    background_entrez <- unique(background_genes_match[['found']]$entrezgene)
   }
 
   if(qgenes_match[['success']] == -1){
     return(-1)
   }
 
-  query_entrezgene <- qgenes_match[['found']]$entrezgene
-  query_symbol <- qgenes_match[['found']]$symbol
+  query_entrezgene <- unique(qgenes_match[['found']]$entrezgene)
+  query_symbol <- unique(qgenes_match[['found']]$symbol)
 
   onc_rep <- init_report(title = p_title,
                          project_owner = p_owner,
@@ -201,9 +209,9 @@ generate_report_data <- function(query,
 
   if(length(query_symbol) > 30){
     onc_rep[['config']][['tcga_aberration']][['plot_height']] <-
-      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 10)
+      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 9.5)
     onc_rep[['config']][['co_expression_gtex']][['plot_height']] <-
-      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 10)
+      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 9.5)
   }
 
   if(!is.null(background_fname)){
