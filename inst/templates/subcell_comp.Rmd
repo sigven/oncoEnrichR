@@ -33,7 +33,7 @@ crosstalk::bscols(
 )
 
 ```
-<br><br>
+<br><br><br>
 
 #### By Compartment
 
@@ -46,7 +46,7 @@ DT::datatable(onc_enrich_report[['data']][['subcellcomp']][['grouped']], escape 
 
 
 ```
-<br><br>
+<br><br><br>
 
 
 

@@ -68,7 +68,10 @@ tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site", v
   zero_frequency_genes <- dplyr::anti_join(gene_candidates_init, gene_aberrations, by=c("symbol","primary_site","variant_type")) %>%
     #dplyr::select(-c(tot_samples,samples_mutated)) %>%
     dplyr::left_join(site_stats_zero,by=c("primary_site"))
-  gene_aberrations <- dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes), pancan_order,by=c("symbol"))
+  gene_aberrations <- dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes), pancan_order,by=c("symbol")) %>%
+    dplyr::mutate(pancancer_percent_mutated = dplyr::if_else(is.na(pancancer_percent_mutated),
+                                                             as.numeric(0),
+                                                             as.numeric(pancancer_percent_mutated)))
 
 
   gene_aberrations <- gene_aberrations %>%
@@ -107,7 +110,7 @@ tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site", v
       plot.background = ggplot2::element_blank(),
       #remove plot border
       panel.border = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+      axis.text.x = ggplot2::element_text(angle = 55, hjust = 1))
 
   return(p)
 }
@@ -139,7 +142,7 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
     dplyr::distinct() %>%
     dplyr::mutate(gene = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
     dplyr::select(-c(entrezgene,symbol)) %>%
-    dplyr::select(gene,primary_site,primary_diagnosis,variant_type,dplyr::everything())
+    dplyr::select(gene,primary_site,primary_diagnosis,variant_type,percent_mutated, dplyr::everything())
 
   return(aberration_data)
 }

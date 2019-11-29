@@ -1,5 +1,12 @@
-get_go_enrichment <- function(query_entrez, background_entrez = NULL, ontology = "MF", genedb = NULL, p_value_cutoff = 0.05,
-                              q_value_cutoff = 0.2, minGSSize = 10, pool = F){
+get_go_enrichment <- function(query_entrez,
+                              background_entrez = NULL,
+                              ontology = "MF",
+                              genedb = NULL,
+                              p_value_cutoff = 0.05,
+                              q_value_cutoff = 0.2,
+                              p_value_adjustment_method = "BH",
+                              minGSSize = 10,
+                              pool = F){
 
   rlogging::message(paste0("Enrichment - GO: performing gene enrichment analysis of query set (subontology ",ontology,")"))
   rlogging::message(paste0("Enrichment - GO: Settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
@@ -21,7 +28,7 @@ get_go_enrichment <- function(query_entrez, background_entrez = NULL, ontology =
                                    OrgDb         = org.Hs.eg.db,
                                    ont           = ontology,
                                    minGSSize     = minGSSize,
-                                   pAdjustMethod = "BH",
+                                   pAdjustMethod = p_value_adjustment_method,
                                    pvalueCutoff  = p_value_cutoff,
                                    qvalueCutoff  = q_value_cutoff,
                                    universe      = background_entrez,
@@ -72,8 +79,17 @@ get_go_enrichment <- function(query_entrez, background_entrez = NULL, ontology =
 }
 
 
-get_universal_enrichment <- function(query_entrez, background_entrez = NULL, genedb = NULL, p_value_cutoff = 0.05, minGSSize = 10,
-                                     q_value_cutoff = 0.2, TERM2GENE = NULL, TERM2NAME = NULL, TERM2SOURCE = NULL, dbsource = ""){
+get_universal_enrichment <- function(query_entrez,
+                                     background_entrez = NULL,
+                                     genedb = NULL,
+                                     p_value_cutoff = 0.05,
+                                     p_value_adjustment_method = "BH",
+                                     minGSSize = 10,
+                                     q_value_cutoff = 0.2,
+                                     TERM2GENE = NULL,
+                                     TERM2NAME = NULL,
+                                     TERM2SOURCE = NULL,
+                                     dbsource = ""){
 
   rlogging::message(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of query set"))
   rlogging::message(paste0("Enrichment - ",dbsource,": Settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
@@ -94,7 +110,7 @@ get_universal_enrichment <- function(query_entrez, background_entrez = NULL, gen
   }
   enr <- clusterProfiler::enricher(gene          = query_entrez,
                                    universe      = background_entrez,
-                                   pAdjustMethod = "BH",
+                                   pAdjustMethod = p_value_adjustment_method,
                                    minGSSize     = minGSSize,
                                    pvalueCutoff  = p_value_cutoff,
                                    qvalueCutoff  = q_value_cutoff,

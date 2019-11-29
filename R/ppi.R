@@ -19,6 +19,10 @@ get_network_hubs <- function(edges = NULL, nodes = NULL, genedb = NULL){
     dplyr::select(symbol, name, hub_score) %>%
     dplyr::distinct()
 
+  #closeness_score <- igraph::closeness(d, mode="all")
+  #degree.cent <- centr_degree(d, mode = "all")
+
+
   return(hub_scores)
 }
 
@@ -41,7 +45,7 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
     n <- 1
     while(n <= length(cties)){
       members_community_n <- cties[[n]]
-      community <- dplyr::filter(ppi_edges, preferredName_A %in% members_community_n & preferredName_B %in% members_community_n) %>%
+      community <- dplyr::filter(edges, preferredName_A %in% members_community_n & preferredName_B %in% members_community_n) %>%
         dplyr::mutate(community = n)
 
       edges_communities <- edges_communities %>%

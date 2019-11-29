@@ -5,7 +5,9 @@ init_report <- function(title = "Project Title",
                         ppi_add_nodes = 50,
                         background_enrichment_description = "All protein-coding genes",
                         p_value_cutoff_enrichment = 0.05,
+                        p_value_adjustment_method = "BH",
                         q_value_cutoff_enrichment = 0.2,
+                        minGSSize = 10,
                         show_ppi = T,
                         show_disease = T,
                         show_enrichment = T,
@@ -31,7 +33,7 @@ init_report <- function(title = "Project Title",
   ## logicals indicating which sections/analyses of the report to include
   rep[['config']][['show']] <- list()
   rep[['config']][['show']][['ppi']] <- show_ppi
-  rep[['config']][['show']][['target_disease']] <- show_disease
+  rep[['config']][['show']][['disease']] <- show_disease
   rep[['config']][['show']][['enrichment']] <- show_enrichment
   rep[['config']][['show']][['protein_complex']] <- show_complex
   rep[['config']][['show']][['tcga_aberration']] <- show_tcga_aberration
@@ -46,9 +48,9 @@ init_report <- function(title = "Project Title",
   rep[['config']][['project_background']][['items']] <- data.frame()
 
   ## settings for showing disease associations
-  rep[['config']][['target_disease']] <- list()
-  rep[['config']][['target_disease']][['breaks']] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
-  rep[['config']][['target_disease']][['colors']] <- c("#b8b8ba","#EFF3FF","#C6DBEF","#9ECAE1","#6BAED6","#4292C6","#2171B5","#084594")
+  rep[['config']][['disease']] <- list()
+  rep[['config']][['disease']][['breaks']] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
+  rep[['config']][['disease']][['colors']] <- c("#b8b8ba","#EFF3FF","#C6DBEF","#9ECAE1","#6BAED6","#4292C6","#2171B5","#084594")
 
   ## protein-protein interaction settings
   rep[['config']][['ppi']] <- list()
@@ -63,8 +65,8 @@ init_report <- function(title = "Project Title",
   rep[['config']][['enrichment']] <- list()
   rep[['config']][['enrichment']][['p_value_cutoff']] <- p_value_cutoff_enrichment
   rep[['config']][['enrichment']][['q_value_cutoff']] <- q_value_cutoff_enrichment
-  rep[['config']][['enrichment']][['p_adjust_method']] <- 'BH'
-  rep[['config']][['enrichment']][['min_gs_size']] <- 5
+  rep[['config']][['enrichment']][['p_adjust_method']] <- p_value_adjustment_method
+  rep[['config']][['enrichment']][['min_gs_size']] <- minGSSize
   rep[['config']][['enrichment']][['background_set']] <- background_enrichment_description
 
   ## TCGA/GTex
@@ -73,31 +75,35 @@ init_report <- function(title = "Project Title",
   rep[['config']][['tcga_aberration']] <- list()
   rep[['config']][['tcga_aberration']][['plot_height']] <- 14
 
-  rep[['data']][['target_disease']] <- data.frame()
-  rep[['data']][['ppi']] <- list()
+  for(analysis in c('tcga','disease','ppi','tcga','gtex','enrichment','protein_complex','subcellcomp')){
+    rep[['data']][[analysis]] <- list()
+  }
+
+  rep[['data']][['disease']][['target']] <- data.frame()
+  rep[['data']][['disease']][['target_assoc']] <- data.frame()
+  rep[['data']][['disease']][['assoc_pr_gene']] <- list()
   rep[['data']][['ppi']][['complete_network']] <- NULL
   rep[['data']][['ppi']][['hubscores']] <- data.frame()
   rep[['data']][['ppi']][['community_network']] <- NULL
-  rep[['data']][['enrichment']] <- list()
   for(c in c('go','msigdb','wikipathwaydb','keggdb')){
     rep[['data']][['enrichment']][[c]] <- data.frame()
   }
 
-  rep[['data']][['co_expression_gtex']] <- list()
-  rep[['data']][['co_expression_gtex']][['plots']] <- NULL
-  rep[['data']][['co_expression_gtex']][['df']] <- data.frame()
-  rep[['data']][['co_expression_tcga']] <- data.frame()
-  rep[['data']][['protein_complex']] <- data.frame()
-  rep[['data']][['subcellcomp']] <- list()
+  rep[['data']][['gtex']][['co_expression']] <- list()
+  rep[['data']][['gtex']][['co_expression']][['plots']] <- NULL
+  rep[['data']][['gtex']][['co_expression']][['df']] <- data.frame()
+  rep[['data']][['tcga']][['co_expression']] <- data.frame()
+  rep[['data']][['protein_complex']][['complex']] <- data.frame()
   rep[['data']][['subcellcomp']][['all']] <- data.frame()
   rep[['data']][['subcellcomp']][['grouped']] <- data.frame()
-  rep[['data']][['tcga_aberration']] <- list()
-  rep[['data']][['tcga_aberration']][['table']] <- list()
-  rep[['data']][['tcga_aberration']][['plot']] <- list()
+
+  rep[['data']][['tcga']][['aberration']] <- list()
+  rep[['data']][['tcga']][['aberration']][['table']] <- list()
+  rep[['data']][['tcga']][['aberration']][['plot']] <- list()
 
   for(v in c('cna_homdel','cna_ampl')){
-    rep[['data']][['tcga_aberration']][['plot']][[v]] <- NULL
-    rep[['data']][['tcga_aberration']][['table']][[v]] <- data.frame()
+    rep[['data']][['tcga']][['aberration']][['plot']][[v]] <- NULL
+    rep[['data']][['tcga']][['aberration']][['table']][[v]] <- data.frame()
   }
 
   return(rep)
@@ -116,7 +122,9 @@ init_report <- function(title = "Project Title",
 #' @param background_enrichment_source character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 #' @param background_enrichment_description character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
 #' @param p_value_cutoff_enrichment cutoff p-value for enrichment analysis
+#' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
+#' @param minGSSize minimal size of genes annotated by ontology term for testing
 #' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network
 #' @param ppi_score_threshold minimum score (total) for included protein-protein interactions
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
@@ -128,30 +136,33 @@ init_report <- function(title = "Project Title",
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
 #' @export
 #'
-generate_report_data <- function(query,
-                            query_source = "symbol",
-                            ignore_unknown = FALSE,
-                            p_title = "Project Title",
-                            p_owner = "Project Owner",
-                            report_fname = "oncoEnrichR_Report",
-                            background_fname = NULL,
-                            background_enrichment = NULL,
-                            background_enrichment_source = "symbol",
-                            background_enrichment_description = "All protein-coding genes",
-                            p_value_cutoff_enrichment = 0.05,
-                            q_value_cutoff_enrichment = 0.2,
-                            ppi_add_nodes = 50,
-                            ppi_score_threshold = 900,
-                            show_ppi = T,
-                            show_disease = T,
-                            show_enrichment = T,
-                            show_tcga_aberration = T,
-                            show_tcga_coexpression = T,
-                            show_subcell_comp = T,
-                            #show_gtex_coexp = F,
-                            show_complex = T){
-                            #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
+onco_enrich <- function(query,
+                   query_source = "symbol",
+                   ignore_unknown = FALSE,
+                   p_title = "Project Title",
+                   p_owner = "Project Owner",
+                   report_fname = "oncoEnrichR_Report",
+                   background_fname = NULL,
+                   background_enrichment = NULL,
+                   background_enrichment_source = "symbol",
+                   background_enrichment_description = "All protein-coding genes",
+                   p_value_cutoff_enrichment = 0.05,
+                   p_value_adjustment_method = "BH",
+                   q_value_cutoff_enrichment = 0.2,
+                   minGSSize = 10,
+                   ppi_add_nodes = 50,
+                   ppi_score_threshold = 900,
+                   show_ppi = T,
+                   show_disease = T,
+                   show_enrichment = T,
+                   show_tcga_aberration = T,
+                   show_tcga_coexpression = T,
+                   show_subcell_comp = T,
+                   #show_gtex_coexp = F,
+                   show_complex = T){
+  #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
   stopifnot(is.character(query))
+  stopifnot(p_value_adjustment_method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))
   if(length(query) > 200 | length(query) < 10){
     rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 10 query identifiers, and accepts a maximum of 200. Query contained n = ",length(query), " identifiers"))
     return(NULL)
@@ -205,13 +216,14 @@ generate_report_data <- function(query,
                          show_subcell_comp = show_subcell_comp,
                          background_enrichment_description = background_enrichment_description,
                          p_value_cutoff_enrichment = p_value_cutoff_enrichment,
+                         p_value_adjustment_method = p_value_adjustment_method,
                          q_value_cutoff_enrichment = q_value_cutoff_enrichment)
 
   if(length(query_symbol) > 30){
     onc_rep[['config']][['tcga_aberration']][['plot_height']] <-
-      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 9.5)
+      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 8.5)
     onc_rep[['config']][['co_expression_gtex']][['plot_height']] <-
-      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 9.5)
+      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 8.5)
   }
 
   if(!is.null(background_fname)){
@@ -225,7 +237,7 @@ generate_report_data <- function(query,
 
 
   if(show_disease == T){
-    onc_rep[['data']][['target_disease']] <-
+    onc_rep[['data']][['disease']][['target']] <-
       oncoEnrichR::target_disease_associations(query_symbol, genedb = oncoEnrichR::genedb)
   }
 
@@ -237,6 +249,7 @@ generate_report_data <- function(query,
                                   minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
                                   q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                   p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
+                                  p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
                                   ontology = subcat,
                                   genedb = oncoEnrichR::genedb)
         if(!is.null(enr)){
@@ -252,6 +265,7 @@ generate_report_data <- function(query,
                                          minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
                                          q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                          p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
+                                         p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
                                          TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
                                          TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
                                          TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
@@ -274,6 +288,7 @@ generate_report_data <- function(query,
                               minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
                               q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                               p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
+                              p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
                               TERM2GENE = oncoEnrichR::wikipathwaydb$TERM2GENE,
                               TERM2NAME = oncoEnrichR::wikipathwaydb$TERM2NAME,
                               TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
@@ -287,6 +302,7 @@ generate_report_data <- function(query,
                                           minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
                                           q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                           p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
+                                          p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
                                           TERM2GENE = oncoEnrichR::keggdb$TERM2GENE,
                                           TERM2NAME = oncoEnrichR::keggdb$TERM2NAME,
                                           TERM2SOURCE = oncoEnrichR::keggdb$TERM2SOURCE,
@@ -309,7 +325,7 @@ generate_report_data <- function(query,
   }
 
   if(show_complex == T){
-    onc_rep[['data']][['protein_complex']] <-
+    onc_rep[['data']][['protein_complex']][['complex']] <-
       oncoEnrichR::annotate_protein_complex(query_symbol,
                                             genedb = oncoEnrichR::genedb,
                                             corum_db = oncoEnrichR::corumdb,
@@ -330,15 +346,15 @@ generate_report_data <- function(query,
 
   if(show_tcga_aberration == T){
     for(v in c('cna_homdel','cna_ampl')){
-      onc_rep[['data']][['tcga_aberration']][['plot']][[v]] <-
+      onc_rep[['data']][['tcga']][['aberration']][['plot']][[v]] <-
         oncoEnrichR::tcga_aberration_plot(query_entrezgene, qsource = "entrezgene", genedb = oncoEnrichR::genedb, vtype = v)
-      onc_rep[['data']][['tcga_aberration']][['table']][[v]] <-
+      onc_rep[['data']][['tcga']][['aberration']][['table']][[v]] <-
         oncoEnrichR::tcga_aberration_table(query_entrezgene, qsource = "entrezgene", genedb = oncoEnrichR::genedb, vtype = v)
     }
   }
 
   if(show_tcga_coexpression == T){
-    onc_rep[['data']][['co_expression_tcga']] <-
+    onc_rep[['data']][['tcga']][['co_expression']] <-
       oncoEnrichR::tcga_co_expression(query_symbol, genedb = oncoEnrichR::genedb)
   }
 
@@ -348,13 +364,13 @@ generate_report_data <- function(query,
 
 #' Function that writes the contents in the oncoEnrichR report object to an interactive HTML report
 #'
-#' @param report object with oncoEnrichR report data (returned by oncoEnrichR::generate_report)
+#' @param report object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)
 #' @param project_directory working directory
 #' @param report_name filename for report
 #' @param format file format of output (html/json)
 #' @export
 
-write_report <- function(report, project_directory, report_name, format = 'html'){
+write <- function(report, project_directory, report_name, format = 'html'){
 
   outfname <- list()
   outfname[['html']] <- paste(report_name,"html",sep=".")

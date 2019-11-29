@@ -14,7 +14,7 @@
 show_opentargets <- FALSE
 missing_opentargets <- TRUE
 
-if(nrow(onc_enrich_report[['data']][['target_disease']]$target) > 0){
+if(nrow(onc_enrich_report[['data']][['disease']][['target']]$target) > 0){
   show_opentargets <- TRUE
   missing_opentargets <- FALSE
 }
@@ -25,7 +25,7 @@ if(nrow(onc_enrich_report[['data']][['target_disease']]$target) > 0){
 ```{r table_browse_targets, echo=F, results = "asis", eval = show_opentargets}
 library(crosstalk)
 
-targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['target_disease']]$target)
+targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['disease']][['target']]$target)
 
 crosstalk::bscols(
   list(
@@ -44,7 +44,7 @@ htmltools::br()
 crosstalk::bscols(
   DT::datatable(targets_shared, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
     options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle("symbol","ot_cancer_rank", color = "white", backgroundColor = DT::styleInterval(onc_enrich_report[['config']][['target_disease']][['breaks']], onc_enrich_report[['config']][['target_disease']][['colors']]))
+  DT::formatStyle("symbol","ot_cancer_rank", color = "white", backgroundColor = DT::styleInterval(onc_enrich_report[['config']][['disease']][['breaks']], onc_enrich_report[['config']][['disease']][['colors']]))
 )
 
 

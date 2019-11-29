@@ -22,9 +22,9 @@ The **oncoEnrichR** package is intended for exploratory analysis and prioritizat
 
 _oncoEnrichR_ works in two basic steps through the following two methods:
 
-   __1.__ `generate_report_data`
+   __1.__ `onco_enrich`
   * Takes an input list of human gene/protein identifiers and performs various types of annotations, frequency calculations, and enrichment analyses. Currently acceptable input formats are HGNC symbols, UniProt accessions, Ensembl and Entrez gene identifiers. Returns a *list object* with all contents of the analyses performed
 
-  __2.__ `write_report`
+  __2.__ `write`
 
 * takes the contents of the report object retrieved in _1)_ to assemble a structured and interactive _oncoEnrichR_ HTML report

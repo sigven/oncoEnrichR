@@ -10,13 +10,13 @@
 
 
 <br><br>
-```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13}
-onc_enrich_report[['data']][['tcga_aberration']][['plot']][['cna_ampl']]
+```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13.5}
+onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_ampl']]
 
 ```
 <br><br>
-```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13}
-onc_enrich_report[['data']][['tcga_aberration']][['plot']][['cna_homdel']]
+```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13.5}
+onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_homdel']]
 
 ```
 <br><br>
@@ -28,8 +28,8 @@ onc_enrich_report[['data']][['tcga_aberration']][['plot']][['cna_homdel']]
 
 show_tcga_freqs <- FALSE
 missing_tcga_freqs <- TRUE
-all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_homdel']],
-                                       onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_ampl']])
+all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']],
+                                       onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']])
 
 if(nrow(all_targets_vtypes) > 0){
   show_tcga_freqs <- TRUE
@@ -42,8 +42,8 @@ if(nrow(all_targets_vtypes) > 0){
 ```{r table_browse_tcga_freqs, echo=F, results = "asis", eval = show_tcga_freqs}
 library(crosstalk)
 
-all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_homdel']],
-                                       onc_enrich_report[['data']][['tcga_aberration']][['table']][['cna_ampl']]) %>%
+all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']],
+                                       onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]) %>%
   dplyr::arrange(desc(percent_mutated))
 targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 
@@ -62,8 +62,12 @@ crosstalk::bscols(
 htmltools::br()
 crosstalk::bscols(
   DT::datatable(targets_tcga, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
+    options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
+      # DT::formatStyle('percent_mutated',
+      #                 background = DT::styleColorBar(targets_tcga$percent_mutated, 'steelblue', angle = -90),
+      #                 backgroundSize = '100% 90% 80% 70% 60% 50% 40% 30% 20% 10% 0%',
+      #                 backgroundRepeat = 'no-repeat',
+      #                 backgroundPosition = 'center')
 )
 
 ```

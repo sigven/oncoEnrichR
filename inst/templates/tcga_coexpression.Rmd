@@ -19,7 +19,7 @@ for(n in c('Positive','Negative')){
     missing_tcga_coexp[[n]] <- FALSE
     coexp_data[[n]] <- data.frame()
   
-    coexp_data[[n]] <- onc_enrich_report[['data']][['co_expression_tcga']] %>% 
+    coexp_data[[n]] <- onc_enrich_report[['data']][['tcga']][['co_expression']] %>% 
       dplyr::filter(corrtype == n)
   
     if(nrow(coexp_data[[n]]) == 0){
@@ -62,12 +62,14 @@ crosstalk::bscols(
 )
 
 ```
-<br><br>
+
 
 ```{r coexp_missing_positive, echo=F, results = 'asis', eval = missing_tcga_coexp[['Positive']]}
 cat('<i>No genes in target set with positive correlations to other genes</i>',sep='\n')
 cat('\n')
 ```
+
+<br><br><br>
 
 
 #### Negative correlation
@@ -108,3 +110,4 @@ cat('<i>No genes in target set with negative correlation to other genes</i>',sep
 cat('\n')
 ```
 
+<br><br><br>

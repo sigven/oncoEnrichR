@@ -9,7 +9,7 @@
 
 htmltools::br()
 crosstalk::bscols(
-  DT::datatable(onc_enrich_report[['data']][['protein_complex']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+  DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
     options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
   )
 )
