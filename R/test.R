@@ -100,5 +100,5 @@
 #   janitor::clean_names() %>%
 #   dplyr::select(accession) %>%
 #   dplyr::inner_join(oncoEnrichR::uniprot_xref,by=c("accession" = "uniprot_acc"))
-#
+# #
 # gene_enrich_report <- oncoEnrichR::generate_report_data(axl_hits$symbol, p_title="AxlStenmark", p_owner = "Harald Stenmark/Stenmark lab (Polen collaboration)",background_fname = "/Users/sigven/research/cancell/stenmark/project_background_axl.txt")
