@@ -22,11 +22,13 @@ onco_enrich(
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
   show_ppi = T,
+  show_drugs_in_ppi = F,
   show_disease = T,
   show_enrichment = T,
   show_tcga_aberration = T,
   show_tcga_coexpression = T,
   show_subcell_comp = T,
+  show_crispr_lof = T,
   show_complex = T
 )
 }
@@ -65,6 +67,8 @@ onco_enrich(
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 
+\item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network}
+
 \item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
 
 \item{show_enrichment}{logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)}
@@ -74,6 +78,8 @@ onco_enrich(
 \item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes}
 
 \item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations from ComPPI}
+
+\item{show_crispr_lof}{logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens}
 
 \item{show_complex}{logical indicating if report should list proteins in known protein complexes}
 }
