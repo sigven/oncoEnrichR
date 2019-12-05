@@ -1,6 +1,6 @@
 exportPattern("^[[:alpha:]]+")
 
-export(generate_report_data)
-export(write_report)
+export(onco_enrich)
+export(write)
 importFrom(magrittr,"%>%")
 import(org.Hs.eg.db)
