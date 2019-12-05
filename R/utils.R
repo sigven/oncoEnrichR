@@ -113,6 +113,14 @@ validate_db_df <- function(df, dbtype = "genedb"){
     }
   }
 
+  if(dbtype == "projectscoredb"){
+    for(var in c('symbol','model_name','loss_of_fitness','model_id','model_id_cmp','synonyms',
+                 'model_type','tissue','cancer_type','cancer_type_detail',
+                 'sample_site','gender','ethnicity')){
+      stopifnot(var %in% colnames(df))
+    }
+  }
+
   if(dbtype == "ppi_edges"){
     for(var in c('preferredName_A','preferredName_B','entrezgene_a',
                  'entrezgene_b','p_oncogene_A','p_oncogene_B','tsgene_A','tsgene_B','tcga_driver_A',

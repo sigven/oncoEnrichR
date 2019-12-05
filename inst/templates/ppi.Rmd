@@ -4,6 +4,7 @@
   * Note that interactions in STRING are assembled from multiple sources, including co-expression, co-occurrence in the literature, experimental data, curated databases etc
   * In addition to potential interactions within the target set, the network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['stringdb']][['add_nodes']]`__ proteins that interact with proteins in the target set
   * Network is here restricted to interactions with __STRING association score >= `r onc_enrich_report[['config']][['ppi']][['stringdb']][['minimum_score']]`__ (range 0-1000))
+  * Drugs added to the network: __`r onc_enrich_report[['config']][['ppi']][['stringdb']][['show_drugs']]`__ 
   * Three different views are shown
     * Complete protein-protein interaction network, also showing proteins with no known interactions
     * Network community structures, as detected by the fast greedy modularity optimization algorithm by [Clauset et al.](http://www.arxiv.org/abs/cond-mat/0408187)
@@ -16,6 +17,7 @@
   * Tumor suppressor genes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highlighted in <span style="color:firebrick"><b>red</b></span>
   * Proto-oncogenes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highligted in <span style="color:darkolivegreen"><b>green</b></span>
   * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highligted in <span style="color:black"><b>black</b></span>
+  * Targeted drugs (from [Open Targets Platform](https://targetvalidation.org)) are highlighted in <span style="color:orange"><b>orange</b></span>
   
 
 <br><br>

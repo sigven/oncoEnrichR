@@ -9,11 +9,13 @@ init_report <- function(title = "Project Title",
                         q_value_cutoff_enrichment = 0.2,
                         minGSSize = 10,
                         show_ppi = T,
+                        show_drugs_in_ppi = T,
                         show_disease = T,
                         show_enrichment = T,
                         show_tcga_aberration = T,
                         show_tcga_coexpression = T,
                         show_subcell_comp = T,
+                        show_crispr_lof = T,
                         #show_gtex_coexp = F,
                         show_complex = T){
 
@@ -39,6 +41,7 @@ init_report <- function(title = "Project Title",
   rep[['config']][['show']][['tcga_aberration']] <- show_tcga_aberration
   rep[['config']][['show']][['tcga_coexpression']] <- show_tcga_coexpression
   rep[['config']][['show']][['subcellcomp']] <- show_subcell_comp
+  rep[['config']][['show']][['loss_of_fitness']] <- show_crispr_lof
   #rep[['config']][['show']][['gtex_coexp']] <- show_gtex_coexp
 
   ## report metadata - project owner, background, title
@@ -52,12 +55,18 @@ init_report <- function(title = "Project Title",
   rep[['config']][['disease']][['breaks']] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   rep[['config']][['disease']][['colors']] <- c("#b8b8ba","#EFF3FF","#C6DBEF","#9ECAE1","#6BAED6","#4292C6","#2171B5","#084594")
 
+
+  ## settings for crispr loss-of-fitness
+  rep[['config']][['loss_of_fitness']] <- list()
+  rep[['config']][['loss_of_fitness']][['plot_height']] <- 10
+
   ## protein-protein interaction settings
   rep[['config']][['ppi']] <- list()
   rep[['config']][['ppi']][['stringdb']] <- list()
   rep[['config']][['ppi']][['stringdb']][['minimum_score']] <- ppi_min_string_score
   rep[['config']][['ppi']][['stringdb']][['visnetwork_shape']] <- 'dot'
   rep[['config']][['ppi']][['stringdb']][['visnetwork_shadow']] <- T
+  rep[['config']][['ppi']][['stringdb']][['show_drugs']] <- show_drugs_in_ppi
   rep[['config']][['ppi']][['stringdb']][['add_nodes']] <- ppi_add_nodes
   rep[['config']][['ppi']][['stringdb']][['query_type']] <- 'network'
 
@@ -75,7 +84,7 @@ init_report <- function(title = "Project Title",
   rep[['config']][['tcga_aberration']] <- list()
   rep[['config']][['tcga_aberration']][['plot_height']] <- 14
 
-  for(analysis in c('tcga','disease','ppi','tcga','gtex','enrichment','protein_complex','subcellcomp')){
+  for(analysis in c('tcga','disease','ppi','tcga','gtex','enrichment','protein_complex','subcellcomp','loss_of_fitness')){
     rep[['data']][[analysis]] <- list()
   }
 
@@ -88,6 +97,10 @@ init_report <- function(title = "Project Title",
   for(c in c('go','msigdb','wikipathwaydb','keggdb')){
     rep[['data']][['enrichment']][[c]] <- data.frame()
   }
+
+  rep[['data']][['loss_of_fitness']][['plot']] <- NULL
+  rep[['data']][['loss_of_fitness']][['df']] <- data.frame()
+  rep[['data']][['loss_of_fitness']][['n_genes_with_hits']] <- 0
 
   rep[['data']][['gtex']][['co_expression']] <- list()
   rep[['data']][['gtex']][['co_expression']][['plots']] <- NULL
@@ -128,11 +141,13 @@ init_report <- function(title = "Project Title",
 #' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network
 #' @param ppi_score_threshold minimum score (total) for included protein-protein interactions
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
+#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
+#' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
 #' @export
 #'
@@ -153,18 +168,20 @@ onco_enrich <- function(query,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
                    show_ppi = T,
+                   show_drugs_in_ppi = F,
                    show_disease = T,
                    show_enrichment = T,
                    show_tcga_aberration = T,
                    show_tcga_coexpression = T,
                    show_subcell_comp = T,
+                   show_crispr_lof = T,
                    #show_gtex_coexp = F,
                    show_complex = T){
   #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
   stopifnot(is.character(query))
   stopifnot(p_value_adjustment_method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))
-  if(length(query) > 200 | length(query) < 10){
-    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 10 query identifiers, and accepts a maximum of 200. Query contained n = ",length(query), " identifiers"))
+  if(length(query) > 200 | length(query) < 20){
+    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query identifiers, and accepts a maximum of 200. Query contained n = ",length(query), " identifiers"))
     return(NULL)
   }
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
@@ -207,10 +224,12 @@ onco_enrich <- function(query,
                          project_owner = p_owner,
                          ppi_add_nodes = ppi_add_nodes,
                          show_ppi = show_ppi,
+                         show_drugs_in_ppi = show_drugs_in_ppi,
                          show_disease = show_disease,
                          show_enrichment = show_enrichment,
                          show_tcga_aberration = show_tcga_aberration,
                          show_tcga_coexpression = show_tcga_coexpression,
+                         show_crispr_lof = show_crispr_lof,
                          #show_gtex_coexp = show_gtex_coexp,
                          show_complex = show_complex,
                          show_subcell_comp = show_subcell_comp,
@@ -219,12 +238,14 @@ onco_enrich <- function(query,
                          p_value_adjustment_method = p_value_adjustment_method,
                          q_value_cutoff_enrichment = q_value_cutoff_enrichment)
 
-  if(length(query_symbol) > 30){
+  if(length(query_symbol) > 20){
     onc_rep[['config']][['tcga_aberration']][['plot_height']] <-
-      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 8.5)
+      onc_rep[['config']][['tcga_aberration']][['plot_height']] + as.integer((length(query_symbol) - 20)/ 8.5)
     onc_rep[['config']][['co_expression_gtex']][['plot_height']] <-
-      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 30)/ 8.5)
+      onc_rep[['config']][['co_expression_gtex']][['plot_height']] + as.integer((length(query_symbol) - 20)/ 8.5)
   }
+
+
 
   if(!is.null(background_fname)){
     if(file.exists(background_fname)){
@@ -321,6 +342,7 @@ onco_enrich <- function(query,
       oncoEnrichR::get_ppi_network(query_entrezgene,
                                    ppi_source = 'STRING',
                                    genedb = oncoEnrichR::genedb,
+                                   cancerdrugdb = oncoEnrichR::cancerdrugdb,
                                    settings = onc_rep[['config']][['ppi']][['stringdb']])
   }
 
@@ -341,6 +363,16 @@ onco_enrich <- function(query,
      onc_rep[['data']][['subcellcomp']][['all']] <- subcellcomp_annotations[['all']]
      onc_rep[['data']][['subcellcomp']][['grouped']] <- subcellcomp_annotations[['grouped']]
 
+  }
+
+  if(show_crispr_lof == T){
+    onc_rep[['data']][['loss_of_fitness']] <-
+      oncoEnrichR::get_crispr_lof_scores(query_symbol, projectscoredb = oncoEnrichR::projectscoredb)
+
+    if(onc_rep[['data']][['loss_of_fitness']][['n_genes_with_hits']] >= 20){
+      onc_rep[['config']][['loss_of_fitness']][['plot_height']]  <-
+        onc_rep[['config']][['loss_of_fitness']][['plot_height']] + as.integer((onc_rep[['data']][['loss_of_fitness']][['n_genes_with_hits']] - 20)/8.5)
+    }
   }
 
 

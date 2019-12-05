@@ -65,10 +65,11 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
   return(community_structure)
 }
 
-get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settings = NULL){
+get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, cancerdrugdb = NULL, settings = NULL){
 
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(cancerdrugdb))
   stopifnot(settings$query_type == 'interaction_partners' | settings$query_type == 'network')
   oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
 
@@ -143,11 +144,36 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, settin
     dplyr::mutate(color.border = 'black', color.highlight.background = 'orange', color.highlight.border = 'darkred', font.color = 'white') %>%
     dplyr::mutate(font.color = dplyr::if_else(query_node == T | color.background == "mistyrose","black",as.character(font.color),as.character(font.color)))
 
+  nodes_with_drugs <- all_nodes
+  edges_with_drugs <- all_edges
+
+  if(settings$show_drugs == T){
+    drug_target_ids <- dplyr::inner_join(dplyr::select(all_nodes, id), dplyr::select(cancerdrugdb$edges, from), by = c("id" = "from")) %>%
+      dplyr::distinct()
+
+    if(nrow(drug_target_ids) > 0){
+      drug_edges <- dplyr::inner_join(cancerdrugdb$edges, drug_target_ids, by = c("from" = "id"))
+      drug_nodes <- drug_edges %>%
+        dplyr::select(-from) %>%
+        dplyr::inner_join(cancerdrugdb$nodes, by = c("to" = "id")) %>%
+        dplyr::rename(id = to) %>%
+        dplyr::distinct()
+
+      nodes_with_drugs <- dplyr::bind_rows(all_nodes, drug_nodes)
+      edges_with_drugs <- dplyr::bind_rows(all_edges, drug_edges)
+
+    }
+  }
+
   network <- list()
   network[['source']] <- ppi_source
   network[['complete_network']] <- list()
   network[['complete_network']][['nodes']] <- all_nodes
   network[['complete_network']][['edges']] <- all_edges
+  if(settings$show_drugs == T){
+    network[['complete_network']][['nodes']] <- nodes_with_drugs
+    network[['complete_network']][['edges']] <- edges_with_drugs
+  }
   network[['community_network']] <- oncoEnrichR::get_network_communities(edges = all_edges, nodes = all_nodes)
   network[['hubscores']] <- oncoEnrichR::get_network_hubs(edges = all_edges, nodes = all_nodes, genedb = genedb)
 
