@@ -1,10 +1,17 @@
 Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
-Version: 0.4.1
+Version: 0.4.2
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
-Description: oncoEnrichR performs annotation and prioritization of genesets discovered from high-throughput experiments in cancer biology.
+URL: https://github.com/sigven/oncoEnrichR
+BugReports: https://github.com/sigven/oncoEnrichR/issues
+Description: oncoEnrichR performs annotation and prioritization of genesets discovered from high-throughput experiments in 
+    cancer biology. The tool queries a number of high-quality resources, including Project Score (cellular fitness in genome-scale
+    drop-out screens), Open Targets Platform (comprehensive target-drug and target-disease associations), TCGA (genetic aberrations
+    and gene expression patterns in tumor samples), STRING (protein-protein interaction networks), CORUM (protein complexes),
+    COMPPI (subcellular compartments), and Gene Ontology/MSigDB/REACTOME/KEGG (functional enrichment/over-representation analysis
+    with respect to gene function and cellular pathways)
 Depends: 
     R (>= 3.5)
 Imports: tidyverse (>= 1.3.0), visNetwork (>= 2.0.8), plotly (>= 4.9.1), pals (>= 1.5)

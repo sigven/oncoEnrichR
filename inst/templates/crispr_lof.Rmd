@@ -2,7 +2,7 @@
 
 * In [Project Score](https://score.depmap.sanger.ac.uk/), systematic genome-scale CRISPR/Cas9 drop-out screens are performed in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
 * Here, we are showing, across the main human tissue types:
-   * Genes in the target set that are annotated with [negative fitness scores]() in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
+   * Genes in the target set that are annotated with a [statistically significant effect on cell fitness](https://score.depmap.sanger.ac.uk/documentation) in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
 
 <br><br>
 

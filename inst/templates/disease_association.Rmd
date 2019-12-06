@@ -4,6 +4,7 @@
    * Known disease associations established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
    * Target druggability (aka [_target tractability_](https://docs.targetvalidation.org/getting-started/target-tractability) )
    * Status wrt. roles as tumor suppressors/proto-oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource
+   * Target genes are colored in varying shades of blue according to their level of association to cancer  
    
 <br><br>
 

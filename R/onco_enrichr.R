@@ -7,7 +7,9 @@ init_report <- function(title = "Project Title",
                         p_value_cutoff_enrichment = 0.05,
                         p_value_adjustment_method = "BH",
                         q_value_cutoff_enrichment = 0.2,
-                        minGSSize = 10,
+                        min_geneset_size = 10,
+                        max_geneset_size = 500,
+                        simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
                         show_disease = T,
@@ -53,8 +55,9 @@ init_report <- function(title = "Project Title",
   ## settings for showing disease associations
   rep[['config']][['disease']] <- list()
   rep[['config']][['disease']][['breaks']] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
-  rep[['config']][['disease']][['colors']] <- c("#b8b8ba","#EFF3FF","#C6DBEF","#9ECAE1","#6BAED6","#4292C6","#2171B5","#084594")
-
+  rep[['config']][['disease']][['colors']] <- c("#b8b8ba","#EFF3FF","#C6DBEF",
+                                                "#9ECAE1","#6BAED6","#4292C6",
+                                                "#2171B5","#084594")
 
   ## settings for crispr loss-of-fitness
   rep[['config']][['loss_of_fitness']] <- list()
@@ -75,7 +78,9 @@ init_report <- function(title = "Project Title",
   rep[['config']][['enrichment']][['p_value_cutoff']] <- p_value_cutoff_enrichment
   rep[['config']][['enrichment']][['q_value_cutoff']] <- q_value_cutoff_enrichment
   rep[['config']][['enrichment']][['p_adjust_method']] <- p_value_adjustment_method
-  rep[['config']][['enrichment']][['min_gs_size']] <- minGSSize
+  rep[['config']][['enrichment']][['min_gs_size']] <- min_geneset_size
+  rep[['config']][['enrichment']][['max_gs_size']] <- max_geneset_size
+  rep[['config']][['enrichment']][['simplify_go']] <- simplify_go
   rep[['config']][['enrichment']][['background_set']] <- background_enrichment_description
 
   ## TCGA/GTex
@@ -84,7 +89,8 @@ init_report <- function(title = "Project Title",
   rep[['config']][['tcga_aberration']] <- list()
   rep[['config']][['tcga_aberration']][['plot_height']] <- 14
 
-  for(analysis in c('tcga','disease','ppi','tcga','gtex','enrichment','protein_complex','subcellcomp','loss_of_fitness')){
+  for(analysis in c('tcga','disease','ppi','tcga','gtex','enrichment',
+                    'protein_complex','subcellcomp','loss_of_fitness')){
     rep[['data']][[analysis]] <- list()
   }
 
@@ -129,21 +135,22 @@ init_report <- function(title = "Project Title",
 #' @param ignore_unknown logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param p_title title of report
 #' @param p_owner name of project owner
-#' @param report_fname filename (prefix) for HTML report and JSON output
 #' @param background_fname filename for simple text file with project background information, one line per background item
-#' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment analysis
+#' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
 #' @param background_enrichment_source character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 #' @param background_enrichment_description character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
-#' @param p_value_cutoff_enrichment cutoff p-value for enrichment analysis
+#' @param p_value_cutoff_enrichment cutoff p-value for enrichment/over-representation analysis
 #' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
-#' @param minGSSize minimal size of genes annotated by ontology term for testing
+#' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network
 #' @param ppi_score_threshold minimum score (total) for included protein-protein interactions
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
-#' @param show_enrichment logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)
+#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
@@ -156,7 +163,6 @@ onco_enrich <- function(query,
                    ignore_unknown = FALSE,
                    p_title = "Project Title",
                    p_owner = "Project Owner",
-                   report_fname = "oncoEnrichR_Report",
                    background_fname = NULL,
                    background_enrichment = NULL,
                    background_enrichment_source = "symbol",
@@ -164,7 +170,9 @@ onco_enrich <- function(query,
                    p_value_cutoff_enrichment = 0.05,
                    p_value_adjustment_method = "BH",
                    q_value_cutoff_enrichment = 0.2,
-                   minGSSize = 10,
+                   min_geneset_size = 10,
+                   max_geneset_size = 500,
+                   simplify_go = F,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
                    show_ppi = T,
@@ -230,6 +238,9 @@ onco_enrich <- function(query,
                          show_tcga_aberration = show_tcga_aberration,
                          show_tcga_coexpression = show_tcga_coexpression,
                          show_crispr_lof = show_crispr_lof,
+                         min_geneset_size = min_geneset_size,
+                         max_geneset_size = max_geneset_size,
+                         simplify_go = simplify_go,
                          #show_gtex_coexp = show_gtex_coexp,
                          show_complex = show_complex,
                          show_subcell_comp = show_subcell_comp,
@@ -267,10 +278,12 @@ onco_enrich <- function(query,
       if(c == "C5"){
         enr <- oncoEnrichR::get_go_enrichment(query_entrezgene,
                                   background_entrez = background_entrez,
-                                  minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                  min_geneset_size = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                  max_geneset_size = onc_rep[['config']][['enrichment']][['max_gs_size']],
                                   q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                   p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
                                   p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
+                                  simplify = onc_rep[['config']][['enrichment']][['simplify_go']],
                                   ontology = subcat,
                                   genedb = oncoEnrichR::genedb)
         if(!is.null(enr)){
@@ -283,7 +296,8 @@ onco_enrich <- function(query,
         enr <- oncoEnrichR::get_universal_enrichment(query_entrezgene,
                                          genedb = oncoEnrichR::genedb,
                                          background_entrez = background_entrez,
-                                         minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                         min_geneset_size = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                         max_geneset_size = onc_rep[['config']][['enrichment']][['max_gs_size']],
                                          q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                          p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
                                          p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
@@ -306,7 +320,8 @@ onco_enrich <- function(query,
     oncoEnrichR::get_universal_enrichment(query_entrezgene,
                               genedb = oncoEnrichR::genedb,
                               background_entrez = background_entrez,
-                              minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                              min_geneset_size = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                              max_geneset_size = onc_rep[['config']][['enrichment']][['max_gs_size']],
                               q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                               p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
                               p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
@@ -320,7 +335,8 @@ onco_enrich <- function(query,
     oncoEnrichR::get_universal_enrichment(query_entrezgene,
                                           genedb = oncoEnrichR::genedb,
                                           background_entrez = background_entrez,
-                                          minGSSize = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                          min_geneset_size = onc_rep[['config']][['enrichment']][['min_gs_size']],
+                                          max_geneset_size = onc_rep[['config']][['enrichment']][['max_gs_size']],
                                           q_value_cutoff = onc_rep[['config']][['enrichment']][['q_value_cutoff']],
                                           p_value_cutoff = onc_rep[['config']][['enrichment']][['p_value_cutoff']],
                                           p_value_adjustment_method = onc_rep[['config']][['enrichment']][['p_adjust_method']],
@@ -398,7 +414,7 @@ onco_enrich <- function(query,
 #'
 #' @param report object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)
 #' @param project_directory working directory
-#' @param report_name filename for report
+#' @param report_name prefix filename for report output
 #' @param format file format of output (html/json)
 #' @export
 

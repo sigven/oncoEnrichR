@@ -41,7 +41,7 @@ get_crispr_lof_scores <- function(qgenes, qsource = "symbol", projectscoredb = N
 
     p <- crispr_lof_hits %>%
       dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) %>%
-      ggplot(aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
+      ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::coord_flip() +
       ggplot2::ylab("Number of cell lines with loss-of-fitness in CRISPR/Cas9 drop-out screen") +
@@ -51,7 +51,7 @@ get_crispr_lof_scores <- function(qgenes, qsource = "symbol", projectscoredb = N
       ggplot2::theme(
         panel.grid.minor = ggplot2::element_blank(),
         axis.text = ggplot2::element_text(family = "Helvetica", size = 11),
-        legend.text = ggplot2::element_text(family = "Helvetica", size = 12),
+        legend.text = ggplot2::element_text(family = "Helvetica", size = 11),
         axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
         legend.title = ggplot2::element_blank(),
         #set thickness of axis ticks

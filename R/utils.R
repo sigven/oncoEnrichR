@@ -1,7 +1,7 @@
 verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, genedb = NULL, uniprot_acc = NULL){
 
-  stopifnot(qsource == "symbol" | qsource == "entrezgene" | qsource == "uniprot_acc" |
-            qsource == "ensembl_gene_id" | qsource == "any")
+  stopifnot(qsource == "symbol" | qsource == "entrezgene" |
+            qsource == "uniprot_acc" | qsource == "ensembl_gene_id")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(uniprot_acc))
@@ -21,25 +21,25 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
   result[['success']] <- 1
 
 
-  if(qsource == 'entrezgene' | qsource == 'any'){
+  if(qsource == 'entrezgene'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "entrezgene")) %>%
       dplyr::mutate(entrezgene = qid) %>%
       dplyr::distinct()
   }
-  if(qsource == 'symbol' | qsource == 'any'){
+  if(qsource == 'symbol'){
     target_genes <- dplyr::left_join(target_genes, gdb, by = c("qid" = "symbol")) %>%
       dplyr::mutate(symbol = qid) %>%
       dplyr::distinct()
 
   }
-  if(qsource == 'uniprot_acc' | qsource == 'any'){
+  if(qsource == 'uniprot_acc'){
     target_genes <- target_genes %>%
       dplyr::left_join(uniprot_acc, by = c("qid" = "uniprot_acc")) %>%
       dplyr::mutate(uniprot_acc = qid) %>%
       dplyr::distinct()
   }
-  if(qsource == 'ensembl_gene_id' | qsource == 'any'){
+  if(qsource == 'ensembl_gene_id'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "ensembl_gene_id")) %>%
       dplyr::mutate(ensembl_gene_id = qid) %>%
@@ -83,7 +83,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
   stopifnot(is.data.frame(df))
   if(dbtype == "genedb"){
     for(var in c('symbol','entrezgene','p_oncogene','tsgene','cdriver','tcga_driver','ensembl_gene_id','name',
-               'gencode_gene_biotype','ot_tractability_compound','signaling_pw','genename')){
+               'gencode_gene_biotype','ot_tractability_compound','signaling_pw','genename','targeted_drugs')){
       stopifnot(var %in% colnames(df))
     }
   }

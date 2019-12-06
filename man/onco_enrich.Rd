@@ -10,7 +10,6 @@ onco_enrich(
   ignore_unknown = FALSE,
   p_title = "Project Title",
   p_owner = "Project Owner",
-  report_fname = "oncoEnrichR_Report",
   background_fname = NULL,
   background_enrichment = NULL,
   background_enrichment_source = "symbol",
@@ -18,7 +17,9 @@ onco_enrich(
   p_value_cutoff_enrichment = 0.05,
   p_value_adjustment_method = "BH",
   q_value_cutoff_enrichment = 0.2,
-  minGSSize = 10,
+  min_geneset_size = 10,
+  max_geneset_size = 500,
+  simplify_go = F,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
   show_ppi = T,
@@ -43,23 +44,25 @@ onco_enrich(
 
 \item{p_owner}{name of project owner}
 
-\item{report_fname}{filename (prefix) for HTML report and JSON output}
-
 \item{background_fname}{filename for simple text file with project background information, one line per background item}
 
-\item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment analysis}
+\item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
 
 \item{background_enrichment_source}{character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')}
 
 \item{background_enrichment_description}{character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')}
 
-\item{p_value_cutoff_enrichment}{cutoff p-value for enrichment analysis}
+\item{p_value_cutoff_enrichment}{cutoff p-value for enrichment/over-representation analysis}
 
 \item{p_value_adjustment_method}{one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"}
 
 \item{q_value_cutoff_enrichment}{cutoff q-value for enrichment analysis}
 
-\item{minGSSize}{minimal size of genes annotated by ontology term for testing}
+\item{min_geneset_size}{minimal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+
+\item{max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+
+\item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
 \item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network}
 
@@ -71,7 +74,7 @@ onco_enrich(
 
 \item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
 
-\item{show_enrichment}{logical indicating if report should contain functional enrichment analysis (MSigDB, GO, KEGG, REACTOME etc.)}
+\item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)}
 
 \item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
 

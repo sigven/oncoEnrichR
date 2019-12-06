@@ -1,4 +1,4 @@
-### Background
+### Project background
 
 * Project owner/contact: `r onc_enrich_report[['config']][['project_background']][['owner']]`
 

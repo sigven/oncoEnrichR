@@ -11,7 +11,7 @@ write(report, project_directory, report_name, format = "html")
 
 \item{project_directory}{working directory}
 
-\item{report_name}{filename for report}
+\item{report_name}{prefix filename for report output}
 
 \item{format}{file format of output (html/json)}
 }

@@ -6,14 +6,14 @@
    * Cellular pathways from [Reactome](https://reactome.org/), and other curated gene signature sets from the [Molecular Signatures Database (MSiGDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
    * [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
   
-
 <br>
 
 * Enrichment test settings
    * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
    * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
-   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]` (Benjamini & Hochberg)
+   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
    * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
+   * Maximal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`
    * Background genes: `r onc_enrich_report[['config']][['enrichment']][['background_set']]`
    
 
@@ -43,10 +43,18 @@ for(type in c('go','msigdb','wikipathwaydb','keggdb')){
 library(crosstalk)
 
 enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue, 
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
                 Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
 
 
 terms_go <- crosstalk::SharedData$new(enrichment_go_display)
@@ -84,10 +92,18 @@ cat('\n')
 library(crosstalk)
 
 enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] %>%
-  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue,  P_Value = pvalue,
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
 
 terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
 
@@ -125,10 +141,18 @@ cat('\n')
 library(crosstalk)
 
 enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['keggdb']] %>%
-  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue,  P_Value = pvalue,
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, Gene_Ratio = gene_ratio, Count = count) %>%
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
 
 terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
 
@@ -167,11 +191,18 @@ cat('\n')
 library(crosstalk)
 
 enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathwaydb']] %>%
-  dplyr::rename(Term = description_link, Enrichment = fold_enrichment, Q_Value = qvalue, P_Value = pvalue,
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
-                Gene_Ratio = gene_ratio, Count = count) %>%
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, Background_Ratio, Gene_Ratio, Count)
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
 
 htmltools::br()
 crosstalk::bscols(

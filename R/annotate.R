@@ -92,7 +92,7 @@ target_disease_associations <- function(qgenes, genedb = NULL, gene_summary = F,
     dplyr::mutate(ot_cancer_rank = dplyr::if_else(is.na(ot_cancer_rank),as.numeric(0),as.numeric(ot_cancer_rank))) %>%
     dplyr::arrange(desc(ot_cancer_rank), desc(n_cancer_phenotypes)) %>%
     dplyr::select(symbol, genename, ensembl_gene_id, p_oncogene, tsgene, ot_cancer_diseases,
-                  ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links, ot_tractability_compound, gene_summary) %>%
+                  ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links, ot_tractability_compound, targeted_drugs, gene_summary) %>%
     dplyr::rename(proto_oncogene = p_oncogene, tumor_suppressor = tsgene, disease_associations = ot_diseases,
                   disease_association_links = ot_links, target_tractability = ot_tractability_compound,
                   cancer_associations = ot_cancer_diseases, cancer_association_links = ot_cancer_links) %>%
