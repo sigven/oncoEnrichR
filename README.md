@@ -38,3 +38,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
   __2.__ `write`
 
 * takes the contents of the report object retrieved in _1)_ to assemble a structured and interactive _oncoEnrichR_ HTML report
+
+### Example report
+
+A target list of n = 134 high-confidence interacting proteins with the c-MYC oncoprotein has been identified through BioID protein proximity assay in standard cell culture and in tumor xenografts [Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129). We ran this list through the _oncoEnrichR_ analysis workflow, and produced the [following HTML report with results](https://folk.uio.no/sigven/cmyc_example.html)
