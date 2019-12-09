@@ -25,8 +25,6 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are co-expressed (strong negative or positive correlations) with proto-oncogenes or tumor suppressors in tumor sample cohorts (TCGA, RNAseq)?
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
-**To appear soon**: A more detailed documentation of the underlying routines/analyses performed in _oncoEnrichR_. Example use case and analysis.
-
 ### Installation
 
 `devtools::install_github('sigven/oncoEnrichR')`
