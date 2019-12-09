@@ -105,9 +105,9 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 ### Example output
 
-A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts [Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129).
+A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)).
 
-We ran this [list](myc_candidates.xlsx) through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
+We ran [this list](myc_candidates.xlsx) through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
   * `ignore_unknown = TRUE`
   * `query_source = "symbol"`
