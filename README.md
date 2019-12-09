@@ -68,7 +68,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```
 
 
-	  Aargument      |Description
+	  Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
 	  ```query_source```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
