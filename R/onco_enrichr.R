@@ -154,7 +154,7 @@ init_report <- function(title = "Project Title",
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
-#' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens
+#' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should list proteins in known protein complexes
 #' @export
 #'
@@ -193,8 +193,7 @@ onco_enrich <- function(query,
     return(NULL)
   }
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
-              query_source == "uniprot_acc" | query_source == "ensembl_gene_id" |
-              query_source == "any")
+              query_source == "uniprot_acc" | query_source == "ensembl_gene_id")
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
   stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
   stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)

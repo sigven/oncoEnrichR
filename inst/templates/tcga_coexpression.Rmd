@@ -21,6 +21,11 @@ for(n in c('Positive','Negative')){
   
     coexp_data[[n]] <- onc_enrich_report[['data']][['tcga']][['co_expression']] %>% 
       dplyr::filter(corrtype == n)
+    
+    if(n == 'Negative'){
+      coexp_data[[n]] <- coexp_data[[n]] %>%
+        dplyr::arrange(r)
+    }
   
     if(nrow(coexp_data[[n]]) == 0){
       missing_tcga_coexp[[n]] <- TRUE

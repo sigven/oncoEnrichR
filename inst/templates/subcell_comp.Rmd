@@ -21,8 +21,8 @@ crosstalk::bscols(
     crosstalk::filter_select("annotation_type", "Annotation type", subcell_comp_all, ~annotation_type)
   ),
   list(
-    crosstalk::filter_slider("n_sources", "Number of annotation soures (confidence)", subcell_comp_all, ~n_sources),
-    crosstalk::filter_select("annotation_source", "Annotation source", subcell_comp_all, ~annotation_source)
+    crosstalk::filter_select("annotation_source", "Annotation source", subcell_comp_all, ~annotation_source),
+    crosstalk::filter_slider("n_sources", "Number of annotation soures (confidence)", subcell_comp_all, ~n_sources)
   )
 )
 
