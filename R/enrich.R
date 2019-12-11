@@ -42,7 +42,7 @@ get_go_enrichment <- function(query_entrez,
                                    pool = pool)
 
   if(simplify == T){
-    ego <- simplify(ego, cutoff=0.8, by="p.adjust", select_fun=min)
+    ego <- clusterProfiler::simplify(ego, cutoff=0.8, by="p.adjust", select_fun=min)
   }
 
   df <- as.data.frame(head(ego,5000))

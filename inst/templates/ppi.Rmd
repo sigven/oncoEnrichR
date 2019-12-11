@@ -13,11 +13,11 @@
 <br>
 
 * Network legend:
-  * Target set proteins are **circles**, other interacting proteins are **rectangles** (note that sizes of nodes do not carry any value)
-  * Tumor suppressor genes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highlighted in <span style="color:firebrick"><b>red</b></span>
-  * Proto-oncogenes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highligted in <span style="color:darkolivegreen"><b>green</b></span>
-  * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are highligted in <span style="color:black"><b>black</b></span>
-  * Targeted drugs (from [Open Targets Platform](https://targetvalidation.org)) are highlighted in <span style="color:orange"><b>orange</b></span>
+  * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
+  * Tumor suppressor genes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
+  * Proto-oncogenes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
+  * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
+  * Targeted drugs (from [Open Targets Platform](https://targetvalidation.org)) are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
   
 
 <br><br>
