@@ -5,13 +5,15 @@
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality resources, in order to assemble useful gene annotations and analyses in an interactive report. The most prominent resources include:
+The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The following resources are currently included:
 
 * [Open Targets Platform](https://targetvalidation.org)
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/)
 * [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
 * [OmnipathDB](http://omnipathdb.org)
 * [STRING](https://string-db.org)
+* [CORUM](https://mips.helmholtz-muenchen.de/corum/)
+* [ComPPI](http://comppi.linkgroup.hu/)
 * [Project Score](https://score.depmap.sanger.ac.uk)
 
  The contents of the final report attempts to shed light on the following questions:
@@ -68,7 +70,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```
 
 
-	  Argument      |Description
+	Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
 	  ```query_source```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
@@ -85,17 +87,17 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```min_geneset_size```     |     minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```max_geneset_size```     |     maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis
-	  ```ppi_add_nodes```     |     number of nodes to add to query set when computing the protein-protein interaction network
-	  ```ppi_score_threshold```     |     minimum score (total) for included protein-protein interactions
+	  ```ppi_add_nodes```     |     number of nodes to add to query set when computing the protein-protein interaction network (STRING)
+	  ```ppi_score_threshold```     |     minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
-	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network
+	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain disease associations (Open Targets Platform)
 	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
-	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations from ComPPI
+	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-	  ```show_complex```     |     logical indicating if report should list proteins in known protein complexes
+	  ```show_complex```     |     logical indicating if report should list proteins in known protein complexes (CORUM)
 
 
 
