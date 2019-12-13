@@ -64,13 +64,13 @@ onco_enrich(
 
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
-\item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network}
+\item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network (STRING)}
 
-\item{ppi_score_threshold}{minimum score (total) for included protein-protein interactions}
+\item{ppi_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 
-\item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network}
+\item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
 
 \item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
 
@@ -80,11 +80,11 @@ onco_enrich(
 
 \item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes}
 
-\item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations from ComPPI}
+\item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations (ComPPI)}
 
-\item{show_crispr_lof}{logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens}
+\item{show_crispr_lof}{logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
-\item{show_complex}{logical indicating if report should list proteins in known protein complexes}
+\item{show_complex}{logical indicating if report should list proteins in known protein complexes (CORUM)}
 }
 \description{
 Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance

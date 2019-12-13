@@ -43,8 +43,8 @@ cat('\n')
 htmltools::br()
 
 df_display <- onc_enrich_report[['data']][['loss_of_fitness']][['df']] %>%
-  dplyr::select(symbol, tissue, cmp_link) %>%
-  dplyr::rename(cell_lines = cmp_link) %>%
+  dplyr::select(symbol_link_ps, tissue, cmp_link) %>%
+  dplyr::rename(cell_lines = cmp_link, symbol = symbol_link_ps) %>%
   dplyr::mutate(loss_of_fitness = T)
 
 DT::datatable(df_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
