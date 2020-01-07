@@ -31,6 +31,8 @@ The package is intended for exploratory analysis and prioritization of a gene li
 
 `devtools::install_github('sigven/oncoEnrichR')`
 
+[![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
+
 ### Usage
 
 _oncoEnrichR_ works in two basic steps through the following two methods:
