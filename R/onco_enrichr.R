@@ -145,17 +145,17 @@ init_report <- function(title = "Project Title",
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
-#' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network
-#' @param ppi_score_threshold minimum score (total) for included protein-protein interactions
+#' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network (STRING)
+#' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
-#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network
+#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
-#' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations from ComPPI
+#' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-#' @param show_complex logical indicating if report should list proteins in known protein complexes
+#' @param show_complex logical indicating if report should list proteins in known protein complexes (CORUM)
 #' @export
 #'
 onco_enrich <- function(query,

@@ -30,7 +30,9 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
     target_compartments[['grouped']] <- as.data.frame(
       target_compartments_all %>%
         dplyr::group_by(go_id, go_term, compartment) %>%
-        dplyr::summarise(targets = paste(unique(symbol),collapse=", "), targetlinks = paste(unique(genelink),collapse=", "), n = dplyr::n()) %>%
+        dplyr::summarise(targets = paste(unique(symbol),collapse=", "),
+                         targetlinks = paste(unique(genelink),collapse=", "),
+                         n = dplyr::n()) %>%
         dplyr::arrange(desc(n)) %>%
         dplyr::ungroup() %>%
         dplyr::select(-c(go_id,go_term))

@@ -20,11 +20,11 @@ get_crispr_lof_scores <- function(qgenes, qsource = "symbol", projectscoredb = N
 
     crispr_lof_hits <- as.data.frame(
       crispr_lof_hits %>%
-      dplyr::select(symbol, model_name, tissue, model_name, model_id_cmp) %>%
-      dplyr::group_by(symbol,tissue) %>%
+      dplyr::select(symbol, symbol_link_ps, model_name, tissue, model_name, model_link_cmp) %>%
+      dplyr::group_by(symbol,symbol_link_ps, tissue) %>%
       dplyr::summarise(n_gene_tissue = dplyr::n(),
                        cell_lines = paste(model_name, collapse=", "),
-                       cmp_link = paste(model_id_cmp, collapse=", ")) %>%
+                       cmp_link = paste(model_link_cmp, collapse=", ")) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(cell_lines = stringr::str_replace_all(cell_lines,"\\.","-"))
     )
@@ -36,7 +36,6 @@ get_crispr_lof_scores <- function(qgenes, qsource = "symbol", projectscoredb = N
       )
 
     crispr_lof_results[['n_genes_with_hits']] <- nrow(total)
-    #crispr_lof_results[['plot_height']] <- crispr_lof_results[['plot_height']] + as.integer((nrow(total) - 20)/ 8.5)
     crispr_lof_hits <- dplyr::left_join(crispr_lof_hits, total, by=c("symbol"))
 
     p <- crispr_lof_hits %>%
@@ -47,7 +46,6 @@ get_crispr_lof_scores <- function(qgenes, qsource = "symbol", projectscoredb = N
       ggplot2::ylab("Number of cell lines with loss-of-fitness in CRISPR/Cas9 drop-out screen") +
       ggplot2::xlab("") +
       ggplot2::scale_fill_manual(values = pals::stepped(15)) +
-      #ggplot2::geom_text(data = total, aes(x = symbol, y = n_total + 1, label = n_total)) +
       ggplot2::theme(
         panel.grid.minor = ggplot2::element_blank(),
         axis.text = ggplot2::element_text(family = "Helvetica", size = 11),

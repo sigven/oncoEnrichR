@@ -76,7 +76,7 @@ get_go_enrichment <- function(query_entrez,
           dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by=c("gene_id" = "entrezgene")) %>%
           dplyr::mutate(entrez_url = paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",gene_id,"' target=\'blank_\'>",symbol,"</a>")) %>%
           dplyr::group_by(go_id) %>%
-          dplyr::summarise(gene_symbol_link = paste(unique(entrez_url),collapse="|"), gene_symbol = paste(unique(symbol),collapse="|"))
+          dplyr::summarise(gene_symbol_link = paste(unique(entrez_url),collapse=", "), gene_symbol = paste(unique(symbol),collapse=", "))
       )
     }
     if(!is.null(gene2id)){
@@ -171,7 +171,7 @@ get_universal_enrichment <- function(query_entrez,
           dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by=c("gene_id" = "entrezgene")) %>%
           dplyr::mutate(entrez_url = paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",gene_id,"' target=\'blank_\'>",symbol,"</a>")) %>%
           dplyr::group_by(standard_name) %>%
-          dplyr::summarise(gene_symbol_link = paste(unique(entrez_url),collapse="|"), gene_symbol = paste(unique(symbol),collapse="|"))
+          dplyr::summarise(gene_symbol_link = paste(unique(entrez_url),collapse=", "), gene_symbol = paste(unique(symbol),collapse=", "))
       )
     }
     if(!is.null(gene2id)){

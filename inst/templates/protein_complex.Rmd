@@ -8,11 +8,20 @@
 ```{r table_browse_complex, echo=F, results = "asis", eval = T}
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+#crosstalk::bscols(
+  DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], 
+                escape = F, 
+                extensions=c("Buttons","Responsive"), 
+                width = "100%",
+                style = 'bootstrap',
+                rownames = F,
+    options=list(buttons = c('csv','excel'),
+                 
+                 pageLength = 10,
+                 bPaginate = T,
+                 dom = 'Bfrtip') 
   )
-)
+#)
 
 ```
 <br><br>

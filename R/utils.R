@@ -114,9 +114,9 @@ validate_db_df <- function(df, dbtype = "genedb"){
   }
 
   if(dbtype == "projectscoredb"){
-    for(var in c('symbol','model_name','loss_of_fitness','model_id','model_id_cmp','synonyms',
+    for(var in c('symbol','model_name','loss_of_fitness','model_id','model_link_cmp','synonyms',
                  'model_type','tissue','cancer_type','cancer_type_detail',
-                 'sample_site','gender','ethnicity')){
+                 'sample_site','gender','ethnicity','symbol_link_ps','gene_id_project_score')){
       stopifnot(var %in% colnames(df))
     }
   }
