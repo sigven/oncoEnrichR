@@ -30,6 +30,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
 ### Installation
 1. `install.packages("BiocManager")`
 2. `BiocManager::install(c("org.Hs.eg.db", "clusterProfiler"))`
+3. `devtools::install_github('mjkallen/rlogging')`
 3. `devtools::install_github('sigven/oncoEnrichR')`
 
 [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
