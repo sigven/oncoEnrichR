@@ -424,6 +424,8 @@ write <- function(report, project_directory, report_name, format = 'html'){
   disclaimer <- system.file("templates", "disclaimer.md", package = "oncoEnrichR")
   report_theme <- "default"
 
+  ## TODO: check that report parameter is a valid oncoEnrichR result object
+
   assign("onc_enrich_report", report, envir = .GlobalEnv)
 
   if(format == "html"){
@@ -439,6 +441,8 @@ write <- function(report, project_directory, report_name, format = 'html'){
                       clean = T,
                       intermediates_dir = project_directory,
                       quiet = T)
+    rlogging::message(paste0('Output file: ',file.path(project_directory,outfname[['html']])))
+    rlogging::message("------")
   }else{
     rlogging::message('JSON output not yet implemented')
   }

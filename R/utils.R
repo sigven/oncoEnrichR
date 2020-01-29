@@ -59,7 +59,7 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
     if(ignore_unknown == T){
       rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
     }else{
-      rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
+      rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")," (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
       result[['success']] <- -1
     }
   }else{
