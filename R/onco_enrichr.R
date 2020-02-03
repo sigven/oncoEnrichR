@@ -188,8 +188,8 @@ onco_enrich <- function(query,
   #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")){
   stopifnot(is.character(query))
   stopifnot(p_value_adjustment_method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))
-  if(length(query) > 200 | length(query) < 20){
-    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query identifiers, and accepts a maximum of 200. Query contained n = ",length(query), " identifiers"))
+  if(length(query) > 1000 | length(query) < 20){
+    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query identifiers, and accepts a maximum of 1000. Query contained n = ",length(query), " identifiers"))
     return(NULL)
   }
   stopifnot(query_source == "symbol" | query_source == "entrezgene" |
@@ -269,7 +269,7 @@ onco_enrich <- function(query,
 
   if(show_disease == T){
     onc_rep[['data']][['disease']][['target']] <-
-      oncoEnrichR::target_disease_associations(query_symbol, genedb = oncoEnrichR::genedb)
+      oncoEnrichR::target_disease_associations(query_symbol, gene_summary = T, genedb = oncoEnrichR::genedb)
   }
 
   for(c in names(oncoEnrichR::msigdb[['COLLECTION']])){

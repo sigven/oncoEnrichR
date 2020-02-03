@@ -53,18 +53,21 @@ get_go_enrichment <- function(query_entrez,
     df <- df %>% dplyr::mutate(db = ontology)
   }
   if(nrow(df) > 0){
-    df <- df %>%
+    df <- suppressWarnings(df %>%
       dplyr::mutate(db = paste0("GO_",db)) %>%
       dplyr::rename(go_id = ID, go_description = Description, count = Count,
                     gene_ratio = GeneRatio, background_ratio = BgRatio, gene_id = geneID) %>%
       dplyr::mutate(go_description_link = paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',
                                                  go_id,'\' target=\'_blank\'>',go_description,'</a>')) %>%
       tidyr::separate(gene_ratio,c('num_query_hits','num_query_all'),sep='/',remove = F, convert = T) %>%
-      dplyr::mutate(qvalue = as.numeric(formatC(qvalue, format = "e", digits = 1))) %>%
-      dplyr::mutate(pvalue = as.numeric(formatC(pvalue, format = "e", digits = 1))) %>%
+      dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
+      dplyr::mutate(pvalue = as.numeric(pvalue)) %>%
+      dplyr::mutate(qvalue = dplyr::if_else(!is.na(qvalue),as.numeric(formatC(qvalue, format = "e", digits = 1)),as.numeric(NA))) %>%
+      dplyr::mutate(pvalue = dplyr::if_else(!is.na(pvalue),as.numeric(formatC(pvalue, format = "e", digits = 1)),as.numeric(NA))) %>%
       tidyr::separate(background_ratio,c('num_background_hits','num_background_all'),sep='/',remove = F, convert = T) %>%
       dplyr::mutate(enrichment_factor = round(as.numeric((num_query_hits/num_query_all) / (num_background_hits/num_background_all)),digits = 1)) %>%
       dplyr::select(-c(num_query_hits,num_query_all,num_background_hits,num_background_all))
+    )
 
     gene2id <- NULL
     if(!is.null(genedb)){
@@ -148,18 +151,24 @@ get_universal_enrichment <- function(query_entrez,
   df <- as.data.frame(head(enr,5000))
   rownames(df) <- NULL
   if(nrow(df) > 0){
-    df <- df %>%
+    #cat(df$pvalue,df$qvalue,'\n')
+    #saveRDS(df,"df_tmp.rds")
+    #saveRDS(TERM2SOURCE,file="TERM2SOURCE.rds")
+    df <- suppressWarnings(df %>%
       dplyr::rename(standard_name = ID, description = Description, count = Count,
                     gene_ratio = GeneRatio, background_ratio = BgRatio, gene_id = geneID) %>%
       dplyr::left_join(TERM2SOURCE,by="standard_name") %>%
       dplyr::mutate(description_link = dplyr::if_else(!is.na(external_url),paste0("<a href='",external_url,"' target='_blank'>",description,"</a>"),description)) %>%
-      dplyr::mutate(qvalue = as.numeric(formatC(qvalue, format = "e", digits = 1))) %>%
-      dplyr::mutate(pvalue = as.numeric(formatC(pvalue, format = "e", digits = 1))) %>%
+      dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
+      dplyr::mutate(pvalue = as.numeric(pvalue)) %>%
+      dplyr::mutate(qvalue = dplyr::if_else(!is.na(qvalue),as.numeric(formatC(qvalue, format = "e", digits = 1)),as.numeric(NA))) %>%
+      dplyr::mutate(pvalue = dplyr::if_else(!is.na(pvalue),as.numeric(formatC(pvalue, format = "e", digits = 1)),as.numeric(NA))) %>%
       tidyr::separate(gene_ratio,c('num_query_hits','num_query_all'),sep='/',remove = F, convert = T) %>%
       tidyr::separate(background_ratio,c('num_background_hits','num_background_all'),sep='/',remove = F, convert = T) %>%
       dplyr::mutate(enrichment_factor = round(as.numeric((num_query_hits/num_query_all) / (num_background_hits/num_background_all)),digits = 1)) %>%
       dplyr::select(-c(num_query_hits,num_query_all,num_background_hits,num_background_all)) %>%
       dplyr::mutate(db = dplyr::if_else(is.na(db) & nchar(dbsource) > 0,dbsource,as.character(db)))
+    )
 
     gene2id <- NULL
     if(!is.null(genedb)){
