@@ -92,15 +92,15 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, cancer
     dplyr::rename(entrezgene_a = entrezgene) %>%
     dplyr::mutate(entrezgene_a = as.character(entrezgene_a)) %>%
     dplyr::mutate(from = paste0("s",entrezgene_a)) %>%
-    dplyr::left_join(dplyr::select(genedb, entrezgene, p_oncogene, tsgene, cdriver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
-    dplyr::rename(p_oncogene_A = p_oncogene, tsgene_A = tsgene, cdriver_A = cdriver, tcga_driver_A = tcga_driver) %>%
+    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor, cancer_driver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
+    dplyr::rename(oncogene_A = oncogene, tsgene_A = tumor_suppressor, cdriver_A = cancer_driver, tcga_driver_A = tcga_driver) %>%
     dplyr::left_join(dplyr::select(genedb,entrezgene,symbol),by=c("preferredName_B" = "symbol")) %>%
     dplyr::filter(!is.na(entrezgene)) %>%
     dplyr::rename(entrezgene_b = entrezgene) %>%
     dplyr::mutate(entrezgene_b = as.character(entrezgene_b)) %>%
     dplyr::mutate(to = paste0("s",entrezgene_b)) %>%
-    dplyr::left_join(dplyr::select(genedb, entrezgene, p_oncogene, tsgene, cdriver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
-    dplyr::rename(p_oncogene_B = p_oncogene, tsgene_B = tsgene, cdriver_B = cdriver, tcga_driver_B = tcga_driver) %>%
+    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor, cancer_driver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
+    dplyr::rename(oncogene_B = oncogene, tsgene_B = tumor_suppressor, cdriver_B = cancer_driver, tcga_driver_B = tcga_driver) %>%
     dplyr::mutate(interaction_symbol = paste0(preferredName_A,"_",preferredName_B)) %>%
     dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by=c("preferredName_A" = "symbol")) %>%
     dplyr::rename(query_node_A = query_node) %>%
@@ -138,9 +138,10 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL, cancer
   all_nodes$size <- 25
   all_nodes <- all_nodes %>%
     dplyr::mutate(color.background  = dplyr::if_else(query_node == T,"lightblue","mistyrose")) %>%
-    dplyr::mutate(color.background = dplyr::if_else(tsgene == T & p_oncogene == F,"firebrick",as.character(color.background),as.character(color.background))) %>%
-    dplyr::mutate(color.background = dplyr::if_else(p_oncogene == T & tsgene == F,"darkolivegreen",as.character(color.background),as.character(color.background))) %>%
-    dplyr::mutate(color.background = dplyr::if_else(p_oncogene == T & tsgene == T,"black",as.character(color.background),as.character(color.background))) %>%
+    #dplyr::mutate(tumor_suppressor = )
+    dplyr::mutate(color.background = dplyr::if_else(tumor_suppressor == T & oncogene == F,"firebrick",as.character(color.background),as.character(color.background))) %>%
+    dplyr::mutate(color.background = dplyr::if_else(oncogene == T & tumor_suppressor == F,"darkolivegreen",as.character(color.background),as.character(color.background))) %>%
+    dplyr::mutate(color.background = dplyr::if_else(oncogene == T & tumor_suppressor == T,"black",as.character(color.background),as.character(color.background))) %>%
     dplyr::mutate(color.border = 'black', color.highlight.background = 'orange', color.highlight.border = 'darkred', font.color = 'white') %>%
     dplyr::mutate(font.color = dplyr::if_else(query_node == T | color.background == "mistyrose","black",as.character(font.color),as.character(font.color)))
 

@@ -177,26 +177,35 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::select(-tmp) %>%
     dplyr::bind_rows(coexp_target_1) %>%
     dplyr::distinct() %>%
-    dplyr::left_join(dplyr::select(genedb, name, p_oncogene, tsgene, symbol, ot_tractability_compound),
+    dplyr::left_join(dplyr::select(genedb, name, oncogene, tumor_suppressor, symbol, ot_tractability_compound),
                      by = c("symbol_partner" = "symbol")) %>%
-    dplyr::rename(target_gene = symbol, partner_gene = symbol_partner, proto_oncogene = p_oncogene, tumor_suppressor = tsgene,
+    dplyr::rename(target_gene = symbol, partner_gene = symbol_partner,
                   partner_genename = name, target_tractability = ot_tractability_compound) %>%
     dplyr::mutate(r = as.numeric(round(r, digits = 3))) %>%
-    dplyr::filter(stringr::str_detect(tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|OV|THCA|COAD|BLCA|STAD|KIRP")) %>%
+    dplyr::filter(stringr::str_detect(tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|ESCA|MESO|UCEC|OV|CHOL|THCA|COAD|BLCA|STAD|KIRP|GBM|HNSC")) %>%
     dplyr::mutate(primary_site = "Breast") %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "LUAD","Lung (adenocarcinoma)", as.character(primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "STAD","Stomach", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "LUAD" | tumor == "LUSC","Lung", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "STAD" | tumor == "ESCA","Esophagus/Stomach", as.character(primary_site))) %>%
     dplyr::mutate(primary_site = dplyr::if_else(tumor == "BLCA","Bladder", as.character(primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "SARC","Soft Tissue/Sarcoma", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "SARC","Soft Tissue", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "HNSC","Head and Neck", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "UCEC","Endometrium", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "LAML","Myeloid", as.character(primary_site))) %>%
     dplyr::mutate(primary_site = dplyr::if_else(tumor == "SKCM","Skin", as.character(primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "COAD","Colorectal", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "GBM","Brain", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "PAAD","Pancreas", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "COAD" | tumor == "READ","Colon/Rectum", as.character(primary_site))) %>%
     dplyr::mutate(primary_site = dplyr::if_else(tumor == "PRAD","Prostate", as.character(primary_site))) %>%
     dplyr::mutate(primary_site = dplyr::if_else(tumor == "THCA","Thyroid", as.character(primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "KIRP","Kidney", as.character(primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(tumor == "OV","Ovary", as.character(primary_site)))
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "KIRP" | tumor == "KICH","Kidney", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "OV","Ovary", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "MESO","Pleura", as.character(primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(tumor == "CHOL","Biliary Tract", as.character(primary_site)))
+
+
 
   coexp_target_tcga <- coexp_target_tcga %>%
-    dplyr::filter(stringr::str_detect(correlation,"Very") | proto_oncogene == T | tumor_suppressor == T) %>%
+    dplyr::filter(stringr::str_detect(correlation,"Very") | !is.na(oncogene) | !is.na(tumor_suppressor)) %>%
     dplyr::arrange(desc(r))
 
   coexp_target_tcga_positive <- dplyr::filter(coexp_target_tcga, corrtype == "Positive") %>% head(5000)

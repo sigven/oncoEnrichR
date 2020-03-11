@@ -1,13 +1,40 @@
-### Subcellular compartments {.tabset}
+### Subcellular structures/compartments 
 
-* The target set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a cellular compartment-specific database of proteins, and results are here presented in two different views:
 
-   1. All subcellular compartment annotations pr. protein in the target set ("By Gene")
-   2. All unique subcellular compartment annotations (unfiltered) and their target members ("By Compartment")
+* The target set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a database of subcellular localization data for human proteins, and results are here presented in two different views:
+
+   1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the target set
+       * Compartments are here limited to the key compartments (n = 24) defined within the [gganatogram package](https://github.com/jespermaag/gganatogram#cellular-structures)
+   2. A subcellular _data browser_
+       * All subcellular compartment annotations pr. protein in the target set ("By Gene")
+       * All unique subcellular compartment annotations (unfiltered) and their target members ("By Compartment")
 
 <br><br>
 
-#### By Gene
+
+#### Subcellular anatogram
+
+* In the image below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
+<br><br>
+```{r gganatogram_plot, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 5}
+
+library(gganatogram)
+gganatogram::gganatogram(data = onc_enrich_report[['data']][['subcellcomp']][['anatogram']],
+                         outline = T,
+                         fillOutline = 'lightgray',
+                         organism = 'cell',
+                         fill = 'value') +
+  ggplot2::theme_void() +
+  ggplot2::coord_fixed() +
+  ggplot2::scale_fill_viridis_c()
+
+```
+<br><br>
+
+#### Subcellular data browser{.tabset}
+<br>
+
+##### By Gene
 
 ```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = T}
 library(crosstalk)
@@ -36,7 +63,7 @@ crosstalk::bscols(
 ```
 <br><br><br>
 
-#### By Compartment
+##### By Compartment
 
 ```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = T}
 library(crosstalk)

@@ -42,6 +42,28 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
       dplyr::select(-c(entrezgene,go_id,go_term,genelink)) %>%
       dplyr::select(symbol, genename, compartment, dplyr::everything())
 
+    n_genes <- length(unique(target_compartments_all$symbol))
+    target_compartments[['anatogram']] <- gganatogram::cell_key$cell %>%
+      dplyr::select(-value)
+
+    anatogram_values <- as.data.frame(
+      target_compartments_all %>%
+      dplyr::select(symbol, ggcompartment) %>%
+      dplyr::filter(!is.na(ggcompartment)) %>%
+      dplyr::distinct() %>%
+      dplyr::group_by(ggcompartment) %>%
+      dplyr::summarise(n_comp = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(value = round((n_comp / n_genes) * 100, digits = 4)) %>%
+      dplyr::rename(organ = ggcompartment) %>%
+      dplyr::select(organ, value)
+    )
+
+    target_compartments[['anatogram']] <- target_compartments[['anatogram']] %>%
+      dplyr::left_join(anatogram_values, by = "organ") %>%
+      dplyr::mutate(value = dplyr::if_else(is.na(value),0,as.numeric(value)))
+
+
   }
   return(target_compartments)
 

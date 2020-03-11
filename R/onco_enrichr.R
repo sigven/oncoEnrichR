@@ -13,6 +13,7 @@ init_report <- function(title = "Project Title",
                         show_ppi = T,
                         show_drugs_in_ppi = T,
                         show_disease = T,
+                        show_gene_summary = F,
                         show_enrichment = T,
                         show_tcga_aberration = T,
                         show_tcga_coexpression = T,
@@ -38,6 +39,7 @@ init_report <- function(title = "Project Title",
   rep[['config']][['show']] <- list()
   rep[['config']][['show']][['ppi']] <- show_ppi
   rep[['config']][['show']][['disease']] <- show_disease
+  rep[['config']][['show']][['gene_summary']] <- show_gene_summary
   rep[['config']][['show']][['enrichment']] <- show_enrichment
   rep[['config']][['show']][['protein_complex']] <- show_complex
   rep[['config']][['show']][['tcga_aberration']] <- show_tcga_aberration
@@ -115,6 +117,7 @@ init_report <- function(title = "Project Title",
   rep[['data']][['protein_complex']][['complex']] <- data.frame()
   rep[['data']][['subcellcomp']][['all']] <- data.frame()
   rep[['data']][['subcellcomp']][['grouped']] <- data.frame()
+  rep[['data']][['subcellcomp']][['anatogram']] <- data.frame()
 
   rep[['data']][['tcga']][['aberration']] <- list()
   rep[['data']][['tcga']][['aberration']][['table']] <- list()
@@ -148,6 +151,7 @@ init_report <- function(title = "Project Title",
 #' @param ppi_add_nodes number of nodes to add to query set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
+#' @param show_gene_summary logical indicating if report should fetch summary of gene function (from RefSeq/mygene.info, will increase processing time)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
@@ -175,6 +179,7 @@ onco_enrich <- function(query,
                    simplify_go = F,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
+                   show_gene_summary = F,
                    show_ppi = T,
                    show_drugs_in_ppi = F,
                    show_disease = T,
@@ -232,6 +237,7 @@ onco_enrich <- function(query,
                          ppi_add_nodes = ppi_add_nodes,
                          show_ppi = show_ppi,
                          show_drugs_in_ppi = show_drugs_in_ppi,
+                         show_gene_summary = show_gene_summary,
                          show_disease = show_disease,
                          show_enrichment = show_enrichment,
                          show_tcga_aberration = show_tcga_aberration,
@@ -269,7 +275,9 @@ onco_enrich <- function(query,
 
   if(show_disease == T){
     onc_rep[['data']][['disease']][['target']] <-
-      oncoEnrichR::target_disease_associations(query_symbol, gene_summary = T, genedb = oncoEnrichR::genedb)
+      oncoEnrichR::target_disease_associations(query_symbol,
+                                               gene_summary = onc_rep[['config']][['show']][['gene_summary']],
+                                               genedb = oncoEnrichR::genedb)
   }
 
   for(c in names(oncoEnrichR::msigdb[['COLLECTION']])){
@@ -377,6 +385,7 @@ onco_enrich <- function(query,
 
      onc_rep[['data']][['subcellcomp']][['all']] <- subcellcomp_annotations[['all']]
      onc_rep[['data']][['subcellcomp']][['grouped']] <- subcellcomp_annotations[['grouped']]
+     onc_rep[['data']][['subcellcomp']][['anatogram']] <- subcellcomp_annotations[['anatogram']]
 
   }
 

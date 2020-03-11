@@ -2,6 +2,7 @@
 
 * Each protein in the target set is annotated with:
    * Known protein complexes as found in [CORUM](https://mips.helmholtz-muenchen.de/corum/)
+   * The complexes are ranked according to the total number of participating members in the target set
    
 <br><br>
 

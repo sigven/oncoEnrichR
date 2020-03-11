@@ -1,9 +1,9 @@
 ### Disease associations
 
 * Each protein in the target set is annotated with:
-   * Known disease associations established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
+   * Known associations to cancer phenotypes established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
    * Target druggability (aka [_target tractability_](https://docs.targetvalidation.org/getting-started/target-tractability) )
-   * Status wrt. roles as tumor suppressors/proto-oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource
+   * Status wrt. roles as tumor suppressors/oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource and the [Network of Cancer Genes](https://cancer.sanger.ac.uk/census)
    * Target genes are colored in varying shades of blue according to their level of association to cancer  
    
 <br><br>
@@ -31,7 +31,7 @@ targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['diseas
 crosstalk::bscols(
   list(
     crosstalk::filter_select("tumor_suppressor", "Tumor suppressor", targets_shared, ~tumor_suppressor),
-    crosstalk::filter_select("proto_oncogene", "Proto-oncogene", targets_shared, ~proto_oncogene)
+    crosstalk::filter_select("oncogene", "Proto-oncogene", targets_shared, ~oncogene)
   ),
   list(
     crosstalk::filter_select("disease_associations", "Associated diseases", targets_shared, ~disease_associations),

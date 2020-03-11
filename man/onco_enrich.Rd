@@ -22,6 +22,7 @@ onco_enrich(
   simplify_go = F,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
+  show_gene_summary = F,
   show_ppi = T,
   show_drugs_in_ppi = F,
   show_disease = T,
@@ -67,6 +68,8 @@ onco_enrich(
 \item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network (STRING)}
 
 \item{ppi_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+
+\item{show_gene_summary}{logical indicating if report should fetch summary of gene function (from RefSeq/mygene.info, will increase processing time)}
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 

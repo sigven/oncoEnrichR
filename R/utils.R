@@ -28,7 +28,8 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
       dplyr::distinct()
   }
   if(qsource == 'symbol'){
-    target_genes <- dplyr::left_join(target_genes, gdb, by = c("qid" = "symbol")) %>%
+    target_genes <- target_genes %>%
+      dplyr::left_join(gdb, by = c("qid" = "symbol")) %>%
       dplyr::mutate(symbol = qid) %>%
       dplyr::distinct()
 
@@ -57,10 +58,67 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
 
   if(nrow(not_found) > 0){
     if(ignore_unknown == T){
-      rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
+      if(qsource == 'symbol'){
+        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
+        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
+        tmp_not_found <- result[['not_found']] %>% dplyr::select(qid)
+        hits_with_aliases <- dplyr::inner_join(tmp_not_found, oncoEnrichR::alias2primary, by = c("qid" = "alias"))
+        if(nrow(hits_with_aliases) == nrow(tmp_not_found)){
+          hits_with_aliases <- hits_with_aliases %>%
+            dplyr::select(symbol_entrez) %>%
+            dplyr::rename(qid = symbol_entrez)
+
+          hits_with_aliases <- hits_with_aliases %>%
+            dplyr::left_join(gdb, by = c("qid" = "symbol")) %>%
+            dplyr::mutate(symbol = qid) %>%
+            dplyr::distinct()
+
+          rlogging::message(paste0("Mapped query identifiers as gene aliases ",paste0(not_found$qid,collapse=", ")," ---> ",paste0(hits_with_aliases$qid,collapse=", ")))
+
+          result[['found']] <- dplyr::bind_rows(result[['found']], hits_with_aliases)
+        }else{
+          if(nrow(hits_with_aliases) > 0){
+            tmp_not_found <- dplyr::anti_join(tmp_not_found, hits_with_aliases)
+          }
+          rlogging::warning(paste0("Warning: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")," (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+          #result[['success']] <- -1
+        }
+
+      }else{
+        rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")))
+      }
     }else{
-      rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")," (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
-      result[['success']] <- -1
+
+      if(qsource == 'symbol'){
+        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
+        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
+        tmp_not_found <- result[['not_found']] %>% dplyr::select(qid)
+        hits_with_aliases <- dplyr::inner_join(tmp_not_found, oncoEnrichR::alias2primary, by = c("qid" = "alias"))
+        if(nrow(hits_with_aliases) == nrow(tmp_not_found)){
+          hits_with_aliases <- hits_with_aliases %>%
+            dplyr::select(symbol_entrez) %>%
+            dplyr::rename(qid = symbol_entrez)
+
+          hits_with_aliases <- hits_with_aliases %>%
+            dplyr::left_join(gdb, by = c("qid" = "symbol")) %>%
+            dplyr::mutate(symbol = qid) %>%
+            dplyr::distinct()
+
+          rlogging::message(paste0("Mapped query identifiers as gene aliases ",paste0(not_found$qid,collapse=", ")," ---> ",paste0(hits_with_aliases$qid,collapse=", ")))
+
+          result[['found']] <- dplyr::bind_rows(result[['found']], hits_with_aliases)
+        }else{
+          if(nrow(hits_with_aliases) > 0){
+            tmp_not_found <- dplyr::anti_join(tmp_not_found, hits_with_aliases)
+          }
+          rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")," (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+          result[['success']] <- -1
+        }
+
+      }else{
+        rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",paste0(not_found$qid,collapse=", ")," (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+        result[['success']] <- -1
+      }
     }
   }else{
     if(nrow(found) == length(qgenes)){
@@ -82,7 +140,7 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
 validate_db_df <- function(df, dbtype = "genedb"){
   stopifnot(is.data.frame(df))
   if(dbtype == "genedb"){
-    for(var in c('symbol','entrezgene','p_oncogene','tsgene','cdriver','tcga_driver','ensembl_gene_id','name',
+    for(var in c('symbol','entrezgene','oncogene','tumor_suppressor','cancer_driver','tcga_driver','ensembl_gene_id','name',
                'gencode_gene_biotype','ot_tractability_compound','signaling_pw','genename','targeted_drugs')){
       stopifnot(var %in% colnames(df))
     }
@@ -107,8 +165,8 @@ validate_db_df <- function(df, dbtype = "genedb"){
 
   if(dbtype == "ppi_nodes"){
     for(var in c('symbol','entrezgene','genename','name','gencode_gene_biotype',
-                 'ot_tractability_compound','signaling_pw','query_node','cdriver',
-                 'id','tsgene','p_oncogene')){
+                 'ot_tractability_compound','signaling_pw','query_node','cancer_driver',
+                 'id','tumor_suppressor','oncogene')){
       stopifnot(var %in% colnames(df))
     }
   }
@@ -123,7 +181,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
 
   if(dbtype == "ppi_edges"){
     for(var in c('preferredName_A','preferredName_B','entrezgene_a',
-                 'entrezgene_b','p_oncogene_A','p_oncogene_B','tsgene_A','tsgene_B','tcga_driver_A',
+                 'entrezgene_b','oncogene_A','oncogene_B','tsgene_A','tsgene_B','tcga_driver_A',
                  'tcga_driver_B','cdriver_A','cdriver_B','query_node_A','query_node_B','weight',
                  'from','to','fscore','tscore','score','ascore','pscore','nscore','dscore','escore',
                  'interaction_symbol')){

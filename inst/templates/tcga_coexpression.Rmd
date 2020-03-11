@@ -52,7 +52,7 @@ crosstalk::bscols(
     crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes_positive, ~tumor_suppressor)
   ),
   list(
-    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes_positive, ~proto_oncogene),
+    crosstalk::filter_select("oncogene", "Oncogene (partner)", coexp_genes_positive, ~oncogene),
     crosstalk::filter_select("primary_site", "Primary site", coexp_genes_positive, ~primary_site),
     crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_positive, ~target_tractability)
 
@@ -93,7 +93,7 @@ crosstalk::bscols(
     crosstalk::filter_select("tumor_suppressor", "Tumor suppressor (partner)", coexp_genes_negative, ~tumor_suppressor)
   ),
   list(
-    crosstalk::filter_select("proto_oncogene", "Proto-oncogene (partner)", coexp_genes_negative, ~proto_oncogene),
+    crosstalk::filter_select("oncogene", "Oncogene (partner)", coexp_genes_negative, ~oncogene),
     crosstalk::filter_select("primary_site", "Primary site", coexp_genes_negative, ~primary_site),
     crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_negative, ~target_tractability)
 
