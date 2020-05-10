@@ -11,7 +11,7 @@ annotate_protein_complex <- function(qgenes, genedb = NULL, corum_db = NULL, uni
   oncoEnrichR::validate_db_df(uniprot_acc, dbtype = "uniprot_acc")
 
 
-  target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
+  target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F) %>%
     dplyr::left_join(uniprot_acc, by = "symbol") %>%
     dplyr::distinct() %>%
     dplyr::filter(!is.na(uniprot_acc))
@@ -19,9 +19,8 @@ annotate_protein_complex <- function(qgenes, genedb = NULL, corum_db = NULL, uni
   results <- data.frame()
   if(nrow(target_genes) > 0){
     targets_uniprot_acc <- paste(target_genes$uniprot_acc,collapse=",")
-    query_api <- paste0('http://omnipathdb.org/complexes?proteins=',targets_uniprot_acc,'&databases=CORUM')
-    results <- read.table(query_api,header=T,sep="\t",quote="",stringsAsFactors = F,na.strings=c("","NA"))
-    #results <- as.data.frame(readr::read_tsv(query_api))
+    query_api <- paste0("http://omnipathdb.org/complexes?proteins=",targets_uniprot_acc,"&databases=CORUM")
+    results <- read.table(query_api, header = T, sep = "\t", quote = "", stringsAsFactors = F, na.strings = c("","NA"))
 
     qtarget <- target_genes %>%
       dplyr::select(entrezgene,symbol) %>%

@@ -1,5 +1,6 @@
 
-tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site", vtype = "snv_indel", genedb = NULL, percentile = FALSE){
+tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site",
+                                 vtype = "snv_indel", genedb = NULL, percentile = FALSE){
 
   rlogging::message(paste0("TCGA: generating gene aberration plot, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
@@ -65,47 +66,50 @@ tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site", v
     dplyr::mutate(pancancer_percentile = percentile) %>%
     dplyr::select(symbol, pancancer_percent_mutated, pancancer_percentile)
 
-  zero_frequency_genes <- dplyr::anti_join(gene_candidates_init, gene_aberrations, by=c("symbol","primary_site","variant_type")) %>%
+  zero_frequency_genes <- dplyr::anti_join(gene_candidates_init, gene_aberrations,
+                                           by = c("symbol", "primary_site", "variant_type")) %>%
     #dplyr::select(-c(tot_samples,samples_mutated)) %>%
     dplyr::left_join(site_stats_zero,by=c("primary_site"))
-  gene_aberrations <- dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes), pancan_order,by=c("symbol")) %>%
-    dplyr::mutate(pancancer_percent_mutated = dplyr::if_else(is.na(pancancer_percent_mutated),
-                                                             as.numeric(0),
-                                                             as.numeric(pancancer_percent_mutated)))
+  gene_aberrations <- dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
+                                       pancan_order, by = c("symbol")) %>%
+    dplyr::mutate(pancancer_percent_mutated =
+                    dplyr::if_else(is.na(pancancer_percent_mutated),
+                                as.numeric(0),
+                                as.numeric(pancancer_percent_mutated)))
 
 
   gene_aberrations <- gene_aberrations %>%
     dplyr::arrange(pancancer_percent_mutated) %>%   # rearrange the df in the order we want
     dplyr::mutate(symbol = factor(symbol, unique(symbol)))
 
-  p <- ggplot2::ggplot(gene_aberrations,ggplot2::aes(x=primary_site,y=symbol)) +
-    ggplot2::geom_text(ggplot2::aes(label = round(percent_mutated,1)), color = "#E69F00") +
-    ggplot2::geom_tile(ggplot2::aes(fill = percent_mutated), colour="black",size=0.40)
+  p <- ggplot2::ggplot(gene_aberrations, ggplot2::aes(x = primary_site,y = symbol)) +
+    ggplot2::geom_text(ggplot2::aes(label = round(percent_mutated, 1)), color = "#E69F00") +
+    ggplot2::geom_tile(ggplot2::aes(fill = percent_mutated), colour = "black", size = 0.40)
 
   if(percentile == T){
-    p <- ggplot2::ggplot(gene_aberrations,ggplot2::aes(x=primary_site,y=symbol)) +
-      ggplot2::geom_text(ggplot2::aes(label = round(percentile,1))) +
-      ggplot2::geom_tile(ggplot2::aes(fill = percentile), colour="black",size=0.40)
+    p <- ggplot2::ggplot(gene_aberrations, ggplot2::aes(x = primary_site, y = symbol)) +
+      ggplot2::geom_text(ggplot2::aes(label = round(percentile, 1))) +
+      ggplot2::geom_tile(ggplot2::aes(fill = percentile), colour = "black", size = 0.40)
   }
   p <- p +
     #add border white colour of line thickness 0.25
     #ggplot2::geom_tile(aes(fill = pct_mutated), colour="black",size=0.40)+
     ggplot2::scale_fill_gradient(low = "white", high = color) +
     #remove x and y axis labels
-    ggplot2::labs(x="",y="")+
+    ggplot2::labs(x = "", y = "")+
     ggplot2::ggtitle(title) +
     #remove extra space
     #scale_y_discrete(expand=c(0,0))+
     #ggplot2::coord_fixed(ratio = 1.3)+
     #set a base size for all fonts
-    ggplot2::theme_grey(base_size=14)+
+    ggplot2::theme_grey(base_size = 14)+
     #theme options
     ggplot2::theme(
       #bold font for both axis text
       #legend.title = ggplot2::element_text()
       axis.text = ggplot2::element_text(face="bold",family = "Helvetica", size = 14),
       #set thickness of axis ticks
-      axis.ticks = ggplot2::element_line(size=0.2),
+      axis.ticks = ggplot2::element_line(size = 0.2),
       #remove plot background
       plot.background = ggplot2::element_blank(),
       #remove plot border
@@ -123,8 +127,8 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(qsource == 'entrezgene'){
-    query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
+  if(qsource == "entrezgene"){
+    query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
     query_genes_df <- dplyr::inner_join(genedb, query_genes_df, by = "entrezgene") %>% dplyr::distinct()
   }else{
     query_genes_df <- dplyr::inner_join(genedb, query_genes_df, by = "symbol") %>% dplyr::distinct()
@@ -140,7 +144,8 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
     dplyr::left_join(dplyr::select(genedb, symbol, entrezgene),by=c("symbol")) %>%
     dplyr::inner_join(dplyr::select(query_genes_df, entrezgene),by=c("entrezgene")) %>%
     dplyr::distinct() %>%
-    dplyr::mutate(gene = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
+    dplyr::mutate(gene = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+                                entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
     dplyr::select(-c(entrezgene,symbol)) %>%
     dplyr::select(gene,primary_site,primary_diagnosis,variant_type,percent_mutated, dplyr::everything())
 
@@ -155,11 +160,15 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(qsource == 'entrezgene'){
-    query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
-    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol),query_genes_df, by = "entrezgene") %>% dplyr::distinct()
+  if(qsource == "entrezgene"){
+    query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
+    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol),
+                                        query_genes_df, by = "entrezgene") %>%
+      dplyr::distinct()
   }else{
-    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol), query_genes_df, by = "symbol") %>% dplyr::distinct()
+    query_genes_df <- dplyr::inner_join(dplyr::select(genedb, entrezgene, symbol),
+                                        query_genes_df, by = "symbol") %>%
+      dplyr::distinct()
   }
 
   coexp_target_1 <- oncoEnrichR::tcga_coexp_db %>%
@@ -208,8 +217,10 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::filter(stringr::str_detect(correlation,"Very") | !is.na(oncogene) | !is.na(tumor_suppressor)) %>%
     dplyr::arrange(desc(r))
 
-  coexp_target_tcga_positive <- dplyr::filter(coexp_target_tcga, corrtype == "Positive") %>% head(5000)
-  coexp_target_tcga_negative <- dplyr::filter(coexp_target_tcga, corrtype == "Negative") %>%
+  coexp_target_tcga_positive <-
+    dplyr::filter(coexp_target_tcga, corrtype == "Positive") %>% head(5000)
+  coexp_target_tcga_negative <-
+    dplyr::filter(coexp_target_tcga, corrtype == "Negative") %>%
     head(5000) %>%
     dplyr::arrange(r)
 

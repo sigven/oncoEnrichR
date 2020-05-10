@@ -11,11 +11,11 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F)
 
   target_compartments <- list()
-  target_compartments[['all']] <- data.frame()
-  target_compartments[['grouped']] <- data.frame()
+  target_compartments[["all"]] <- data.frame()
+  target_compartments[["grouped"]] <- data.frame()
 
   target_compartments_all <- as.data.frame(
-    dplyr::inner_join(comppidb, target_genes, by=c("symbol"))
+    dplyr::inner_join(comppidb, target_genes, by = c("symbol"))
   )
 
   if(nrow(target_compartments_all) > 0){
@@ -23,27 +23,29 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
       target_compartments_all %>%
       dplyr::select(-c(go_ontology,uniprot_acc)) %>%
       dplyr::left_join(dplyr::select(genedb, symbol, genename),by=c("symbol")) %>%
-      dplyr::mutate(genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
-      dplyr::mutate(compartment = paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',go_id,'\' target=\'_blank\'>',go_term,'</a>'))
+      dplyr::mutate(genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+                                      entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
+      dplyr::mutate(compartment = paste0("<a href='http://amigo.geneontology.org/amigo/term/'",
+                                         go_id,"' target='_blank'>",go_term,"</a>"))
     )
 
-    target_compartments[['grouped']] <- as.data.frame(
+    target_compartments[["grouped"]] <- as.data.frame(
       target_compartments_all %>%
         dplyr::group_by(go_id, go_term, compartment) %>%
-        dplyr::summarise(targets = paste(unique(symbol),collapse=", "),
-                         targetlinks = paste(unique(genelink),collapse=", "),
+        dplyr::summarise(targets = paste(unique(symbol), collapse = ", "),
+                         targetlinks = paste(unique(genelink), collapse = ", "),
                          n = dplyr::n()) %>%
         dplyr::arrange(desc(n)) %>%
         dplyr::ungroup() %>%
-        dplyr::select(-c(go_id,go_term))
+        dplyr::select(-c(go_id, go_term))
     )
 
-    target_compartments[['all']] <- target_compartments_all %>%
-      dplyr::select(-c(entrezgene,go_id,go_term,genelink)) %>%
+    target_compartments[["all"]] <- target_compartments_all %>%
+      dplyr::select(-c(entrezgene, go_id, go_term, genelink)) %>%
       dplyr::select(symbol, genename, compartment, dplyr::everything())
 
     n_genes <- length(unique(target_compartments_all$symbol))
-    target_compartments[['anatogram']] <- gganatogram::cell_key$cell %>%
+    target_compartments[["anatogram"]] <- gganatogram::cell_key$cell %>%
       dplyr::select(-value)
 
     anatogram_values <- as.data.frame(
@@ -59,9 +61,9 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
       dplyr::select(organ, value)
     )
 
-    target_compartments[['anatogram']] <- target_compartments[['anatogram']] %>%
+    target_compartments[["anatogram"]] <- target_compartments[["anatogram"]] %>%
       dplyr::left_join(anatogram_values, by = "organ") %>%
-      dplyr::mutate(value = dplyr::if_else(is.na(value),0,as.numeric(value)))
+      dplyr::mutate(value = dplyr::if_else(is.na(value), 0 ,as.numeric(value)))
 
 
   }
