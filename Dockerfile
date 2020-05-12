@@ -34,8 +34,7 @@ RUN apt-get autoremove
 
 RUN R -e "install.packages('devtools', dependencies = T)"
 WORKDIR /
-RUN R -e "devtools::install_github('sigven/oncoEnrichR')"
-RUN R -e "install.packages('openxlsx')"
+RUN R -e "devtools::install_github('sigven/oncoEnrichR', force = T)"
 
 ## Install pandoc (for HTML report generation)
 RUN wget https://github.com/jgm/pandoc/releases/download/2.9.2.1/pandoc-2.9.2.1-1-amd64.deb && \

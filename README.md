@@ -28,8 +28,8 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### Installation
-3. `install.packages('devtools')`
-3. `devtools::install_github('sigven/oncoEnrichR')`
+1. `install.packages('devtools')`
+2. `devtools::install_github('sigven/oncoEnrichR')`
 
 [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
 

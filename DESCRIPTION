@@ -1,7 +1,7 @@
 Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
-Version: 0.4.8
+Version: 0.5.0
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR
@@ -22,5 +22,5 @@ License: MIT
 Encoding: UTF-8
 Remotes: mjkallen/rlogging, jespermaag/gganatogram, molsysbio/speed2
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Roxygen: list(markdown = TRUE)
