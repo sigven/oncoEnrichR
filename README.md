@@ -120,7 +120,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
 
  and produced the [following HTML report with results](https://folk.uio.no/sigven/cmyc_example.html).
 
- R commands to reproduce the example output (requires that the [openxlsx package](https://github.com/ycphs/openxlsx) is installed on your local computer), and that "_LOCAL_FOLDER_" is replaced with a directory on your local computer:
+ Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
  * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
  * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, p_title = "cMYC_BioID_screen", p_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
