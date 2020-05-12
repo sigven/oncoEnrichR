@@ -109,9 +109,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 ### Example output
 
-A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)).
-
-We ran this target list, as found in [this Excel file](myc_candidates.xlsx), through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
+A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target list through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
   * `ignore_unknown = TRUE`
   * `query_source = "symbol"`
@@ -124,6 +122,6 @@ We ran this target list, as found in [this Excel file](myc_candidates.xlsx), thr
 
  R commands to reproduce the example output (requires that the [openxlsx package](https://github.com/ycphs/openxlsx) is installed on your local computer), and that "_LOCAL_FOLDER_" is replaced with a directory on your local computer:
 
- * `myc_data_raw <- openxlsx::read.xlsx("myc_candidates.xlsx",colNames = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(myc_data_raw$X1, query_source = "symbol", ignore_unknown = T, p_title = "cMYC_BioID_screen", p_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
+ * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, p_title = "cMYC_BioID_screen", p_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, "LOCAL_FOLDER", "cmyc_example")`
