@@ -18,7 +18,7 @@
 <br><br>
 ```{r gganatogram_plot, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 5}
 
-library(gganatogram)
+suppressPackageStartupMessages(library(gganatogram))
 gganatogram::gganatogram(data = onc_enrich_report[['data']][['subcellcomp']][['anatogram']],
                          outline = T,
                          fillOutline = 'lightgray',

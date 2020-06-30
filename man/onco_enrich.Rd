@@ -37,7 +37,7 @@ onco_enrich(
 \arguments{
 \item{query}{character vector with gene/query identifiers}
 
-\item{query_source}{character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')}
+\item{query_source}{character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")}
 
 \item{ignore_unknown}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
@@ -49,9 +49,9 @@ onco_enrich(
 
 \item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
 
-\item{background_enrichment_source}{character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')}
+\item{background_enrichment_source}{character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")}
 
-\item{background_enrichment_description}{character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')}
+\item{background_enrichment_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
 \item{p_value_cutoff_enrichment}{cutoff p-value for enrichment/over-representation analysis}
 

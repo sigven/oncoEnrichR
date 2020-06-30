@@ -1,5 +1,5 @@
 ---
-title: "OncoEnrichR report - `r onc_enrich_report[['config']][['title']]`"
+title: "OncoEnrichR report - `r onc_enrich_report[['config']][['project_title']]`"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
 nocite: |

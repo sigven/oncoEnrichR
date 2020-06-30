@@ -1,15 +1,12 @@
 ### Project background
 
-* Project owner/contact: `r onc_enrich_report[['config']][['project_background']][['owner']]`
+* Project owner/contact: `r onc_enrich_report[['config']][['project_owner']]`
 
 ```{r bg, echo=F, results = "asis", eval = T}
 
-i <- 1
-while(i <= nrow(onc_enrich_report[['config']][['project_background']][['items']])){
-  cat(paste0('* ',onc_enrich_report[['config']][['project_background']][['items']][i,],'\n'))
-  htmltools::br()
-  i <- i + 1
-}
+cat(paste0('* ',onc_enrich_report[['config']][['project_description']]))
+htmltools::br()
+
 
 ```
 <br><br>

@@ -1,6 +1,7 @@
 
-init_report <- function(title = "Project Title",
-                        project_owner = "Project Owner",
+init_report <- function(project_title = "Project title",
+                        project_owner = "Project owner",
+                        project_description = "Project description",
                         ppi_min_string_score = 900,
                         ppi_add_nodes = 50,
                         background_enrichment_description = "All protein-coding genes",
@@ -48,11 +49,10 @@ init_report <- function(title = "Project Title",
   rep[["config"]][["show"]][["loss_of_fitness"]] <- show_crispr_lof
   #rep[["config"]][["show"]][["gtex_coexp"]] <- show_gtex_coexp
 
-  ## report metadata - project owner, background, title
-  rep[["config"]][["title"]] <- title
-  rep[["config"]][["project_background"]] <- list()
-  rep[["config"]][["project_background"]][["owner"]] <- project_owner
-  rep[["config"]][["project_background"]][["items"]] <- data.frame()
+  ## report metadata - project owner, background, project_title
+  rep[["config"]][["project_title"]] <- project_title
+  rep[["config"]][["project_description"]] <- project_description
+  rep[["config"]][["project_owner"]] <- project_owner
 
   ## settings for showing disease associations
   rep[["config"]][["disease"]] <- list()
@@ -136,9 +136,9 @@ init_report <- function(title = "Project Title",
 #' @param query character vector with gene/query identifiers
 #' @param query_source character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")
 #' @param ignore_unknown logical indicating if analysis should continue when uknown query identifiers are encountered
-#' @param p_title title of report
-#' @param p_owner name of project owner
-#' @param background_fname filename for simple text file with project background information, one line per background item
+#' @param project_title project title (title of report)
+#' @param project_owner name of project owner
+#' @param project_description project background information
 #' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
 #' @param background_enrichment_source character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")
 #' @param background_enrichment_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
@@ -165,9 +165,9 @@ init_report <- function(title = "Project Title",
 onco_enrich <- function(query,
                    query_source = "symbol",
                    ignore_unknown = FALSE,
-                   p_title = "Project Title",
-                   p_owner = "Project Owner",
-                   background_fname = NULL,
+                   project_title = "Project title",
+                   project_owner = "Project owner",
+                   project_description = "Project description",
                    background_enrichment = NULL,
                    background_enrichment_source = "symbol",
                    background_enrichment_description = "All protein-coding genes",
@@ -232,8 +232,9 @@ onco_enrich <- function(query,
   query_entrezgene <- unique(qgenes_match[["found"]]$entrezgene)
   query_symbol <- unique(qgenes_match[["found"]]$symbol)
 
-  onc_rep <- init_report(title = p_title,
-                         project_owner = p_owner,
+  onc_rep <- init_report(project_title = project_title,
+                         project_owner = project_owner,
+                         project_description = project_description,
                          ppi_add_nodes = ppi_add_nodes,
                          show_ppi = show_ppi,
                          show_drugs_in_ppi = show_drugs_in_ppi,
@@ -260,18 +261,6 @@ onco_enrich <- function(query,
     onc_rep[["config"]][["co_expression_gtex"]][["plot_height"]] <-
       onc_rep[["config"]][["co_expression_gtex"]][["plot_height"]] + as.integer((length(query_symbol) - 20)/ 8.5)
   }
-
-
-
-  if (!is.null(background_fname)) {
-    if (file.exists(background_fname)) {
-      project_bg <- read.table(file = background_fname,stringsAsFactors = F,
-                             header = F, sep = "\n", na.strings = "", comment.char = "")
-      colnames(project_bg) <- "text"
-      onc_rep[["config"]][["project_background"]][["items"]] <- project_bg
-    }
-  }
-
 
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]][["target"]] <-
