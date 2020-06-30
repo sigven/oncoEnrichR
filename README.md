@@ -45,9 +45,9 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    query,
 	    query_source = "symbol",
 	    ignore_unknown = FALSE,
-	    p_title = "Project Title",
-	    p_owner = "Project Owner",
-	    background_fname = NULL,
+	    project_title = "Project title",
+	    project_owner = "Project owner",
+	    project_description = "Project description",
 	    background_enrichment = NULL,
 	    background_enrichment_source = "symbol",
 	    background_enrichment_description = "All protein-coding genes",
@@ -77,9 +77,9 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```query```     |     character vector with gene/query identifiers
 	  ```query_source```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
 	  ```ignore_unknown```     |     logical indicating if analysis should continue when uknown query identifiers are encountered
-	  ```p_title```     |     title of report
-	  ```p_owner```     |     name of project owner
-	  ```background_fname```     |     filename for simple text file with project background information, one line per background item
+	  ```project_title```     |     project title (report title)
+	  ```project_owner```     |     project owner (e.g. lab/PI)
+	  ```project_description```     |     brief description of project, how target list was derived
 	  ```background_enrichment```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
 	  ```background_enrichment_source```     |     character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
 	  ```background_enrichment_description```     |     character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
@@ -113,8 +113,8 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
 
   * `ignore_unknown = TRUE`
   * `query_source = "symbol"`
-  * `p_title = "cMYC_BioID_screen"`
-  * `p_owner = "Raught et al."`
+  * `project_title = "cMYC_BioID_screen"`
+  * `project_owner = "Raught et al."`
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
@@ -123,5 +123,5 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
  * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, p_title = "cMYC_BioID_screen", p_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, "LOCAL_FOLDER", "cmyc_example")`
