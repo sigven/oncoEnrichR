@@ -38,7 +38,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
 _oncoEnrichR_ works in two basic steps through the following two methods:
 
    __1.__ `onco_enrich`
-  * Takes an input list of human gene/protein identifiers and performs various types of annotations, frequency calculations, and enrichment analyses. Currently acceptable input formats are HGNC symbols, UniProt accessions, Ensembl and Entrez gene identifiers. Returns a *list object* with all contents of the analyses performed
+  * Takes an input list of human gene/protein identifiers and performs various types of annotations, frequency calculations, and enrichment analyses. Currently acceptable input formats are HGNC symbols, UniProt accessions, Ensembl and Entrez gene identifiers. Returns a *list object* with all contents of the analyses performed. Arguments and default values:
 
 	  ```r
 	  onco_enrich(
@@ -59,15 +59,15 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    simplify_go = F,
 	    ppi_add_nodes = 50,
 	    ppi_score_threshold = 900,
-	    show_ppi = T,
-	    show_drugs_in_ppi = F,
-	    show_disease = T,
-	    show_enrichment = T,
-	    show_tcga_aberration = T,
-	    show_tcga_coexpression = T,
-	    show_subcell_comp = T,
-	    show_crispr_lof = T,
-	    show_complex = T
+	    show_ppi = TRUE,
+	    show_drugs_in_ppi = FALSE,
+	    show_disease = TRUE,
+	    show_enrichment = TRUE,
+	    show_tcga_aberration = TRUE,
+	    show_tcga_coexpression = TRUE,
+	    show_subcell_comp = TRUE,
+	    show_crispr_lof = TRUE,
+	    show_complex = TRUE
 	  )
 	  ```
 
