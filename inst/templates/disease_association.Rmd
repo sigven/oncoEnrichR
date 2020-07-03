@@ -30,11 +30,12 @@ targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['diseas
 
 crosstalk::bscols(
   list(
+    crosstalk::filter_select("symbol", "Target", targets_shared, ~symbol),
     crosstalk::filter_select("tumor_suppressor", "Tumor suppressor", targets_shared, ~tumor_suppressor),
     crosstalk::filter_select("oncogene", "Proto-oncogene", targets_shared, ~oncogene)
   ),
   list(
-    crosstalk::filter_select("disease_associations", "Associated diseases", targets_shared, ~disease_associations),
+    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations),
     crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
     crosstalk::filter_select("target_tractability", "Target tractability", targets_shared, ~target_tractability)
 

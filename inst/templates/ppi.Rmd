@@ -17,7 +17,9 @@
   * Tumor suppressor genes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
   * Proto-oncogenes (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
   * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors (annotated from [CancerMine](https://www.nature.com/articles/s41592-019-0422-y)) are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
-  * Targeted drugs (from [Open Targets Platform](https://targetvalidation.org)) are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
+  * Targeted cancer drugs (from [Open Targets Platform](https://targetvalidation.org)):
+     * Compounds in late (3-4) clinical phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
+     * Compounds in early (1-2) clinical phases are <span style="color:purple"><b>HIGHLIGHTED IN PURPLE</b></span>
   
 
 <br><br>

@@ -140,14 +140,16 @@ verify_query_genes <- function(qgenes, qsource = "symbol", ignore_unknown = F, g
 validate_db_df <- function(df, dbtype = "genedb"){
   stopifnot(is.data.frame(df))
   if(dbtype == "genedb"){
-    for(var in c('symbol','entrezgene','oncogene','tumor_suppressor','cancer_driver','tcga_driver','ensembl_gene_id','name',
-               'gencode_gene_biotype','ot_tractability_compound','signaling_pw','genename','targeted_drugs')){
+    for(var in c('symbol','entrezgene','oncogene','tumor_suppressor','cancer_driver',
+                 'tcga_driver','ensembl_gene_id','name','gene_function_description',
+               'gencode_gene_biotype','ot_tractability_compound','signaling_pw',
+               'genename','targeted_cancer_drugs_lp','targeted_cancer_drugs_ep')){
       stopifnot(var %in% colnames(df))
     }
   }
   if(dbtype == "corum"){
-    for(var in c('complex_id','complex_name','protein_complex_purification_method','complex_comment',
-                 'disease_comment','citation','citation_link')){
+    for(var in c('complex_id','complex_name','protein_complex_purification_method',
+                 'complex_comment','disease_comment','citation','citation_link')){
       stopifnot(var %in% colnames(df))
     }
   }
@@ -158,7 +160,8 @@ validate_db_df <- function(df, dbtype = "genedb"){
   }
 
   if(dbtype == "comppidb"){
-    for(var in c('symbol','entrezgene','uniprot_acc','go_id','go_term','go_ontology','annotation_source','annotation_type')){
+    for(var in c('symbol','entrezgene','uniprot_acc','go_id','go_term',
+                 'go_ontology','annotation_source','annotation_type')){
       stopifnot(var %in% colnames(df))
     }
   }

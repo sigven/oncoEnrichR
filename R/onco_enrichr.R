@@ -265,7 +265,6 @@ onco_enrich <- function(query,
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]][["target"]] <-
       oncoEnrichR::target_disease_associations(query_symbol,
-                                               gene_summary = onc_rep[["config"]][["show"]][["gene_summary"]],
                                                genedb = oncoEnrichR::genedb)
   }
 

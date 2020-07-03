@@ -2,7 +2,6 @@
 
 target_disease_associations <- function(qgenes,
                                         genedb = NULL,
-                                        gene_summary = F,
                                         min_association_score = 0.3){
 
   stopifnot(is.character(qgenes))
@@ -15,34 +14,34 @@ target_disease_associations <- function(qgenes,
 
   rlogging::message(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
 
-  if(gene_summary == T){
-    i <- 0
-    all_summary_df <- data.frame()
-    if(is.null(target_genes$entrezgene)){
-      rlogging::warning("Column 'entrezgene' is missing from target set")
-    }
-    for(s in unique(target_genes$entrezgene)){
-      if(is.na(s)){
-        next
-      }
-      summary_json <- jsonlite::fromJSON(paste0('http://mygene.info/v3/query?q=',s,'&fields=summary'))
-      i <- i + 1
-      df <- NULL
-      if(!is.null(summary_json$hits$summary)){
-        df <- data.frame('entrezgene' = s, 'gene_summary' = summary_json$hits$summary[1], stringsAsFactors = F)
-      }else{
-        df <- data.frame('entrezgene' = s, 'gene_summary' = as.character(NA), stringsAsFactors = F)
-      }
-      all_summary_df <- dplyr::bind_rows(all_summary_df, df)
-    }
-
-    if('entrezgene' %in% colnames(all_summary_df)){
-      target_genes <- target_genes %>%
-        dplyr::left_join(all_summary_df,by=c("entrezgene"))
-    }
-  }else{
-    target_genes$gene_summary <- NA
-  }
+  # if(gene_summary == T){
+  #   i <- 0
+  #   all_summary_df <- data.frame()
+  #   if(is.null(target_genes$entrezgene)){
+  #     rlogging::warning("Column 'entrezgene' is missing from target set")
+  #   }
+  #   for(s in unique(target_genes$entrezgene)){
+  #     if(is.na(s)){
+  #       next
+  #     }
+  #     summary_json <- jsonlite::fromJSON(paste0('http://mygene.info/v3/query?q=',s,'&fields=summary'))
+  #     i <- i + 1
+  #     df <- NULL
+  #     if(!is.null(summary_json$hits$summary)){
+  #       df <- data.frame('entrezgene' = s, 'gene_summary' = summary_json$hits$summary[1], stringsAsFactors = F)
+  #     }else{
+  #       df <- data.frame('entrezgene' = s, 'gene_summary' = as.character(NA), stringsAsFactors = F)
+  #     }
+  #     all_summary_df <- dplyr::bind_rows(all_summary_df, df)
+  #   }
+  #
+  #   if('entrezgene' %in% colnames(all_summary_df)){
+  #     target_genes <- target_genes %>%
+  #       dplyr::left_join(all_summary_df,by=c("entrezgene"))
+  #   }
+  # }else{
+  #   target_genes$gene_summary <- NA
+  # }
 
   target_assocs <- target_genes %>%
     dplyr::left_join(oncoEnrichR::otdb,by="ensembl_gene_id")
@@ -61,7 +60,9 @@ target_disease_associations <- function(qgenes,
   if(nrow(tmp) > 0){
     result[['assoc_pr_gene']][['cancer']] <-
       as.data.frame(target_assocs %>%
-                      dplyr::filter((cancer_phenotype == T | stringr::str_detect(tolower(efo_name),"carcinoma|cancer|tumor")) & ot_association_score >= min_association_score) %>%
+                      dplyr::filter((cancer_phenotype == T |
+                                       stringr::str_detect(tolower(efo_name),"carcinoma|cancer|tumor")) &
+                                      ot_association_score >= min_association_score) %>%
                       dplyr::arrange(desc(ot_association_score)) %>%
                       dplyr::group_by(symbol) %>%
                       dplyr::summarise(n_cancer_phenotypes = dplyr::n(),
@@ -80,10 +81,8 @@ target_disease_associations <- function(qgenes,
                       dplyr::filter(ot_association_score >= min_association_score & is.na(cancer_phenotype )) %>%
                       dplyr::arrange(desc(ot_association_score)) %>%
                       dplyr::group_by(symbol) %>%
-                      dplyr::summarise(
-                                       ot_links = paste(unique(ot_link), collapse=", "),
-                                       ot_diseases = paste(unique(efo_name),collapse=", ")
-                                       )
+                      dplyr::summarise(ot_links = paste(unique(ot_link), collapse=", "),
+                                       ot_diseases = paste(unique(efo_name),collapse=", "))
       )
   }
 
@@ -92,10 +91,15 @@ target_disease_associations <- function(qgenes,
   result[['target']] <- result[['target']] %>%
     dplyr::left_join(result[['assoc_pr_gene']][['cancer']],by="symbol") %>%
     dplyr::left_join(result[['assoc_pr_gene']][['other']],by="symbol") %>%
-    dplyr::mutate(ot_cancer_rank = dplyr::if_else(is.na(ot_cancer_rank),as.numeric(0),as.numeric(ot_cancer_rank))) %>%
+    dplyr::mutate(ot_cancer_rank = dplyr::if_else(is.na(ot_cancer_rank),
+                                                  as.numeric(0),
+                                                  as.numeric(ot_cancer_rank))) %>%
     dplyr::arrange(desc(ot_cancer_rank), desc(n_cancer_phenotypes)) %>%
-    dplyr::select(symbol, genename, ensembl_gene_id, oncogene,  tumor_suppressor, cancergene_support, ot_cancer_diseases,
-                  ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links, ot_tractability_compound, targeted_drugs, gene_summary) %>%
+    dplyr::select(symbol, genename, ensembl_gene_id, oncogene, tumor_suppressor,
+                  cancergene_support, ot_cancer_diseases,
+                  ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links,
+                  ot_tractability_compound, targeted_cancer_drugs_lp,
+                  targeted_cancer_drugs_ep, gene_function_description) %>%
     dplyr::rename(cancergene_evidence = cancergene_support, disease_associations = ot_diseases,
                   disease_association_links = ot_links, target_tractability = ot_tractability_compound,
                   cancer_associations = ot_cancer_diseases, cancer_association_links = ot_cancer_links) %>%
