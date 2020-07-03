@@ -2,7 +2,7 @@
 
 * Each protein in the target set is annotated with:
    * Known associations to cancer phenotypes established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
-   * Target druggability (aka [_target tractability_](https://docs.targetvalidation.org/getting-started/target-tractability) )
+   * Target druggability (aka [_target tractability_](https://docs.targetvalidation.org/getting-started/target-tractability)), and targeted drugs for different cancer types 
    * Status wrt. roles as tumor suppressors/oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource and the [Network of Cancer Genes](https://cancer.sanger.ac.uk/census)
    * Target genes are colored in varying shades of blue according to their level of association to cancer  
    

@@ -9,7 +9,7 @@
     * Complete protein-protein interaction network, also showing proteins with no known interactions
     * Network community structures, as detected by the fast greedy modularity optimization algorithm by [Clauset et al.](http://www.arxiv.org/abs/cond-mat/0408187)
     * Network centrality/hub scores pr. node, as measured by [Kleinberg's score](https://dl.acm.org/citation.cfm?id=324140)
-
+  
 <br>
 
 * Network legend:
@@ -21,6 +21,9 @@
      * Compounds in late (3-4) clinical phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
      * Compounds in early (1-2) clinical phases are <span style="color:purple"><b>HIGHLIGHTED IN PURPLE</b></span>
   
+<br>
+
+* Use the mouse to zoom in/out, alter the position of nodes, mouse-over to view gene names/drug mechanism of actions (with indications)
 
 <br><br>
 
