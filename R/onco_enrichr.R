@@ -14,6 +14,7 @@ init_report <- function(project_title = "Project title",
                         show_ppi = T,
                         show_drugs_in_ppi = T,
                         show_disease = T,
+                        show_drug = T,
                         show_gene_summary = F,
                         show_enrichment = T,
                         show_tcga_aberration = T,
@@ -40,6 +41,7 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["show"]] <- list()
   rep[["config"]][["show"]][["ppi"]] <- show_ppi
   rep[["config"]][["show"]][["disease"]] <- show_disease
+  rep[["config"]][["show"]][["drug"]] <- show_drug
   rep[["config"]][["show"]][["gene_summary"]] <- show_gene_summary
   rep[["config"]][["show"]][["enrichment"]] <- show_enrichment
   rep[["config"]][["show"]][["protein_complex"]] <- show_complex
@@ -91,11 +93,12 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["tcga_aberration"]] <- list()
   rep[["config"]][["tcga_aberration"]][["plot_height"]] <- 14
 
-  for (analysis in c("tcga","disease","ppi","tcga","gtex","enrichment",
+  for (analysis in c("tcga","disease","ppi","tcga","gtex","enrichment","drug",
                     "protein_complex","subcellcomp","loss_of_fitness")) {
     rep[["data"]][[analysis]] <- list()
   }
 
+  rep[["data"]][["drug"]][["target"]] <- data.frame()
   rep[["data"]][["disease"]][["target"]] <- data.frame()
   rep[["data"]][["disease"]][["target_assoc"]] <- data.frame()
   rep[["data"]][["disease"]][["assoc_pr_gene"]] <- list()
@@ -183,6 +186,7 @@ onco_enrich <- function(query,
                    show_ppi = T,
                    show_drugs_in_ppi = F,
                    show_disease = T,
+                   show_drug = T,
                    show_enrichment = T,
                    show_tcga_aberration = T,
                    show_tcga_coexpression = T,
@@ -240,6 +244,7 @@ onco_enrich <- function(query,
                          show_drugs_in_ppi = show_drugs_in_ppi,
                          show_gene_summary = show_gene_summary,
                          show_disease = show_disease,
+                         show_drug = show_drug,
                          show_enrichment = show_enrichment,
                          show_tcga_aberration = show_tcga_aberration,
                          show_tcga_coexpression = show_tcga_coexpression,
@@ -265,6 +270,12 @@ onco_enrich <- function(query,
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]][["target"]] <-
       oncoEnrichR::target_disease_associations(query_symbol,
+                                               genedb = oncoEnrichR::genedb)
+  }
+
+  if (show_drug == T) {
+    onc_rep[["data"]][["drug"]][["target"]] <-
+      oncoEnrichR::target_drug_associations(query_symbol,
                                                genedb = oncoEnrichR::genedb)
   }
 

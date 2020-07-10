@@ -27,6 +27,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_disease, child='disease_association.Rmd', eval = onc_enrich_report[['config']][['show']][['disease']]}
 ```
 
+```{r target_drug, child='drug_target_association.Rmd', eval = onc_enrich_report[['config']][['show']][['drug']]}
+```
+
+
 ```{r target_complex, child='protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
 ```
 

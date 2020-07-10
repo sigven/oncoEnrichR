@@ -98,13 +98,37 @@ target_disease_associations <- function(qgenes,
     dplyr::select(symbol, genename, ensembl_gene_id, oncogene, tumor_suppressor,
                   cancergene_support, ot_cancer_diseases,
                   ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links,
-                  ot_tractability_compound, targeted_cancer_drugs_lp,
-                  targeted_cancer_drugs_ep, gene_function_description) %>%
+                  gene_function_description) %>%
     dplyr::rename(cancergene_evidence = cancergene_support, disease_associations = ot_diseases,
-                  disease_association_links = ot_links, target_tractability = ot_tractability_compound,
+                  disease_association_links = ot_links,
                   cancer_associations = ot_cancer_diseases, cancer_association_links = ot_cancer_links) %>%
     dplyr::distinct()
 
   return(result)
+}
+
+target_drug_associations <- function(qgenes,
+                                    genedb = NULL){
+
+  stopifnot(is.character(qgenes))
+  stopifnot(!is.null(genedb))
+  validate_db_df(genedb, dbtype = "genedb")
+
+  target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
+    dplyr::inner_join(genedb, by = "symbol") %>%
+    dplyr::distinct()
+
+  rlogging::message(paste0("Open Targets Platform: annotation of protein targets to targeted drugs"))
+
+  result <- list()
+  result[['target']] <- target_genes %>%
+    dplyr::select(symbol, genename, targeted_cancer_drugs_lp,
+                  targeted_cancer_drugs_ep) %>%
+    dplyr::filter(!is.na(targeted_cancer_drugs_lp) | !is.na(targeted_cancer_drugs_ep))
+
+  return(result)
+
+
+
 }
 

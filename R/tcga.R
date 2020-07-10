@@ -186,7 +186,7 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::select(-tmp) %>%
     dplyr::bind_rows(coexp_target_1) %>%
     dplyr::distinct() %>%
-    dplyr::left_join(dplyr::select(genedb, name, oncogene, tumor_suppressor, symbol, ot_tractability_compound),
+    dplyr::left_join(dplyr::select(genedb, name, oncogene, cancer_driver, tumor_suppressor, symbol, ot_tractability_compound),
                      by = c("symbol_partner" = "symbol")) %>%
     dplyr::rename(target_gene = symbol, partner_gene = symbol_partner,
                   partner_genename = name, target_tractability = ot_tractability_compound) %>%
@@ -214,7 +214,7 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
 
 
   coexp_target_tcga <- coexp_target_tcga %>%
-    dplyr::filter(stringr::str_detect(correlation,"Very") | !is.na(oncogene) | !is.na(tumor_suppressor)) %>%
+    dplyr::filter(stringr::str_detect(correlation,"Very") | !is.na(oncogene) | !is.na(tumor_suppressor) | !is.na(cancer_driver)) %>%
     dplyr::arrange(desc(r))
 
   coexp_target_tcga_positive <-

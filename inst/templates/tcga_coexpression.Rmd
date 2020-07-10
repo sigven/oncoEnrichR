@@ -1,9 +1,8 @@
 ### TCGA co-expression (RNAseq) {.tabset}
 
-* Using RNA-seq data from TCGA, a co-expression correlation matrix (Pearson rank correlation coefficent) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
-* Here, we are showing, across the main primary tumor sites:
-  1) Genes with a **very strong** correlation (negative or positive) to genes in the target set
-  2) Tumor suppressor genes or proto-oncogenes with a **strong/very strong** correlation (negative or positive) to genes in the target set
+* Using RNA-seq data from TCGA, a co-expression correlation matrix (Pearson rank correlation coefficient) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
+* Here, we are showing, across the main primary tumor sites in TCGA:
+  2) Tumor suppressor genes, proto-oncogenes or cancer driver genes with a **strong/very strong** correlation (negative or positive) to genes in the target set
 
 
 <br><br>
@@ -53,8 +52,8 @@ crosstalk::bscols(
   ),
   list(
     crosstalk::filter_select("oncogene", "Oncogene (partner)", coexp_genes_positive, ~oncogene),
-    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_positive, ~primary_site),
-    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_positive, ~target_tractability)
+    crosstalk::filter_select("cancer_driver", "Cancer driver (partner)", coexp_genes_positive, ~cancer_driver),
+    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_positive, ~primary_site)
 
   )
 )
@@ -94,9 +93,8 @@ crosstalk::bscols(
   ),
   list(
     crosstalk::filter_select("oncogene", "Oncogene (partner)", coexp_genes_negative, ~oncogene),
-    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_negative, ~primary_site),
-    crosstalk::filter_select("target_tractability", "Tractability compound (partner)", coexp_genes_negative, ~target_tractability)
-
+    crosstalk::filter_select("cancer_driver", "Cancer driver (partner)", coexp_genes_negative, ~cancer_driver),
+    crosstalk::filter_select("primary_site", "Primary site", coexp_genes_negative, ~primary_site)
   )
 )
 
