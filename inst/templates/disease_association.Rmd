@@ -35,8 +35,7 @@ crosstalk::bscols(
   ),
   list(
     crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations),
-    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
-
+    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations)
   )
 )
 
