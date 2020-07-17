@@ -62,6 +62,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    show_ppi = TRUE,
 	    show_drugs_in_ppi = FALSE,
 	    show_disease = TRUE,
+	    show_drug = TRUE,
 	    show_enrichment = TRUE,
 	    show_tcga_aberration = TRUE,
 	    show_tcga_coexpression = TRUE,
@@ -94,6 +95,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain disease associations (Open Targets Platform)
+	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase, from Open Targets Platform)
 	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
