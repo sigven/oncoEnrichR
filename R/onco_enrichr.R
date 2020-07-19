@@ -126,9 +126,23 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["tcga"]][["aberration"]][["table"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["plot"]] <- list()
 
-  for (v in c("cna_homdel","cna_ampl")) {
-    rep[["data"]][["tcga"]][["aberration"]][["plot"]][[v]] <- NULL
-    rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <- data.frame()
+  for (v in c("cna_homdel","cna_ampl","snv_indel")) {
+    if(v != "snv_indel"){
+      rep[["data"]][["tcga"]][["aberration"]][["plot"]][[v]] <- NULL
+      rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <- data.frame()
+    }
+    else{
+      rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <- list()
+      i <- 1
+      while(i <= nrow(oncoEnrichR::maf_codes)){
+        site <- oncoEnrichR::maf_codes[i,]$primary_site
+        code <- oncoEnrichR::maf_codes[i,]$code
+        rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]][[site]] <- list()
+        rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]][[site]][['code']] <- code
+        rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]][[site]][['top_mutated_genes']] <- data.frame()
+        i <- i + 1
+      }
+    }
   }
 
   return(rep)
@@ -402,9 +416,17 @@ onco_enrich <- function(query,
   if (show_tcga_aberration == T) {
     for (v in c("cna_homdel","cna_ampl")) {
       onc_rep[["data"]][["tcga"]][["aberration"]][["plot"]][[v]] <-
-        oncoEnrichR::tcga_aberration_plot(query_entrezgene, qsource = "entrezgene", genedb = oncoEnrichR::genedb, vtype = v)
+        oncoEnrichR::tcga_aberration_plot(query_entrezgene, qsource = "entrezgene",
+                                          genedb = oncoEnrichR::genedb, vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
-        oncoEnrichR::tcga_aberration_table(query_entrezgene, qsource = "entrezgene", genedb = oncoEnrichR::genedb, vtype = v)
+        oncoEnrichR::tcga_aberration_table(query_entrezgene, qsource = "entrezgene",
+                                           genedb = oncoEnrichR::genedb, vtype = v)
+    }
+
+    for(psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])){
+      onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]][[psite]][['top_mutated_genes']] <-
+        oncoEnrichR::tcga_oncoplot_genes(query_symbol, qsource = "symbol", genedb = oncoEnrichR::genedb,
+                                         site = psite)
     }
   }
 

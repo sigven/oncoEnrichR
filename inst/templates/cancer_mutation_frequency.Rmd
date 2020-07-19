@@ -1,5 +1,172 @@
 ### TCGA aberration frequency
 
+#### SNVs/InDels {.tabset}
+
+```{r tcga_oncoplot_setup, echo = F, eval = T}
+
+tcga_oncoplot_data <- onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
+
+```
+
+
+##### Breast
+
+```{r tcga_oncoplot_breast, echo = F, eval = T, fig.height = 15, fig.width = 14.5}
+
+code <- tcga_oncoplot_data[["Breast"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Breast"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F, gene_mar = 6,
+                   annotationFontSize = 1.4, sepwd_genes = 0.7, fontSize = 1.2,
+                   legendFontSize = 1.6, legend_height = 6)
+```
+
+##### Colon/Rectum
+
+```{r tcga_oncoplot_colon, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Colon/Rectum"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Colon/Rectum"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+```
+
+##### Lung
+
+```{r tcga_oncoplot_lung, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Lung"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lung"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+##### Skin
+
+```{r tcga_oncoplot_skin, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Skin"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Skin"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+##### Esophagus/Stomach
+
+```{r tcga_oncoplot_stomach, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Esophagus/Stomach"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Esophagus/Stomach"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+```
+
+##### Cervix
+
+```{r tcga_oncoplot_cervix, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Cervix"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Cervix"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+##### Prostate
+
+```{r tcga_oncoplot_prostate, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Prostate"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Prostate"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+##### Ovary/Fallopian Tube
+
+```{r tcga_oncoplot_ovary, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+
+##### Uterus
+
+
+```{r tcga_oncoplot_uterus, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Uterus"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Uterus"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+```
+
+
+##### Pancreas
+
+
+```{r tcga_oncoplot_pancreas, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Pancreas"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pancreas"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+
+##### Soft Tissue
+
+
+```{r tcga_oncoplot_softtissue, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Soft Tissue"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Soft Tissue"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+##### Myeloid
+
+
+```{r tcga_oncoplot_myeloid, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+
+code <- tcga_oncoplot_data[["Myeloid"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Myeloid"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+```
+
+
+<br><br>
+
+#### Copy number alterations
+
 * The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated
 * Gene aberration frequency are plotted across two categories of mutation types
     1. sCNA - amplifications

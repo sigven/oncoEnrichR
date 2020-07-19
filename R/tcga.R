@@ -1,3 +1,36 @@
+tcga_oncoplot_genes <- function(qgenes, qsource = "symbol", cstrata = "site",
+                          genedb = "NULL", site = "Breast"){
+
+  rlogging::message(paste0("TCGA: generating oncoplot, tissue =  ", site))
+  stopifnot(!is.null(genedb))
+  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(qsource == "symbol" | qsource == "entrezgene")
+  stopifnot(is.character(qgenes))
+  query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+  if(qsource == 'entrezgene'){
+    query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
+    query_genes_df <- dplyr::inner_join(genedb, query_genes_df, by = "entrezgene") %>% dplyr::distinct()
+  }else{
+    query_genes_df <- dplyr::inner_join(genedb, query_genes_df, by = "symbol") %>% dplyr::distinct()
+  }
+
+  top_mutated_genes <- oncoEnrichR::tcga_aberration_stats %>%
+    dplyr::filter(variant_type == "snv_indel" &
+                  genomic_strata == "gene" & primary_site == site) %>%
+    dplyr::filter(clinical_strata == cstrata) %>%
+    dplyr::inner_join(dplyr::select(query_genes_df, symbol),by=c("symbol")) %>%
+    dplyr::select(symbol, percent_mutated) %>%
+    dplyr::arrange(desc(percent_mutated)) %>%
+    dplyr::distinct() %>%
+    head(50)
+
+  #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
+  rlogging::message(paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
+
+  return(top_mutated_genes)
+
+}
+
 
 tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site",
                                  vtype = "snv_indel", genedb = NULL, percentile = FALSE){
