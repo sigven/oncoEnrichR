@@ -6,160 +6,410 @@
 
 tcga_oncoplot_data <- onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
 
+gene_mar <- 8
+annotationFontSize <- 1.6
+sepwd_genes <- 0.7
+fontSize <- 1.4
+legendFontSize <- 2
+legend_height <- 6
+anno_height <- 0.7
+
 ```
 
 
 ##### Breast
 
-```{r tcga_oncoplot_breast, echo = F, eval = T, fig.height = 15, fig.width = 14.5}
+```{r tcga_oncoplot_breast, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Breast"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Breast"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F, gene_mar = 6,
-                   annotationFontSize = 1.4, sepwd_genes = 0.7, fontSize = 1.2,
-                   legendFontSize = 1.6, legend_height = 6)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F, 
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Colon/Rectum
 
-```{r tcga_oncoplot_colon, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_colon, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Colon/Rectum"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Colon/Rectum"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Lung
 
-```{r tcga_oncoplot_lung, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_lung, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Lung"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lung"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Skin
 
-```{r tcga_oncoplot_skin, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_skin, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Skin"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Skin"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Esophagus/Stomach
 
-```{r tcga_oncoplot_stomach, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_stomach, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Esophagus/Stomach"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Esophagus/Stomach"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Cervix
 
-```{r tcga_oncoplot_cervix, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_cervix, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Cervix"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Cervix"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Prostate
 
-```{r tcga_oncoplot_prostate, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_prostate, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Prostate"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Prostate"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Ovary/Fallopian Tube
 
-```{r tcga_oncoplot_ovary, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_ovary, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 
 ##### Uterus
 
 
-```{r tcga_oncoplot_uterus, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_uterus, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Uterus"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Uterus"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 
 ##### Pancreas
 
 
-```{r tcga_oncoplot_pancreas, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_pancreas, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Pancreas"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pancreas"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 
 ##### Soft Tissue
 
 
-```{r tcga_oncoplot_softtissue, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_softtissue, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Soft Tissue"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Soft Tissue"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 ##### Myeloid
 
 
-```{r tcga_oncoplot_myeloid, echo = F, eval = T, fig.height = 13, fig.width = 13.5}
+```{r tcga_oncoplot_myeloid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
 
 code <- tcga_oncoplot_data[["Myeloid"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
 maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Myeloid"]][['top_mutated_genes']]$symbol,
                      drawRowBar = F, drawColBar = F,
                      sortByAnnotation = T,
-                     clinicalFeatures = c("Diagnosis"), showTitle = F)
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### CNS/Brain
+
+
+```{r tcga_oncoplot_cns, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["CNS/Brain"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["CNS/Brain"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Liver
+
+
+```{r tcga_oncoplot_liver, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Liver"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Liver"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Kidney
+
+
+```{r tcga_oncoplot_kidney, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Kidney"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Kidney"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Lymphoid
+
+
+```{r tcga_oncoplot_lymphoid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Lymphoid"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lymphoid"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Head and Neck
+
+
+```{r tcga_oncoplot_headneck, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Head and Neck"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Head and Neck"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Thyroid
+
+
+```{r tcga_oncoplot_thyroid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Thyroid"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Biliary Tract
+
+
+```{r tcga_oncoplot_biliarytract, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Biliary Tract"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Biliary Tract"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Bladder/Urinary Tract
+
+
+```{r tcga_oncoplot_bladder, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Bladder/Urinary Tract"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Bladder/Urinary Tract"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
 ```
 
 
@@ -177,12 +427,12 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Myeloid"]][['top_mutated_ge
 
 
 <br><br>
-```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13.5}
+```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 16.5}
 onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_ampl']]
 
 ```
 <br><br>
-```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 13.5}
+```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 16.5}
 onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_homdel']]
 
 ```
