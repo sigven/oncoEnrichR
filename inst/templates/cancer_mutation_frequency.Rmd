@@ -1,10 +1,19 @@
 ### TCGA aberration frequency
 
+* The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated from [The Cancer Genome Atlas (TCGA)]()
+
+<br>
+
 #### SNVs/InDels {.tabset}
+
+* Somatic SNVs/InDels in the target genes (top mutated) are illustrated with [oncoplots](https://www.bioconductor.org/packages/devel/bioc/vignettes/maftools/inst/doc/oncoplots.html)
+* Gene mutation frequencies are sorted by type of diagnosis (i.e. cancer subtypes)
+
+<br><br>
 
 ```{r tcga_oncoplot_setup, echo = F, eval = T}
 
-tcga_oncoplot_data <- onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
+tcga_oncoplot_data <- onc_enrich_report[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
 
 gene_mar <- 8
 annotationFontSize <- 1.6
@@ -412,12 +421,50 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Bladder/Urinary Tract"]][['
                    anno_height = anno_height)
 ```
 
+##### Pleura
 
-<br><br>
+
+```{r tcga_pleura, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Pleura"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pleura"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+##### Thyroid
+
+
+```{r tcga_thyroid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+
+code <- tcga_oncoplot_data[["Thyroid"]][['code']]
+maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_genes']]$symbol,
+                     drawRowBar = F, drawColBar = F,
+                     sortByAnnotation = T,
+                     clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+
 
 #### Copy number alterations
 
-* The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated
 * Gene aberration frequency are plotted across two categories of mutation types
     1. sCNA - amplifications
     2. sCNA - homozygous deletions
