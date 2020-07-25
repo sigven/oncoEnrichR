@@ -2,7 +2,7 @@
 
 * The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated from [The Cancer Genome Atlas (TCGA)]()
 
-<br>
+<br><br>
 
 #### SNVs/InDels {.tabset}
 
@@ -22,13 +22,15 @@ fontSize <- 1.4
 legendFontSize <- 2
 legend_height <- 6
 anno_height <- 0.7
+fheight <- 21
+fwidth <- 18
 
 ```
 
 
 ##### Breast
 
-```{r tcga_oncoplot_breast, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_breast, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Breast"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -47,7 +49,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Breast"]][['top_mutated_gen
 
 ##### Colon/Rectum
 
-```{r tcga_oncoplot_colon, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_colon, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Colon/Rectum"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -66,7 +68,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Colon/Rectum"]][['top_mutat
 
 ##### Lung
 
-```{r tcga_oncoplot_lung, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_lung, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Lung"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -85,7 +87,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lung"]][['top_mutated_genes
 
 ##### Skin
 
-```{r tcga_oncoplot_skin, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_skin, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Skin"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -104,7 +106,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Skin"]][['top_mutated_genes
 
 ##### Esophagus/Stomach
 
-```{r tcga_oncoplot_stomach, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_stomach, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Esophagus/Stomach"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -123,7 +125,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Esophagus/Stomach"]][['top_
 
 ##### Cervix
 
-```{r tcga_oncoplot_cervix, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_cervix, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Cervix"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -142,7 +144,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Cervix"]][['top_mutated_gen
 
 ##### Prostate
 
-```{r tcga_oncoplot_prostate, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_prostate, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Prostate"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -161,7 +163,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Prostate"]][['top_mutated_g
 
 ##### Ovary/Fallopian Tube
 
-```{r tcga_oncoplot_ovary, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_ovary, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -182,7 +184,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['t
 ##### Uterus
 
 
-```{r tcga_oncoplot_uterus, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_uterus, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Uterus"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -203,7 +205,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Uterus"]][['top_mutated_gen
 ##### Pancreas
 
 
-```{r tcga_oncoplot_pancreas, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_pancreas, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Pancreas"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -224,7 +226,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pancreas"]][['top_mutated_g
 ##### Soft Tissue
 
 
-```{r tcga_oncoplot_softtissue, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_softtissue, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Soft Tissue"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -244,7 +246,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Soft Tissue"]][['top_mutate
 ##### Myeloid
 
 
-```{r tcga_oncoplot_myeloid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_myeloid, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Myeloid"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -264,7 +266,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Myeloid"]][['top_mutated_ge
 ##### CNS/Brain
 
 
-```{r tcga_oncoplot_cns, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_cns, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["CNS/Brain"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -284,7 +286,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["CNS/Brain"]][['top_mutated_
 ##### Liver
 
 
-```{r tcga_oncoplot_liver, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_liver, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Liver"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -304,7 +306,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Liver"]][['top_mutated_gene
 ##### Kidney
 
 
-```{r tcga_oncoplot_kidney, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_kidney, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Kidney"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -324,7 +326,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Kidney"]][['top_mutated_gen
 ##### Lymphoid
 
 
-```{r tcga_oncoplot_lymphoid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_lymphoid, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Lymphoid"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -344,7 +346,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lymphoid"]][['top_mutated_g
 ##### Head and Neck
 
 
-```{r tcga_oncoplot_headneck, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_headneck, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Head and Neck"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -364,7 +366,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Head and Neck"]][['top_muta
 ##### Thyroid
 
 
-```{r tcga_oncoplot_thyroid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_thyroid, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Thyroid"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -384,7 +386,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_ge
 ##### Biliary Tract
 
 
-```{r tcga_oncoplot_biliarytract, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_biliarytract, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Biliary Tract"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -404,7 +406,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Biliary Tract"]][['top_muta
 ##### Bladder/Urinary Tract
 
 
-```{r tcga_oncoplot_bladder, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_oncoplot_bladder, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Bladder/Urinary Tract"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -424,7 +426,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Bladder/Urinary Tract"]][['
 ##### Pleura
 
 
-```{r tcga_pleura, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_pleura, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Pleura"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -444,7 +446,7 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pleura"]][['top_mutated_gen
 ##### Thyroid
 
 
-```{r tcga_thyroid, echo = F, eval = T, fig.height = 18, fig.width = 16.5}
+```{r tcga_thyroid, echo = F, eval = T, fig.height = fheight, fig.width = fwidth}
 
 code <- tcga_oncoplot_data[["Thyroid"]][['code']]
 maf <- readRDS(url(paste0("https://github.com/sigven/oncoEnrichR/raw/master/maf/",code,".maf.rds")))
@@ -474,12 +476,12 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_ge
 
 
 <br><br>
-```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 16.5}
+```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = fwidth}
 onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_ampl']]
 
 ```
 <br><br>
-```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = 16.5}
+```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = fwidth}
 onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_homdel']]
 
 ```

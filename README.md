@@ -23,7 +23,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant for proteins in the target set?
   * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
   * Are there specific pathways or functional properties that are enriched within the target set, as compared to a reference/background set?
-  * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, homozygous deletions/amplifications)?
+  * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
   * Which members of the target set are co-expressed (strong negative or positive correlations) with proto-oncogenes or tumor suppressors in tumor sample cohorts (TCGA, RNAseq)?
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
