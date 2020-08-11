@@ -68,6 +68,70 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
   return(community_structure)
 }
 
+
+get_string_network_nodes_edges <- function(qgenes, all_query_nodes = NULL, settings = NULL, genedb = NULL){
+
+  query_list <- paste(qgenes, collapse="%0d")
+
+  edges <- jsonlite::fromJSON(paste0("https://string-db.org/api/json/",
+                                         settings$query_type, "?species=9606&identifiers=",
+                                         query_list, "&required_score=",
+                                         settings$minimum_score, "&add_nodes=", settings$add_nodes)) %>%
+    dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by = c("preferredName_A" = "symbol")) %>%
+    dplyr::filter(!is.na(entrezgene)) %>%
+    dplyr::rename(entrezgene_a = entrezgene) %>%
+    dplyr::mutate(entrezgene_a = as.character(entrezgene_a)) %>%
+    dplyr::mutate(from = paste0("s",entrezgene_a)) %>%
+    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
+                                   cancer_driver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
+    dplyr::rename(oncogene_A = oncogene, tsgene_A = tumor_suppressor,
+                  cdriver_A = cancer_driver, tcga_driver_A = tcga_driver) %>%
+    dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by = c("preferredName_B" = "symbol")) %>%
+    dplyr::filter(!is.na(entrezgene)) %>%
+    dplyr::rename(entrezgene_b = entrezgene) %>%
+    dplyr::mutate(entrezgene_b = as.character(entrezgene_b)) %>%
+    dplyr::mutate(to = paste0("s",entrezgene_b)) %>%
+    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
+                                   cancer_driver, tcga_driver), by = c("entrezgene_a" = "entrezgene")) %>%
+    dplyr::rename(oncogene_B = oncogene, tsgene_B = tumor_suppressor, cdriver_B = cancer_driver,
+                  tcga_driver_B = tcga_driver) %>%
+    dplyr::mutate(interaction_symbol = paste0(preferredName_A,"_",preferredName_B)) %>%
+    dplyr::left_join(dplyr::select(all_query_nodes, symbol, query_node), by = c("preferredName_A" = "symbol")) %>%
+    dplyr::rename(query_node_A = query_node) %>%
+    dplyr::left_join(dplyr::select(all_query_nodes, symbol, query_node), by = c("preferredName_B" = "symbol")) %>%
+    dplyr::rename(query_node_B = query_node) %>%
+    dplyr::mutate(weight = score) %>%
+    dplyr::distinct() %>%
+    dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
+
+  nodes <- data.frame("symbol" = unique(c(edges$preferredName_A, edges$preferredName_B)),
+                              stringsAsFactors = F) %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(genedb, by = c("symbol" = "symbol")) %>%
+    dplyr::select(-ensembl_gene_id) %>%
+    dplyr::filter(!is.na(entrezgene)) %>%
+    dplyr::left_join(dplyr::select(all_query_nodes, symbol, query_node), by = c("symbol")) %>%
+    dplyr::mutate(id = paste0("s",entrezgene)) %>%
+    dplyr::distinct() %>%
+    dplyr::bind_rows(all_query_nodes) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(query_node = dplyr::if_else(is.na(query_node), FALSE, as.logical(query_node)))
+
+
+  #all_nodes <- dplyr::bind_rows(query_nodes, network_nodes) %>%
+    #dplyr::distinct() %>%
+    #dplyr::mutate(query_node = dplyr::if_else(is.na(query_node), FALSE, as.logical(query_node)))
+
+
+  network <- list()
+  network$edges <- edges
+  network$nodes <- nodes
+
+  return(network)
+
+
+}
+
 get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL,
                             cancerdrugdb = NULL, settings = NULL){
 
@@ -76,8 +140,6 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL,
   stopifnot(!is.null(cancerdrugdb))
   stopifnot(settings$query_type == "interaction_partners" | settings$query_type == "network")
   oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
-
-  query_list <- paste(qgenes, collapse="%0d")
 
   query_nodes <- data.frame("entrezgene" = qgenes, stringsAsFactors = F) %>%
     dplyr::distinct() %>%
@@ -91,50 +153,82 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL,
   rlogging::message(paste0("STRINGdb: Settings -  required_score = ",
                            settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
-  all_edges <- jsonlite::fromJSON(paste0("https://string-db.org/api/json/",
-                                        settings$query_type,"?species=9606&identifiers=",
-                                        query_list,"&required_score=",
-                                        settings$minimum_score,"&add_nodes=",settings$add_nodes)) %>%
-    dplyr::left_join(dplyr::select(genedb,entrezgene,symbol),by=c("preferredName_A" = "symbol")) %>%
-    dplyr::filter(!is.na(entrezgene)) %>%
-    dplyr::rename(entrezgene_a = entrezgene) %>%
-    dplyr::mutate(entrezgene_a = as.character(entrezgene_a)) %>%
-    dplyr::mutate(from = paste0("s",entrezgene_a)) %>%
-    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
-                                   cancer_driver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
-    dplyr::rename(oncogene_A = oncogene, tsgene_A = tumor_suppressor,
-                  cdriver_A = cancer_driver, tcga_driver_A = tcga_driver) %>%
-    dplyr::left_join(dplyr::select(genedb,entrezgene,symbol),by=c("preferredName_B" = "symbol")) %>%
-    dplyr::filter(!is.na(entrezgene)) %>%
-    dplyr::rename(entrezgene_b = entrezgene) %>%
-    dplyr::mutate(entrezgene_b = as.character(entrezgene_b)) %>%
-    dplyr::mutate(to = paste0("s",entrezgene_b)) %>%
-    dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
-                                   cancer_driver, tcga_driver), by = c("entrezgene_a" = "entrezgene")) %>%
-    dplyr::rename(oncogene_B = oncogene, tsgene_B = tumor_suppressor, cdriver_B = cancer_driver,
-                  tcga_driver_B = tcga_driver) %>%
-    dplyr::mutate(interaction_symbol = paste0(preferredName_A,"_",preferredName_B)) %>%
-    dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("preferredName_A" = "symbol")) %>%
-    dplyr::rename(query_node_A = query_node) %>%
-    dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("preferredName_B" = "symbol")) %>%
-    dplyr::rename(query_node_B = query_node) %>%
-    dplyr::mutate(weight = score) %>%
-    dplyr::distinct() %>%
-    dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
+  all_edges <- data.frame()
+  all_nodes <- data.frame()
 
-  network_nodes <- data.frame("symbol" = unique(c(all_edges$preferredName_A, all_edges$preferredName_B)),
-                              stringsAsFactors = F) %>%
-    dplyr::distinct() %>%
-    dplyr::left_join(genedb, by = c("symbol" = "symbol")) %>%
-    dplyr::select(-ensembl_gene_id) %>%
-    dplyr::filter(!is.na(entrezgene)) %>%
-    dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("symbol")) %>%
-    dplyr::mutate(id = paste0("s",entrezgene)) %>%
-    dplyr::distinct()
+  if(length(qgenes) > 200){
+    i <- 1
+    omnipathdb <- data.frame()
+    while(i <= length(qgenes)){
+      qgenes_set <- qgenes[i:min(length(qgenes),i + 199)]
 
-  all_nodes <- dplyr::bind_rows(query_nodes, network_nodes) %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(query_node = dplyr::if_else(is.na(query_node), FALSE, as.logical(query_node)))
+      ppi_network_data <- get_string_network_nodes_edges(qgenes = qgenes_set,
+                                                         all_query_nodes = query_nodes,
+                                                         settings = settings,
+                                                         genedb = genedb)
+
+      all_edges <- all_edges %>% dplyr::bind_rows(ppi_network_data$edges) %>% dplyr::distinct()
+      all_nodes <- all_nodes %>% dplyr::bind_rows(ppi_network_data$nodes) %>% dplyr::distinct()
+      i <- i + 199
+    }
+
+  }else{
+    ppi_network_data <- get_string_network_nodes_edges(qgenes = qgenes,
+                                                       all_query_nodes = query_nodes,
+                                                       settings = settings,
+                                                       genedb = genedb)
+    all_edges <- all_edges %>% dplyr::bind_rows(ppi_network_data$edges) %>% dplyr::distinct()
+    all_nodes <- all_nodes %>% dplyr::bind_rows(ppi_network_data$nodes) %>% dplyr::distinct()
+  }
+
+
+
+  # query_list <- paste(qgenes, collapse="%0d")
+  #
+  # all_edges <- jsonlite::fromJSON(paste0("https://string-db.org/api/json/",
+  #                                       settings$query_type, "?species=9606&identifiers=",
+  #                                       query_list, "&required_score=",
+  #                                       settings$minimum_score, "&add_nodes=", settings$add_nodes)) %>%
+  #   dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by = c("preferredName_A" = "symbol")) %>%
+  #   dplyr::filter(!is.na(entrezgene)) %>%
+  #   dplyr::rename(entrezgene_a = entrezgene) %>%
+  #   dplyr::mutate(entrezgene_a = as.character(entrezgene_a)) %>%
+  #   dplyr::mutate(from = paste0("s",entrezgene_a)) %>%
+  #   dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
+  #                                  cancer_driver, tcga_driver),by=c("entrezgene_a" = "entrezgene")) %>%
+  #   dplyr::rename(oncogene_A = oncogene, tsgene_A = tumor_suppressor,
+  #                 cdriver_A = cancer_driver, tcga_driver_A = tcga_driver) %>%
+  #   dplyr::left_join(dplyr::select(genedb,entrezgene,symbol), by = c("preferredName_B" = "symbol")) %>%
+  #   dplyr::filter(!is.na(entrezgene)) %>%
+  #   dplyr::rename(entrezgene_b = entrezgene) %>%
+  #   dplyr::mutate(entrezgene_b = as.character(entrezgene_b)) %>%
+  #   dplyr::mutate(to = paste0("s",entrezgene_b)) %>%
+  #   dplyr::left_join(dplyr::select(genedb, entrezgene, oncogene, tumor_suppressor,
+  #                                  cancer_driver, tcga_driver), by = c("entrezgene_a" = "entrezgene")) %>%
+  #   dplyr::rename(oncogene_B = oncogene, tsgene_B = tumor_suppressor, cdriver_B = cancer_driver,
+  #                 tcga_driver_B = tcga_driver) %>%
+  #   dplyr::mutate(interaction_symbol = paste0(preferredName_A,"_",preferredName_B)) %>%
+  #   dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("preferredName_A" = "symbol")) %>%
+  #   dplyr::rename(query_node_A = query_node) %>%
+  #   dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("preferredName_B" = "symbol")) %>%
+  #   dplyr::rename(query_node_B = query_node) %>%
+  #   dplyr::mutate(weight = score) %>%
+  #   dplyr::distinct() %>%
+  #   dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
+  #
+  # network_nodes <- data.frame("symbol" = unique(c(all_edges$preferredName_A, all_edges$preferredName_B)),
+  #                             stringsAsFactors = F) %>%
+  #   dplyr::distinct() %>%
+  #   dplyr::left_join(genedb, by = c("symbol" = "symbol")) %>%
+  #   dplyr::select(-ensembl_gene_id) %>%
+  #   dplyr::filter(!is.na(entrezgene)) %>%
+  #   dplyr::left_join(dplyr::select(query_nodes, symbol, query_node), by = c("symbol")) %>%
+  #   dplyr::mutate(id = paste0("s",entrezgene)) %>%
+  #   dplyr::distinct()
+  #
+  # all_nodes <- dplyr::bind_rows(query_nodes, network_nodes) %>%
+  #   dplyr::distinct() %>%
+  #   dplyr::mutate(query_node = dplyr::if_else(is.na(query_node), FALSE, as.logical(query_node)))
 
 
   all_nodes <- all_nodes %>%
@@ -151,7 +245,6 @@ get_ppi_network <- function(qgenes, ppi_source = "STRING", genedb = NULL,
   all_nodes$size <- 25
   all_nodes <- all_nodes %>%
     dplyr::mutate(color.background  = dplyr::if_else(query_node == T, "lightblue", "mistyrose")) %>%
-    #dplyr::mutate(tumor_suppressor = )
     dplyr::mutate(color.background = dplyr::if_else(tumor_suppressor == T & oncogene == F,
                                                     "firebrick", as.character(color.background),
                                                     as.character(color.background))) %>%

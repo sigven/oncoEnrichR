@@ -8,9 +8,9 @@ onco_enrich(
   query,
   query_source = "symbol",
   ignore_unknown = FALSE,
-  p_title = "Project Title",
-  p_owner = "Project Owner",
-  background_fname = NULL,
+  project_title = "Project title",
+  project_owner = "Project owner",
+  project_description = "Project description",
   background_enrichment = NULL,
   background_enrichment_source = "symbol",
   background_enrichment_description = "All protein-coding genes",
@@ -26,6 +26,7 @@ onco_enrich(
   show_ppi = T,
   show_drugs_in_ppi = F,
   show_disease = T,
+  show_drug = T,
   show_enrichment = T,
   show_tcga_aberration = T,
   show_tcga_coexpression = T,
@@ -41,11 +42,11 @@ onco_enrich(
 
 \item{ignore_unknown}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
-\item{p_title}{title of report}
+\item{project_title}{project title (title of report)}
 
-\item{p_owner}{name of project owner}
+\item{project_owner}{name of project owner}
 
-\item{background_fname}{filename for simple text file with project background information, one line per background item}
+\item{project_description}{project background information}
 
 \item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
 
