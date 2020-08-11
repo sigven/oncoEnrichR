@@ -18,7 +18,8 @@ The package is intended for exploratory analysis and prioritization of a gene li
 
  The contents of the final report attempts to shed light on the following questions:
 
-  * Which diseases/tumor types are associated with genes in the target set? Are there druggable proteins in the target set?
+  * Which diseases/tumor types are associated with genes in the target set? 
+  * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
   * Which protein complexes are relevant for proteins in the target set?
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant for proteins in the target set?
   * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
@@ -31,7 +32,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
 1. `install.packages('devtools')`
 2. `devtools::install_github('sigven/oncoEnrichR')`
 
-[![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
+[![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ### Usage
 
