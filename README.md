@@ -30,7 +30,9 @@ The package is intended for exploratory analysis and prioritization of a gene li
 
 
 ### Example - oncoEnrichR analysis report
-[cMYC screen targets](https://folk.uio.no/sigven/cmyc_example.html)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4022174.svg)](https://doi.org/10.5281/zenodo.4022174)
+
 
 
 ### Installation
@@ -97,7 +99,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```max_geneset_size```     |     maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis
 	  ```ppi_add_nodes```     |     number of nodes to add to query set when computing the protein-protein interaction network (STRING)
-	  ```ppi_score_threshold```     |     minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
+	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain disease associations (Open Targets Platform)
