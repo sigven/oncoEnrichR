@@ -32,8 +32,37 @@ RUN apt-get update \
 
 RUN apt-get autoremove
 
-RUN R -e "install.packages('devtools', dependencies = T)"
+RUN apt-get update && apt-get install -y --no-install-recommends gcc
+# RUN R -e "install.packages(c('clipr', 'cli', 'crayon', 'curl', 'desc', 'fs', 'gh', 'git2r', 'glue', 'purrr', 'rematch2', 'rlang', 'rprojroot', 'rstudioapi', 'whisker', 'withr', 'yaml'))"
+# RUN R -e "install.packages(c('callr', 'covr', 'DT', 'memoise', 'pkgbuild', 'pkgload', 'rcmdcheck', 'remotes', 'roxygen2', 'rversions', 'sessioninfo', 'testthat'))"
+RUN R -e "install.packages('devtools')"
 WORKDIR /
+
+# RUN R -e "install.packages(c('reshape2','plyr'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('zip','openxlsx'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('generics'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('rematch','hms'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('cellranger','progress'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('tinytex'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('rmarkdown'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('selectr'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('DBI','tidyselect','blob'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('dbplyr', 'dplyr', 'forcats', 'haven', 'hms', 'lubridate', 'readr', 'readxl', 'reprex', 'rvest'), dependencies = 'Depends')"
+# RUN R -e "devtools::install_version('cpp11', version = '0.1.0', repos = 'http://cran.us.r-project.org')"
+# RUN R -e "install.packages('tidyr', dependencies = F)"
+# RUN R -e "install.packages('broom', dependencies = 'Depends')"
+# RUN R -e "install.packages('modelr', dependencies = 'Depends')"
+
+
+
+# RUN R -e "install.packages('colorspace', dependencies = 'Depends')"
+# RUN R -e "install.packages(c('farver', 'labeling', 'munsell', 'RColorBrewer', 'viridisLite'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('gtable', 'isoband', 'scales'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('dichromat', 'colorspace', 'mapproj', 'maps'), dependencies = 'Depends')"
+# RUN R -e "install.packages(c('hexbin','data.table'), dependencies = 'Depends')"
+# RUN R -e "BioCManager::"
+# RUN R -e "install.packages(c('tidyverse', 'visNetwork', 'plotly', 'pals', 'org.Hs.eg.db', 'clusterProfiler', 'igraph'), dependencies = 'Depends')"
+
 RUN R -e "devtools::install_github('sigven/oncoEnrichR', force = T)"
 
 ## Install pandoc (for HTML report generation)
