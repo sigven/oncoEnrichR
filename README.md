@@ -128,7 +128,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://folk.uio.no/sigven/cmyc_example.html).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4022174).
 
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
