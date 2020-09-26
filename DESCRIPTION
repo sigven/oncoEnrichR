@@ -1,8 +1,8 @@
 Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
-Version: 0.7.4
-Date: 2020-09-11
+Version: 0.7.5
+Date: 2020-09-25
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR

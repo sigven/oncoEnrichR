@@ -297,7 +297,7 @@ onco_enrich <- function(query,
 
   for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
     for (subcat in names(oncoEnrichR::msigdb[["COLLECTION"]][[c]])) {
-      if (c == "C5") {
+      if (c == "C5" & subcat != "HPO") {
         enr <- oncoEnrichR::get_go_enrichment(query_entrezgene,
                                   background_entrez = background_entrez,
                                   min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],

@@ -31,8 +31,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
 
 ### Example - oncoEnrichR analysis report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4022174.svg)](https://doi.org/10.5281/zenodo.4022174)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4022174.svg)](https://doi.org/10.5281/zenodo.4050882)
 
 
 ### Installation
