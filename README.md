@@ -37,7 +37,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 * [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
-* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
+* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
 * [OmnipathDB](http://omnipathdb.org) - literature-cuated mammalian signaling pathways
 * [STRING](https://string-db.org) - protein-protein interaction database
 * [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
@@ -154,6 +154,23 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
  * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, "LOCAL_FOLDER", "cmyc_example")`
 
- ### Contact
+### Contact
 
- sigven AT ifi.uio.no
+sigven AT ifi.uio.no
+
+### Funding & collaboration
+
+OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://www.med.uio.no/cancell/english/) at the [University of Oslo](https://www.uio.no)/[Oslo University Hospital](https://radium.no), and [Elixir Norway (Oslo node)](https://elixir.no/organization/organisation/elixir-uio).
+
+<br>
+<br>
+
+<p float="left">
+  <a href="https://www.med.uio.no/cancell/english/">
+     <img src="can-cell.png" width="150" >
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://elixir.no/organization/organisation/elixir-uio">
+     <img src="elixir_norway.png" width="200" />
+  </a>
+</p>
