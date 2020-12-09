@@ -16,17 +16,16 @@
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report.
- The contents of the final report attempts to shed light on the following questions:
+The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the target set?
   * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
   * Which protein complexes are relevant for proteins in the target set?
-  * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant for proteins in the target set?
+  * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the target set?
   * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
-  * Are there specific pathways or functional properties that are enriched within the target set, as compared to a reference/background set?
+  * Are there specific pathways, biological processes or molecular functions that are enriched within the target set, as compared to a reference/background set?
   * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
-  * Which members of the target set are co-expressed (strong negative or positive correlations) with proto-oncogenes or tumor suppressors in tumor sample cohorts (TCGA, RNAseq)?
+  * Which members of the target set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
