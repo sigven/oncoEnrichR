@@ -1,21 +1,22 @@
-## oncoEnrichR
+## oncoEnrichR - Functional profiling of genesets in the context of cancer
+
+### Contents
+
+- [Overview](#overview)
+- [News](#news)
+- [Annotation resources](#annotation-resources)
+- [Example report](#example-report)
+- [Getting started](#getting-started)
+- [Contact](#contact)
+
+### Overview
 
 <img align="center" width = "560" height = "700" src="docs/oncoenrichr2.gif">
 
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The following resources are currently included:
-
-* [Open Targets Platform](https://targetvalidation.org)
-* [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/)
-* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
-* [OmnipathDB](http://omnipathdb.org)
-* [STRING](https://string-db.org)
-* [CORUM](https://mips.helmholtz-muenchen.de/corum/)
-* [ComPPI](http://comppi.linkgroup.hu/)
-* [Project Score](https://score.depmap.sanger.ac.uk)
-
+The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report.
  The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the target set?
@@ -28,19 +29,37 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are co-expressed (strong negative or positive correlations) with proto-oncogenes or tumor suppressors in tumor sample cohorts (TCGA, RNAseq)?
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
+### News
 
-### Example - oncoEnrichR analysis report
+### Annotation resources
+
+Data harvested from the following resources form the backbone of _oncoEnrichR_:
+
+* [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
+* [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
+* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
+* [OmnipathDB](http://omnipathdb.org) - literature-cuated mammalian signaling pathways
+* [STRING](https://string-db.org) - protein-protein interaction database
+* [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
+* [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
+* [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+
+
+
+### Example report
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4050882.svg)](https://doi.org/10.5281/zenodo.4050882)
 
 
-### Installation
+### Getting started
+
+#### Installation
 1. `install.packages('devtools')`
 2. `devtools::install_github('sigven/oncoEnrichR')`
 
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-### Usage
+#### Usage
 
 _oncoEnrichR_ works in two basic steps through the following two methods:
 
@@ -116,7 +135,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 * takes the contents of the report object retrieved in _1)_ to assemble a structured and interactive _oncoEnrichR_ HTML report
 
-### Example output
+#### Example run
 
 A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target list through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
@@ -134,3 +153,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
  * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
  * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, "LOCAL_FOLDER", "cmyc_example")`
+
+ ### Contact
+
+ sigven AT ifi.uio.no
