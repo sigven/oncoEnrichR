@@ -3,7 +3,7 @@ tcga_oncoplot_genes <- function(qgenes, qsource = "symbol", cstrata = "site",
 
   rlogging::message(paste0("TCGA: generating oncoplot, tissue =  ", site))
   stopifnot(!is.null(genedb))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
@@ -37,7 +37,7 @@ tcga_aberration_plot <- function(qgenes, qsource = "symbol", cstrata = "site",
 
   rlogging::message(paste0("TCGA: generating gene aberration plot, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
@@ -156,7 +156,7 @@ tcga_aberration_table <- function(qgenes, qsource = "entrezgene", genedb = NULL,
 
   rlogging::message(paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
@@ -189,7 +189,7 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
 
   rlogging::message("TCGA: collecting co-expression data (strong negative and positive correlations)")
   stopifnot(!is.null(genedb))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)

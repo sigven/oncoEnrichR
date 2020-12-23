@@ -11,7 +11,10 @@
 l <- htmltools::tagList()
 i <- 1
 for(g in names(onc_enrich_report[['data']][['co_expression_gtex']][['plots']])){
-  l[[i]] <- plotly::ggplotly(onc_enrich_report[['data']][['co_expression_gtex']][['plots']][[g]], width = 10 * 96, height = onc_enrich_report[['config']][['co_expression_gtex']][['plot_height']] * 96)
+  l[[i]] <- 
+    plotly::ggplotly(onc_enrich_report[['data']][['co_expression_gtex']][['plots']][[g]], 
+                     width = 10 * 96, 
+                     height = onc_enrich_report[['config']][['co_expression_gtex']][['plot_height']] * 96)
   i <- i + 1
   cat('\n\n')
 }

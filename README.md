@@ -1,4 +1,4 @@
-## oncoEnrichR - Functional profiling of genesets in the context of cancer
+## oncoEnrichR - functional profiling of genesets in the context of cancer
 
 ### Contents
 
@@ -22,13 +22,24 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
   * Which protein complexes are relevant for proteins in the target set?
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the target set?
+  * Are specific tissues or cell types enriched in the target set, considering tissue/cell-type specific expression patterns of target genes?
   * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
   * Are there specific pathways, biological processes or molecular functions that are enriched within the target set, as compared to a reference/background set?
   * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
   * Which members of the target set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
+  * Which members of the target set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
+
+* December 23rd 2020 - **0.8.0 release**
+  * Multiple data updates
+  * New analysis sections:
+	  * _Tissue and cell type enrichment_
+		  * Explore tissue and cell-type specific expression patterns in target set, and tissues/cell types enriched with respect to expression
+	  * _TCGA prognostic associations_
+		  * Explore significant associations between gene expression and survival across tumor types (data from Human Protein Atlas/TCGA)
+
 
 ### Annotation resources
 
@@ -36,8 +47,8 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 * [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
+* [The Human Protein Atlas]() - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
 * [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
-* [OmnipathDB](http://omnipathdb.org) - literature-cuated mammalian signaling pathways
 * [STRING](https://string-db.org) - protein-protein interaction database
 * [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
 * [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
@@ -93,6 +104,8 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    show_tcga_coexpression = TRUE,
 	    show_subcell_comp = TRUE,
 	    show_crispr_lof = TRUE,
+	    show_cell_tissue = TRUE,
+         show_prognostic_cancer_assoc = TRUE,
 	    show_complex = TRUE
 	  )
 	  ```
@@ -126,6 +139,8 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue- and cell-type specific gene expression patterns in target set
+	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival
 	  ```show_complex```     |     logical indicating if report should list proteins in known protein complexes (CORUM)
 
 

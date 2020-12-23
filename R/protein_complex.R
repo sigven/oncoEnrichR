@@ -1,14 +1,14 @@
 
 annotate_protein_complex <- function(qgenes, genedb = NULL, corum_db = NULL, uniprot_acc = NULL){
 
-  rlogging::message("CORUM: retrieval of protein complex information for query set")
+  rlogging::message("CORUM: retrieval of protein complex information for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(corum_db))
   stopifnot(!is.null(uniprot_acc))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
-  oncoEnrichR::validate_db_df(corum_db, dbtype = "corum")
-  oncoEnrichR::validate_db_df(uniprot_acc, dbtype = "uniprot_acc")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(corum_db, dbtype = "corum")
+  oncoEnrichR:::validate_db_df(uniprot_acc, dbtype = "uniprot_acc")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F) %>%
     dplyr::left_join(uniprot_acc, by = "symbol") %>%

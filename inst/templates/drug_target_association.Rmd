@@ -26,10 +26,10 @@ library(crosstalk)
 
 targets_shared <- onc_enrich_report[['data']][['drug']][['target']]$target
 
-
 htmltools::br()
-  DT::datatable(targets_shared, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
+DT::datatable(targets_shared, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
 
 
 

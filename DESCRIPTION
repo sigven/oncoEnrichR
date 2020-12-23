@@ -1,25 +1,31 @@
 Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
-Version: 0.7.5
-Date: 2020-09-25
+Version: 0.8.0
+Date: 2020-12-15
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR
 BugReports: https://github.com/sigven/oncoEnrichR/issues
-Description: oncoEnrichR performs annotation and prioritization of genesets discovered from high-throughput experiments within 
-    cancer biology. The tool queries a number of high-quality resources, including Project Score (cellular fitness in genome-scale
-    drop-out screens), Open Targets Platform (comprehensive target-drug and target-disease associations), TCGA (genetic aberrations
-    and gene expression patterns in human tumor samples), STRING (protein-protein interaction networks), CORUM (curated protein complexes),
-    COMPPI (subcellular compartments), and Gene Ontology/MSigDB/REACTOME/KEGG (functional enrichment/over-representation analysis
-    with respect to gene function and cellular pathways). The package outputs an interactive HTML report in which the user
-    can interrogate the the various types of annotations and analyses performed with the geneset. 
+Description: oncoEnrichR performs annotation and prioritization of genesets 
+    discovered from high-throughput experiments within cancer biology. The tool 
+    queries a number of high-quality resources, including Project Score 
+    (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
+    (comprehensive target-drug and target-disease associations), TCGA (genetic 
+    aberrations and gene expression patterns in human tumor samples), STRING 
+    (protein-protein interaction networks), CORUM (curated protein complexes),
+    COMPPI (subcellular compartments), Human Protein Atlas (tissue and cell-type 
+    specific expression patterns and prognostic associations), and 
+    Gene Ontology/MSigDB/REACTOME/KEGG (functional enrichment/over-representation 
+    analysis with respect to gene function and cellular pathways). The package 
+    outputs an interactive HTML report in which the user can interrogate 
+    the various types of annotations and analyses performed with the geneset. 
 Depends: 
-    R (>= 4.0)
+    R (>= 4.0), SummarizedExperiment (>= 1.20.0), GSEABase (>= 1.52.1)
 biocViews: 
-Imports: tidyverse (>= 1.3.0), visNetwork (>= 2.0.9), plotly (>= 4.9.1), pals (>= 1.5), 
-    org.Hs.eg.db, clusterProfiler (>= 3.16.1), igraph, reshape2 (>= 1.4.4), rlogging, 
-    gganatogram, maftools (>= 2.4.12)
+Imports: tidyverse (>= 1.3.0), visNetwork (>= 2.0.9), plotly (>= 4.9.2), pals (>= 1.6), 
+    org.Hs.eg.db, magrittr (>= 2.0.1), clusterProfiler (>= 3.18.0), igraph (>= 1.2.6), reshape2 (>= 1.4.4), rlogging, 
+    gganatogram, maftools (>= 2.4.12), SummarizedExperiment (>= 1.20.0), GSEABase (>= 1.52.1)
 License: MIT
 Encoding: UTF-8
 Remotes: mjkallen/rlogging, jespermaag/gganatogram

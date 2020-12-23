@@ -2,7 +2,7 @@
 
 #### Annotation resources
 
-The analysis performed in the _oncoEnrichR report_ is based on the following tools and knowledge resources:
+The analysis performed in the _oncoEnrichR report_ is based on the following main tools and knowledge resources:
 
 * __Software__ 
 ```{r list_software, echo=F,results='asis'}

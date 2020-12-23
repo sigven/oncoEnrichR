@@ -1,4 +1,4 @@
-### Gene functional enrichment {.tabset}
+### Function and pathway enrichment {.tabset}
 
 * Each protein in the target set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment with respect to:
    * [Gene Ontology](https://geneontology.org). All three subontologies: _Molecular Function_ (GO_MF), _Cellular Component_ (GO_CC) & _Biological Process_ (GO_BP)
@@ -25,7 +25,7 @@
 show_enrichment_filters <- list()
 missing_enrichment_items <- list()
 eitems <- list()
-for(type in c('go','msigdb','wikipathwaydb','keggdb')){
+for(type in c('go','msigdb','wikipathway','kegg')){
   show_enrichment_filters[[type]] <- F
   missing_enrichment_items[[type]] <- T
   if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
@@ -43,7 +43,8 @@ for(type in c('go','msigdb','wikipathwaydb','keggdb')){
 library(crosstalk)
 
 enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio, Count = count,
@@ -70,17 +71,23 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(terms_go, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
+DT::datatable(terms_go, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
+
 
 ```
 
 ```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
+
+htmltools::br()
+
 cat('<i>No gene ontology terms were enriched in the query set.</i>',sep='\n')
 cat('\n')
+
+htmltools::br()
+
 ```
 
 
@@ -118,18 +125,24 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(terms_msigdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
+DT::datatable(terms_msigdb, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')
 )
 
 ```
 
 
 ```{r msigdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['msigdb']]}
+
+htmltools::br()
+
 cat('<i>No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.</i>',sep='\n')
 cat('\n')
+
+htmltools::br()
+
 ```
 
 
@@ -137,10 +150,10 @@ cat('\n')
 
 #### KEGG
 
-```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['keggdb']]}
+```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['kegg']]}
 library(crosstalk)
 
-enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['keggdb']] %>%
+enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] %>%
   dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
@@ -167,18 +180,23 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
+DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
+
 
 ```
 
 
-```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['keggdb']]}
+```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['kegg']]}
+
+htmltools::br()
+
 cat('<i>No pathways from KEGG were enriched in the query set.</i>',sep='\n')
 cat('\n')
+
+htmltools::br()
+
 ```
 
 
@@ -187,11 +205,13 @@ cat('\n')
 
 #### WikiPathways
 
-```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathwaydb']]}
+```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathway']]}
 library(crosstalk)
 
-enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathwaydb']] %>%
-  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue,
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] %>%
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio, Count = count,
@@ -200,23 +220,33 @@ enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikip
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
                 Max_Geneset_Size = setting_max_geneset_size) %>%
-   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
-                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
+                 DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, 
+                P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, 
+                Min_Geneset_Size, Max_Geneset_Size)
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(enrichment_wikidb_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-  )
+DT::datatable(enrichment_wikidb_display, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
+
 
 ```
 
 
-```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathwaydb']]}
+```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathway']]}
+
+htmltools::br()
+
 cat('<i>No pathway signatures from the WikiPathway resource were enriched in the query set.</i>',sep='\n')
 cat('\n')
+
+htmltools::br()
+
+
 ```
 
 <br><br><br>

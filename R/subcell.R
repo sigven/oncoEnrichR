@@ -1,12 +1,13 @@
-
+#' @importFrom GSEABase GeneSet
+#'
 annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = NULL){
 
-  rlogging::message("ComPPI: retrieval of subcellular compartments for query set")
+  rlogging::message("ComPPI: retrieval of subcellular compartments for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(comppidb))
-  oncoEnrichR::validate_db_df(genedb, dbtype = "genedb")
-  oncoEnrichR::validate_db_df(comppidb, dbtype = "comppidb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(comppidb, dbtype = "comppidb")
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F)
 

@@ -494,8 +494,11 @@ onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_homdel']]
 
 show_tcga_freqs <- FALSE
 missing_tcga_freqs <- TRUE
-all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']],
-                                       onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']])
+all_targets_vtypes <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']] %>% 
+  dplyr::bind_rows(
+    onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
+    )
 
 if(nrow(all_targets_vtypes) > 0){
   show_tcga_freqs <- TRUE
@@ -508,8 +511,11 @@ if(nrow(all_targets_vtypes) > 0){
 ```{r table_browse_tcga_freqs, echo=F, results = "asis", eval = show_tcga_freqs}
 library(crosstalk)
 
-all_targets_vtypes <- dplyr::bind_rows(onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']],
-                                       onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]) %>%
+all_targets_vtypes <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']] %>% 
+  dplyr::bind_rows(
+    onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
+    ) %>%
   dplyr::arrange(desc(percent_mutated))
 targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 
@@ -517,7 +523,9 @@ crosstalk::bscols(
   list(
     crosstalk::filter_select("primary_site", "Primary site/tissue", targets_tcga, ~primary_site),
     crosstalk::filter_select("variant_type", "Aberration type", targets_tcga, ~variant_type),
-    crosstalk::filter_slider("percent_mutated", "Percent mutated", targets_tcga, ~percent_mutated)
+    crosstalk::filter_slider("percent_mutated", "Percent mutated", 
+                             targets_tcga, ~percent_mutated, step = 10,
+                             min = 0, max = 100)
   ),
   list(
     crosstalk::filter_select("primary_diagnosis", "Diagnosis", targets_tcga, ~primary_diagnosis),
@@ -526,14 +534,10 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(targets_tcga, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
-      # DT::formatStyle('percent_mutated',
-      #                 background = DT::styleColorBar(targets_tcga$percent_mutated, 'steelblue', angle = -90),
-      #                 backgroundSize = '100% 90% 80% 70% 60% 50% 40% 30% 20% 10% 0%',
-      #                 backgroundRepeat = 'no-repeat',
-      #                 backgroundPosition = 'center')
+DT::datatable(targets_tcga, escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
 
 ```

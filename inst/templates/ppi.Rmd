@@ -34,8 +34,6 @@ visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['complete_network']
                        onc_enrich_report[['data']][['ppi']][['complete_network']]$edges) %>%
   visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) %>%
   visNetwork::visIgraphLayout(layout="layout_nicely")
-  #visNetwork::visPhysics(stabilization = FALSE) %>%
-  #visNetwork::visEdges(smooth = FALSE)
 
 ```
 <br><br>
@@ -47,8 +45,6 @@ visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['community_network'
                        onc_enrich_report[['data']][['ppi']][['community_network']]$edges) %>%
   visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) %>%
   visNetwork::visIgraphLayout(layout="layout_nicely")
-  #visNetwork::visPhysics(stabilization = FALSE) %>%
-  #visNetwork::visEdges(smooth = FALSE)
 
 ```
 <br><br>
@@ -58,7 +54,8 @@ visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['community_network'
 ```{r table_browse_ppi_hubs, echo=F, results = "asis", eval = T}
 
 htmltools::br()
-DT::datatable(onc_enrich_report[['data']][['ppi']][['hubscores']], escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+DT::datatable(onc_enrich_report[['data']][['ppi']][['hubscores']], 
+              escape = F, extensions=c("Buttons","Responsive"), width = "100%",
               options=list(buttons = c('csv','excel'),dom = 'Bfrtip', pagelength = 20)) %>%
   DT::formatStyle("symbol","hub_score", color = "white", backgroundColor = DT::styleInterval(onc_enrich_report[['config']][['disease']][['breaks']], onc_enrich_report[['config']][['disease']][['colors']]))
 

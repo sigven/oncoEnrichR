@@ -11,7 +11,7 @@
 
 show_crispr_data <- T
 missing_crispr_data <- F
-if(nrow(onc_enrich_report[['data']][['loss_of_fitness']][['df']]) == 0){
+if(nrow(onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']]) == 0){
     show_crispr_data <- F
     missing_crispr_data <- T
 }
@@ -22,9 +22,30 @@ if(nrow(onc_enrich_report[['data']][['loss_of_fitness']][['df']]) == 0){
 
 #### Loss-of-fitness distribution
 
-```{r lof_crispr_plot, echo = F, results = "asis", eval = show_crispr_data, fig.width = 11, fig.height = onc_enrich_report[['config']][['loss_of_fitness']][['plot_height']]}
+```{r lof_crispr_plot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']]) > 0, fig.width = 11, fig.height = onc_enrich_report[['config']][['loss_of_fitness']][['plot_height']]}
 
-plotly::ggplotly(onc_enrich_report[['data']][['loss_of_fitness']][['plot']])
+  p <- onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']] %>%
+      dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) %>%
+      ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::coord_flip() +
+      ggplot2::ylab("Number of cell lines with loss-of-fitness in CRISPR/Cas9 drop-out screen") +
+      ggplot2::xlab("") +
+      ggplot2::scale_fill_manual(values = pals::stepped(15)) +
+      ggplot2::theme(
+        panel.grid.minor = ggplot2::element_blank(),
+        axis.text = ggplot2::element_text(family = "Helvetica", size = 11),
+        legend.text = ggplot2::element_text(family = "Helvetica", size = 11),
+        axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+        legend.title = ggplot2::element_blank(),
+        #set thickness of axis ticks
+        axis.ticks = ggplot2::element_line(size = 0.2),
+        #remove plot background
+        plot.background = ggplot2::element_blank()
+      )
+
+plotly::ggplotly(p)
+#plotly::ggplotly(onc_enrich_report[['data']][['loss_of_fitness']][['plot']])
 
 ```
 
@@ -42,7 +63,7 @@ cat('\n')
 
 htmltools::br()
 
-df_display <- onc_enrich_report[['data']][['loss_of_fitness']][['df']] %>%
+df_display <- onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']] %>%
   dplyr::select(symbol_link_ps, tissue, cmp_link) %>%
   dplyr::rename(cell_lines = cmp_link, symbol = symbol_link_ps) %>%
   dplyr::mutate(loss_of_fitness = T)
