@@ -63,21 +63,40 @@ cat('\n')
 
 htmltools::br()
 
-df_display <- onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']] %>%
+lof_df <- onc_enrich_report[['data']][['loss_of_fitness']][['hits_df']] %>%
   dplyr::select(symbol_link_ps, tissue, cmp_link) %>%
   dplyr::rename(cell_lines = cmp_link, symbol = symbol_link_ps) %>%
   dplyr::mutate(loss_of_fitness = T)
 
-DT::datatable(df_display, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip', pagelength = 20))
+lof_table <- 
+  crosstalk::SharedData$new(lof_df)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("tissue", "Tissue", 
+                             lof_table, ~tissue)
+  )
+)
+
+DT::datatable(
+  lof_table, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'),
+               dom = 'Bfrtip', 
+               pagelength = 20)
+  )
 
 
 
 ```
 
 ```{r crispr_missing_data, echo=F, results = 'asis', eval = missing_crispr_data}
-cat('<i>No genes in target set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score</i>',sep='\n')
+
+cat('<i>No genes in target set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score</i>', sep='\n')
 cat('\n')
+
 ```
 
 <br><br><br>

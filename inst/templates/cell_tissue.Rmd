@@ -3,7 +3,7 @@
 <br>
 
 * Using data from the [Human Protein Atlas (HPA) - Cell/Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), we are here interrogating classification of all protein coding genes in the target set with respect to elevated expression in normal/healthy tissues and cell types
-  * Gene expression per tissue is based on data from [Genotype-Tissue Expression (GTex) Project](), containing data from [36 distinct tissue types](https://www.proteinatlas.org/about/assays+annotation#gtex_rna). Gene expression measure unit: [Transcripts pr million (TPM)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
+  * Gene expression per tissue is based on data from [Genotype-Tissue Expression (GTex) Project](https://gtexportal.org/home/), containing data from [36 distinct tissue types](https://www.proteinatlas.org/about/assays+annotation#gtex_rna). Gene expression measure unit: [Transcripts pr million (TPM)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
   * Single cell gene expression data is based on a [meta-analysis of literature on scRNA-seq datasets](https://www.proteinatlas.org/about/assays+annotation#tcga_rna_seq_data) of healthy human tissue. Gene expression measure unit: [Normalized eXpression (NX)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
 
 <br>
@@ -63,7 +63,20 @@ tissue_category_plot
 
 ```{r tissue_specs_per_gene, echo = F, results = 'asis'}
 
+tissue_specs_per_gene <- 
+  crosstalk::SharedData$new(onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("category", "Category", tissue_specs_per_gene, ~category)
+  ),
+  list(
+    crosstalk::filter_select("tissue", "Tissues", tissue_specs_per_gene, ~category)
+  )
+)
+
 htmltools::br()
+
 DT::datatable(
   onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']], 
   escape = F, 
@@ -80,14 +93,8 @@ DT::datatable(
     'category', 
     color = "white",
     backgroundColor = DT::styleEqual(
-      c('Tissue enriched',
-        'Group enriched',
-        'Tissue enhanced',
-        'Mixed',
-        'Low tissue specificity',
-        'Not detected'), 
-      c("#084594","#2171B5","#4292C6", 
-        "#6BAED6","#9ECAE1","#b8b8ba")
+      onc_enrich_report[["config"]][["cell_tissue"]][["tissue_enrichment_levels"]],
+      onc_enrich_report[["config"]][["cell_tissue"]][["enrichment_colors"]]
     )
   )
 
@@ -209,6 +216,19 @@ ctype_category_plot
 
 ```{r celltype_specs_per_gene, echo = F, results = 'asis'}
 
+celltype_specs_per_gene <- 
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("category", "Category", celltype_specs_per_gene, ~category)
+  ),
+  list(
+    crosstalk::filter_select("cell_type", "Cell type", celltype_specs_per_gene, ~cell_type)
+  )
+)
+
 htmltools::br()
 DT::datatable(
   onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']], 
@@ -226,14 +246,8 @@ DT::datatable(
     'category', 
     color = "white",
     backgroundColor = DT::styleEqual(
-      c('Cell type enriched',
-        'Group enriched',
-        'Cell type enhanced',
-        'Mixed',
-        'Low cell type specificity',
-        'Not detected'), 
-      c("#084594","#2171B5","#4292C6", 
-        "#6BAED6","#9ECAE1","#b8b8ba")
+      onc_enrich_report[["config"]][["cell_tissue"]][["ctype_enrichment_levels"]],
+      onc_enrich_report[["config"]][["cell_tissue"]][["enrichment_colors"]]
     )
   )
 

@@ -188,7 +188,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
   dbtypes <- c("genedb","corum","uniprot_acc",
                "comppidb","ppi_nodes",
                "projectscoredb",
-               "ppi_edges")
+               "ppi_edges","pdf")
   if(!(dbtype %in% dbtypes)){
     rlogging::stop(
       paste0("dbtype '",dbtype,
@@ -199,7 +199,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
     cols <- c('symbol','entrezgene','oncogene',
               'tumor_suppressor','cancer_driver',
               'ensembl_gene_id','name',
-              'gene_function_description',
+              'gene_summary',
               'gencode_gene_biotype',
               'ot_tractability_compound',
               'genename','targeted_cancer_drugs_lp',
@@ -210,6 +210,13 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'protein_complex_purification_method',
               'complex_comment','disease_comment',
               'citation','citation_link')
+  }
+  ## poorly defined genes (pdf)
+  if(dbtype == "pdf"){
+    cols <- c('symbol','genename',
+              'num_go_terms',
+              'unknown_function_rank','gene_summary',
+              'has_gene_summary')
   }
   if(dbtype == "uniprot_acc"){
     cols <- c('symbol','entrezgene','uniprot_acc')
@@ -261,3 +268,338 @@ validate_db_df <- function(df, dbtype = "genedb"){
 
 
 }
+
+add_excel_sheet <- function(
+  report = NULL,
+  workbook = NULL,
+  analysis_output = "disease",
+  tableStyle = "TableStyleMedium15"){
+
+  invisible(assertthat::assert_that(!is.null(report)))
+  invisible(assertthat::assert_that(!is.null(report$data)))
+  invisible(assertthat::assert_that(!is.null(workbook)))
+
+  target_df <- data.frame()
+  if(analysis_output == "disease"){
+    if(is.data.frame(report$data$disease$target$target)){
+      if(NROW(report$data$disease$target$target) > 0){
+        target_df <- report$data$disease$target$target %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$opentargets$name,
+            version = report$config$resources$opentargets$version) %>%
+          dplyr::select(-c(cancer_association_links,
+                           disease_association_links,
+                           cancergene_evidence)) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_trim(
+                textclean::replace_html(genename)
+              )
+          ) %>%
+          dplyr::mutate(
+            gene_summary =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(gene_summary)
+                )
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "protein_complex"){
+    if(is.data.frame(report$data$protein_complex$complex)){
+      if(NROW(report$data$protein_complex$complex) > 0){
+        target_df <- report$data$protein_complex$complex %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$corum$name,
+            version = report$config$resources$corum$version) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            complex_genes =
+              stringr::str_replace_all(
+                stringr::str_squish(
+                  stringr::str_trim(
+                    textclean::replace_html(complex_genes)
+                  )
+                ),
+                " , ",
+                ", "
+              )
+          ) %>%
+          dplyr::mutate(
+            citation =
+              stringr::str_trim(
+                textclean::replace_html(citation)
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "unknown_function"){
+    if(is.data.frame(report$data$unknown_function$hits_df)){
+      if(NROW(report$data$unknown_function$hits_df) > 0){
+        target_df <- report$data$unknown_function$hits_df %>%
+          dplyr::mutate(
+            annotation_source = "GO (MsigDB 7.2)/NCBI Gene/UniProt (2020_06)",
+            version = NA) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_trim(
+                textclean::replace_html(genename)
+              )
+          ) %>%
+          dplyr::mutate(
+            gene_summary =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(gene_summary)
+                )
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "cancer_prognosis"){
+    if(is.data.frame(report$data$cancer_prognosis$assocs)){
+      if(NROW(report$data$cancer_prognosis$assocs) > 0){
+        target_df <- report$data$cancer_prognosis$assocs %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$hpa$name,
+            version = report$config$resources$hpa$version) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            tumor_types =
+              stringr::str_trim(
+                textclean::replace_html(tumor_types)
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "tcga_coexpression"){
+
+    ## co-expression
+    if(is.data.frame(report$data$tcga$co_expression)){
+      if(NROW(report$data$tcga$co_expression) > 0){
+        target_df <- report$data$tcga$co_expression %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$tcga$name,
+            version = report$config$resources$tcga$version) %>%
+          dplyr::rename(tcga_cohort = tumor) %>%
+          dplyr::select(-entrezgene) %>%
+          dplyr::rename(partner_oncogene = oncogene,
+                        partner_tumor_suppressor = tumor_suppressor,
+                        partner_cancer_driver = cancer_driver) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything())
+      }
+    }
+  }
+
+  if(analysis_output == "tcga_aberration"){
+
+    ## cna aberrations
+    for(t in c('cna_ampl','cna_homdel')){
+      if(is.data.frame(report$data$tcga$aberration$table[[t]])){
+        if(NROW(report$data$tcga$aberration$table[[t]]) > 0){
+          df <-
+            report$data$tcga$aberration$table[[t]] %>%
+            dplyr::mutate(
+              annotation_source = report$config$resources$tcga$name,
+              version = report$config$resources$tcga$version) %>%
+            dplyr::mutate(
+              symbol =
+                stringr::str_trim(
+                  textclean::replace_html(gene)
+                )
+            ) %>%
+            dplyr::select(-gene) %>%
+            dplyr::select(annotation_source, version,
+                          symbol, dplyr::everything())
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+      }
+    }
+
+  }
+
+  if(analysis_output == "subcellcomp"){
+    if(is.data.frame(report$data$subcellcomp$all)){
+      if(NROW(report$data$subcellcomp$all) > 0){
+        target_df <- report$data$subcellcomp$all %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$comppi$name,
+            version = report$config$resources$comppi$version) %>%
+          dplyr::select(-c(colour, ggcompartment)) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            compartment =
+              stringr::str_trim(
+                textclean::replace_html(compartment)
+              )
+          ) %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_trim(
+                textclean::replace_html(genename)
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "enrichment"){
+    enrichment_df <- data.frame()
+    for(e in c('go','wikipathway','kegg','msigdb')){
+      if(NROW(report$data$enrichment[[e]]) > 0){
+        enrichment_df <- enrichment_df %>%
+          dplyr::bind_rows(
+            report$data$enrichment[[e]] %>%
+              dplyr::mutate(
+                annotation_source = report$config$resources[[e]]$name,
+                version = report$config$resources[[e]]$version) %>%
+              dplyr::rename(category = db,
+                            entrezgene = gene_id)
+          ) %>%
+          dplyr::select(-c(gene_symbol_link,
+                           description_link)) %>%
+          dplyr::select(annotation_source, version,
+                        category, description,
+                        dplyr::everything())
+      }
+    }
+    target_df <- enrichment_df
+  }
+
+  if(analysis_output == "drug"){
+    if(is.data.frame(report$data$drug$target$target)){
+      if(NROW(report$data$drug$target$target)){
+        target_df <- report$data$drug$target$target %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$opentargets$name,
+            version = report$config$resources$opentargets$version) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_trim(
+                textclean::replace_html(genename)
+              )
+          ) %>%
+          dplyr::mutate(
+            targeted_cancer_drugs_lp =
+              stringr::str_replace_all(
+                stringr::str_squish(
+                  stringr::str_trim(
+                    textclean::replace_html(targeted_cancer_drugs_lp)
+                  )
+                ),
+                " , ",
+                ", "
+              )
+          ) %>%
+          dplyr::mutate(
+            targeted_cancer_drugs_ep =
+              stringr::str_replace_all(
+                stringr::str_squish(
+                  stringr::str_trim(
+                    textclean::replace_html(targeted_cancer_drugs_ep)
+                  )
+                ),
+                " , ",
+                ", "
+              )
+          )
+      }
+    }
+  }
+
+  if(analysis_output == "loss_of_fitness"){
+    if(is.data.frame(report$data$loss_of_fitness$hits_df)){
+      if(NROW(report$data$loss_of_fitness$hits_df) > 0){
+        target_df <- report$data$loss_of_fitness$hits_df %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources$projectscore$name,
+            version = report$config$resources$projectscore$version) %>%
+          dplyr::select(-c(symbol_link_ps, cmp_link)) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything())
+      }
+    }
+  }
+  if(analysis_output == "cell_tissue"){
+
+    target_df <- data.frame()
+    for(e in c("tissue_enrichment","scRNA_enrichment")){
+      if(is.data.frame(report$data$cell_tissue[[e]]$per_gene)){
+        if(NROW(report$data$cell_tissue[[e]]$per_gene) > 0){
+          if(e == "tissue_enrichment"){
+            df <-
+              report$data$cell_tissue[[e]]$per_gene %>%
+              dplyr::mutate(
+                annotation_source = report$config$resources$gtex$name,
+                version = report$config$resources$gtex$version,
+                category = stringr::str_replace(e,"_enrichment","")) %>%
+              dplyr::select(annotation_source, version,
+                            category, dplyr::everything()) %>%
+              dplyr::rename(tissue_or_celltype = tissue)
+
+          }else{
+            df <-
+              report$data$cell_tissue[[e]]$per_gene %>%
+              dplyr::mutate(
+                annotation_source = report$config$resources$hpa$name,
+                version = report$config$resources$hpa$version,
+                category = stringr::str_replace(e,"_enrichment","")) %>%
+              dplyr::select(annotation_source, version,
+                            category, dplyr::everything()) %>%
+              dplyr::rename(tissue_or_celltype = cell_type)
+          }
+          target_df <- target_df %>%
+            dplyr::bind_rows(df) %>%
+            dplyr::mutate(
+              genename =
+                stringr::str_trim(
+                  textclean::replace_html(genename)
+                )
+            )
+        }
+      }
+    }
+  }
+
+  openxlsx::addWorksheet(workbook,
+                         sheetName = toupper(analysis_output))
+
+  ## set automatic column widths
+  openxlsx::setColWidths(workbook,
+                         sheet = toupper(analysis_output),
+                         cols = 1:nrow(target_df),
+                         widths = "auto")
+
+  ## write with default Excel Table style
+  openxlsx::writeDataTable(workbook,
+                           sheet = toupper(analysis_output),
+                           x = target_df,
+                           startRow = 1,
+                           startCol = 1,
+                           colNames = TRUE,
+                           tableStyle = tableStyle)
+
+  return(workbook)
+}
+

@@ -1,11 +1,15 @@
 #' @importFrom GSEABase GeneSet
 #'
-annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = NULL){
+annotate_subcellular_compartments <- function(qgenes,
+                                              minimum_confidence = 1,
+                                              genedb = NULL,
+                                              comppidb = NULL){
 
   rlogging::message("ComPPI: retrieval of subcellular compartments for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(comppidb))
+  stopifnot(is.numeric(minimum_confidence))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   oncoEnrichR:::validate_db_df(comppidb, dbtype = "comppidb")
 
@@ -16,18 +20,24 @@ annotate_subcellular_compartments <- function(qgenes, genedb = NULL, comppidb = 
   target_compartments[["grouped"]] <- data.frame()
 
   target_compartments_all <- as.data.frame(
-    dplyr::inner_join(comppidb, target_genes, by = c("symbol"))
+    dplyr::inner_join(comppidb, target_genes, by = c("symbol")) %>%
+      dplyr::filter(confidence >= minimum_confidence)
   )
 
   if(nrow(target_compartments_all) > 0){
     target_compartments_all <- as.data.frame(
       target_compartments_all %>%
       dplyr::select(-c(go_ontology,uniprot_acc)) %>%
-      dplyr::left_join(dplyr::select(genedb, symbol, genename),by=c("symbol")) %>%
-      dplyr::mutate(genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
-                                      entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
-      dplyr::mutate(compartment = paste0("<a href='http://amigo.geneontology.org/amigo/term/'",
-                                         go_id,"' target='_blank'>",go_term,"</a>"))
+      dplyr::left_join(dplyr::select(genedb, symbol, genename),
+                       by = c("symbol")) %>%
+        dplyr::mutate(
+          genelink =
+            paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+                   entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
+        dplyr::mutate(
+          compartment =
+            paste0("<a href='http://amigo.geneontology.org/amigo/term/",
+                   go_id,"' target='_blank'>",go_term,"</a>"))
     )
 
     target_compartments[["grouped"]] <- as.data.frame(

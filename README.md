@@ -66,6 +66,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 #### Installation
 1. `install.packages('devtools')`
 2. `devtools::install_github('sigven/oncoEnrichR')`
+3. `library(oncoEnrichR)`
 
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 

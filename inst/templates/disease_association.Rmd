@@ -1,12 +1,11 @@
-### Disease associations
+### Targets & cancer associations
 
 * Each protein in the target set is annotated with:
    * Known associations to cancer phenotypes established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
-   * Status wrt. roles as tumor suppressors/oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource and the [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
+   * Status with respect to roles as tumor suppressors/oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource and the [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
    * Target genes are colored in varying shades of blue according to their level of association to cancer (specifically the [maximum association score](https://docs.targetvalidation.org/getting-started/scoring) to a cancer phenotype at any level of resolution)
    
 <br><br>
-
 
 
 ```{r filter_opentargets, echo=F, results='asis'}
@@ -34,17 +33,24 @@ crosstalk::bscols(
     crosstalk::filter_checkbox("oncogene", "Proto-oncogene", targets_shared, ~oncogene)
   ),
   list(
-    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations),
-    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations)
+    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
+    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations)
   )
 )
 
 htmltools::br()
-crosstalk::bscols(
-  DT::datatable(targets_shared, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-    options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle("symbol","ot_cancer_rank", color = "white", backgroundColor = DT::styleInterval(onc_enrich_report[['config']][['disease']][['breaks']], onc_enrich_report[['config']][['disease']][['colors']]))
-)
+DT::datatable(targets_shared, escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')) %>%
+  DT::formatStyle("symbol",
+                  "ot_cancer_rank", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['disease']][['breaks']],
+                    onc_enrich_report[['config']][['disease']][['colors']])
+  )
 
 
 ```

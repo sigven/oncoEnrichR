@@ -11,6 +11,7 @@ init_report <- function(project_title = "Project title",
                         q_value_cutoff_enrichment = 0.2,
                         min_geneset_size = 10,
                         max_geneset_size = 500,
+                        min_subcellcomp_confidence = 1,
                         simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
@@ -22,6 +23,7 @@ init_report <- function(project_title = "Project title",
                         show_subcell_comp = T,
                         show_crispr_lof = T,
                         show_cell_tissue = T,
+                        show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
                         show_complex = T) {
 
@@ -50,6 +52,7 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["show"]][["subcellcomp"]] <- show_subcell_comp
   rep[["config"]][["show"]][["loss_of_fitness"]] <- show_crispr_lof
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
+  rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
     show_prognostic_cancer_assoc
 
@@ -113,12 +116,42 @@ init_report <- function(project_title = "Project title",
     c("#edf8e9","#c7e9c0","#a1d99b",
       "#74c476","#41ab5d","#238b45","#005a32")
 
+  rep[["config"]][["cell_tissue"]] <- list()
+  rep[["config"]][["cell_tissue"]][["tissue_enrichment_levels"]] <-
+    c('Tissue enriched',
+      'Group enriched',
+      'Tissue enhanced',
+      'Mixed',
+      'Low tissue specificity',
+      'Not detected')
+  rep[["config"]][["cell_tissue"]][["ctype_enrichment_levels"]] <-
+    c('Cell type enriched',
+      'Group enriched',
+      'Cell type enhanced',
+      'Mixed',
+      'Low cell type specificity',
+      'Not detected')
+  rep[["config"]][["cell_tissue"]][["enrichment_colors"]] <-
+    c("#084594","#2171B5","#4292C6",
+      "#6BAED6","#9ECAE1","#b8b8ba")
+
+  rep[["config"]][["unknown_function"]] <- list()
+  rep[["config"]][["unknown_function"]][["rank"]] <-
+    c(1, 2, 3, 4, 5, 6)
+  rep[["config"]][["unknown_function"]][["colors"]] <-
+    c("#99000d","#cb181d","#ef3b2c","#fb6a4a","#fc9272","#fcbba1")
+
+  rep[['config']][['subcellcomp']] <- list()
+  rep[['config']][['subcellcomp']][['minimum_confidence']] <-
+    min_subcellcomp_confidence
+
   ## initialize all data elements
-  for (analysis in c("tcga","disease","ppi","tcga",
-                     "gtex","enrichment","drug",
+  for (analysis in c("tcga","disease",
+                     "ppi","tcga",
+                     "enrichment","drug",
                     "protein_complex","subcellcomp",
                     "loss_of_fitness","cell_tissue",
-                    "cancer_prognosis")) {
+                    "cancer_prognosis","unknown_function")) {
     rep[["data"]][[analysis]] <- list()
   }
 
@@ -166,6 +199,9 @@ init_report <- function(project_title = "Project title",
   for (c in c("go","msigdb","wikipathway","kegg")) {
     rep[["data"]][["enrichment"]][[c]] <- data.frame()
   }
+
+  ## unknown function
+  rep[["data"]][["unknown_function"]][["hits_df"]] <- data.frame()
 
   ## CRISPR/Cas9 LOF hits
   rep[["data"]][["loss_of_fitness"]][["hits_df"]] <- data.frame()
@@ -228,6 +264,7 @@ init_report <- function(project_title = "Project title",
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 5, 5 is strongest)
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -239,6 +276,7 @@ init_report <- function(project_title = "Project title",
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 #' @param show_tissue_cell logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
 #' of target genes, using data from the Human Protein Atlas
+#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed
 #' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
@@ -259,6 +297,7 @@ onco_enrich <- function(query,
                    q_value_cutoff_enrichment = 0.2,
                    min_geneset_size = 10,
                    max_geneset_size = 500,
+                   min_subcellcomp_confidence = 1,
                    simplify_go = F,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
@@ -270,12 +309,11 @@ onco_enrich <- function(query,
                    show_tcga_aberration = T,
                    show_tcga_coexpression = T,
                    show_cell_tissue = T,
+                   show_unknown_function = T,
                    show_prognostic_cancer_assoc = T,
                    show_subcell_comp = T,
                    show_crispr_lof = T,
-                   #show_gtex_coexp = F,
                    show_complex = T) {
-  #gtex_atlasassay_groups = c("g32","g9","g29","g10","g28","g44","g33","g50","g37","g38","g42","g35")) {
   stopifnot(is.character(query))
   stopifnot(p_value_adjustment_method %in% c("holm", "hochberg",
                                              "hommel", "bonferroni",
@@ -292,6 +330,7 @@ onco_enrich <- function(query,
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
   stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
   stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
+  stopifnot(min_subcellcomp_confidence >= 1 & min_subcellcomp_confidence <= 5)
   stopifnot(ppi_add_nodes <= 50)
 
   qgenes_match <-
@@ -337,11 +376,13 @@ onco_enrich <- function(query,
                          show_tcga_aberration = show_tcga_aberration,
                          show_tcga_coexpression = show_tcga_coexpression,
                          show_cell_tissue = show_cell_tissue,
+                         show_unknown_function = show_unknown_function,
                          show_prognostic_cancer_assoc =
                            show_prognostic_cancer_assoc,
                          show_crispr_lof = show_crispr_lof,
                          min_geneset_size = min_geneset_size,
                          max_geneset_size = max_geneset_size,
+                         min_subcellcomp_confidence = min_subcellcomp_confidence,
                          simplify_go = simplify_go,
                          show_complex = show_complex,
                          show_subcell_comp = show_subcell_comp,
@@ -362,14 +403,14 @@ onco_enrich <- function(query,
 
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]][["target"]] <-
-      oncoEnrichR:::target_disease_associations(query_symbol,
-                                               genedb = oncoEnrichR::genedb)
+      oncoEnrichR:::target_disease_associations(
+        query_symbol, genedb = oncoEnrichR::genedb)
   }
 
   if (show_drug == T) {
     onc_rep[["data"]][["drug"]][["target"]] <-
-      oncoEnrichR:::target_drug_associations(query_symbol,
-                                               genedb = oncoEnrichR::genedb)
+      oncoEnrichR:::target_drug_associations(
+        query_symbol, genedb = oncoEnrichR::genedb)
   }
 
   for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
@@ -397,29 +438,31 @@ onco_enrich <- function(query,
             dplyr::distinct()
         }
       }else{
-        db = paste0("MSIGdb/", c, "/",subcat)
-        enr <- oncoEnrichR:::get_universal_enrichment(
-          query_entrezgene,
-          genedb = oncoEnrichR::genedb,
-          background_entrez = background_entrez,
-          min_geneset_size =
-            onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-          max_geneset_size =
-            onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-          q_value_cutoff =
-            onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-          p_value_cutoff =
-            onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-          p_value_adjustment_method =
-            onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-          TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
-          TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
-          TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
-          dbsource = db)
-        if (!is.null(enr)) {
-          onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
-            dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
-            dplyr::distinct()
+        if(c != "C5"){
+          db = paste0("MSIGdb/", c, "/",subcat)
+          enr <- oncoEnrichR:::get_universal_enrichment(
+            query_entrezgene,
+            genedb = oncoEnrichR::genedb,
+            background_entrez = background_entrez,
+            min_geneset_size =
+              onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+            max_geneset_size =
+              onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+            q_value_cutoff =
+              onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+            p_value_cutoff =
+              onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+            p_value_adjustment_method =
+              onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+            TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
+            TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
+            TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
+            dbsource = db)
+          if (!is.null(enr)) {
+            onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
+              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
+              dplyr::distinct()
+          }
         }
       }
     }
@@ -461,30 +504,57 @@ onco_enrich <- function(query,
       dbsource = db)
 
   if (show_ppi == T) {
-    onc_rep[["data"]][["ppi"]] <-
-      oncoEnrichR:::get_ppi_network(
-        query_entrezgene,
-        ppi_source = "STRING",
-        genedb = oncoEnrichR::genedb,
-        cancerdrugdb = oncoEnrichR::cancerdrugdb,
-        settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
+
+    service_is_down <- unique(is.na(pingr::ping("string-db.org")))
+    if(service_is_down){
+      rlogging::message("EXCEPTION: https://string-db.org is NOT responding - ",
+                        "skipping retrievel of protein-protein interactions")
+
+      onc_rep[["config"]][["show"]][["ppi"]] <- FALSE
+    }else{
+      onc_rep[["data"]][["ppi"]] <-
+        oncoEnrichR:::get_ppi_network(
+          query_entrezgene,
+          ppi_source = "STRING",
+          genedb = oncoEnrichR::genedb,
+          cancerdrugdb = oncoEnrichR::cancerdrugdb,
+          settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
+    }
   }
 
   if (show_complex == T) {
-    onc_rep[["data"]][["protein_complex"]][["complex"]] <-
-      oncoEnrichR:::annotate_protein_complex(
+    service_is_down <- unique(is.na(pingr::ping("omnipathdb.org")))
+    if(service_is_down){
+      rlogging::message("EXCEPTION: https://omnipathdb.org is NOT responding - ",
+                        "skipping retrievel of protein complexes")
+
+      onc_rep[["config"]][["show"]][["protein_complex"]] <- FALSE
+    }else{
+      onc_rep[["data"]][["protein_complex"]][["complex"]] <-
+        oncoEnrichR:::annotate_protein_complex(
+          query_symbol,
+          genedb = oncoEnrichR::genedb,
+          corum_db = oncoEnrichR::corumdb,
+          uniprot_acc = oncoEnrichR::uniprot_xref)
+    }
+  }
+
+  if (show_unknown_function == T) {
+    onc_rep[["data"]][["unknown_function"]][["hits_df"]] <-
+      oncoEnrichR:::get_genes_unknown_function(
         query_symbol,
         genedb = oncoEnrichR::genedb,
-        corum_db = oncoEnrichR::corumdb,
-        uniprot_acc = oncoEnrichR::uniprot_xref)
+        poorly_defined_genes = oncoEnrichR::poorly_defined_genes
+      )
   }
 
   if (show_subcell_comp == T) {
      subcellcomp_annotations <-
       oncoEnrichR:::annotate_subcellular_compartments(
         query_symbol,
+        minimum_confidence = min_subcellcomp_confidence,
         genedb = oncoEnrichR::genedb,
-        comppidb = oncoEnrichR::comppidb)
+        comppidb = oncoEnrichR::subcellcomp$comppidb)
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
        subcellcomp_annotations[["all"]]
@@ -517,8 +587,10 @@ onco_enrich <- function(query,
           genedb = oncoEnrichR::genedb, vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
         oncoEnrichR:::tcga_aberration_table(
-          query_entrezgene, qsource = "entrezgene",
-          genedb = oncoEnrichR::genedb, vtype = v)
+          query_entrezgene,
+          qsource = "entrezgene",
+          genedb = oncoEnrichR::genedb,
+          vtype = v)
     }
 
     for(psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])){
@@ -576,45 +648,138 @@ onco_enrich <- function(query,
 
 }
 
-#' Function that writes the contents in the oncoEnrichR report object to an interactive HTML report
+#' Function that writes the contents of the oncoEnrichR report object to either
+#' A) interactive HTML report, or B) Excel workbook
 #'
 #' @param report object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)
 #' @param project_directory working directory
 #' @param report_name prefix filename for report output
-#' @param format file format of output (html/json)
+#' @param format file format of output (html/excel)
 #' @export
 
-write <- function(report, project_directory, report_name, format = "html") {
+write <- function(report,
+                  project_directory,
+                  report_name = "testReport",
+                  format = "html") {
+
+  invisible(
+    assertthat::assert_that(
+      format %in% c("html","excel"),
+      msg = paste0("Value for argument format ('",
+                   format,
+                   "') not recognized. ",
+                   "Possible values: ",
+                   "'html','excel'"))
+  )
+  invisible(
+    assertthat::assert_that(
+      is.character(report_name),
+      msg = paste0("Argument report_name (",
+                   report_name, ") must be of type character",
+                   " not ")
+    )
+  )
+  invisible(
+    assertthat::assert_that(
+      dir.exists(project_directory),
+      msg = paste0("Value for argument project_directory ('",
+                   project_directory, "') does not exist")
+    )
+  )
 
   outfname <- list()
   outfname[["html"]] <- paste(report_name, "html", sep=".")
-  disclaimer <- system.file("templates", "disclaimer.md", package = "oncoEnrichR")
-  report_theme <- "default"
+  outfname[["excel"]] <- paste(report_name, "xlsx", sep=".")
+
 
   ## TODO: check that report parameter is a valid oncoEnrichR result object
 
   if(!is.null(report)){
-    assign("onc_enrich_report", report, envir = .GlobalEnv)
+    assign("onc_enrich_report",
+           report, envir = .GlobalEnv)
   }else{
     rlogging::warning("report object is NULL - cannot write report contents")
   }
 
   if (format == "html") {
+
+    disclaimer <- system.file("templates",
+                              "disclaimer.md",
+                              package = "oncoEnrichR")
+    report_theme <- "default"
+
     rlogging::message("------")
     rlogging::message("Writing HTML file with report contents")
-    markdown_input <- system.file("templates", "onco_enrich_report.Rmd", package = "oncoEnrichR")
-    rmarkdown::render(markdown_input,
-                      output_format = rmarkdown::html_document(theme = report_theme, toc = T, toc_depth = 3,
-                                                               toc_float = T, number_sections = F,
-                                                               includes = rmarkdown::includes(after_body = disclaimer)),
-                      output_file = outfname[["html"]],
-                      output_dir = project_directory,
-                      clean = T,
-                      intermediates_dir = project_directory,
-                      quiet = T)
-    rlogging::message(paste0("Output file: ", file.path(project_directory,outfname[["html"]])))
+    markdown_input <- system.file("templates", "onco_enrich_report.Rmd",
+                                  package = "oncoEnrichR")
+    rmarkdown::render(
+      markdown_input,
+      output_format = rmarkdown::html_document(
+        theme = report_theme, toc = T, toc_depth = 3,
+        toc_float = T, number_sections = F,
+        includes = rmarkdown::includes(after_body = disclaimer)),
+      output_file = outfname[["html"]],
+      output_dir = project_directory,
+      clean = T,
+      intermediates_dir = project_directory,
+      quiet = T)
+    rlogging::message(paste0("Output file: ",
+                             file.path(project_directory,outfname[["html"]])))
     rlogging::message("------")
-  }else{
-    rlogging::message("JSON output not yet implemented")
+  }
+  if (format == "excel") {
+
+    wb <- openxlsx::createWorkbook()
+    rlogging::message("------")
+    rlogging::message("Writing Excel workbook with report contents")
+
+    table_style_index <- 15
+    for(elem in c("disease",
+                  "tcga_aberration",
+                  "tcga_coexpression",
+                  "cancer_prognosis",
+                  "enrichment",
+                  "drug",
+                  "protein_complex",
+                  "subcellcomp",
+                  "cell_tissue",
+                  "unknown_function")){
+
+      show_elem <- elem
+      # if(stringr::str_detect(elem,"tcga") == T){
+      #   show_elem <- "tcga"
+      # }
+
+      if(report[['config']][['show']][[show_elem]] == FALSE){
+        next
+      }
+      wb <- oncoEnrichR:::add_excel_sheet(
+        report = report,
+        workbook = wb,
+        analysis_output = elem,
+        tableStyle =
+          paste0("TableStyleMedium",
+                table_style_index)
+      )
+
+      ## Excel Table style: TableStyleMedium - 15 to 21                                                                                               table_style_index))
+      if(table_style_index == 21){
+        table_style_index <- 14
+      }
+      table_style_index <- table_style_index + 1
+
+    }
+
+    openxlsx::saveWorkbook(wb, file.path(project_directory,
+                                         outfname[["excel"]]), overwrite = TRUE)
+    rlogging::message(paste0("Output file: ",
+                             file.path(project_directory,
+                                       outfname[["excel"]])))
+    rlogging::message("------")
+  }
+  else{
+    if(format == "json"){
+      rlogging::message("JSON output not yet implemented")
+    }
   }
 }

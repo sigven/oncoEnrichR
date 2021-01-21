@@ -3,7 +3,7 @@ title: "OncoEnrichR report - `r onc_enrich_report[['config']][['project_title']]
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
 nocite: |
-  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh
+  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn
 output: 
   html_document:
     toc: true
@@ -26,6 +26,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 
 ```{r target_disease, child='disease_association.Rmd', eval = onc_enrich_report[['config']][['show']][['disease']]}
 ```
+
+```{r target_unknown, child='unknown_function.Rmd', eval = onc_enrich_report[['config']][['show']][['unknown_function']]}
+```
+
 
 ```{r target_drug, child='drug_target_association.Rmd', eval = onc_enrich_report[['config']][['show']][['drug']]}
 ```

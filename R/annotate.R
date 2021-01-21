@@ -75,7 +75,7 @@ target_disease_associations <-
     dplyr::select(symbol, genename, ensembl_gene_id, oncogene, tumor_suppressor,
                   cancergene_support, ot_cancer_diseases,
                   ot_cancer_links, ot_cancer_rank, ot_diseases, ot_links,
-                  gene_function_description) %>%
+                  gene_summary) %>%
     dplyr::rename(cancergene_evidence = cancergene_support,
                   disease_associations = ot_diseases,
                   disease_association_links = ot_links,

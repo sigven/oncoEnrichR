@@ -54,9 +54,10 @@ gene_tissue_cell_spec_cat <-
 
   specificity_groups_target <- as.data.frame(
     oncoEnrichR::tissue_cell_expr[[source]][['te_df']] %>%
-      dplyr::inner_join(dplyr::select(query_genes_df, symbol,
-                                      ensembl_gene_id, name),
-                        by = "ensembl_gene_id") %>%
+      dplyr::inner_join(
+        dplyr::select(query_genes_df, symbol,
+                      ensembl_gene_id, genename),
+        by = "ensembl_gene_id") %>%
       dplyr::group_by(category) %>%
       dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
       dplyr::mutate(tot = sum(n)) %>%
@@ -190,11 +191,11 @@ gene_tissue_cell_enrichment <-
 
       if(resolution == "tissue"){
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, name, category, tissue) %>%
+          dplyr::select(symbol, genename, category, tissue) %>%
           dplyr::arrange(category)
       }else{
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, name, category, cell_type) %>%
+          dplyr::select(symbol, genename, category, cell_type) %>%
           dplyr::arrange(category)
       }
     }
