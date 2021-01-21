@@ -93,6 +93,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    q_value_cutoff_enrichment = 0.2,
 	    min_geneset_size = 10,
 	    max_geneset_size = 500,
+	    min_subcellcomp_confidence = 1,
 	    simplify_go = F,
 	    ppi_add_nodes = 50,
 	    ppi_score_threshold = 900,
@@ -128,6 +129,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```q_value_cutoff_enrichment```     |     cutoff q-value for enrichment analysis
 	  ```min_geneset_size```     |     minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```max_geneset_size```     |     maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+	  ```min_subcellcomp_confidence```|     minimum confidence level of subcellular compartment annotations (range from 1 to 5, 5 is strongest)
 	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis
 	  ```ppi_add_nodes```     |     number of nodes to add to query set when computing the protein-protein interaction network (STRING)
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
@@ -148,7 +150,10 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
   __2.__ `write`
 
-* takes the contents of the report object retrieved in _1)_ to assemble a structured and interactive _oncoEnrichR_ HTML report
+* takes the contents of the report object retrieved in _1)_ to assemble either
+   * A) a structured and interactive _oncoEnrichR_ HTML report, OR
+   * B) a multisheet Excel workbook with results from the annotations and analyses provided
+     by _oncoEnrichR_
 
 #### Example run
 
@@ -167,7 +172,8 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
 
  * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
  * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
- * `oncoEnrichR::write(myc_report, "LOCAL_FOLDER", "cmyc_example")`
+ * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_2021_01", format = "html")`
+ * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_2021_01", format = "excel")`
 
 ### Contact
 
