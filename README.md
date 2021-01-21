@@ -37,8 +37,9 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Added figure legend for cellular substructures
   * Added section that highlights genes of unknown/poorly defined function
   * Data updates
-	  * CancerMine
-	  * WikiPathways
+	  * CancerMine (January 2021)
+	  * WikiPathways (January 2021)
+	  * KEGG (January 2021)
   * In progress: Web interface for oncoEnrichR (Galaxy Platform)
 * December 23rd 2020 - **0.8.0 release**
   * Multiple data updates
