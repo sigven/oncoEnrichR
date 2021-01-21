@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
 Version: 0.8.2
-Date: 2021-01-13
+Date: 2021-01-21
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR
@@ -18,7 +18,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     specific expression patterns and prognostic associations), and 
     Gene Ontology/MSigDB/REACTOME/KEGG (functional enrichment/over-representation 
     analysis with respect to gene function and cellular pathways). The package 
-    outputs an interactive HTML report in which the user can interrogate 
+    outputs both an interactive HTML report and an Excel workbook in which the user can interrogate 
     the various types of annotations and analyses performed with the geneset. 
 Depends: 
     R (>= 4.0), SummarizedExperiment (>= 1.20.0), GSEABase (>= 1.52.1)

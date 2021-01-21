@@ -146,12 +146,18 @@ init_report <- function(project_title = "Project title",
     min_subcellcomp_confidence
 
   ## initialize all data elements
-  for (analysis in c("tcga","disease",
-                     "ppi","tcga",
-                     "enrichment","drug",
-                    "protein_complex","subcellcomp",
-                    "loss_of_fitness","cell_tissue",
-                    "cancer_prognosis","unknown_function")) {
+  for (analysis in c("tcga",
+                     "disease",
+                     "ppi",
+                     "tcga",
+                     "enrichment",
+                     "drug",
+                     "protein_complex",
+                     "subcellcomp",
+                     "loss_of_fitness",
+                     "cell_tissue",
+                     "cancer_prognosis",
+                     "unknown_function")) {
     rep[["data"]][[analysis]] <- list()
   }
 
@@ -395,10 +401,7 @@ onco_enrich <- function(query,
   if (length(query_symbol) > 20) {
     onc_rep[["config"]][["tcga_aberration"]][["plot_height"]] <-
       onc_rep[["config"]][["tcga_aberration"]][["plot_height"]] +
-      as.integer((length(query_symbol) - 20)/ 8.5)
-    onc_rep[["config"]][["co_expression_gtex"]][["plot_height"]] <-
-      onc_rep[["config"]][["co_expression_gtex"]][["plot_height"]] +
-      as.integer((length(query_symbol) - 20)/ 8.5)
+      as.integer((length(query_symbol) - 20)/ 7.5)
   }
 
   if (show_disease == T) {
@@ -523,20 +526,21 @@ onco_enrich <- function(query,
   }
 
   if (show_complex == T) {
-    service_is_down <- unique(is.na(pingr::ping("omnipathdb.org")))
-    if(service_is_down){
-      rlogging::message("EXCEPTION: https://omnipathdb.org is NOT responding - ",
-                        "skipping retrievel of protein complexes")
-
-      onc_rep[["config"]][["show"]][["protein_complex"]] <- FALSE
-    }else{
-      onc_rep[["data"]][["protein_complex"]][["complex"]] <-
-        oncoEnrichR:::annotate_protein_complex(
-          query_symbol,
-          genedb = oncoEnrichR::genedb,
-          corum_db = oncoEnrichR::corumdb,
-          uniprot_acc = oncoEnrichR::uniprot_xref)
-    }
+    ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
+    # service_is_down <- unique(is.na(pingr::ping("omnipathdb.org")))
+    # if(service_is_down){
+    #   rlogging::message("EXCEPTION: https://omnipathdb.org is NOT responding - ",
+    #                     "skipping retrievel of protein complexes")
+    #
+    #   onc_rep[["config"]][["show"]][["protein_complex"]] <- FALSE
+    # }else{
+    onc_rep[["data"]][["protein_complex"]][["complex"]] <-
+      oncoEnrichR:::annotate_protein_complex(
+        query_symbol,
+        genedb = oncoEnrichR::genedb,
+        corum_db = oncoEnrichR::corumdb,
+        uniprot_acc = oncoEnrichR::uniprot_xref)
+    #}
   }
 
   if (show_unknown_function == T) {

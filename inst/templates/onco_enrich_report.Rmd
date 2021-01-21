@@ -49,7 +49,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_enrichment, child='functional_enrichment.Rmd', eval = onc_enrich_report[['config']][['show']][['enrichment']]}
 ```
 
-```{r target_tcga_aberration, child='cancer_mutation_frequency.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_aberration']]}
+```{r target_tcga_aberration, child='tcga_aberration.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_aberration']]}
 ```
 
 ```{r target_tcga_coexpression, child='tcga_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_coexpression']]}

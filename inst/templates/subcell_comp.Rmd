@@ -21,8 +21,10 @@
 
 ##### Heatmap - target set
 <br>
+
 * In the image below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
 <br><br>
+
 ```{r gganatogram_plot, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 5}
 
 suppressPackageStartupMessages(library(gganatogram))
@@ -88,6 +90,10 @@ DT::datatable(subcell_comp_all, escape = F,
 <br><br><br>
 
 ##### By Compartment
+
+* Genes listed per compartment are calculated using only compartment annotations with a minimum confidence level of: __`r onc_enrich_report$config$subcellcomp$minimum_confidence` (number of sources)__
+
+<br>
 
 ```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = T}
 library(crosstalk)

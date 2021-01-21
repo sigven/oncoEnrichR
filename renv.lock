@@ -413,10 +413,10 @@
     },
     "brio": {
       "Package": "brio",
-      "Version": "1.1.0",
+      "Version": "1.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "570a24963009b9cce0869a0463c83580"
+      "Hash": "36758510e65a457efeefa50e1e7f0576"
     },
     "broom": {
       "Package": "broom",
@@ -1207,6 +1207,13 @@
       "Repository": "CRAN",
       "Hash": "3b3dd89b2ee115a8b54e93a34cd546b4"
     },
+    "pingr": {
+      "Package": "pingr",
+      "Version": "2.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e293e79be42ffd336d938937fd3017fb"
+    },
     "pkgbuild": {
       "Package": "pkgbuild",
       "Version": "1.2.0",
@@ -1646,10 +1653,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.28",
+      "Version": "0.29",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ff73961a77fba606fbf944dc3468e5b9"
+      "Hash": "f0b0ba735febac9a8344253ae6fa93f5"
     },
     "tweenr": {
       "Package": "tweenr",

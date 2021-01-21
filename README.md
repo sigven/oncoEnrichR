@@ -31,7 +31,15 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
-
+* January 21st 2021: -**0.8.2 release**
+  * Added possibility to write analysis output to Excel workbook
+  * Added option to set minimum confidence level for subcellular structure annotations
+  * Added figure legend for cellular substructures
+  * Added section that highlights genes of unknown/poorly defined function
+  * Data updates
+	  * CancerMine
+	  * WikiPathways
+  * In progress: Web interface for oncoEnrichR (Galaxy Platform)
 * December 23rd 2020 - **0.8.0 release**
   * Multiple data updates
   * New analysis sections:
@@ -58,7 +66,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4390253.svg)](https://doi.org/10.5281/zenodo.4390253)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4456024.svg)](https://doi.org/10.5281/zenodo.4456024)
 
 
 ### Getting started
@@ -166,10 +174,11 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4390253).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4456024).
 
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
+ * `library(oncoEnrichR)`
  * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
  * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_2021_01", format = "html")`

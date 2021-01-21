@@ -1,5 +1,8 @@
 
-annotate_protein_complex <- function(qgenes, genedb = NULL, corum_db = NULL, uniprot_acc = NULL){
+annotate_protein_complex <- function(qgenes,
+                                     genedb = NULL,
+                                     corum_db = NULL,
+                                     uniprot_acc = NULL){
 
   rlogging::message("CORUM: retrieval of protein complex information for target set")
   stopifnot(is.character(qgenes))

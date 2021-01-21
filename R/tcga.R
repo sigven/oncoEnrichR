@@ -143,7 +143,6 @@ tcga_aberration_plot <- function(qgenes,
   zero_frequency_genes <-
     dplyr::anti_join(gene_candidates_init, gene_aberrations,
                      by = c("symbol", "primary_site", "variant_type")) %>%
-    #dplyr::select(-c(tot_samples,samples_mutated)) %>%
     dplyr::left_join(site_stats_zero,by=c("primary_site"))
   gene_aberrations <-
     dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
@@ -168,29 +167,24 @@ tcga_aberration_plot <- function(qgenes,
       ggplot2::geom_tile(ggplot2::aes(fill = percentile), colour = "black", size = 0.40)
   }
   p <- p +
-    #add border white colour of line thickness 0.25
-    #ggplot2::geom_tile(aes(fill = pct_mutated), colour="black",size=0.40)+
     ggplot2::scale_fill_gradient(low = "white", high = color) +
     #remove x and y axis labels
     ggplot2::labs(x = "", y = "")+
     ggplot2::ggtitle(title) +
-    #remove extra space
-    #scale_y_discrete(expand=c(0,0))+
-    #ggplot2::coord_fixed(ratio = 1.3)+
     #set a base size for all fonts
-    ggplot2::theme_grey(base_size = 14)+
+    ggplot2::theme_grey(base_size = 16)+
     #theme options
     ggplot2::theme(
       #bold font for both axis text
-      #legend.title = ggplot2::element_text()
-      axis.text = ggplot2::element_text(face="bold",family = "Helvetica", size = 14),
+      legend.text = ggplot2::element_text(family = "Helvetica", size = 17),
+      axis.text = ggplot2::element_text(face="bold",family = "Helvetica", size = 17),
       #set thickness of axis ticks
       axis.ticks = ggplot2::element_line(size = 0.2),
       #remove plot background
       plot.background = ggplot2::element_blank(),
       #remove plot border
       panel.border = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 55, hjust = 1))
+      axis.text.x = ggplot2::element_text(angle = 59, hjust = 1))
 
   return(p)
 }
