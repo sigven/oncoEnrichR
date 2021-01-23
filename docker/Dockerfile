@@ -29,19 +29,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc libgit2-dev
 
 ## oncoEnrichR dependencies: restore all R package versions and dependencies with renv package
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
-RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.12.3.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.12.5.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_0.8.0.tar.gz /
+COPY oncoEnrichR_0.8.3.tar.gz /
 
 RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library/')"
 
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_0.8.0.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_0.8.2.tar.gz', lib = '/usr/lib/R/library/')"
 
 ## PINNED VERSION: pandoc (for HTML report generation)
-RUN wget https://github.com/jgm/pandoc/releases/download/2.11.2/pandoc-2.11.2-1-amd64.deb && \
+RUN wget https://github.com/jgm/pandoc/releases/download/2.11.3.2/pandoc-2.11.3.2-1-amd64.deb && \
   dpkg -i pandoc* && \
   rm pandoc* && \
   apt-get clean
