@@ -27,7 +27,8 @@ tcga_oncoplot_genes <-
                   genomic_strata == "gene" &
                     primary_site == site) %>%
     dplyr::filter(clinical_strata == cstrata) %>%
-    dplyr::inner_join(dplyr::select(query_genes_df, symbol),by=c("symbol")) %>%
+    dplyr::inner_join(dplyr::select(query_genes_df, symbol),
+                      by = c("symbol")) %>%
     dplyr::select(symbol,
                   variant_type,
                   primary_site,
@@ -49,14 +50,14 @@ tcga_oncoplot_genes <-
 }
 
 
-tcga_aberration_plot <- function(qgenes,
+tcga_aberration_matrix <- function(qgenes,
                                  qsource = "symbol",
                                  cstrata = "site",
                                  vtype = "cna_ampl",
                                  genedb = NULL,
                                  percentile = FALSE){
 
-  rlogging::message(paste0("TCGA: generating gene aberration plot, variant type =  ",vtype))
+  rlogging::message(paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
@@ -76,19 +77,24 @@ tcga_aberration_plot <- function(qgenes,
 
   title <- 'SNVs/InDels - TCGA'
   color <- 'steelblue'
+  plotly_colors <- "Blues"
   if(vtype == 'cna_ampl'){
+    plotly_colors <- "YlOrRd"
     title <- 'Copy number amplifications (sCNA) - TCGA'
     color <- 'darkgreen'
   }
   if(vtype == 'cna_homdel'){
-    title <- 'Homozygous deletions - (sCNA) - TCGA'
+    plotly_colors <- "YlGn"
+    title <- 'Homozygous deletions (sCNA) - TCGA'
     color <- 'firebrick'
   }
 
   tcga_gene_stats <- oncoEnrichR::tcga_aberration_stats %>%
     dplyr::filter(clinical_strata == cstrata) %>%
     dplyr::filter(primary_site != "Other/Unknown") %>%
-    dplyr::inner_join(dplyr::select(query_genes_df, symbol),by=c("symbol"))
+    dplyr::inner_join(
+      dplyr::select(query_genes_df, symbol),
+      by=c("symbol"))
 
 
   gene_candidates_init <- data.frame()
@@ -144,49 +150,44 @@ tcga_aberration_plot <- function(qgenes,
     dplyr::anti_join(gene_candidates_init, gene_aberrations,
                      by = c("symbol", "primary_site", "variant_type")) %>%
     dplyr::left_join(site_stats_zero,by=c("primary_site"))
+
   gene_aberrations <-
     dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
                      pancan_order, by = c("symbol")) %>%
-    dplyr::mutate(pancancer_percent_mutated =
-                    dplyr::if_else(is.na(pancancer_percent_mutated),
-                                   as.numeric(0),
-                                   as.numeric(pancancer_percent_mutated)))
+    dplyr::mutate(
+      pancancer_percent_mutated =
+        dplyr::if_else(is.na(pancancer_percent_mutated),
+                       as.numeric(0),
+                       as.numeric(pancancer_percent_mutated)))
 
 
   gene_aberrations <- gene_aberrations %>%
-    dplyr::arrange(pancancer_percent_mutated) %>%   # rearrange the df in the order we want
+    dplyr::arrange(pancancer_percent_mutated, primary_site)
+
+  top_mutated <- gene_aberrations %>%
+    dplyr::arrange(desc(pancancer_percent_mutated)) %>%
+    dplyr::select(symbol) %>%
+    dplyr::distinct() %>%
+    head(75)
+
+  gene_aberrations_top <- gene_aberrations %>%
+    dplyr::inner_join(top_mutated, by = "symbol") %>%
     dplyr::mutate(symbol = factor(symbol, unique(symbol)))
 
-  p <- ggplot2::ggplot(gene_aberrations, ggplot2::aes(x = primary_site,y = symbol)) +
-    ggplot2::geom_text(ggplot2::aes(label = round(percent_mutated, 1)), color = "#E69F00") +
-    ggplot2::geom_tile(ggplot2::aes(fill = percent_mutated), colour = "black", size = 0.40)
 
-  if(percentile == T){
-    p <- ggplot2::ggplot(gene_aberrations, ggplot2::aes(x = primary_site, y = symbol)) +
-      ggplot2::geom_text(ggplot2::aes(label = round(percentile, 1))) +
-      ggplot2::geom_tile(ggplot2::aes(fill = percentile), colour = "black", size = 0.40)
-  }
-  p <- p +
-    ggplot2::scale_fill_gradient(low = "white", high = color) +
-    #remove x and y axis labels
-    ggplot2::labs(x = "", y = "")+
-    ggplot2::ggtitle(title) +
-    #set a base size for all fonts
-    ggplot2::theme_grey(base_size = 16)+
-    #theme options
-    ggplot2::theme(
-      #bold font for both axis text
-      legend.text = ggplot2::element_text(family = "Helvetica", size = 17),
-      axis.text = ggplot2::element_text(face="bold",family = "Helvetica", size = 17),
-      #set thickness of axis ticks
-      axis.ticks = ggplot2::element_line(size = 0.2),
-      #remove plot background
-      plot.background = ggplot2::element_blank(),
-      #remove plot border
-      panel.border = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 59, hjust = 1))
+  gene_aberration_top_mat <- as.data.frame(
+    gene_aberrations_top %>%
+    dplyr::select(symbol, primary_site, percent_mutated) %>%
+    tidyr::pivot_wider(names_from = primary_site,
+                       values_from = percent_mutated)
+  )
+  rownames(gene_aberration_top_mat) <-
+    gene_aberration_top_mat$symbol
+  gene_aberration_top_mat$symbol <- NULL
+  gene_aberration_top_mat <- as.matrix(gene_aberration_top_mat)
 
-  return(p)
+  return(gene_aberration_top_mat)
+
 }
 
 tcga_aberration_table <- function(qgenes,

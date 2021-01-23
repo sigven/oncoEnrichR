@@ -1,6 +1,6 @@
 ### TCGA aberration frequency
 
-* The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated from [The Cancer Genome Atlas (TCGA)]()
+* The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated with data from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/)
 
 <br><br>
 
@@ -467,22 +467,83 @@ maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_ge
 
 #### Copy number alterations
 
+* Genes targeted by somatic copy number alterations (sCNAs) in tumor samples have been retrieved from TCGA, where copy number state have been estimated with [GISTIC](http://portals.broadinstitute.org/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=216&p=t)
 * Gene aberration frequency are plotted across two categories of mutation types
-    1. sCNA - amplifications
-    2. sCNA - homozygous deletions
+    1. <span style="background-color:#005a32; color:white"><b>&nbsp; sCNA - amplifications &nbsp; </b></span>
+    2. <span style="background-color:#800026; color:white"><b>&nbsp; sCNA - homozygous deletions &nbsp; </b></span>
 * Frequency is plotted pr. primary site as 
-  * *_percent_mutated_* (percent of all tumor samples with the gene mutated)
-* Frequencies across all subtypes are listed in an interactive table
+  * *_percent_mutated_* (percent of all tumor samples with the gene amplified/lost)
+  * genes in the plot are ranked according to alteration frequency across all sites (_pancancer_),
+  limited to the top 75 genes in the target set
+* Frequencies across all subtypes per primary site are listed in an interactive table
 
 
 <br><br>
-```{r tcga_ampl_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = fwidth}
-onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_ampl']]
+```{r tcga_ampl_plot, echo = F, eval = T}
+
+suppressMessages(library(plotly))
+gene_aberration_top_mat <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']]
+plotly_colors <- "YlGn"
+
+
+fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 1300) %>%
+    plotly::add_heatmap(
+      y = rownames(gene_aberration_top_mat),
+      x = colnames(gene_aberration_top_mat),
+      z = gene_aberration_top_mat,
+      hovertext = "Percent mutated",
+      yaxis = "y") %>%
+    plotly::layout(
+      title = "Amplifications",
+      xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                   tickangle = -50),
+      yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+      margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+    ) %>%
+    plotly::colorbar(
+      nticks = 20, 
+      title = list(text = "Percent mutated",side = "bottom"),
+      limits = c(0, plyr::round_any(max(gene_aberration_top_mat), 10, ceiling)))
+  fig
+
 
 ```
 <br><br>
-```{r tcga_homdel_plot, echo = F, eval = T, fig.height = onc_enrich_report[['config']][['tcga_aberration']][['plot_height']], fig.width = fwidth}
-onc_enrich_report[['data']][['tcga']][['aberration']][['plot']][['cna_homdel']]
+```{r tcga_homdel_plot, echo = F, eval = T}
+
+suppressMessages(library(plotly))
+gene_aberration_top_mat <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']]
+
+plotly_colors <- "YlOrRd"
+
+fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 1300) %>%
+    plotly::add_heatmap(
+      y = rownames(gene_aberration_top_mat),
+      x = colnames(gene_aberration_top_mat),
+      z = gene_aberration_top_mat,
+      hovertext = "Percent mutated",
+      yaxis = "y") %>%
+    plotly::layout(
+      title = 'Homozygous deletions',
+      xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                   tickangle = -50),
+      yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+      margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+    ) %>%
+    plotly::colorbar(
+      nticks = 20, 
+      title = list(text = "Percent mutated",side = "bottom"),
+      limits = c(0, plyr::round_any(max(gene_aberration_top_mat), 10, ceiling)))
+  fig
+
 
 ```
 <br><br>

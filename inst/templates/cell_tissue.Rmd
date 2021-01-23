@@ -128,7 +128,7 @@ if(num_significant_tissues > 0){
 htmltools::br()
 
 cat("<ul><li>")
-cat('<i><font style="font-size: 100%">Considering the tisse specificities of members of the target set, <b>NO TISSUES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
+cat('<i><font style="font-size: 100%">Considering the tissue specificities of members of the target set, <b>NO TISSUES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
 cat('</ul></li>')
 
 htmltools::br()

@@ -227,11 +227,12 @@ init_report <- function(project_title = "Project title",
   ## TCGA aberrations
   rep[["data"]][["tcga"]][["aberration"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["table"]] <- list()
+  rep[["data"]][["tcga"]][["aberration"]][["matrix"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["plot"]] <- list()
 
   for (v in c("cna_homdel","cna_ampl","snv_indel")) {
     if(v != "snv_indel"){
-      rep[["data"]][["tcga"]][["aberration"]][["plot"]][[v]] <- NULL
+      rep[["data"]][["tcga"]][["aberration"]][["matrix"]][[v]] <- NULL
       rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <- data.frame()
     }
     else{
@@ -270,7 +271,7 @@ init_report <- function(project_title = "Project title",
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
-#' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 5, 5 is strongest)
+#' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -336,7 +337,7 @@ onco_enrich <- function(query,
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
   stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
   stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
-  stopifnot(min_subcellcomp_confidence >= 1 & min_subcellcomp_confidence <= 5)
+  stopifnot(min_subcellcomp_confidence >= 1 & min_subcellcomp_confidence <= 6)
   stopifnot(ppi_add_nodes <= 50)
 
   qgenes_match <-
@@ -585,10 +586,12 @@ onco_enrich <- function(query,
 
   if (show_tcga_aberration == T) {
     for (v in c("cna_homdel","cna_ampl")) {
-      onc_rep[["data"]][["tcga"]][["aberration"]][["plot"]][[v]] <-
-        oncoEnrichR:::tcga_aberration_plot(
-          query_entrezgene, qsource = "entrezgene",
-          genedb = oncoEnrichR::genedb, vtype = v)
+      onc_rep[["data"]][["tcga"]][["aberration"]][["matrix"]][[v]] <-
+        oncoEnrichR:::tcga_aberration_matrix(
+          query_entrezgene,
+          qsource = "entrezgene",
+          genedb = oncoEnrichR::genedb,
+          vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
         oncoEnrichR:::tcga_aberration_table(
           query_entrezgene,

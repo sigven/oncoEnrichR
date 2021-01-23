@@ -1,8 +1,8 @@
 Package: oncoEnrichR
 Type: Package
 Title: Functional annotation and enrichment analysis of genesets in the context of cancer
-Version: 0.8.2
-Date: 2021-01-21
+Version: 0.8.3
+Date: 2021-01-23
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR
@@ -23,7 +23,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
 Depends: 
     R (>= 4.0), SummarizedExperiment (>= 1.20.0), GSEABase (>= 1.52.1)
 biocViews: 
-Imports: tidyverse (>= 1.3.0), visNetwork (>= 2.0.9), DT (>= 0.17), plotly (>= 4.9.2), pals (>= 1.6), 
+Imports: tidyverse (>= 1.3.0), visNetwork (>= 2.0.9), DT (>= 0.17), plotly (>= 4.9.3), pals (>= 1.6), 
     org.Hs.eg.db, magrittr (>= 2.0.1), clusterProfiler (>= 3.18.0), igraph (>= 1.2.6), reshape2 (>= 1.4.4), rlogging, 
     gganatogram, maftools (>= 2.4.12), SummarizedExperiment (>= 1.20.0), GSEABase (>= 1.52.1)
 License: MIT
