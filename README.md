@@ -16,7 +16,7 @@
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
+The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the target set?
   * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
