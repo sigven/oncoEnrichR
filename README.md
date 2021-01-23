@@ -31,6 +31,9 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
+* January 23rd 2021: -**0.8.3 release**
+  * New: interactive copy number aberration plots (plotly)
+  * KEGG database more complete
 * January 21st 2021: -**0.8.2 release**
   * Added possibility to write analysis output to Excel workbook
   * Added option to set minimum confidence level for subcellular structure annotations
