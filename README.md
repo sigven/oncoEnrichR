@@ -183,8 +183,8 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
  * `library(oncoEnrichR)`
- * `myc_data <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(myc_data$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
+ * `myc_report <- oncoEnrichR::onco_enrich(myc_interact_targets$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "html")`
  * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "excel")`
 
