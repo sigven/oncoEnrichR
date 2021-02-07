@@ -14,7 +14,7 @@
    * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
    * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
    * Maximal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`
-   * Background genes: `r onc_enrich_report[['config']][['enrichment']][['background_set']]`
+   * Background genes: `r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`
    
 
 <br><br>

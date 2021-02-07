@@ -4,7 +4,7 @@ init_report <- function(project_title = "Project title",
                         project_description = "Project description",
                         ppi_min_string_score = 900,
                         ppi_add_nodes = 50,
-                        background_enrichment_description =
+                        bgset_description =
                           "All protein-coding genes",
                         p_value_cutoff_enrichment = 0.05,
                         p_value_adjustment_method = "BH",
@@ -97,8 +97,8 @@ init_report <- function(project_title = "Project title",
     max_geneset_size
   rep[["config"]][["enrichment"]][["simplify_go"]] <-
     simplify_go
-  rep[["config"]][["enrichment"]][["background_set"]] <-
-    background_enrichment_description
+  rep[["config"]][["enrichment"]][["bgset_description"]] <-
+    bgset_description
 
   ## specifiy plot height (tile/heatmap) - genes along y-axis
   ## tumor types / tissues / celltypes along x-axis
@@ -258,14 +258,14 @@ init_report <- function(project_title = "Project title",
 #' Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
 #'
 #' @param query character vector with gene/query identifiers
-#' @param query_source character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")
-#' @param ignore_unknown logical indicating if analysis should continue when uknown query identifiers are encountered
+#' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")
+#' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
 #' @param project_description project background information
-#' @param background_enrichment character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-#' @param background_enrichment_source character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")
-#' @param background_enrichment_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
+#' @param bgset character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
+#' @param bgset_id_type character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")
+#' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param p_value_cutoff_enrichment cutoff p-value for enrichment/over-representation analysis
 #' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
@@ -291,14 +291,14 @@ init_report <- function(project_title = "Project title",
 #' @export
 #'
 onco_enrich <- function(query,
-                   query_source = "symbol",
-                   ignore_unknown = FALSE,
+                   query_id_type = "symbol",
+                   ignore_id_err = FALSE,
                    project_title = "Project title",
                    project_owner = "Project owner",
                    project_description = "Project description",
-                   background_enrichment = NULL,
-                   background_enrichment_source = "symbol",
-                   background_enrichment_description = "All protein-coding genes",
+                   bgset = NULL,
+                   bgset_id_type = "symbol",
+                   bgset_description = "All protein-coding genes",
                    p_value_cutoff_enrichment = 0.05,
                    p_value_adjustment_method = "BH",
                    q_value_cutoff_enrichment = 0.2,
@@ -332,8 +332,8 @@ onco_enrich <- function(query,
     length(query), " identifiers"))
     return(NULL)
   }
-  stopifnot(query_source == "symbol" | query_source == "entrezgene" |
-              query_source == "uniprot_acc" | query_source == "ensembl_gene_id")
+  stopifnot(query_id_type == "symbol" | query_id_type == "entrezgene" |
+              query_id_type == "uniprot_acc" | query_id_type == "ensembl_gene_id")
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
   stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
   stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
@@ -342,8 +342,8 @@ onco_enrich <- function(query,
 
   qgenes_match <-
     oncoEnrichR:::verify_query_genes(query,
-                                    qsource = query_source,
-                                    ignore_unknown = ignore_unknown,
+                                     q_id_type = query_id_type,
+                                    ignore_id_err = ignore_id_err,
                                     genedb = oncoEnrichR::genedb,
                                     uniprot_acc = oncoEnrichR::uniprot_xref)
 
@@ -354,18 +354,18 @@ onco_enrich <- function(query,
 
   background_entrez <- NULL
   background_genes_match <- NULL
-  if (!is.null(background_enrichment)) {
+  if (!is.null(bgset)) {
     background_genes_match <-
-      oncoEnrichR:::verify_query_genes(background_enrichment,
-                                      qsource = background_enrichment_source,
+      oncoEnrichR:::verify_query_genes(bgset,
+                                       q_id_type = bgset_id_type,
                                       genedb = oncoEnrichR::genedb,
+                                      qtype = "background",
                                       uniprot_acc = oncoEnrichR::uniprot_xref)
     if (background_genes_match[["success"]] == -1) {
       return(NULL)
     }
     background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
   }
-
 
 
   query_entrezgene <- unique(qgenes_match[["found"]]$entrezgene)
@@ -393,8 +393,8 @@ onco_enrich <- function(query,
                          simplify_go = simplify_go,
                          show_complex = show_complex,
                          show_subcell_comp = show_subcell_comp,
-                         background_enrichment_description =
-                           background_enrichment_description,
+                         bgset_description =
+                           bgset_description,
                          p_value_cutoff_enrichment = p_value_cutoff_enrichment,
                          p_value_adjustment_method = p_value_adjustment_method,
                          q_value_cutoff_enrichment = q_value_cutoff_enrichment)
@@ -408,13 +408,15 @@ onco_enrich <- function(query,
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]][["target"]] <-
       oncoEnrichR:::target_disease_associations(
-        query_symbol, genedb = oncoEnrichR::genedb)
+        query_symbol,
+        genedb = oncoEnrichR::genedb)
   }
 
   if (show_drug == T) {
     onc_rep[["data"]][["drug"]][["target"]] <-
       oncoEnrichR:::target_drug_associations(
-        query_symbol, genedb = oncoEnrichR::genedb)
+        query_symbol,
+        genedb = oncoEnrichR::genedb)
   }
 
   for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
@@ -508,22 +510,22 @@ onco_enrich <- function(query,
       dbsource = db)
 
   if (show_ppi == T) {
-
-    service_is_down <- unique(is.na(pingr::ping("string-db.org")))
-    if(service_is_down){
-      rlogging::message("EXCEPTION: https://string-db.org is NOT responding - ",
-                        "skipping retrievel of protein-protein interactions")
-
-      onc_rep[["config"]][["show"]][["ppi"]] <- FALSE
-    }else{
-      onc_rep[["data"]][["ppi"]] <-
-        oncoEnrichR:::get_ppi_network(
-          query_entrezgene,
-          ppi_source = "STRING",
-          genedb = oncoEnrichR::genedb,
-          cancerdrugdb = oncoEnrichR::cancerdrugdb,
-          settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
-    }
+    ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
+    # service_is_down <- unique(is.na(pingr::ping("string-db.org")))
+    # if(service_is_down){
+    #   message("EXCEPTION: https://string-db.org is NOT responding - ",
+    #           "skipping retrievel of protein-protein interactions")
+    #
+    #   onc_rep[["config"]][["show"]][["ppi"]] <- FALSE
+    # }else{
+    onc_rep[["data"]][["ppi"]] <-
+      oncoEnrichR:::get_ppi_network(
+        query_entrezgene,
+        ppi_source = "STRING",
+        genedb = oncoEnrichR::genedb,
+        cancerdrugdb = oncoEnrichR::cancerdrugdb,
+        settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
+    #}
   }
 
   if (show_complex == T) {
@@ -613,13 +615,15 @@ onco_enrich <- function(query,
   if (show_tcga_coexpression == T) {
     onc_rep[["data"]][["tcga"]][["co_expression"]] <-
       oncoEnrichR:::tcga_co_expression(
-        query_symbol, genedb = oncoEnrichR::genedb)
+        query_symbol,
+        genedb = oncoEnrichR::genedb)
   }
 
   if(show_prognostic_cancer_assoc == T){
     onc_rep[["data"]][["cancer_prognosis"]][['assocs']] <-
       oncoEnrichR:::hpa_prognostic_genes(
-        query_symbol, genedb = oncoEnrichR::genedb)
+        query_symbol,
+        genedb = oncoEnrichR::genedb)
 
   }
 
@@ -659,45 +663,70 @@ onco_enrich <- function(query,
 #' A) interactive HTML report, or B) Excel workbook
 #'
 #' @param report object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)
-#' @param project_directory working directory
-#' @param report_name prefix filename for report output
+#' @param file filename for report output
+#' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
+#' @param overwrite logical indicating if file contents may be overwritten
 #' @param format file format of output (html/excel)
 #' @export
 
 write <- function(report,
-                  project_directory,
-                  report_name = "testReport",
+                  #project_directory,
+                  file = "testReport.html",
+                  ignore_file_extension = T,
+                  overwrite = T,
                   format = "html") {
 
-  invisible(
-    assertthat::assert_that(
-      format %in% c("html","excel"),
-      msg = paste0("Value for argument format ('",
-                   format,
-                   "') not recognized. ",
-                   "Possible values: ",
-                   "'html','excel'"))
-  )
-  invisible(
-    assertthat::assert_that(
-      is.character(report_name),
-      msg = paste0("Argument report_name (",
-                   report_name, ") must be of type character",
-                   " not ")
-    )
-  )
-  invisible(
-    assertthat::assert_that(
-      dir.exists(project_directory),
-      msg = paste0("Value for argument project_directory ('",
-                   project_directory, "') does not exist")
-    )
-  )
 
-  outfname <- list()
-  outfname[["html"]] <- paste(report_name, "html", sep=".")
-  outfname[["excel"]] <- paste(report_name, "xlsx", sep=".")
+  val <- assertthat::validate_that(
+    format %in% c("html","excel")
+  )
+  if(!is.logical(val)){
+    message(val)
+  }
 
+  val <- assertthat::validate_that(
+      is.character(file)
+  )
+  if(!is.logical(val)){
+    message(val)
+  }
+
+  val <- assertthat::validate_that(
+    is.logical(overwrite)
+  )
+  if(!is.logical(val)){
+    message(val)
+  }
+
+  output_directory <- dirname(file)
+  file_basename <- basename(file)
+  if(output_directory != "."){
+    val <- assertthat::validate_that(
+      dir.exists(output_directory)
+    )
+    if(!is.logical(val)){
+      message(val)
+    }
+  }
+
+  if(overwrite == F){
+    val <- assertthat::validate_that(
+      file.exists(file)
+    )
+    if(!is.logical(val)){
+      message(val)
+    }
+  }
+
+  if(ignore_file_extension == F){
+    if(format == "html" & tools::file_ext(file) != "html"){
+      message("oncoEnrichR HTML output: File name must end with .html, not ",file)
+    }
+
+    if(format == "excel" & tools::file_ext(file) != "xlsx"){
+      message("oncoEnrichR Excel output: File name must end with .xlsx, not ",file)
+    }
+  }
 
   ## TODO: check that report parameter is a valid oncoEnrichR result object
 
@@ -705,7 +734,7 @@ write <- function(report,
     assign("onc_enrich_report",
            report, envir = .GlobalEnv)
   }else{
-    rlogging::warning("report object is NULL - cannot write report contents")
+    message("ERROR: report object is NULL - cannot write report contents")
   }
 
   if (format == "html") {
@@ -725,13 +754,13 @@ write <- function(report,
         theme = report_theme, toc = T, toc_depth = 3,
         toc_float = T, number_sections = F,
         includes = rmarkdown::includes(after_body = disclaimer)),
-      output_file = outfname[["html"]],
-      output_dir = project_directory,
+      output_file = file_basename,
+      output_dir = output_directory,
       clean = T,
-      intermediates_dir = project_directory,
+      intermediates_dir = output_directory,
       quiet = T)
     rlogging::message(paste0("Output file: ",
-                             file.path(project_directory,outfname[["html"]])))
+                             file))
     rlogging::message("------")
   }
   if (format == "excel") {
@@ -753,13 +782,11 @@ write <- function(report,
                   "unknown_function")){
 
       show_elem <- elem
-      # if(stringr::str_detect(elem,"tcga") == T){
-      #   show_elem <- "tcga"
-      # }
 
       if(report[['config']][['show']][[show_elem]] == FALSE){
         next
       }
+
       wb <- oncoEnrichR:::add_excel_sheet(
         report = report,
         workbook = wb,
@@ -777,11 +804,8 @@ write <- function(report,
 
     }
 
-    openxlsx::saveWorkbook(wb, file.path(project_directory,
-                                         outfname[["excel"]]), overwrite = TRUE)
-    rlogging::message(paste0("Output file: ",
-                             file.path(project_directory,
-                                       outfname[["excel"]])))
+    openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+    rlogging::message(paste0("Output file: ",file))
     rlogging::message("------")
   }
   else{

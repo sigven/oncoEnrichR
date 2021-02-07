@@ -31,6 +31,9 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
+* Februar 7th 2021: -**0.8.4 release**
+  * Improved retrieval of protein complex information
+  * Renaming of arguments to _oncoEnrich::onco_enrich_ and _oncoEnrich::write_
 * January 23rd 2021: -**0.8.3 release**
   * New: interactive copy number aberration plots (plotly)
   * Added previously omitted elements (disease genesets) from KEGG database
@@ -70,7 +73,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4459219.svg)](https://doi.org/10.5281/zenodo.4459219)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4515867.svg)](https://doi.org/10.5281/zenodo.4515867)
 
 
 ### Getting started
@@ -92,14 +95,14 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```r
 	  onco_enrich(
 	    query,
-	    query_source = "symbol",
-	    ignore_unknown = FALSE,
+	    query_id_type = "symbol",
+	    ignore_id_err = FALSE,
 	    project_title = "Project title",
 	    project_owner = "Project owner",
 	    project_description = "Project description",
-	    background_enrichment = NULL,
-	    background_enrichment_source = "symbol",
-	    background_enrichment_description = "All protein-coding genes",
+	    bgset = NULL,
+	    bgset_id_type = "symbol",
+	    bgset_description = "All protein-coding genes",
 	    p_value_cutoff_enrichment = 0.05,
 	    p_value_adjustment_method = "BH",
 	    q_value_cutoff_enrichment = 0.2,
@@ -128,14 +131,14 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
-	  ```query_source```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
-	  ```ignore_unknown```     |     logical indicating if analysis should continue when uknown query identifiers are encountered
+	  ```query_id_type```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
+	  ```ignore_id_err```     |     logical indicating if analysis should continue when erroneous/unmatched query identifiers are encountered in query or background gene set
 	  ```project_title```     |     project title (report title)
 	  ```project_owner```     |     project owner (e.g. lab/PI)
 	  ```project_description```     |     brief description of project, how target list was derived
-	  ```background_enrichment```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-	  ```background_enrichment_source```     |     character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
-	  ```background_enrichment_description```     |     character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
+	  ```bgset```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
+	  ```bgset_id_type```     |     character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
+	  ```bgset_description```     |     character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
 	  ```p_value_cutoff_enrichment```     |     cutoff p-value for enrichment/over-representation analysis
 	  ```p_value_adjustment_method```     |     one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 	  ```q_value_cutoff_enrichment```     |     cutoff q-value for enrichment analysis
@@ -171,20 +174,20 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target list through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
-  * `ignore_unknown = TRUE`
+  * `ignore_id_err = TRUE`
   * `query_source = "symbol"`
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4459219).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4515867).
 
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(myc_interact_targets$symbol, query_source = "symbol", ignore_unknown = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_report <- oncoEnrichR::onco_enrich(myc_interact_targets$symbol, query_source = "symbol", ignore_id_err = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "html")`
  * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "excel")`
 

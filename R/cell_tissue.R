@@ -1,6 +1,6 @@
 gene_tissue_cell_spec_cat <-
   function(qgenes,
-           qsource = "symbol",
+           q_id_type = "symbol",
            resolution = "tissue",
            genedb = NULL){
 
@@ -19,10 +19,10 @@ gene_tissue_cell_spec_cat <-
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(resolution == "tissue" | resolution == "single_cell")
-  stopifnot(qsource == "symbol" | qsource == "entrezgene")
+  stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(qsource == 'entrezgene'){
+  if(q_id_type == 'entrezgene'){
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F) %>%
       dplyr::inner_join(genedb, by = "entrezgene") %>%
@@ -209,6 +209,10 @@ gene_tissue_cell_enrichment <-
         dplyr::inner_join(df, by = "entrezgene") %>%
         dplyr::distinct()
       background_ensembl <- bg$ensembl_gene_id
+
+      background_ensembl <- unique(
+        c(background_ensembl, query_ensembl)
+      )
     }
 
     gene_id_TE <- GSEABase::ENSEMBLIdentifier()

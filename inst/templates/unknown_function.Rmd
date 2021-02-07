@@ -62,7 +62,7 @@ DT::datatable(targets_unknown_function,
 
 
 ```{r ufunction_genes_missing, echo=F, results = 'asis', eval = !show_ufunction_genes}
-cat('<i>No genes with unknown or poorly defined functions were detected in target set.</i>',sep='\n')
+cat('\n*  <i> <b>NO</b> genes with unknown or poorly defined functions were detected in target set.</i>',sep='\n')
 cat('\n')
 ```
 

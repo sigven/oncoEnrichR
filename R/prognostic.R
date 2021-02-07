@@ -1,4 +1,5 @@
-hpa_prognostic_genes <- function(qgenes, qsource = "symbol",
+hpa_prognostic_genes <- function(qgenes,
+                                 q_id_type = "symbol",
                                 genedb = "NULL"){
 
   rlogging::message(
@@ -6,10 +7,10 @@ hpa_prognostic_genes <- function(qgenes, qsource = "symbol",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
-  stopifnot(qsource == "symbol" | qsource == "entrezgene")
+  stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(qsource == 'entrezgene'){
+  if(q_id_type == 'entrezgene'){
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F) %>%
       dplyr::inner_join(genedb, by = "entrezgene") %>%

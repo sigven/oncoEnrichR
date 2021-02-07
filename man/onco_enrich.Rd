@@ -6,23 +6,23 @@
 \usage{
 onco_enrich(
   query,
-  query_source = "symbol",
-  ignore_unknown = FALSE,
+  query_id_type = "symbol",
+  ignore_id_err = FALSE,
   project_title = "Project title",
   project_owner = "Project owner",
   project_description = "Project description",
-  background_enrichment = NULL,
-  background_enrichment_source = "symbol",
-  background_enrichment_description = "All protein-coding genes",
+  bgset = NULL,
+  bgset_id_type = "symbol",
+  bgset_description = "All protein-coding genes",
   p_value_cutoff_enrichment = 0.05,
   p_value_adjustment_method = "BH",
   q_value_cutoff_enrichment = 0.2,
   min_geneset_size = 10,
   max_geneset_size = 500,
+  min_subcellcomp_confidence = 1,
   simplify_go = F,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
-  show_gene_summary = F,
   show_ppi = T,
   show_drugs_in_ppi = F,
   show_disease = T,
@@ -30,6 +30,9 @@ onco_enrich(
   show_enrichment = T,
   show_tcga_aberration = T,
   show_tcga_coexpression = T,
+  show_cell_tissue = T,
+  show_unknown_function = T,
+  show_prognostic_cancer_assoc = T,
   show_subcell_comp = T,
   show_crispr_lof = T,
   show_complex = T
@@ -38,9 +41,9 @@ onco_enrich(
 \arguments{
 \item{query}{character vector with gene/query identifiers}
 
-\item{query_source}{character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")}
+\item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")}
 
-\item{ignore_unknown}{logical indicating if analysis should continue when uknown query identifiers are encountered}
+\item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
 \item{project_title}{project title (title of report)}
 
@@ -48,11 +51,11 @@ onco_enrich(
 
 \item{project_description}{project background information}
 
-\item{background_enrichment}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
+\item{bgset}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
 
-\item{background_enrichment_source}{character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")}
+\item{bgset_id_type}{character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")}
 
-\item{background_enrichment_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
+\item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
 \item{p_value_cutoff_enrichment}{cutoff p-value for enrichment/over-representation analysis}
 
@@ -64,13 +67,13 @@ onco_enrich(
 
 \item{max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
 
+\item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
+
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
-\item{ppi_add_nodes}{number of nodes to add to query set when computing the protein-protein interaction network (STRING)}
+\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
 
 \item{ppi_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
-
-\item{show_gene_summary}{logical indicating if report should fetch summary of gene function (from RefSeq/mygene.info, will increase processing time)}
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 
@@ -84,11 +87,18 @@ onco_enrich(
 
 \item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes}
 
+\item{show_unknown_function}{logical indicating if report should highlight target genes with unknown or poorly defined functions}
+
+\item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed}
+
 \item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations (ComPPI)}
 
 \item{show_crispr_lof}{logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
 \item{show_complex}{logical indicating if report should list proteins in known protein complexes (CORUM)}
+
+\item{show_tissue_cell}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
+of target genes, using data from the Human Protein Atlas}
 }
 \description{
 Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance

@@ -1,11 +1,12 @@
 verify_query_genes <- function(qgenes,
-                               qsource = "symbol",
-                               ignore_unknown = F,
+                               q_id_type = "symbol",
+                               qtype = "target",
+                               ignore_id_err = F,
                                genedb = NULL,
                                uniprot_acc = NULL){
 
-  stopifnot(qsource == "symbol" | qsource == "entrezgene" |
-            qsource == "uniprot_acc" | qsource == "ensembl_gene_id")
+  stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene" |
+            q_id_type == "uniprot_acc" | q_id_type == "ensembl_gene_id")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(uniprot_acc))
@@ -25,14 +26,14 @@ verify_query_genes <- function(qgenes,
   result[['success']] <- 1
 
 
-  if(qsource == 'entrezgene'){
+  if(q_id_type == 'entrezgene'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
                        by = c("qid" = "entrezgene")) %>%
       dplyr::mutate(entrezgene = qid) %>%
       dplyr::distinct()
   }
-  if(qsource == 'symbol'){
+  if(q_id_type == 'symbol'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
                        by = c("qid" = "symbol")) %>%
@@ -40,14 +41,14 @@ verify_query_genes <- function(qgenes,
       dplyr::distinct()
 
   }
-  if(qsource == 'uniprot_acc'){
+  if(q_id_type == 'uniprot_acc'){
     target_genes <- target_genes %>%
       dplyr::left_join(uniprot_acc,
                        by = c("qid" = "uniprot_acc")) %>%
       dplyr::mutate(uniprot_acc = qid) %>%
       dplyr::distinct()
   }
-  if(qsource == 'ensembl_gene_id'){
+  if(q_id_type == 'ensembl_gene_id'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "ensembl_gene_id")) %>%
       dplyr::mutate(ensembl_gene_id = qid) %>%
@@ -68,8 +69,8 @@ verify_query_genes <- function(qgenes,
   result[['not_found']] <- not_found
 
   if(nrow(not_found) > 0){
-    if(ignore_unknown == T){
-      if(qsource == 'symbol'){
+    if(ignore_id_err == T){
+      if(q_id_type == 'symbol'){
         rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
         rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
         tmp_not_found <- result[['not_found']] %>%
@@ -115,7 +116,7 @@ verify_query_genes <- function(qgenes,
       }
     }else{
 
-      if(qsource == 'symbol'){
+      if(q_id_type == 'symbol'){
         rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
         rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
         tmp_not_found <- result[['not_found']] %>%
@@ -147,28 +148,28 @@ verify_query_genes <- function(qgenes,
               dplyr::anti_join(tmp_not_found,
                                hits_with_aliases)
           }
-          rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",
-                                   paste0(not_found$qid,collapse=", "),
-                                   " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+          message(paste0("ERROR: query gene identifiers NOT found: ",
+                         paste0(not_found$qid,collapse=", "),
+                         " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
           result[['success']] <- -1
         }
 
       }else{
-        rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",
-                                 paste0(not_found$qid,collapse=", "),
-                                 " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+        message(paste0("ERROR: query gene identifiers NOT found: ",
+                       paste0(not_found$qid,collapse=", "),
+                       " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
         result[['success']] <- -1
       }
     }
   }else{
     if(nrow(found) == length(qgenes)){
       rlogging::message(paste0('SUCCESS: Identified all genes (n = ',
-                               nrow(found),') in target set'))
+                               nrow(found),') in ',qtype,' set'))
     }
     else{
-      rlogging::warning(paste0("ERROR: query gene identifiers NOT found: ",
-                               paste0(target_genes$qid,collapse=", "),
-                               " - wrong query_source (",qsource,")?"),"\n")
+      message(paste0("ERROR: query gene identifiers NOT found: ",
+                     paste0(target_genes$qid,collapse=", "),
+                     " - wrong query_id_type (",q_id_type,")?"),"\n")
         result[['success']] <- -1
     }
   }
@@ -181,10 +182,18 @@ verify_query_genes <- function(qgenes,
 }
 
 validate_db_df <- function(df, dbtype = "genedb"){
-  invisible(assertthat::assert_that(
-    is.data.frame(df),
-    msg = paste0("Argument 'df' must by of ",
-                 "type data.frame, not ", class(df))))
+
+  val <- assertthat::validate_that(
+    is.data.frame(df)
+  )
+  if(!is.logical(val)){
+    message(val)
+  }
+
+  # invisible(assertthat::assert_that(
+  #   is.data.frame(df),
+  #   msg = paste0("Argument 'df' must by of ",
+  #                "type data.frame, not ", class(df))))
   dbtypes <- c("genedb","corum","uniprot_acc",
                "comppidb","ppi_nodes",
                "projectscoredb",
@@ -582,23 +591,25 @@ add_excel_sheet <- function(
     }
   }
 
-  openxlsx::addWorksheet(workbook,
-                         sheetName = toupper(analysis_output))
+  if(nrow(target_df) > 0){
+    openxlsx::addWorksheet(workbook,
+                           sheetName = toupper(analysis_output))
 
-  ## set automatic column widths
-  openxlsx::setColWidths(workbook,
-                         sheet = toupper(analysis_output),
-                         cols = 1:nrow(target_df),
-                         widths = "auto")
-
-  ## write with default Excel Table style
-  openxlsx::writeDataTable(workbook,
+    ## set automatic column widths
+    openxlsx::setColWidths(workbook,
                            sheet = toupper(analysis_output),
-                           x = target_df,
-                           startRow = 1,
-                           startCol = 1,
-                           colNames = TRUE,
-                           tableStyle = tableStyle)
+                           cols = 1:ncol(target_df),
+                           widths = "auto")
+
+    ## write with default Excel Table style
+    openxlsx::writeDataTable(workbook,
+                             sheet = toupper(analysis_output),
+                             x = target_df,
+                             startRow = 1,
+                             startCol = 1,
+                             colNames = TRUE,
+                             tableStyle = tableStyle)
+  }
 
   return(workbook)
 }
