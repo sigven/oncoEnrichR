@@ -131,14 +131,14 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
-	  ```query_id_type```     |     character indicating source of query (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
+	  ```query_id_type```     |     character indicating type of identifier used for query set (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
 	  ```ignore_id_err```     |     logical indicating if analysis should continue when erroneous/unmatched query identifiers are encountered in query or background gene set
 	  ```project_title```     |     project title (report title)
 	  ```project_owner```     |     project owner (e.g. lab/PI)
 	  ```project_description```     |     brief description of project, how target list was derived
 	  ```bgset```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-	  ```bgset_id_type```     |     character indicating source of background ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
-	  ```bgset_description```     |     character indicating type of background (e.g. 'All lipid-binding proteins (n = 200)')
+	  ```bgset_id_type```     |     character indicating type of identifier used for background set ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
+	  ```bgset_description```     |     character with description of background gene set (e.g. 'All lipid-binding proteins (n = 200)')
 	  ```p_value_cutoff_enrichment```     |     cutoff p-value for enrichment/over-representation analysis
 	  ```p_value_adjustment_method```     |     one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 	  ```q_value_cutoff_enrichment```     |     cutoff q-value for enrichment analysis
