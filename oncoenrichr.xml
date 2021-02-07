@@ -1,0 +1,279 @@
+<tool id="oncoenrichr_wrapper" name="OncoEnrichR" version="0.2.0">
+  <description>Functional profiling of gene sets in the context of cancer</description>
+    <!--requirements>
+        <container type="docker">sigven/oncoenrichr:0.8.3</container>
+  </requirements-->
+  <command detect_errors="aggressive"><![CDATA[
+      #if $query_set.query_choice.query_input == "text"
+        echo $query_set.query_choice.query_text | sed 's/__cn__/,/g' > query_text.csv &&
+        #set input_file = './query_text.csv'
+      #else if $query_set.query_choice.query_input == "file"
+        ln -s $query_set.query_choice.query_file "$query_set.query_choice.query_file.element_identifier" &&
+        #set input_file = './' + str($query_set.query_choice.query_file.element_identifier)
+      #end if
+
+      #set background_file = ''
+      #if $fun_enrich.custom_bgset.def_background
+	      #if $fun_enrich.custom_bgset.bg_choice.bg_source == "text"
+	        echo $fun_enrich.custom_bgset.bg_choice.bg_enrich_text | sed 's/__cn__/,/g' > custom_bgset.csv &&
+	        #set background_file = './custom_bgset.csv'
+	      #else if $fun_enrich.custom_bgset.bg_choice.bg_source == "file" and $fun_enrich.custom_bgset.bg_choice.bg_enrich_file
+	        ln -s $fun_enrich.custom_bgset.bg_choice.bg_enrich_file background_text.csv &&
+	        #set background_file = './custom_bgset.csv'
+	      #else
+	        #set background_file = ''
+	      #end if
+	 #end if
+
+      R -e 'suppressPackageStartupMessages(library(oncoEnrichR)); gene_data <- read.csv("$input_file", stringsAsFactors = F);
+      oe_report <- oncoEnrichR::onco_enrich(query = names(gene_data),
+      #if $query_set.query_id_type
+        query_id_type = "$query_set.query_id_type",
+      #end if
+      ignore_id_err = $query_set.ignore_id_err,
+
+      #if $report_metadata.project_title
+          project_title = "$report_metadata.project_title",
+      #end if
+      #if $report_metadata.project_owner
+          project_owner = "$report_metadata.project_owner",
+      #end if
+      #if $report_metadata.project_description
+          project_description = "$report_metadata.project_description",
+      #end if
+
+      show_enrichment = $modules.show_enrichment,
+      show_ppi = $modules.show_ppi,
+      show_disease = $modules.show_disease,
+      show_drug = $modules.show_drug,
+      show_tcga_aberration = $modules.show_tcga_aberration,
+      show_tcga_coexpression = $modules.show_tcga_coexpression,
+      show_subcell_comp = $modules.show_subcell_comp,
+      show_complex = $modules.show_complex,
+      show_crispr_lof = $modules.show_crispr_lof,
+	 show_cell_tissue = $modules.show_cell_tissue,
+	 show_prognostic_cancer_assoc = $modules.show_prognostic_cancer_assoc,
+	 show_unknown_function = $modules.show_unknown_function,
+
+      #if $background_file
+          bgset = names(read.csv("$background_file", stringsAsFactors = F)),
+		#if $fun_enrich.custom_bgset.bg_enrich_id_type
+            bgset_id_type = "$fun_enrich.custom_bgset.bg_enrich_id_type",
+          #end if
+          #if $fun_enrich.custom_bgset.bg_enrich_description
+            bgset_description = "$fun_enrich.custom_bgset.bg_enrich_description",
+          #end if
+      #else
+          bgset = NULL,
+      #end if
+
+      #if $fun_enrich.p_value_cutoff_enrichment
+          p_value_cutoff_enrichment = $fun_enrich.p_value_cutoff_enrichment,
+      #end if
+      #if $fun_enrich.p_value_adjustment_method
+          p_value_adjustment_method = "$fun_enrich.p_value_adjustment_method",
+      #end if
+      #if $fun_enrich.q_value_cutoff_enrichment
+          q_value_cutoff_enrichment = $fun_enrich.q_value_cutoff_enrichment,
+      #end if
+      #if $fun_enrich.min_geneset_size
+          min_geneset_size = $fun_enrich.min_geneset_size,
+      #end if
+      #if $fun_enrich.max_geneset_size
+          max_geneset_size = $fun_enrich.max_geneset_size,
+      #end if
+
+      #if $protein_interactions.ppi_add_nodes
+          ppi_add_nodes = $protein_interactions.ppi_add_nodes,
+      #end if
+      #if $protein_interactions.ppi_score_threshold
+          ppi_score_threshold = $protein_interactions.ppi_score_threshold,
+      #end if
+      show_drugs_in_ppi = $protein_interactions.show_drugs_in_ppi,
+
+	 #if $subcellular_compartments.min_subcellcomp_confidence
+          min_subcellcomp_confidence = $subcellular_compartments.min_subcellcomp_confidence,
+      #end if
+
+      simplify_go = $fun_enrich.simplify_go
+      );
+
+      oncoEnrichR::write(oe_report, file = "$report1", format = "html", ignore_file_extension = T);
+	 oncoEnrichR::write(oe_report, file = "$report2", format = "excel", ignore_file_extension = T)' 2>&1
+
+  ]]></command>
+  <inputs>
+      <section name="query_set" title="Query gene set" expanded="true">
+          <conditional name="query_choice">
+                <param name="query_input" type="select" multiple="false" display="radio"
+                       label="Query gene set: do you want to upload a file OR paste into a text box?">
+                    <option value="text">Text field</option>
+				<option value="file">From file</option>
+                </param>
+                <when value="text">
+                    <param type="text" name="query_text" label="Query gene set identifiers (one per line)" area="true"/>
+                </when>
+			 <when value="file">
+                   <param name="query_file" type="data" format="txt" label="Query gene set identifiers" multiple="false"/>
+                </when>
+          </conditional>
+          <param name="query_id_type" type="select" label="Query gene set source" display="radio" multiple="false">
+              <option value="symbol">Primary gene symbol (HGNC) - e.g. KRAS</option>
+              <option value="uniprot_acc">UniProt accession - e.g. P01116</option>b
+              <option value="entrezgene">NCBI Entrez gene ID - e.g. 3845</option>
+              <option value="ensembl_gene_id">Ensembl gene identifier - e.g. ENSG00000133703</option>
+          </param>
+		<param name="ignore_id_err" type="boolean" label="Ignore erroneous idenfiers" truevalue="T" falsevalue="F" checked="false"/>
+      </section>
+
+      <section name="report_metadata" title="Project metadata and output settings" expanded="true">
+          <param type="text" name="report_name" label="Output filename (prefix)" value="Report"/>
+          <param type="text" name="project_title" label="Project title" />
+          <param type="text" name="project_owner" label="Project owner" />
+          <param type="text" name="project_description" label="Project description" area="true"/>
+      </section>
+
+      <section name="modules" title="Analysis modules included in the report:" expanded="true">
+          <param name="show_enrichment" type="boolean" label="Gene functional enrichment" truevalue="T" falsevalue="F" checked="true"/>
+		<param name="show_cell_tissue" type="boolean" label="Tissue/cell-type enrichment" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_ppi" type="boolean" label="Protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_disease" type="boolean" label="Gene-disease associations" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_drug" type="boolean" label="Drug-target associations" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_tcga_aberration" type="boolean" label="TCGA aberration frequencies" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_tcga_coexpression" type="boolean" label="TCGA co-expression data" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_subcell_comp" type="boolean" label="Subcellular localizations" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_complex" type="boolean" label="Protein complexes" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_crispr_lof" type="boolean" label="Gene fitness effects" truevalue="T" falsevalue="F" checked="true"/>
+		<param name="show_unknown_function" type="boolean" label="Genes of unknown/poorly defined function" truevalue="T" falsevalue="F" checked="true"/>
+		<param name="show_prognostic_cancer_assoc" type="boolean" label="Prognostic cancer associations" truevalue="T" falsevalue="F" checked="true"/>
+      </section>
+
+      <section name="fun_enrich" title="Options - gene functional enrichment" expanded="true">
+		 <conditional name="custom_bgset">
+			 <param name="def_background" type="boolean" label="Define custom background set (All protein-coding genes by default)" truevalue="T" falsevalue="F" checked="false"/>
+			 <when value="T">
+		            <conditional name="bg_choice">
+		                <param name="bg_source" type="select" display="radio"
+		                       label="Custom background gene set: do you want to upload a file OR paste into a text box?">
+						<option value="text">Text field</option>
+		                    <option value="file">From file</option>
+
+		                </param>
+		                <when value="file">
+		                   <param type="data" format="txt" name="bg_enrich_file" label="Custom background gene set:" optional="true" multiple="false"/>
+		                </when>
+		                <when value="text">
+		                    <param type="text" name="bg_enrich_text" label="Custom background gene set identifiers (one per line):" area="true"/>
+		                </when>
+		          </conditional>
+
+		          <param type="select" name="bg_enrich_id_type" label="Custom background gene set source:" display="radio" multiple="false">
+		              <option value="symbol">Primary gene symbol (HGNC) - e.g. KRAS</option>
+		              <option value="uniprot_acc">UniProt accession - e.g. P01116</option>
+		              <option value="entrezgene">NCBI Entrez gene ID - e.g. 3845</option>
+		              <option value="ensembl_gene_id">Ensembl gene identifier - e.g. ENSG00000133703</option>
+		          </param>
+		          <param type="text" name="bg_enrich_description" label="Custom background gene set description" value="Custom background description"/>
+			</when>
+		</conditional>
+
+          <param type="float" name="p_value_cutoff_enrichment" label="P-value cutoff for enrichment tests (clusterProfiler)" value="0.05"/>
+          <param type="select" name="p_value_adjustment_method" label="P-value adjustment method (clusterProfiler)">
+              <option value="holm">holm</option>
+              <option value="hochberg">hochberg</option>
+              <option value="hommel">hommel</option>
+              <option value="bonferroni">bonferroni</option>
+              <option value="BH">BH</option>
+              <option value="BY">BY</option>
+              <option value="fdr">fdr</option>
+              <option value="none">none</option>
+          </param>
+          <param type="float" name="q_value_cutoff_enrichment" label="Q-value cutoff for enrichment tests to report as significant (clusterProfiler)" value="0.2"/>
+          <param type="integer" name="min_geneset_size" label="Minimum number of genes annotated by ontology term for testing (clusterProfiler)" value="10"/>
+          <param type="integer" name="max_geneset_size" label="Maximum number of genes annotated by ontology term for testing (clusterProfiler)" value="500"/>
+          <param name="simplify_go" type="boolean" label="Simplify GO enrichment results by removal of redundant terms (recommended)" truevalue="T" falsevalue="F" checked="true"/>
+      </section>
+
+      <section name="protein_interactions" title="Options - protein-protein interaction network" expanded="true">
+          <param type="integer" name="ppi_add_nodes" label="Addition of non-queryset proteins to the protein-protein interaction network (maximum number)" value="50" min="0" max="50"/>
+          <param type="integer" name="ppi_score_threshold" label="Minimum confidence score for interactions to be included in the network (STRING confidence: 0-1000)" value="900" min="400" max="1000"/>
+          <param name="show_drugs_in_ppi" type="boolean" label="Show anti-cancer drugs in protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
+      </section>
+	 <section name="subcellular_compartments" title="Options - Subcellular localizations" expanded="true">
+          <param type="integer" name="min_subcellcomp_confidence" label="Minimum confidence level for subcellular localization annotations" value="1" min="1" max="6"/>
+      </section>
+
+  </inputs>
+    <outputs>
+        <data format="xlsx" name="report2" label="$report_metadata.report_name"/>
+        <data format="html" name="report1" label="$report_metadata.report_name"/>
+    </outputs>
+
+
+  <help><![CDATA[
+.. class:: infomark
+
+The query gene set is limited to 800 identifiers.
+
+-----
+
+**Dataset formats**
+
+The input dataset is in tabular_ format. The output dataset is html_.
+
+.. _tabular: ${static_path}/formatHelp.html#tab
+.. _html: ${static_path}/formatHelp.html#html
+
+-----
+
+**What it does**
+
+*OncoEnrichR* is intended for exploratory analysis and prioritization of a gene set from high-throughput cancer biology experiments.
+The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive
+HTML report. A multisheet Excel workbook is also provided for convience. The following resources are currently utilized for annotation and analysis:
+
+-  `Open Targets Platform <https://targetvalidation.org>`_ - drug-target associations and disease-target associations
+
+-  `The Cancer Genome Atlas <https://portal.gdc.cancer.gov/>`_ - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
+
+-  The Human Protein Atlas - expression data for healthy human tissues (`GTex <https://gtexportal.org/home/>`_)/cell types, and prognostic gene expression associations in cancer
+
+-  `Molecular Signatures Database (MSigDB) <http://software.broadinstitute.org/gsea/msigdb/index.jsp>`_ - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from `Gene Ontology <http://geneontology.org/>`_, `Reactome <https://reactome.org/>`_, `KEGG <https://www.genome.jp/kegg/pathway.html>`_, `WikiPathways <https://www.wikipathways.org/index.php/WikiPathways>`_, `BIOCARTA <https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways>`_, as well as curated `immunologic <https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7>`_ and `cancer-specific <https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6>`_ signatures.
+
+- `STRING <https://string-db.org>`_ - protein-protein interaction database
+
+- `CORUM <https://mips.helmholtz-muenchen.de/corum/>`_ - protein complex database
+
+- `ComPPI <http://comppi.linkgroup.hu/>`_ - subcellular compartment database
+
+- `Project Score <https://score.depmap.sanger.ac.uk>`_ - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+
+
+The contents of the final report attempts to shed light on the following questions:
+
+-  Which diseases/tumor types are associated with genes in the target set?
+
+-  Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
+
+-  Which protein complexes are relevant for proteins in the target set?
+
+-  Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the target set?
+
+-  Are specific tissues or cell types enriched in the target set, considering tissue/cell-type specific expression patterns of target genes?
+
+-  Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
+
+-  Are there specific pathways, biological processes or molecular functions that are enriched within the target set, as compared to a reference/background set?
+
+-  Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
+-  Which members of the target set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
+
+-  Which members of the target set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
+
+-  Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
+
+
+]]>
+  </help>
+
+</tool>
