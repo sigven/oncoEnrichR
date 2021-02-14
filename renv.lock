@@ -104,9 +104,9 @@
     },
     "DelayedArray": {
       "Package": "DelayedArray",
-      "Version": "0.16.0",
+      "Version": "0.16.1",
       "Source": "Bioconductor",
-      "Hash": "8cc0daa5091ce9b0eab0cce97c013d82"
+      "Hash": "98a62a8040f67b43dad034e58f288d51"
     },
     "Formula": {
       "Package": "Formula",
@@ -192,9 +192,9 @@
     },
     "MatrixGenerics": {
       "Package": "MatrixGenerics",
-      "Version": "1.2.0",
+      "Version": "1.2.1",
       "Source": "Bioconductor",
-      "Hash": "08eaed67999405131d97ee543eb08e20"
+      "Hash": "fbae799fc848a8599a46a3adfe8a975a"
     },
     "MatrixModels": {
       "Package": "MatrixModels",
@@ -260,10 +260,10 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "0.10.1.2.2",
+      "Version": "0.10.2.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c66578fcae4cd6f42bddffee8a67f19b"
+      "Hash": "a2de53472129933a29975e7cfa3ffe28"
     },
     "RcppEigen": {
       "Package": "RcppEigen",
@@ -372,9 +372,9 @@
     },
     "biomaRt": {
       "Package": "biomaRt",
-      "Version": "2.46.0",
+      "Version": "2.46.3",
       "Source": "Bioconductor",
-      "Hash": "ccee144210f09f5230fb19d2191ba3b8"
+      "Hash": "1dba821d9a19d3b70fa324cab2fb4d0b"
     },
     "bit": {
       "Package": "bit",
@@ -497,9 +497,9 @@
     },
     "clusterProfiler": {
       "Package": "clusterProfiler",
-      "Version": "3.18.0",
+      "Version": "3.18.1",
       "Source": "Bioconductor",
-      "Hash": "7ac73ca2d7b72eb2a2cb25b80a0e467a"
+      "Hash": "5f344773b73f177d66183d4c807c2670"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -538,10 +538,10 @@
     },
     "crayon": {
       "Package": "crayon",
-      "Version": "1.4.0",
+      "Version": "1.4.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "fcff9126a4928a96c94e3df85b024899"
+      "Hash": "e75525c55c70e5f4f78c9960a4b402e9"
     },
     "credentials": {
       "Package": "credentials",
@@ -643,9 +643,9 @@
     },
     "enrichplot": {
       "Package": "enrichplot",
-      "Version": "1.10.1",
+      "Version": "1.10.2",
       "Source": "Bioconductor",
-      "Hash": "4b920a28d9f88a050fe386127c88af74"
+      "Hash": "bfe9798d5d9be7c8bfb269c5f19dd957"
     },
     "ensurer": {
       "Package": "ensurer",
@@ -1051,9 +1051,9 @@
     },
     "maftools": {
       "Package": "maftools",
-      "Version": "2.6.0",
+      "Version": "2.6.05",
       "Source": "Bioconductor",
-      "Hash": "dd88fee424b4932294adf6a9bc6263e8"
+      "Hash": "26ed0cd474fefd0ff7aace02e920b168"
     },
     "magrittr": {
       "Package": "magrittr",
@@ -1674,10 +1674,10 @@
     },
     "usethis": {
       "Package": "usethis",
-      "Version": "2.0.0",
+      "Version": "2.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "133099afbac51dc52948b89b387a9734"
+      "Hash": "360e904f9e623286e1a0c6ca0a98c5f6"
     },
     "utf8": {
       "Package": "utf8",
@@ -1716,10 +1716,10 @@
     },
     "waldo": {
       "Package": "waldo",
-      "Version": "0.2.3",
+      "Version": "0.2.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "181d1a31b1ba2009ef20926f2ee0570c"
+      "Hash": "29df52c781e572c967f90de9713423c4"
     },
     "whisker": {
       "Package": "whisker",
@@ -1737,10 +1737,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.20",
+      "Version": "0.21",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d7222684dc02327871e3b1da0aba7089"
+      "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
     },
     "xml2": {
       "Package": "xml2",

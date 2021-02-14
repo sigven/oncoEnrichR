@@ -202,7 +202,7 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["ppi"]][["community_network"]] <- NULL
 
   ## functional enrichment
-  for (c in c("go","msigdb","wikipathway","kegg")) {
+  for (c in c("go","msigdb","wikipathway","kegg","netpath")) {
     rep[["data"]][["enrichment"]][[c]] <- data.frame()
   }
 
@@ -490,6 +490,23 @@ onco_enrich <- function(query,
       TERM2GENE = oncoEnrichR::wikipathwaydb$TERM2GENE,
       TERM2NAME = oncoEnrichR::wikipathwaydb$TERM2NAME,
       TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
+      dbsource = db)
+
+  db <- "NetPath"
+  onc_rep[["data"]][["enrichment"]][["netpath"]] <-
+    oncoEnrichR:::get_universal_enrichment(
+      query_entrezgene,
+      genedb = oncoEnrichR::genedb,
+      background_entrez = background_entrez,
+      min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+      max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+      q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+      p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+      p_value_adjustment_method =
+        onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+      TERM2GENE = oncoEnrichR::netpathdb$TERM2GENE,
+      TERM2NAME = oncoEnrichR::netpathdb$TERM2NAME,
+      TERM2SOURCE = oncoEnrichR::netpathdb$TERM2SOURCE,
       dbsource = db)
 
   db <- "KEGG"

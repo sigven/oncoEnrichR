@@ -71,7 +71,7 @@ crosstalk::bscols(
     crosstalk::filter_select("category", "Category", tissue_specs_per_gene, ~category)
   ),
   list(
-    crosstalk::filter_select("tissue", "Tissues", tissue_specs_per_gene, ~category)
+    crosstalk::filter_select("tissue", "Tissues", tissue_specs_per_gene, ~tissue)
   )
 )
 
