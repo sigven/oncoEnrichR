@@ -33,7 +33,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
 ### News
 * Februar 7th 2021: -**0.8.4 release**
   * Improved retrieval of protein complex information
-  * Renaming of arguments to _oncoEnrich::onco_enrich_ and _oncoEnrich::write_
+  * Renaming of arguments to _oncoEnrichR::onco_enrich_ and _oncoEnrichR::write_
 * January 23rd 2021: -**0.8.3 release**
   * New: interactive copy number aberration plots (plotly)
   * Added previously omitted elements (disease genesets) from KEGG database
@@ -63,7 +63,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 * [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
 * [The Human Protein Atlas]() - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
-* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
+* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [NetPath signaling transduction pathways](http://www.netpath.org), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
 * [STRING](https://string-db.org) - protein-protein interaction database
 * [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
 * [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
@@ -122,9 +122,8 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    show_subcell_comp = TRUE,
 	    show_crispr_lof = TRUE,
 	    show_cell_tissue = TRUE,
-         show_prognostic_cancer_assoc = TRUE,
-	    show_complex = TRUE
-	  )
+	    show_prognostic_cancer_assoc = TRUE,
+	    show_complex = TRUE)
 	  ```
 
 
@@ -141,15 +140,15 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```bgset_description```     |     character with description of background gene set (e.g. 'All lipid-binding proteins (n = 200)')
 	  ```p_value_cutoff_enrichment```     |     cutoff p-value for enrichment/over-representation analysis
 	  ```p_value_adjustment_method```     |     one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
-	  ```q_value_cutoff_enrichment```     |     cutoff q-value for enrichment analysis
+	  ```q_value_cutoff_enrichment```     |     cutoff q-value for enrichment/over-representation analysis
 	  ```min_geneset_size```     |     minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```max_geneset_size```     |     maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```min_subcellcomp_confidence```|     minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
-	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis
-	  ```ppi_add_nodes```     |     number of nodes to add to query set when computing the protein-protein interaction network (STRING)
+	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis (recommended)
+	  ```ppi_add_nodes```     |     number of neighbouring nodes to add to query set when computing the protein-protein interaction network (STRING)
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
-	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
+	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain disease associations (Open Targets Platform)
 	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase, from Open Targets Platform)
 	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
@@ -157,7 +156,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue- and cell-type specific gene expression patterns in target set
+	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in target set
 	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival
 	  ```show_complex```     |     logical indicating if report should list proteins in known protein complexes (CORUM)
 
