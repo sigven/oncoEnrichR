@@ -26,7 +26,7 @@
 show_enrichment_filters <- list()
 missing_enrichment_items <- list()
 eitems <- list()
-for(type in c('go','msigdb','wikipathway','kegg')){
+for(type in c('go','msigdb','wikipathway','kegg','netpath')){
   show_enrichment_filters[[type]] <- F
   missing_enrichment_items[[type]] <- T
   if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
@@ -155,9 +155,14 @@ htmltools::br()
 library(crosstalk)
 
 enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] %>%
-  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
-                Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue,  
+                P_Value = pvalue,
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio, Count = count,
                 P_Value_Cutoff = setting_p_value_cutoff,
                 Q_Value_Cutoff = setting_q_value_cutoff,
@@ -173,10 +178,6 @@ terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
 crosstalk::bscols(
   list(
     crosstalk::filter_slider("Enrichment", "Enrichment", terms_keggdb, ~Enrichment)
-  ),
-  list(
-    crosstalk::filter_select("DB", "Signature collection", terms_keggdb, ~DB)
-
   )
 )
 
@@ -228,11 +229,20 @@ enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikip
                 P_Value_Adj_Method, 
                 Min_Geneset_Size, Max_Geneset_Size)
 
+
+terms_wikipathway <- crosstalk::SharedData$new(enrichment_wikidb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_wikipathway, ~Enrichment)
+  )
+)
+
 htmltools::br()
-DT::datatable(enrichment_wikidb_display, escape = F, 
-              extensions=c("Buttons","Responsive"), width = "100%",
+DT::datatable(terms_wikipathway, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
               options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
+
 
 
 ```
@@ -274,11 +284,19 @@ enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netp
                 P_Value_Adj_Method, 
                 Min_Geneset_Size, Max_Geneset_Size)
 
+terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_netpath, ~Enrichment)
+  )
+)
+
 htmltools::br()
-DT::datatable(enrichment_netpath_display, escape = F, 
-              extensions=c("Buttons","Responsive"), width = "100%",
+DT::datatable(terms_netpath, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
               options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
 )
+
 
 
 ```
