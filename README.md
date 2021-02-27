@@ -31,7 +31,10 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
-* Februar 7th 2021: -**0.8.4 release**
+* February 27th 2021: -**0.8.8 release**
+  * Data updates (GENCODE, Open Targets Platform, UniProt KB, EFO, DiseaseOntology, KEGG)
+  * New: Inclusion of curated signalling pathways from [NetPath](http://www.netpath.org)
+* February 7th 2021: -**0.8.4 release**
   * Improved retrieval of protein complex information
   * Renaming of arguments to _oncoEnrichR::onco_enrich_ and _oncoEnrichR::write_
 * January 23rd 2021: -**0.8.3 release**
@@ -47,21 +50,13 @@ The package is intended for exploratory analysis and prioritization of a gene li
 	  * WikiPathways (January 2021)
 	  * KEGG (January 2021)
   * In progress: Web interface for oncoEnrichR (Galaxy Platform)
-* December 23rd 2020 - **0.8.0 release**
-  * Multiple data updates
-  * New analysis sections:
-	  * _Tissue and cell type enrichment_
-		  * Explore tissue and cell-type specific expression patterns in target set, and tissues/cell types enriched with respect to expression
-	  * _TCGA prognostic associations_
-		  * Explore significant associations between gene expression and survival across tumor types (data from Human Protein Atlas/TCGA)
-
 
 ### Annotation resources
 
 Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 * [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
-* [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in > 10,000 tumor samples
+* [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in ~9,500 primary tumor samples
 * [The Human Protein Atlas]() - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
 * [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [NetPath signaling transduction pathways](http://www.netpath.org), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
 * [STRING](https://string-db.org) - protein-protein interaction database
@@ -73,7 +68,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4515867.svg)](https://doi.org/10.5281/zenodo.4515867)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4568103.svg)](https://doi.org/10.5281/zenodo.4568103)
 
 
 ### Getting started
@@ -180,7 +175,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4515867).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4568103).
 
  Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
 

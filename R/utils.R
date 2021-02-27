@@ -473,7 +473,7 @@ add_excel_sheet <- function(
 
   if(analysis_output == "enrichment"){
     enrichment_df <- data.frame()
-    for(e in c('go','wikipathway','kegg','msigdb')){
+    for(e in c('go','wikipathway','kegg','msigdb','netpath')){
       if(NROW(report$data$enrichment[[e]]) > 0){
         enrichment_df <- enrichment_df %>%
           dplyr::bind_rows(

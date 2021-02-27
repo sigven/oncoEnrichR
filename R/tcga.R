@@ -315,16 +315,28 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::arrange(desc(r))
 
   coexp_target_tcga_positive <-
-    dplyr::filter(coexp_target_tcga, corrtype == "Positive") %>% head(5000)
+    dplyr::filter(coexp_target_tcga, corrtype == "Positive")
   coexp_target_tcga_negative <-
     dplyr::filter(coexp_target_tcga, corrtype == "Negative") %>%
-    head(5000) %>%
     dplyr::arrange(r)
 
   coexp_target_tcga <-
-    dplyr::bind_rows(coexp_target_tcga_negative, coexp_target_tcga_positive)
+    dplyr::bind_rows(coexp_target_tcga_negative,
+                     coexp_target_tcga_positive)
 
 
   return(coexp_target_tcga)
 
 }
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat) {
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat) {
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+

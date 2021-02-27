@@ -5,7 +5,7 @@ init_report <- function(project_title = "Project title",
                         ppi_min_string_score = 900,
                         ppi_add_nodes = 50,
                         bgset_description =
-                          "All protein-coding genes",
+                          "All annotated protein-coding genes",
                         p_value_cutoff_enrichment = 0.05,
                         p_value_adjustment_method = "BH",
                         q_value_cutoff_enrichment = 0.2,
@@ -419,36 +419,12 @@ onco_enrich <- function(query,
         genedb = oncoEnrichR::genedb)
   }
 
-  for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
-    for (subcat in names(oncoEnrichR::msigdb[["COLLECTION"]][[c]])) {
-      if (c == "C5" & subcat != "HPO") {
-        enr <- oncoEnrichR:::get_go_enrichment(
-          query_entrezgene,
-          background_entrez = background_entrez,
-          min_geneset_size =
-            onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-          max_geneset_size =
-            onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-          q_value_cutoff =
-            onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-          p_value_cutoff =
-            onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-          p_value_adjustment_method =
-            onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-          simplify = onc_rep[["config"]][["enrichment"]][["simplify_go"]],
-          ontology = subcat,
-          genedb = oncoEnrichR::genedb)
-        if (!is.null(enr)) {
-          onc_rep[["data"]][["enrichment"]][["go"]] <-
-            dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) %>%
-            dplyr::distinct()
-        }
-      }else{
-        if(c != "C5"){
-          db = paste0("MSIGdb/", c, "/",subcat)
-          enr <- oncoEnrichR:::get_universal_enrichment(
+  if(show_enrichment == T){
+    for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
+      for (subcat in names(oncoEnrichR::msigdb[["COLLECTION"]][[c]])) {
+        if (c == "C5" & subcat != "HPO") {
+          enr <- oncoEnrichR:::get_go_enrichment(
             query_entrezgene,
-            genedb = oncoEnrichR::genedb,
             background_entrez = background_entrez,
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
@@ -460,71 +436,97 @@ onco_enrich <- function(query,
               onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
             p_value_adjustment_method =
               onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-            TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
-            TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
-            TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
-            dbsource = db)
+            simplify = onc_rep[["config"]][["enrichment"]][["simplify_go"]],
+            ontology = subcat,
+            genedb = oncoEnrichR::genedb)
           if (!is.null(enr)) {
-            onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
-              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
+            onc_rep[["data"]][["enrichment"]][["go"]] <-
+              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) %>%
               dplyr::distinct()
+          }
+        }else{
+          if(c != "C5"){
+            db = paste0("MSIGdb/", c, "/",subcat)
+            enr <- oncoEnrichR:::get_universal_enrichment(
+              query_entrezgene,
+              genedb = oncoEnrichR::genedb,
+              background_entrez = background_entrez,
+              min_geneset_size =
+                onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+              max_geneset_size =
+                onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+              q_value_cutoff =
+                onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+              p_value_cutoff =
+                onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+              p_value_adjustment_method =
+                onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+              TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
+              TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
+              TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
+              dbsource = db)
+            if (!is.null(enr)) {
+              onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
+                dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
+                dplyr::distinct()
+            }
           }
         }
       }
     }
+
+
+    db <- "WikiPathways"
+    onc_rep[["data"]][["enrichment"]][["wikipathway"]] <-
+      oncoEnrichR:::get_universal_enrichment(
+        query_entrezgene,
+        genedb = oncoEnrichR::genedb,
+        background_entrez = background_entrez,
+        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+        p_value_adjustment_method =
+          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+        TERM2GENE = oncoEnrichR::wikipathwaydb$TERM2GENE,
+        TERM2NAME = oncoEnrichR::wikipathwaydb$TERM2NAME,
+        TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
+        dbsource = db)
+
+    db <- "NetPath"
+    onc_rep[["data"]][["enrichment"]][["netpath"]] <-
+      oncoEnrichR:::get_universal_enrichment(
+        query_entrezgene,
+        genedb = oncoEnrichR::genedb,
+        background_entrez = background_entrez,
+        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+        p_value_adjustment_method =
+          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+        TERM2GENE = oncoEnrichR::netpathdb$TERM2GENE,
+        TERM2NAME = oncoEnrichR::netpathdb$TERM2NAME,
+        TERM2SOURCE = oncoEnrichR::netpathdb$TERM2SOURCE,
+        dbsource = db)
+
+    db <- "KEGG"
+    onc_rep[["data"]][["enrichment"]][["kegg"]] <-
+      oncoEnrichR:::get_universal_enrichment(
+        query_entrezgene,
+        genedb = oncoEnrichR::genedb,
+        background_entrez = background_entrez,
+        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+        p_value_adjustment_method =
+          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+        TERM2GENE = oncoEnrichR::keggdb$TERM2GENE,
+        TERM2NAME = oncoEnrichR::keggdb$TERM2NAME,
+        TERM2SOURCE = oncoEnrichR::keggdb$TERM2SOURCE,
+        dbsource = db)
   }
-
-
-  db <- "WikiPathways"
-  onc_rep[["data"]][["enrichment"]][["wikipathway"]] <-
-    oncoEnrichR:::get_universal_enrichment(
-      query_entrezgene,
-      genedb = oncoEnrichR::genedb,
-      background_entrez = background_entrez,
-      min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-      max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-      q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-      p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-      p_value_adjustment_method =
-        onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-      TERM2GENE = oncoEnrichR::wikipathwaydb$TERM2GENE,
-      TERM2NAME = oncoEnrichR::wikipathwaydb$TERM2NAME,
-      TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
-      dbsource = db)
-
-  db <- "NetPath"
-  onc_rep[["data"]][["enrichment"]][["netpath"]] <-
-    oncoEnrichR:::get_universal_enrichment(
-      query_entrezgene,
-      genedb = oncoEnrichR::genedb,
-      background_entrez = background_entrez,
-      min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-      max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-      q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-      p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-      p_value_adjustment_method =
-        onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-      TERM2GENE = oncoEnrichR::netpathdb$TERM2GENE,
-      TERM2NAME = oncoEnrichR::netpathdb$TERM2NAME,
-      TERM2SOURCE = oncoEnrichR::netpathdb$TERM2SOURCE,
-      dbsource = db)
-
-  db <- "KEGG"
-  onc_rep[["data"]][["enrichment"]][["kegg"]] <-
-    oncoEnrichR:::get_universal_enrichment(
-      query_entrezgene,
-      genedb = oncoEnrichR::genedb,
-      background_entrez = background_entrez,
-      min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-      max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-      q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-      p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-      p_value_adjustment_method =
-        onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-      TERM2GENE = oncoEnrichR::keggdb$TERM2GENE,
-      TERM2NAME = oncoEnrichR::keggdb$TERM2NAME,
-      TERM2SOURCE = oncoEnrichR::keggdb$TERM2SOURCE,
-      dbsource = db)
 
   if (show_ppi == T) {
     ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
