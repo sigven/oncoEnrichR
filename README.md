@@ -181,9 +181,9 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(myc_interact_targets$symbol, query_source = "symbol", ignore_id_err = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
- * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "html")`
- * `oncoEnrichR::write(myc_report, project_directory = "LOCAL_FOLDER", report_name = "cmyc_example_oncoenrichr", format = "excel")`
+ * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, query_id_type = "symbol", ignore_id_err = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
+ * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 
 ### Contact
 
