@@ -177,7 +177,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
 
  and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4568103).
 
- Below are R commands provided to reproduce the example output ("LOCAL_FOLDER") is replaced with a directory on your local computer:
+ Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
