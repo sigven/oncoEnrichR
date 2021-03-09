@@ -1,4 +1,4 @@
-## oncoEnrichR - functional profiling of genesets in the context of cancer
+## oncoEnrichR - comprehensive gene set interpretation in cancer
 
 ### Contents
 
