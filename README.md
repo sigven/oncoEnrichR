@@ -31,7 +31,7 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
-* March 14th 2021: --*0.8.9 release**
+* March 14th 2021: --**0.8.9 release**
   * Query verification section
   * Removed lower limit of n = 20 entries in queryset
 * February 27th 2021: -**0.8.8 release**
