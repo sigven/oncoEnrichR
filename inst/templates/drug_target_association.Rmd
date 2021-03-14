@@ -37,8 +37,11 @@ DT::datatable(targets_shared, escape = F,
 
 
 ```{r drug_targets_missing, echo=F, results = 'asis', eval = missing_drug_targets}
-cat('<i>No target proteins with cancer drug associations from Open Targets Platform were found.</i>',sep='\n')
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No target proteins with cancer drug associations from Open Targets Platform were found. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
+
 ```
 
 

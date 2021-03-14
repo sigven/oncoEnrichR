@@ -1,13 +1,13 @@
 ### Poorly or uncharacterized targets
 
 * The aim of this section is to highlight poorly characterized genes or genes with unknown function in the target set
-* A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r NROW(oncoEnrichR::poorly_defined_genes)`__) _ have been established based on
+* A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r NROW(oncoEnrichR::genedb[['poorly_defined']])`__) _ have been established based on
    1. Genes specifically designated as uncharacterized or as _open reading frames_
    2. Missing gene function summary in [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene) AND function summary in [UniProt Knowledgebase](https://uniprot.org)
    2. Missing or limited (<= 2) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) and biological process (BP)
       * Ontology annotations attributed with an [electronic annotation evidence code (IEA)](http://geneontology.org/docs/guide-go-evidence-codes/) are not considered in this calculation (less reliable due to lack of manually review)
       
-* Target genes found within the set of poorly characterized genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; color:white">&nbsp;poorly defined function&nbsp;</span>)
+* Target genes found within the set of poorly characterized genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
    
 <br><br>
 
@@ -62,8 +62,10 @@ DT::datatable(targets_unknown_function,
 
 
 ```{r ufunction_genes_missing, echo=F, results = 'asis', eval = !show_ufunction_genes}
-cat('\n*  <i> <b>NO</b> genes with unknown or poorly defined functions were detected in target set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes with unknown or poorly defined functions were detected in target set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
+
 ```
 
 

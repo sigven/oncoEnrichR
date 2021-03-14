@@ -6,7 +6,14 @@
    
 <br><br>
 
-```{r table_browse_complex, echo=F, results = "asis", eval = T}
+```{r preprocess_complexes, echo = F, eval = T}
+missing_complexes <- FALSE
+if(NROW(onc_enrich_report[['data']][['protein_complex']][['complex']]) == 0){
+  missing_complexes <- TRUE
+}
+```
+
+```{r table_browse_complex, echo=F, results = "asis", eval = !missing_complexes}
 
 htmltools::br()
 DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], 
@@ -23,4 +30,15 @@ DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']],
 
 
 ```
+
+
+```{r indicate_missing_complexes, echo=F, results = 'asis', eval = missing_complexes}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set associate with protein complexes from the CORUM database.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
 <br><br>

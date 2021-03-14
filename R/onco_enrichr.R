@@ -1,6 +1,8 @@
 
 init_report <- function(project_title = "Project title",
                         project_owner = "Project owner",
+                        query_id_type = "symbol",
+                        ignore_id_err = TRUE,
                         project_description = "Project description",
                         ppi_min_string_score = 900,
                         ppi_add_nodes = 50,
@@ -42,6 +44,7 @@ init_report <- function(project_title = "Project title",
 
   ## config/show - logicals indicating which sections/analyses of the report to include
   rep[["config"]][["show"]] <- list()
+  rep[["config"]][["show"]][["query"]] <- TRUE
   rep[["config"]][["show"]][["ppi"]] <- show_ppi
   rep[["config"]][["show"]][["disease"]] <- show_disease
   rep[["config"]][["show"]][["drug"]] <- show_drug
@@ -61,7 +64,13 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["project_description"]] <- project_description
   rep[["config"]][["project_owner"]] <- project_owner
 
-  ## config/disease - color codes and
+
+  ## config - query (id type and option to ignore errors)
+  rep[["config"]][["query"]] <- list()
+  rep[["config"]][["query"]][["id_type"]] <- query_id_type
+  rep[["config"]][["query"]][["ignore_err"]] <- ignore_id_err
+
+  ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
   rep[["config"]][["disease"]][["breaks"]] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
@@ -99,6 +108,7 @@ init_report <- function(project_title = "Project title",
     simplify_go
   rep[["config"]][["enrichment"]][["bgset_description"]] <-
     bgset_description
+
 
   ## specifiy plot height (tile/heatmap) - genes along y-axis
   ## tumor types / tissues / celltypes along x-axis
@@ -146,7 +156,8 @@ init_report <- function(project_title = "Project title",
     min_subcellcomp_confidence
 
   ## initialize all data elements
-  for (analysis in c("tcga",
+  for (analysis in c("query",
+                     "tcga",
                      "disease",
                      "ppi",
                      "tcga",
@@ -160,6 +171,10 @@ init_report <- function(project_title = "Project title",
                      "unknown_function")) {
     rep[["data"]][[analysis]] <- list()
   }
+
+  ## query verification
+  rep[["data"]][["query"]][["target"]] <- data.frame()
+  rep[["data"]][["query"]][["validation_status"]] <- "perfect_go"
 
   ## prognosis/survival - gene expression (HPA)
   rep[["data"]][["cancer_prognosis"]][['assocs']] <- data.frame()
@@ -292,7 +307,7 @@ init_report <- function(project_title = "Project title",
 #'
 onco_enrich <- function(query,
                    query_id_type = "symbol",
-                   ignore_id_err = FALSE,
+                   ignore_id_err = TRUE,
                    project_title = "Project title",
                    project_owner = "Project owner",
                    project_description = "Project description",
@@ -321,17 +336,30 @@ onco_enrich <- function(query,
                    show_subcell_comp = T,
                    show_crispr_lof = T,
                    show_complex = T) {
+
+  stopifnot(!is.null(query))
   stopifnot(is.character(query))
+  stopifnot(length(query) >= 1)
+
   stopifnot(p_value_adjustment_method %in% c("holm", "hochberg",
                                              "hommel", "bonferroni",
                                              "BH", "BY",
                                              "fdr", "none"))
-  if (length(query) > 800 | length(query) < 20) {
-    rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query ",
-    "identifiers, and accepts a maximum of 800. Query contained n = ",
-    length(query), " identifiers"))
-    return(NULL)
+  # if (length(query) > 800 | length(query) < 20) {
+  #   rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query ",
+  #   "identifiers, and accepts a maximum of 800. Query contained n = ",
+  #   length(query), " identifiers"))
+  #   return(NULL)
+  # }
+
+  if (length(query) > 800) {
+    rlogging::message(
+      paste0("WARNING: Due to size limitations, oncoEnrichR is limited to the analysis of n = 800 entries. Query contained n = ",
+             length(query), " identifiers, limiting to top 800 genes"))
+    query <- head(unique(query), 800)
   }
+
+
   stopifnot(query_id_type == "symbol" | query_id_type == "entrezgene" |
               query_id_type == "uniprot_acc" | query_id_type == "ensembl_gene_id")
   stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
@@ -340,64 +368,96 @@ onco_enrich <- function(query,
   stopifnot(min_subcellcomp_confidence >= 1 & min_subcellcomp_confidence <= 6)
   stopifnot(ppi_add_nodes <= 50)
 
-  qgenes_match <-
-    oncoEnrichR:::verify_query_genes(query,
-                                     q_id_type = query_id_type,
-                                    ignore_id_err = ignore_id_err,
-                                    genedb = oncoEnrichR::genedb,
-                                    uniprot_acc = oncoEnrichR::uniprot_xref)
+  onc_rep <- oncoEnrichR:::init_report(
+    project_title = project_title,
+    project_owner = project_owner,
+    query_id_type = query_id_type,
+    ignore_id_err = ignore_id_err,
+    project_description = project_description,
+    ppi_add_nodes = ppi_add_nodes,
+    show_ppi = show_ppi,
+    show_drugs_in_ppi = show_drugs_in_ppi,
+    show_disease = show_disease,
+    show_drug = show_drug,
+    show_enrichment = show_enrichment,
+    show_tcga_aberration = show_tcga_aberration,
+    show_tcga_coexpression = show_tcga_coexpression,
+    show_cell_tissue = show_cell_tissue,
+    show_unknown_function = show_unknown_function,
+    show_prognostic_cancer_assoc =
+      show_prognostic_cancer_assoc,
+    show_crispr_lof = show_crispr_lof,
+    min_geneset_size = min_geneset_size,
+    max_geneset_size = max_geneset_size,
+    min_subcellcomp_confidence = min_subcellcomp_confidence,
+    simplify_go = simplify_go,
+    show_complex = show_complex,
+    show_subcell_comp = show_subcell_comp,
+    bgset_description =
+      bgset_description,
+    p_value_cutoff_enrichment = p_value_cutoff_enrichment,
+    p_value_adjustment_method = p_value_adjustment_method,
+    q_value_cutoff_enrichment = q_value_cutoff_enrichment)
 
-  if (qgenes_match[["success"]] == -1) {
-    return(NULL)
+  ## validate query gene set
+  qgenes_match <-
+    oncoEnrichR:::validate_query_genes(
+      query,
+      q_id_type = query_id_type,
+      ignore_id_err = ignore_id_err,
+      genedb = oncoEnrichR::genedb[['all']],
+      uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
+
+  ## assign validation result to report object
+  onc_rep[['data']][['query']][['target']] <-
+    qgenes_match[['all']]
+  onc_rep[["data"]][["query"]][["validation_status"]] <-
+    qgenes_match[["match_status"]]
+
+  ## if query list contains non-validated entries and 'ignore_id_err' is
+  ## set to FALSE, oncoEnrichR analysis will halt (no analysis modules
+  ## will be included in report)
+  if (qgenes_match[["match_status"]] == "imperfect_stop") {
+    for(e in c("disease","drug","enrichment",
+               "protein_complex","ppi",
+               "tcga_aberration","tcga_coexpression",
+               "cell_tissue","loss_of_fitness",
+               "subcellcomp","unknown_function",
+               "cancer_prognosis")){
+      onc_rep[['config']][['show']][[e]] <- F
+    }
+    return(onc_rep)
+  }
+
+  if(NROW(onc_rep[['data']][['query']][['target']]) < 5){
+    onc_rep[['config']][['show']][['enrichment']] <- F
+    rlogging::message(
+      paste0("WARNING: Function and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
+             length(query)))
   }
 
 
+  ## validate background gene set
   background_entrez <- NULL
   background_genes_match <- NULL
   if (!is.null(bgset)) {
     background_genes_match <-
-      oncoEnrichR:::verify_query_genes(bgset,
+      oncoEnrichR:::validate_query_genes(bgset,
                                        q_id_type = bgset_id_type,
-                                      genedb = oncoEnrichR::genedb,
+                                      genedb = oncoEnrichR::genedb[['all']],
                                       qtype = "background",
-                                      uniprot_acc = oncoEnrichR::uniprot_xref)
-    if (background_genes_match[["success"]] == -1) {
-      return(NULL)
+                                      uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
+    if (background_genes_match[["match_status"]] == "imperfect_stop") {
+      rlogging::message("WARNING: Background geneset not defined properly - using all protein-coding genes instead")
+      background_entrez <- unique(oncoEnrichR::genedb[['all']]$entrezgene)
+    }else{
+      background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
     }
-    background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
   }
 
 
   query_entrezgene <- unique(qgenes_match[["found"]]$entrezgene)
   query_symbol <- unique(qgenes_match[["found"]]$symbol)
-
-  onc_rep <- init_report(project_title = project_title,
-                         project_owner = project_owner,
-                         project_description = project_description,
-                         ppi_add_nodes = ppi_add_nodes,
-                         show_ppi = show_ppi,
-                         show_drugs_in_ppi = show_drugs_in_ppi,
-                         show_disease = show_disease,
-                         show_drug = show_drug,
-                         show_enrichment = show_enrichment,
-                         show_tcga_aberration = show_tcga_aberration,
-                         show_tcga_coexpression = show_tcga_coexpression,
-                         show_cell_tissue = show_cell_tissue,
-                         show_unknown_function = show_unknown_function,
-                         show_prognostic_cancer_assoc =
-                           show_prognostic_cancer_assoc,
-                         show_crispr_lof = show_crispr_lof,
-                         min_geneset_size = min_geneset_size,
-                         max_geneset_size = max_geneset_size,
-                         min_subcellcomp_confidence = min_subcellcomp_confidence,
-                         simplify_go = simplify_go,
-                         show_complex = show_complex,
-                         show_subcell_comp = show_subcell_comp,
-                         bgset_description =
-                           bgset_description,
-                         p_value_cutoff_enrichment = p_value_cutoff_enrichment,
-                         p_value_adjustment_method = p_value_adjustment_method,
-                         q_value_cutoff_enrichment = q_value_cutoff_enrichment)
 
   if (length(query_symbol) > 20) {
     onc_rep[["config"]][["tcga_aberration"]][["plot_height"]] <-
@@ -409,17 +469,17 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["disease"]][["target"]] <-
       oncoEnrichR:::target_disease_associations(
         query_symbol,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
   }
 
   if (show_drug == T) {
     onc_rep[["data"]][["drug"]][["target"]] <-
       oncoEnrichR:::target_drug_associations(
         query_symbol,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
   }
 
-  if(show_enrichment == T){
+  if(onc_rep[['config']][['show']][['enrichment']] == T){
     for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
       for (subcat in names(oncoEnrichR::msigdb[["COLLECTION"]][[c]])) {
         if (c == "C5" & subcat != "HPO") {
@@ -438,7 +498,7 @@ onco_enrich <- function(query,
               onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
             simplify = onc_rep[["config"]][["enrichment"]][["simplify_go"]],
             ontology = subcat,
-            genedb = oncoEnrichR::genedb)
+            genedb = oncoEnrichR::genedb[['all']])
           if (!is.null(enr)) {
             onc_rep[["data"]][["enrichment"]][["go"]] <-
               dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) %>%
@@ -449,7 +509,7 @@ onco_enrich <- function(query,
             db = paste0("MSIGdb/", c, "/",subcat)
             enr <- oncoEnrichR:::get_universal_enrichment(
               query_entrezgene,
-              genedb = oncoEnrichR::genedb,
+              genedb = oncoEnrichR::genedb[['all']],
               background_entrez = background_entrez,
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
@@ -475,57 +535,31 @@ onco_enrich <- function(query,
       }
     }
 
+    for(pwaydb in c('wikipathway','netpath','kegg')){
+      db <- "NetPath"
+      if(pwaydb == "wikipathway"){
+        db <- "WikiPathways"
+      }
+      if(pwaydb == "kegg"){
+        db <- "KEGG"
+      }
+      onc_rep[["data"]][["enrichment"]][[pwaydb]] <-
+        oncoEnrichR:::get_universal_enrichment(
+          query_entrezgene,
+          genedb = oncoEnrichR::genedb[['all']],
+          background_entrez = background_entrez,
+          min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
+          max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
+          q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
+          p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
+          p_value_adjustment_method =
+            onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
+          TERM2GENE = oncoEnrichR::pathwaydb[[pwaydb]]$TERM2GENE,
+          TERM2NAME = oncoEnrichR::pathwaydb[[pwaydb]]$TERM2NAME,
+          TERM2SOURCE = oncoEnrichR::pathwaydb[[pwaydb]]$TERM2SOURCE,
+          dbsource = db)
 
-    db <- "WikiPathways"
-    onc_rep[["data"]][["enrichment"]][["wikipathway"]] <-
-      oncoEnrichR:::get_universal_enrichment(
-        query_entrezgene,
-        genedb = oncoEnrichR::genedb,
-        background_entrez = background_entrez,
-        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-        p_value_adjustment_method =
-          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-        TERM2GENE = oncoEnrichR::wikipathwaydb$TERM2GENE,
-        TERM2NAME = oncoEnrichR::wikipathwaydb$TERM2NAME,
-        TERM2SOURCE = oncoEnrichR::wikipathwaydb$TERM2SOURCE,
-        dbsource = db)
-
-    db <- "NetPath"
-    onc_rep[["data"]][["enrichment"]][["netpath"]] <-
-      oncoEnrichR:::get_universal_enrichment(
-        query_entrezgene,
-        genedb = oncoEnrichR::genedb,
-        background_entrez = background_entrez,
-        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-        p_value_adjustment_method =
-          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-        TERM2GENE = oncoEnrichR::netpathdb$TERM2GENE,
-        TERM2NAME = oncoEnrichR::netpathdb$TERM2NAME,
-        TERM2SOURCE = oncoEnrichR::netpathdb$TERM2SOURCE,
-        dbsource = db)
-
-    db <- "KEGG"
-    onc_rep[["data"]][["enrichment"]][["kegg"]] <-
-      oncoEnrichR:::get_universal_enrichment(
-        query_entrezgene,
-        genedb = oncoEnrichR::genedb,
-        background_entrez = background_entrez,
-        min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
-        max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
-        q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
-        p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
-        p_value_adjustment_method =
-          onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-        TERM2GENE = oncoEnrichR::keggdb$TERM2GENE,
-        TERM2NAME = oncoEnrichR::keggdb$TERM2NAME,
-        TERM2SOURCE = oncoEnrichR::keggdb$TERM2SOURCE,
-        dbsource = db)
+    }
   }
 
   if (show_ppi == T) {
@@ -541,7 +575,7 @@ onco_enrich <- function(query,
       oncoEnrichR:::get_ppi_network(
         query_entrezgene,
         ppi_source = "STRING",
-        genedb = oncoEnrichR::genedb,
+        genedb = oncoEnrichR::genedb[['all']],
         cancerdrugdb = oncoEnrichR::cancerdrugdb,
         settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
     #}
@@ -559,9 +593,9 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["protein_complex"]][["complex"]] <-
       oncoEnrichR:::annotate_protein_complex(
         query_symbol,
-        genedb = oncoEnrichR::genedb,
+        genedb = oncoEnrichR::genedb[['all']],
         corum_db = oncoEnrichR::corumdb,
-        uniprot_acc = oncoEnrichR::uniprot_xref)
+        uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
     #}
   }
 
@@ -569,8 +603,8 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["unknown_function"]][["hits_df"]] <-
       oncoEnrichR:::get_genes_unknown_function(
         query_symbol,
-        genedb = oncoEnrichR::genedb,
-        poorly_defined_genes = oncoEnrichR::poorly_defined_genes
+        genedb = oncoEnrichR::genedb[['all']],
+        poorly_defined_genes = oncoEnrichR::genedb[['poorly_defined']]
       )
   }
 
@@ -579,7 +613,7 @@ onco_enrich <- function(query,
       oncoEnrichR:::annotate_subcellular_compartments(
         query_symbol,
         minimum_confidence = min_subcellcomp_confidence,
-        genedb = oncoEnrichR::genedb,
+        genedb = oncoEnrichR::genedb[['all']],
         comppidb = oncoEnrichR::subcellcomp$comppidb)
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
@@ -597,6 +631,10 @@ onco_enrich <- function(query,
         query_symbol,
         projectscoredb = oncoEnrichR::projectscoredb)
 
+    if (onc_rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] <= 10){
+      onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]] <- 5
+    }
+
     if (onc_rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] >= 20) {
       onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]]  <-
         onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]] +
@@ -611,13 +649,13 @@ onco_enrich <- function(query,
         oncoEnrichR:::tcga_aberration_matrix(
           query_entrezgene,
           qsource = "entrezgene",
-          genedb = oncoEnrichR::genedb,
+          genedb = oncoEnrichR::genedb[['all']],
           vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
         oncoEnrichR:::tcga_aberration_table(
           query_entrezgene,
           qsource = "entrezgene",
-          genedb = oncoEnrichR::genedb,
+          genedb = oncoEnrichR::genedb[['all']],
           vtype = v)
     }
 
@@ -626,7 +664,7 @@ onco_enrich <- function(query,
         oncoEnrichR:::tcga_oncoplot_genes(
           query_symbol,
           qsource = "symbol",
-          genedb = oncoEnrichR::genedb,
+          genedb = oncoEnrichR::genedb[['all']],
           site = psite)
     }
   }
@@ -635,14 +673,14 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["tcga"]][["co_expression"]] <-
       oncoEnrichR:::tcga_co_expression(
         query_symbol,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
   }
 
   if(show_prognostic_cancer_assoc == T){
     onc_rep[["data"]][["cancer_prognosis"]][['assocs']] <-
       oncoEnrichR:::hpa_prognostic_genes(
         query_symbol,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
 
   }
 
@@ -650,27 +688,27 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
       oncoEnrichR:::gene_tissue_cell_spec_cat(
         query_symbol,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
       oncoEnrichR:::gene_tissue_cell_enrichment(
         query_entrezgene,
         resolution = "tissue",
         background_entrez = background_entrez,
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
       oncoEnrichR:::gene_tissue_cell_spec_cat(
         query_symbol,
         resolution = "single_cell",
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       oncoEnrichR:::gene_tissue_cell_enrichment(
         query_entrezgene,
         background_entrez = background_entrez,
         resolution = "single_cell",
-        genedb = oncoEnrichR::genedb)
+        genedb = oncoEnrichR::genedb[['all']])
 
   }
 
@@ -789,7 +827,7 @@ write <- function(report,
     rlogging::message("Writing Excel workbook with report contents")
 
     table_style_index <- 15
-    for(elem in c("disease",
+    for(elem in c("query","disease",
                   "tcga_aberration",
                   "tcga_coexpression",
                   "cancer_prognosis",

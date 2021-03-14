@@ -26,6 +26,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r project_background, child='project_background.Rmd', eval = T}
 ```
 
+```{r project_background, child='query_verification.Rmd', eval = T}
+```
+
+
 ```{r target_disease, child='disease_association.Rmd', eval = onc_enrich_report[['config']][['show']][['disease']]}
 ```
 
@@ -48,6 +52,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_ppi, child='ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
 ```
 
+```{r target_enrichment_invalid, child='functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']]) < 5}
+```
+
+
 ```{r target_enrichment, child='functional_enrichment.Rmd', eval = onc_enrich_report[['config']][['show']][['enrichment']]}
 ```
 
@@ -63,7 +71,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_lof, child='crispr_lof.Rmd', eval = onc_enrich_report[['config']][['show']][['loss_of_fitness']]}
 ```
 
-```{r documentation_workflow, child='documentation_workflow.Rmd', eval = T}
+```{r documentation_workflow, child='documentation_workflow.Rmd', eval = onc_enrich_report[['data']][['query']]$validation_status != "imperfect_stop"}
 ```
 
 ### References

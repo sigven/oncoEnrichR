@@ -1,0 +1,41 @@
+### Query verification
+
+
+```{r imperfect_stop_notice, echo = F, results = "asis", eval = onc_enrich_report[['data']][['query']]$validation_status == "imperfect_stop"}
+
+cat('<br><br>\n <span style="font-size:110%; line-height:110%; padding:3px; background-color:#800026; color:white">&nbsp;<b> - IMPORTANT NOTICE:</b> Due to invalid entries in query set, analysis is halted.&nbsp;&nbsp;<br>&nbsp;&nbsp; - Set <i>\'Ignore errenous identifiers (ignore_id_err)\'</i> = TRUE in order to ignore invalid entries and complete the analysis &nbsp;&nbsp; with <i>oncoEnrichR</i>.&nbsp;&nbsp; </span>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+   
+
+* A total of __n = `r NROW(onc_enrich_report[['data']][['query']][['target']])`__ target identifiers were provided (type: _`r onc_enrich_report[["config"]][["query"]][["id_type"]]`_, option _ignore_id_err_ = `r onc_enrich_report[["config"]][["query"]][["ignore_err"]]`)
+* All query identifiers have been mapped towards identifiers for known human genes (including non-ambiguous aliases), and valid/invalid entries in the query set are indicated as follows:
+   * <span style="background-color:#800026; line-height:110%; padding:2x; color:white"><b>&nbsp; Invalid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'not_found'))`__
+   * <span style="background-color:#238b45; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier (mapped as alias) &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found_as_alias'))`__
+   * <span style="background-color:#005a32; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found'))`__
+
+<br><br>
+
+
+```{r table_browse_querylist, echo=F, results = "asis", eval = T}
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['query']][['target']], escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')) %>%
+  DT::formatStyle(columns = c("query_id"),
+                  valueColumns = c('status'),
+                  color = "white", 
+                  backgroundColor = DT::styleEqual(
+                  c('found','not_found','found_as_alias'), 
+                  c("#005a32","#800026","#238b45"))
+  )
+
+
+```
+
+<br><br>

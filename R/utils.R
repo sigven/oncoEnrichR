@@ -1,4 +1,4 @@
-verify_query_genes <- function(qgenes,
+validate_query_genes <- function(qgenes,
                                q_id_type = "symbol",
                                qtype = "target",
                                ignore_id_err = F,
@@ -14,17 +14,16 @@ verify_query_genes <- function(qgenes,
   oncoEnrichR:::validate_db_df(uniprot_acc, dbtype = "uniprot_acc")
 
   target_genes <- data.frame('qid' = qgenes, stringsAsFactors = F)
-  gdb <- genedb %>% dplyr::select(symbol, entrezgene, ensembl_gene_id) %>%
+  gdb <- genedb %>%
+    dplyr::select(symbol, entrezgene,
+                  name, ensembl_gene_id) %>%
     dplyr::distinct()
 
-  not_found <- data.frame()
-  found <- data.frame()
-
-  result <- list()
-  result[['found']] <- found
-  result[['not_found']] <- not_found
-  result[['success']] <- 1
-
+  queryset <- list()
+  queryset[['found']] <- data.frame()
+  queryset[['not_found']] <- data.frame()
+  queryset[['all']] <- data.frame()
+  queryset[['match_status']] <- "perfect_go"
 
   if(q_id_type == 'entrezgene'){
     target_genes <- target_genes %>%
@@ -55,129 +54,186 @@ verify_query_genes <- function(qgenes,
       dplyr::distinct()
   }
 
-  found <- target_genes %>%
+  queryset[['found']] <- target_genes %>%
     dplyr::filter(!is.na(symbol) &
                     !is.na(entrezgene) &
-                    !is.na(ensembl_gene_id))
+                    !is.na(ensembl_gene_id)) %>%
+    dplyr::mutate(alias = F)
 
-  not_found <- target_genes %>%
+  queryset[['not_found']] <- target_genes %>%
     dplyr::filter(is.na(symbol) |
                     is.na(entrezgene) |
                     is.na(ensembl_gene_id))
 
-  result[['found']] <- found
-  result[['not_found']] <- not_found
-
-  if(nrow(not_found) > 0){
+  if(nrow(queryset[['not_found']]) > 0){
     if(ignore_id_err == T){
-      if(q_id_type == 'symbol'){
-        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
-        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
-        tmp_not_found <- result[['not_found']] %>%
-          dplyr::select(qid)
-        hits_with_aliases <-
-          dplyr::inner_join(tmp_not_found,
-                            oncoEnrichR::alias2primary,
-                            by = c("qid" = "alias"))
-        if(nrow(hits_with_aliases) == nrow(tmp_not_found)){
-          hits_with_aliases <- hits_with_aliases %>%
-            dplyr::select(symbol) %>%
-            dplyr::rename(qid = symbol)
+      queryset[['match_status']] <- "imperfect_go"
 
-          hits_with_aliases <- hits_with_aliases %>%
+      if(q_id_type == 'symbol'){
+        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+
+        query_as_alias <-
+          dplyr::inner_join(
+            dplyr::select(queryset[['not_found']], qid),
+            oncoEnrichR::genedb[['alias2primary']],
+            by = c("qid" = "alias"))
+
+        if(nrow(query_as_alias) > 0){
+          query_as_alias <- query_as_alias %>%
             dplyr::left_join(gdb,
-                             by = c("qid" = "symbol")) %>%
-            dplyr::mutate(symbol = qid) %>%
-            dplyr::distinct()
+                             by = c("symbol" = "symbol")) %>%
+            dplyr::distinct() %>%
+            dplyr::mutate(alias = T)
 
           rlogging::message(
             paste0("Mapped query identifiers as gene aliases ",
-                   paste0(not_found$qid,collapse=", ")," ---> ",
-                   paste0(hits_with_aliases$qid,collapse=", ")))
+                   paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
+                   paste0(query_as_alias$qid,collapse=", ")))
 
-          result[['found']] <-
-            dplyr::bind_rows(result[['found']], hits_with_aliases)
-        }else{
-          if(nrow(hits_with_aliases) > 0){
-            tmp_not_found <- dplyr::anti_join(tmp_not_found,
-                                              hits_with_aliases,
-                                              by = "qid")
+          queryset[['found']] <-
+            dplyr::bind_rows(queryset[['found']], query_as_alias)
+          queryset[['not_found']] <- queryset[['not_found']] %>%
+            dplyr::anti_join(query_as_alias, by = "qid")
+
+          if(nrow(queryset[['not_found']]) > 0){
+            rlogging::message(
+              paste0("WARNING: query gene identifiers NOT found: ",
+                     paste0(queryset[['not_found']]$qid,collapse=", "),
+                     " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+          }else{
+            queryset[['match_status']] <- "perfect_go"
           }
-          rlogging::warning(
-            paste0("Warning: query gene identifiers NOT found: ",
-                   paste0(not_found$qid,collapse=", "),
+        }else{
+          rlogging::message(
+            paste0("WARNING: query gene identifiers NOT found: ",
+                   paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
-          #result[['success']] <- -1
         }
 
       }else{
         rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",
-                                 paste0(not_found$qid,collapse=", ")))
+                                 paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
+
+      ## Indicate that processing should stop when encountering invalid query identifiers
     }else{
+      queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(not_found$qid,collapse=", ")))
-        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(not_found$qid,collapse=", ")))
-        tmp_not_found <- result[['not_found']] %>%
-          dplyr::select(qid)
-        hits_with_aliases <-
-          dplyr::inner_join(tmp_not_found,
-                            oncoEnrichR::alias2primary,
-                            by = c("qid" = "alias"))
-        if(nrow(hits_with_aliases) == nrow(tmp_not_found)){
-          hits_with_aliases <- hits_with_aliases %>%
-            dplyr::select(symbol) %>%
-            dplyr::rename(qid = symbol)
+        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
-          hits_with_aliases <- hits_with_aliases %>%
-            dplyr::left_join(gdb, by = c("qid" = "symbol")) %>%
-            dplyr::mutate(symbol = qid) %>%
-            dplyr::distinct()
+        query_as_alias <-
+          dplyr::inner_join(
+            dplyr::select(queryset[['not_found']], qid),
+            oncoEnrichR::genedb[['alias2primary']],
+            by = c("qid" = "alias"))
 
-          rlogging::message(paste0("Mapped query identifiers as gene aliases ",
-                                   paste0(not_found$qid,collapse=", ")," ---> ",
-                                   paste0(hits_with_aliases$qid,collapse=", ")))
+        if(nrow(query_as_alias) > 0){
+          query_as_alias <- query_as_alias %>%
+            dplyr::left_join(gdb,
+                             by = c("symbol" = "symbol")) %>%
+            dplyr::distinct() %>%
+          dplyr::mutate(alias = T)
 
-          result[['found']] <-
-            dplyr::bind_rows(result[['found']],
-                             hits_with_aliases)
-        }else{
-          if(nrow(hits_with_aliases) > 0){
-            tmp_not_found <-
-              dplyr::anti_join(tmp_not_found,
-                               hits_with_aliases)
+
+          rlogging::message(
+            paste0("Mapped query identifiers as gene aliases ",
+                   paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
+                   paste0(query_as_alias$qid,collapse=", ")))
+
+          queryset[['found']] <-
+            dplyr::bind_rows(queryset[['found']], query_as_alias)
+          queryset[['not_found']] <- queryset[['not_found']] %>%
+            dplyr::anti_join(query_as_alias, by = "qid")
+
+          if(nrow(queryset[['not_found']]) > 0){
+            rlogging::message(
+              paste0("ERROR: query gene identifiers NOT found: ",
+                     paste0(queryset[['not_found']]$qid,collapse=", "),
+                     " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+          }else{
+            queryset[['match_status']] <- "perfect_go"
+
           }
-          message(paste0("ERROR: query gene identifiers NOT found: ",
-                         paste0(not_found$qid,collapse=", "),
+        }else{
+          rlogging::message(paste0("ERROR: query gene identifiers NOT found: ",
+                         paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
-          result[['success']] <- -1
-        }
 
-      }else{
-        message(paste0("ERROR: query gene identifiers NOT found: ",
-                       paste0(not_found$qid,collapse=", "),
+        }
+      }
+      else{
+        rlogging::message(paste0("ERROR: query gene identifiers NOT found: ",
+                       paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
-        result[['success']] <- -1
       }
     }
+  }
+  if(nrow(queryset[['found']]) == length(qgenes)){
+    rlogging::message(paste0('SUCCESS: Identified all genes (n = ',
+                             nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
-    if(nrow(found) == length(qgenes)){
-      rlogging::message(paste0('SUCCESS: Identified all genes (n = ',
-                               nrow(found),') in ',qtype,' set'))
+    if(nrow(queryset[['found']]) == 0){
+      rlogging::message(paste0(
+        "ERROR: NO query gene identifiers found: ",
+        paste0(target_genes$qid,collapse=", "),
+        " - wrong query_id_type (",q_id_type,")?"),"\n")
+      queryset[['match_status']] <- "imperfect_stop"
+    }else{
+      rlogging::message(
+        paste0('Identified n = ',
+               nrow(queryset[['found']]),' entries in ',
+               ' query set (missing n = ',
+               nrow(queryset[['not_found']]),')'))
     }
-    else{
-      message(paste0("ERROR: query gene identifiers NOT found: ",
-                     paste0(target_genes$qid,collapse=", "),
-                     " - wrong query_id_type (",q_id_type,")?"),"\n")
-        result[['success']] <- -1
-    }
+
   }
 
-  result[['found']]$qid <- NULL
-  result[['not_found']]$qid <- NULL
+  if(nrow(queryset[['found']]) > 0){
+    queryset[['found']] <- queryset[['found']] %>%
+      dplyr::mutate(status = 'found') %>%
+      dplyr::mutate(
+        status = dplyr::if_else(
+          status == "found" & alias == T,
+          as.character("found_as_alias"),
+          as.character(status))
+      ) %>%
+      dplyr::arrange(desc(status), symbol) %>%
+      dplyr::mutate(
+        genename = paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
+                          entrezgene,"' target='_blank'>",name,"</a>")
+      )
+  }
+  if(nrow(queryset[['not_found']]) > 0){
+    queryset[['not_found']] <- queryset[['not_found']] %>%
+      dplyr::mutate(status = 'not_found') %>%
+      dplyr::mutate(genename = NA) %>%
+      dplyr::arrange(qid)
+  }
 
-  return(result)
+  if(nrow(queryset[['found']]) > 0 | nrow(queryset[['not_found']]) > 0){
+
+    queryset[['all']] <- as.data.frame(
+      queryset[['not_found']] %>%
+      dplyr::bind_rows(queryset[['found']]) %>%
+      dplyr::rename(query_id = qid) %>%
+      dplyr::select(query_id, status, symbol,
+                    genename) %>%
+      dplyr::rowwise() %>%
+        dplyr::mutate(
+          symbol = dplyr::if_else(status == "not_found",
+                                  as.character(NA),
+                                  as.character(symbol)))
+    )
+  }
+
+  queryset[['found']]$qid <- NULL
+  queryset[['not_found']]$qid <- NULL
+
+
+  return(queryset)
 
 }
 
@@ -289,6 +345,23 @@ add_excel_sheet <- function(
   invisible(assertthat::assert_that(!is.null(workbook)))
 
   target_df <- data.frame()
+
+  if(analysis_output == "query"){
+    if(is.data.frame(report$data$query$target)){
+      if(NROW(report$data$query$target) > 0){
+        target_df <- report$data$query$target %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(genename)
+                )
+              )
+          )
+      }
+    }
+  }
+
   if(analysis_output == "disease"){
     if(is.data.frame(report$data$disease$target$target)){
       if(NROW(report$data$disease$target$target) > 0){

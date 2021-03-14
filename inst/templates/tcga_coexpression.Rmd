@@ -79,8 +79,11 @@ DT::datatable(coexp_genes_positive, escape = F,
 
 
 ```{r coexp_missing_positive, echo=F, results = 'asis', eval = missing_tcga_coexp[['Positive']]}
-cat('<i>No genes in target set with strong positive correlations to tumor suppressors, oncogenes or cancer drivers</i>',sep='\n')
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set with strong positive correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
+
 ```
 
 <br><br><br>
@@ -125,8 +128,9 @@ DT::datatable(coexp_genes_negative, escape = F,
 <br><br>
 
 ```{r coexp_missing_negative, echo=F, results = 'asis', eval = missing_tcga_coexp[['Negative']]}
-cat('<i>No genes in target set with strong negative correlation to tumor suppressors, oncogenes or cancer drivers</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set with strong negative correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
 ```
 
 <br><br><br>

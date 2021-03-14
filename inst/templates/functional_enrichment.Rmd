@@ -82,12 +82,9 @@ DT::datatable(terms_go, escape = F,
 
 ```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
 
-htmltools::br()
-
-cat('<i>No gene ontology terms were enriched in the query set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
-
-htmltools::br()
+cat('<br><br>')
 
 ```
 
@@ -137,12 +134,9 @@ DT::datatable(terms_msigdb, escape = F,
 
 ```{r msigdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['msigdb']]}
 
-htmltools::br()
-
-cat('<i>No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
-
-htmltools::br()
+cat('<br><br>')
 
 ```
 
@@ -192,12 +186,9 @@ DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), wi
 
 ```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['kegg']]}
 
-htmltools::br()
-
-cat('<i>No pathways from KEGG were enriched in the query set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
-
-htmltools::br()
+cat('<br><br>')
 
 ```
 
@@ -250,15 +241,15 @@ DT::datatable(terms_wikipathway, escape = F, extensions=c("Buttons","Responsive"
 
 ```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathway']]}
 
-htmltools::br()
-
-cat('<i>No pathway signatures from the WikiPathway resource were enriched in the query set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
-
-htmltools::br()
+cat('<br><br>')
 
 
 ```
+
+
+<br><br><br>
 
 #### NetPath
 
@@ -304,12 +295,9 @@ DT::datatable(terms_netpath, escape = F, extensions=c("Buttons","Responsive"), w
 
 ```{r netpath_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['netpath']]}
 
-htmltools::br()
-
-cat('<i>No pathway signatures from the NetPath signaling pathway resource were enriched in the query set.</i>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
-
-htmltools::br()
+cat('<br><br>')
 
 
 ```

@@ -31,25 +31,13 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
+* March 14th 2021: --*0.8.9 release**
+  * Query verification section
+  * Removed lower limit of n = 20 entries in queryset
 * February 27th 2021: -**0.8.8 release**
   * Data updates (GENCODE, Open Targets Platform, UniProt KB, EFO, DiseaseOntology, KEGG)
   * New: Inclusion of curated signalling pathways from [NetPath](http://www.netpath.org)
-* February 7th 2021: -**0.8.4 release**
-  * Improved retrieval of protein complex information
-  * Renaming of arguments to _oncoEnrichR::onco_enrich_ and _oncoEnrichR::write_
-* January 23rd 2021: -**0.8.3 release**
-  * New: interactive copy number aberration plots (plotly)
-  * Added previously omitted elements (disease genesets) from KEGG database
-* January 21st 2021: -**0.8.2 release**
-  * Added possibility to write analysis output to Excel workbook
-  * Added option to set minimum confidence level for subcellular structure annotations
-  * Added figure legend for cellular substructures
-  * Added section that highlights genes of unknown/poorly defined function
-  * Data updates
-	  * CancerMine (January 2021)
-	  * WikiPathways (January 2021)
-	  * KEGG (January 2021)
-  * In progress: Web interface for oncoEnrichR (Galaxy Platform)
+
 
 ### Annotation resources
 
@@ -68,7 +56,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4568103.svg)](https://doi.org/10.5281/zenodo.4568103)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4603719.svg)](https://doi.org/10.5281/zenodo.4603719)
 
 
 ### Getting started
@@ -91,7 +79,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  onco_enrich(
 	    query,
 	    query_id_type = "symbol",
-	    ignore_id_err = FALSE,
+	    ignore_id_err = TRUE,
 	    project_title = "Project title",
 	    project_owner = "Project owner",
 	    project_description = "Project description",
@@ -168,20 +156,19 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target list through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
-  * `ignore_id_err = TRUE`
   * `query_source = "symbol"`
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
   * `show_drugs_in_ppi = TRUE`
   * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4568103).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4603719).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, query_id_type = "symbol", ignore_id_err = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, query_id_type = "symbol", project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 
