@@ -31,10 +31,11 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
 
 ### News
-* March 14th 2021: --**0.8.9 release**
+* March 14th 2021: **0.8.9 release**
   * Query verification section
   * Removed lower limit of n = 20 entries in queryset
-* February 27th 2021: -**0.8.8 release**
+  * Data updates (CancerMine)
+* February 27th 2021: **0.8.8 release**
   * Data updates (GENCODE, Open Targets Platform, UniProt KB, EFO, DiseaseOntology, KEGG)
   * New: Inclusion of curated signalling pathways from [NetPath](http://www.netpath.org)
 
@@ -43,15 +44,16 @@ The package is intended for exploratory analysis and prioritization of a gene li
 
 Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
-* [Open Targets Platform](https://targetvalidation.org) - drug-target associations and disease-target associations
+* [Open Targets Platform](https://targetvalidation.org) - human drug-target associations and comprehensive disease-target associations
+* [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined database of drivers, oncogenes and tumor suppressors in cancer
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in ~9,500 primary tumor samples
 * [The Human Protein Atlas]() - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
-* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [NetPath signaling transduction pathways](http://www.netpath.org), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
+* [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
+* [NetPath](http://www.netpath.org) - signaling transduction pathways
 * [STRING](https://string-db.org) - protein-protein interaction database
 * [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
 * [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
 * [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
-
 
 
 ### Example report
