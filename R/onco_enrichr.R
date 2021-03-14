@@ -429,11 +429,11 @@ onco_enrich <- function(query,
     return(onc_rep)
   }
 
-  if(NROW(onc_rep[['data']][['query']][['target']]) < 5){
+  if(NROW(qgenes_match[["found"]]) < 5){
     onc_rep[['config']][['show']][['enrichment']] <- F
     rlogging::message(
       paste0("WARNING: Function and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
-             length(query)))
+             NROW(qgenes_match[["found"]])," valid entries"))
   }
 
 

@@ -185,8 +185,8 @@ validate_query_genes <- function(qgenes,
       rlogging::message(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ',
-               ' query set (missing n = ',
-               nrow(queryset[['not_found']]),')'))
+               'query set (n = ',
+               nrow(queryset[['not_found']]),' invalid entries)'))
     }
 
   }
