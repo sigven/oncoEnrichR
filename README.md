@@ -35,14 +35,6 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Fixed bug; option _ppi_score_threshold_ not propagated properly
 * March 15th 2021: **0.8.9.2 release**
   * Fixed bug for query of type _uniprot_acc_
-* March 14th 2021: **0.8.9 release**
-  * Query verification section
-  * Removed lower limit of n = 20 entries in queryset
-  * Data updates (CancerMine)
-* February 27th 2021: **0.8.8 release**
-  * Data updates (GENCODE, Open Targets Platform, UniProt KB, EFO, DiseaseOntology, KEGG)
-  * New: Inclusion of curated signalling pathways from [NetPath](http://www.netpath.org)
-
 
 ### Annotation resources
 
