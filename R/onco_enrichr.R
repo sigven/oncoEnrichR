@@ -374,6 +374,7 @@ onco_enrich <- function(query,
     query_id_type = query_id_type,
     ignore_id_err = ignore_id_err,
     project_description = project_description,
+    ppi_min_string_score = ppi_score_threshold,
     ppi_add_nodes = ppi_add_nodes,
     show_ppi = show_ppi,
     show_drugs_in_ppi = show_drugs_in_ppi,
@@ -418,11 +419,15 @@ onco_enrich <- function(query,
   ## set to FALSE, oncoEnrichR analysis will halt (no analysis modules
   ## will be included in report)
   if (qgenes_match[["match_status"]] == "imperfect_stop") {
-    for(e in c("disease","drug","enrichment",
+    for(e in c("disease","drug",
+               "enrichment",
                "protein_complex","ppi",
-               "tcga_aberration","tcga_coexpression",
-               "cell_tissue","loss_of_fitness",
-               "subcellcomp","unknown_function",
+               "tcga_aberration",
+               "tcga_coexpression",
+               "cell_tissue",
+               "loss_of_fitness",
+               "subcellcomp",
+               "unknown_function",
                "cancer_prognosis")){
       onc_rep[['config']][['show']][[e]] <- F
     }
