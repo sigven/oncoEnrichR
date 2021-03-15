@@ -96,9 +96,9 @@
     },
     "DelayedArray": {
       "Package": "DelayedArray",
-      "Version": "0.16.1",
+      "Version": "0.16.2",
       "Source": "Bioconductor",
-      "Hash": "98a62a8040f67b43dad034e58f288d51"
+      "Hash": "2fc4c41dfafe33346e759d05bc3b372f"
     },
     "Formula": {
       "Package": "Formula",
@@ -127,9 +127,9 @@
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
-      "Version": "1.26.2",
+      "Version": "1.26.4",
       "Source": "Bioconductor",
-      "Hash": "6082689b1694d67738f55795ec407d5b"
+      "Hash": "dae39e992f8f9f0a6c3531760487e166"
     },
     "GenomeInfoDbData": {
       "Package": "GenomeInfoDbData",
@@ -145,9 +145,9 @@
     },
     "GenomicFeatures": {
       "Package": "GenomicFeatures",
-      "Version": "1.42.1",
+      "Version": "1.42.2",
       "Source": "Bioconductor",
-      "Hash": "10c8a15846af2fd20d2645ce4edf74e3"
+      "Hash": "6b72206508bbb72809afa1e987369443"
     },
     "GenomicRanges": {
       "Package": "GenomicRanges",
@@ -689,10 +689,10 @@
     },
     "formatR": {
       "Package": "formatR",
-      "Version": "1.7",
+      "Version": "1.8",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ad36e26eeeb7393886d8a0e19bc6ee42"
+      "Hash": "3a5d6129643015003ab29e9aef8d6367"
     },
     "fs": {
       "Package": "fs",
@@ -1056,10 +1056,10 @@
     },
     "maptools": {
       "Package": "maptools",
-      "Version": "1.0-2",
+      "Version": "1.1-1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "1cb5cb7bbab76318944e3794ff2512ae"
+      "Hash": "beef5712326b384b1e87ba10c01e18f5"
     },
     "markdown": {
       "Package": "markdown",
@@ -1533,10 +1533,10 @@
     },
     "survival": {
       "Package": "survival",
-      "Version": "3.2-7",
+      "Version": "3.2-9",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "39c4ac6d22dad33db0ee37b40810ea12"
+      "Hash": "97d123547f46fce095abadc7dcb3c3e0"
     },
     "sys": {
       "Package": "sys",
@@ -1624,10 +1624,10 @@
     },
     "utf8": {
       "Package": "utf8",
-      "Version": "1.1.4",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4a5081acfb7b81a572e4384a7aaf2af1"
+      "Hash": "c3ad47dc6da0751f18ed53c4613e3ac7"
     },
     "vctrs": {
       "Package": "vctrs",

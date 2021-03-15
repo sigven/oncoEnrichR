@@ -16,7 +16,7 @@ cat('<br><br>')
    * <span style="background-color:#238b45; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier (mapped as alias) &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found_as_alias'))`__
    * <span style="background-color:#005a32; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found'))`__
 
-<br><br>
+<br>
 
 
 ```{r table_browse_querylist, echo=F, results = "asis", eval = T}

@@ -52,7 +52,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_ppi, child='ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
 ```
 
-```{r target_enrichment_invalid, child='functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']]) < 5}
+```{r target_enrichment_invalid, child='functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == "found")) < 5}
 ```
 
 
