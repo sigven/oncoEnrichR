@@ -2,26 +2,26 @@
 annotate_protein_complex <- function(qgenes,
                                      genedb = NULL,
                                      corum_db = NULL,
-                                     uniprot_acc = NULL){
+                                     uniprot_xref = NULL){
 
   rlogging::message("CORUM: retrieval of protein complex information for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(corum_db))
-  stopifnot(!is.null(uniprot_acc))
+  stopifnot(!is.null(uniprot_xref))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   oncoEnrichR:::validate_db_df(corum_db$db, dbtype = "corum")
-  oncoEnrichR:::validate_db_df(uniprot_acc, dbtype = "uniprot_acc")
+  oncoEnrichR:::validate_db_df(uniprot_xref, dbtype = "uniprot_xref")
 
   all_protein_complexes <- as.data.frame(
     corum_db$up_xref %>%
       dplyr::left_join(
-        dplyr::select(uniprot_acc, entrezgene, uniprot_acc),
+        dplyr::select(uniprot_xref, symbol, uniprot_acc),
         by=c("uniprot_acc" = "uniprot_acc")) %>%
       dplyr::left_join(
         dplyr::filter(dplyr::select(genedb, entrezgene, symbol),
-                      !is.na(entrezgene)),
-        by=c("entrezgene")) %>%
+                      !is.na(symbol)),
+        by=c("symbol")) %>%
       dplyr::mutate(
         genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",entrezgene,
                           "' target='_blank'>",symbol,"</a>")) %>%
@@ -34,7 +34,7 @@ annotate_protein_complex <- function(qgenes,
                     protein_complex_purification_method)
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F) %>%
-    dplyr::left_join(uniprot_acc, by = "symbol") %>%
+    dplyr::left_join(uniprot_xref, by = "symbol") %>%
     dplyr::distinct() %>%
     dplyr::filter(!is.na(uniprot_acc))
 

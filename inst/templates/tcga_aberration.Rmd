@@ -691,7 +691,7 @@ plotly_colors <- "YlOrRd"
 fig <- plotly::plot_ly(
   colors = plotly_colors,
   width = 800,
-  height = 400 + (14.67 * NROW(onc_enrich_report$data$tcga$aberration$matrix$cna_homdel))) %>%
+  height = 400 + (14.67 * NROW(gene_aberration_top_mat))) %>%
     plotly::add_heatmap(
       y = rownames(gene_aberration_top_mat),
       x = colnames(gene_aberration_top_mat),

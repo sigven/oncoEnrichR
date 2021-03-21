@@ -19,7 +19,7 @@ __oncoEnrichR__ is an R package for functional interrogation of human genesets i
 The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the target set?
-  * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)?
+  * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the target set, what is their likelihood of being druggable?
   * Which protein complexes are relevant for proteins in the target set?
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the target set?
   * Are specific tissues or cell types enriched in the target set, considering tissue/cell-type specific expression patterns of target genes?
@@ -28,9 +28,14 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
   * Which members of the target set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
   * Which members of the target set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
-  * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)?
+  * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* March 21st 2021: **0.9.0 release**
+  * Added target tractability data (section _Drug-target associations_)
+  * Added target priority scores (section _CRISPR/Cas9 loss-of-function_)
+  * Added possibility to use Ensembl/RefSeq transcript identifiers as input
+  * Added argument _show\_top\_diseases\_only_ - limits disease associations to top 15
 * March 16th 2021: **0.8.9.3 release**
   * Fixed bug; option _ppi_score_threshold_ not propagated properly
 * March 15th 2021: **0.8.9.2 release**
@@ -54,7 +59,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4603719.svg)](https://doi.org/10.5281/zenodo.4603719)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4626019.svg)](https://doi.org/10.5281/zenodo.4626019)
 
 
 ### Getting started
@@ -90,12 +95,13 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	    min_geneset_size = 10,
 	    max_geneset_size = 500,
 	    min_subcellcomp_confidence = 1,
-	    simplify_go = F,
+	    simplify_go = TRUE,
 	    ppi_add_nodes = 50,
 	    ppi_score_threshold = 900,
 	    show_ppi = TRUE,
-	    show_drugs_in_ppi = FALSE,
+	    show_drugs_in_ppi = TRUE,
 	    show_disease = TRUE,
+	    show_top_diseases_only = TRUE,
 	    show_drug = TRUE,
 	    show_enrichment = TRUE,
 	    show_tcga_aberration = TRUE,
@@ -111,13 +117,13 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
-	  ```query_id_type```     |     character indicating type of identifier used for query set (one of 'uniprot_acc', 'symbol', 'entrezgene', or 'ensembl_gene_id')
+	  ```query_id_type```     |     character indicating type of identifier used for query set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_id_", "_refseq_mrna_", or "_ensembl_transcript_id_")
 	  ```ignore_id_err```     |     logical indicating if analysis should continue when erroneous/unmatched query identifiers are encountered in query or background gene set
 	  ```project_title```     |     project title (report title)
 	  ```project_owner```     |     project owner (e.g. lab/PI)
 	  ```project_description```     |     brief description of project, how target list was derived
 	  ```bgset```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-	  ```bgset_id_type```     |     character indicating type of identifier used for background set ('uniprot_acc','symbol','entrezgene','ensembl_gene_id')
+	  ```bgset_id_type```     |     character indicating type of identifier used for background set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_id_", "_refseq_mrna_", or "_ensembl_transcript_id_")
 	  ```bgset_description```     |     character with description of background gene set (e.g. 'All lipid-binding proteins (n = 200)')
 	  ```p_value_cutoff_enrichment```     |     cutoff p-value for enrichment/over-representation analysis
 	  ```p_value_adjustment_method```     |     one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
@@ -130,16 +136,17 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-	  ```show_disease```     |     logical indicating if report should contain disease associations (Open Targets Platform)
-	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase, from Open Targets Platform)
-	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
+	  ```show_disease```     |     logical indicating if report should contain disease associations (association score >= 0.4, Open Targets Platform)
+	  ```show_top_diseases_only```| logical indicating if report should only show top (15) disease associations from Open Targets Platform
+	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability data for all query entries, from Open Targets Platform)
+	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath etc.)
 	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
-	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens and associated target priority scores (Project Score)
 	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in target set
 	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival
-	  ```show_complex```     |     logical indicating if report should list proteins in known protein complexes (CORUM)
+	  ```show_complex```     |     logical indicating if report should show membership of target proteins in known protein complexes (CORUM)
 
 
 
@@ -154,19 +161,16 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 A target list of _n = 134_ high-confidence interacting proteins with the c-MYC oncoprotein were previously identified through BioID protein proximity assay in standard cell culture and in tumor xenografts ([Dingar et al., J Proteomics, 2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target list through the _oncoEnrichR_ analysis workflow using the following configurations for the `onco_enrich` method:
 
-  * `query_source = "symbol"`
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
-  * `show_drugs_in_ppi = TRUE`
-  * `simplify_go = TRUE`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4603719).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4626019).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, query_id_type = "symbol", project_title = "cMYC_BioID_screen", project_owner = "Raught et al.", show_drugs_in_ppi = T, simplify_go = T)`
+ * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 

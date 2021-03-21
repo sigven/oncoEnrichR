@@ -3,6 +3,7 @@
 target_disease_associations <-
   function(qgenes,
            genedb = NULL,
+           show_top_diseases_only = FALSE,
            min_association_score = 0.3){
 
   stopifnot(is.character(qgenes))
@@ -25,25 +26,45 @@ target_disease_associations <-
   result[['assoc_pr_gene']][['any']] <- data.frame()
   result[['assoc_pr_gene']][['cancer']] <- data.frame()
 
+  num_top_diseases <- 15
 
   tmp <- target_assocs %>%
-    dplyr::filter(cancer_phenotype == T &
-                    ot_association_score >= min_association_score)
+    dplyr::filter(
+      (cancer_phenotype == T |
+         stringr::str_detect(tolower(efo_name),"carcinoma|cancer|tumor")) &
+        ot_association_score >= min_association_score)
 
   if(nrow(tmp) > 0){
-    result[['assoc_pr_gene']][['cancer']] <-
-      as.data.frame(
-        target_assocs %>%
-          dplyr::filter((cancer_phenotype == T |
-                           stringr::str_detect(tolower(efo_name),"carcinoma|cancer|tumor")) &
-                          ot_association_score >= min_association_score) %>%
-          dplyr::arrange(desc(ot_association_score)) %>%
+
+    result[['assoc_pr_gene']][['cancer']] <- tmp %>%
+      dplyr::arrange(desc(ot_association_score))
+
+    if(show_top_diseases_only){
+      result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
+        result[['assoc_pr_gene']][['cancer']] %>%
           dplyr::group_by(symbol) %>%
-          dplyr::summarise(n_cancer_phenotypes = dplyr::n(),
-                           ot_cancer_rank = as.numeric(max(ot_association_score)),
-                           ot_cancer_links = paste(unique(ot_link), collapse=", "),
-                           ot_cancer_diseases = paste(unique(efo_name),collapse=", "))
+          dplyr::summarise(
+            n_cancer_phenotypes = dplyr::n(),
+            ot_cancer_rank = as.numeric(max(ot_association_score)),
+            ot_cancer_links =
+              paste(head(ot_link, num_top_diseases), collapse=", "),
+            ot_cancer_diseases =
+              paste(head(efo_name, num_top_diseases),collapse=", ")
+          )
       )
+    }else{
+
+      result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
+        result[['assoc_pr_gene']][['cancer']] %>%
+          dplyr::group_by(symbol) %>%
+          dplyr::summarise(
+            n_cancer_phenotypes = dplyr::n(),
+            ot_cancer_rank = as.numeric(max(ot_association_score)),
+            ot_cancer_links = paste(unique(ot_link), collapse=", "),
+            ot_cancer_diseases = paste(unique(efo_name),collapse=", ")
+          )
+      )
+    }
   }
 
   tmp2 <- target_assocs %>%
@@ -51,16 +72,31 @@ target_disease_associations <-
                     is.na(cancer_phenotype))
 
   if(nrow(tmp2) > 0){
-    result[['assoc_pr_gene']][['other']] <-
-      as.data.frame(
-        target_assocs %>%
-          dplyr::filter(ot_association_score >= min_association_score &
-                          is.na(cancer_phenotype )) %>%
-          dplyr::arrange(desc(ot_association_score)) %>%
+
+    result[['assoc_pr_gene']][['other']] <- tmp2 %>%
+      dplyr::arrange(desc(ot_association_score))
+
+    if(show_top_diseases_only){
+      result[['assoc_pr_gene']][['other']] <- as.data.frame(
+        result[['assoc_pr_gene']][['other']] %>%
           dplyr::group_by(symbol) %>%
-          dplyr::summarise(ot_links = paste(unique(ot_link), collapse=", "),
-                           ot_diseases = paste(unique(efo_name),collapse=", "))
+          dplyr::summarise(
+            ot_links =
+              paste(head(ot_link, num_top_diseases), collapse=", "),
+            ot_diseases =
+              paste(head(efo_name, num_top_diseases),collapse=", ")
+          )
       )
+    }else{
+      result[['assoc_pr_gene']][['other']] <- as.data.frame(
+          result[['assoc_pr_gene']][['other']] %>%
+            dplyr::group_by(symbol) %>%
+            dplyr::summarise(
+              ot_links = paste(unique(ot_link), collapse=", "),
+              ot_diseases = paste(unique(efo_name),collapse=", ")
+            )
+        )
+    }
   }
 
   rm(tmp)
@@ -87,11 +123,15 @@ target_disease_associations <-
 }
 
 target_drug_associations <- function(qgenes,
+                                     cancerdrugdb = NULL,
                                     genedb = NULL){
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(cancerdrugdb))
+  stopifnot(!is.null(cancerdrugdb[['tractability']]))
   validate_db_df(genedb, dbtype = "genedb")
+  #validate_db_df(genedb, dbtype = "drug_tractability")
 
   target_genes <- data.frame('symbol' = qgenes,
                              stringsAsFactors = F) %>%
@@ -101,11 +141,32 @@ target_drug_associations <- function(qgenes,
   rlogging::message(paste0("Open Targets Platform: annotation of protein targets to targeted drugs"))
 
   result <- list()
-  result[['target']] <- target_genes %>%
-    dplyr::select(symbol, genename, targeted_cancer_drugs_lp,
+  result[['target_drugs']] <- data.frame()
+  result[['tractability_ab']] <- data.frame()
+  result[['tractability_sm']] <- data.frame()
+
+  result[['target_drugs']] <- target_genes %>%
+    dplyr::select(symbol, genename,
+                  targeted_cancer_drugs_lp,
                   targeted_cancer_drugs_ep) %>%
     dplyr::filter(!is.na(targeted_cancer_drugs_lp) |
                     !is.na(targeted_cancer_drugs_ep))
+
+  rlogging::message(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
+
+  result[['tractability_ab']] <- target_genes %>%
+    dplyr::select(ensembl_gene_id) %>%
+    dplyr::inner_join(cancerdrugdb[['tractability']][['ab']],
+                      by = "ensembl_gene_id") %>%
+    dplyr::select(-ensembl_gene_id) %>%
+    dplyr::arrange(AB_tractability_category)
+
+  result[['tractability_sm']] <- target_genes %>%
+    dplyr::select(ensembl_gene_id) %>%
+    dplyr::inner_join(cancerdrugdb[['tractability']][['sm']],
+                      by = "ensembl_gene_id") %>%
+    dplyr::select(-ensembl_gene_id) %>%
+    dplyr::arrange(SM_tractability_category)
 
   return(result)
 

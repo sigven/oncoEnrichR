@@ -18,6 +18,7 @@ init_report <- function(project_title = "Project title",
                         show_ppi = T,
                         show_drugs_in_ppi = T,
                         show_disease = T,
+                        show_top_diseases_only = T,
                         show_drug = T,
                         show_enrichment = T,
                         show_tcga_aberration = T,
@@ -48,12 +49,15 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["show"]][["ppi"]] <- show_ppi
   rep[["config"]][["show"]][["disease"]] <- show_disease
   rep[["config"]][["show"]][["drug"]] <- show_drug
+  rep[["config"]][["show"]][["drug_tractability"]] <- show_drug
   rep[["config"]][["show"]][["enrichment"]] <- show_enrichment
   rep[["config"]][["show"]][["protein_complex"]] <- show_complex
   rep[["config"]][["show"]][["tcga_aberration"]] <- show_tcga_aberration
   rep[["config"]][["show"]][["tcga_coexpression"]] <- show_tcga_coexpression
   rep[["config"]][["show"]][["subcellcomp"]] <- show_subcell_comp
-  rep[["config"]][["show"]][["loss_of_fitness"]] <- show_crispr_lof
+  rep[["config"]][["show"]][["crispr_ps"]] <- show_crispr_lof
+  rep[["config"]][["show"]][["crispr_ps_fitness"]] <- show_crispr_lof
+  rep[["config"]][["show"]][["crispr_ps_prioritized"]] <- show_crispr_lof
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
@@ -73,14 +77,31 @@ init_report <- function(project_title = "Project title",
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
-  rep[["config"]][["disease"]][["breaks"]] <- c(0.3,0.4,0.5,0.6,0.7,0.8,0.9)
-  rep[["config"]][["disease"]][["colors"]] <- c("#b8b8ba","#EFF3FF","#C6DBEF",
-                                                "#9ECAE1","#6BAED6","#4292C6",
-                                                "#2171B5","#084594")
+  rep[["config"]][["disease"]][["breaks"]] <-
+    c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+  rep[["config"]][["disease"]][["colors"]] <-
+    c("#b8b8ba","#EFF3FF","#C6DBEF",
+      "#9ECAE1","#6BAED6","#4292C6",
+      "#2171B5","#084594")
+  rep[['config']][['disease']][['show_top_diseases']] <-
+    show_top_diseases_only
+
+  rep[["config"]][["drug"]] <- list()
+  rep[["config"]][["drug"]][["ab_levels_colors"]] <-
+    c("#b8b8ba","#bae4b3","#74c476","#238b45")
+  rep[["config"]][["drug"]][["ab_levels"]] <-
+    c("Unknown", "Predicted_Tractable_Medium_to_low_confidence",
+      "Predicted_Tractable_High_confidence","Clinical_Precedence")
+
+  rep[["config"]][["drug"]][["sm_levels_colors"]] <-
+    c("#b8b8ba","#bae4b3","#74c476","#238b45")
+  rep[["config"]][["drug"]][["sm_levels"]] <-
+    c("Unknown", "Predicted_Tractable",
+      "Discovery_Precedence","Clinical_Precedence")
 
   ## config/loss_of_fitness - plot height for hits in CRISPR screens
-  rep[["config"]][["loss_of_fitness"]] <- list()
-  rep[["config"]][["loss_of_fitness"]][["plot_height"]] <- 10
+  rep[["config"]][["crispr_ps"]] <- list()
+  rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] <- 10
 
   ## config/ppi - protein-protein interaction settings
   rep[["config"]][["ppi"]] <- list()
@@ -155,6 +176,8 @@ init_report <- function(project_title = "Project title",
   rep[['config']][['subcellcomp']][['minimum_confidence']] <-
     min_subcellcomp_confidence
 
+
+
   ## initialize all data elements
   for (analysis in c("query",
                      "tcga",
@@ -165,7 +188,7 @@ init_report <- function(project_title = "Project title",
                      "drug",
                      "protein_complex",
                      "subcellcomp",
-                     "loss_of_fitness",
+                     "crispr_ps",
                      "cell_tissue",
                      "cancer_prognosis",
                      "unknown_function")) {
@@ -204,7 +227,9 @@ init_report <- function(project_title = "Project title",
     data.frame()
 
   ## drug targets
-  rep[["data"]][["drug"]][["target"]] <- data.frame()
+  rep[["data"]][["drug"]][["target_drugs"]] <- data.frame()
+  rep[["data"]][["drug"]][["tractability_sm"]] <- data.frame()
+  rep[["data"]][["drug"]][["tractability_ab"]] <- data.frame()
 
   ## disease associations
   rep[["data"]][["disease"]][["target"]] <- data.frame()
@@ -224,9 +249,17 @@ init_report <- function(project_title = "Project title",
   ## unknown function
   rep[["data"]][["unknown_function"]][["hits_df"]] <- data.frame()
 
-  ## CRISPR/Cas9 LOF hits
-  rep[["data"]][["loss_of_fitness"]][["hits_df"]] <- data.frame()
-  rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] <- 0
+  ## Fitness scores and target priority scores from CRISPR/Cas9 screens
+  ## (Project Score (ps))
+  rep[["data"]][["crispr_ps"]][['fitness_scores']] <- list()
+  rep[["data"]][["crispr_ps"]][['fitness_scores']][["targets"]] <- data.frame()
+  rep[["data"]][["crispr_ps"]][['fitness_scores']][["n_targets"]] <- 0
+  rep[["data"]][["crispr_ps"]][['target_priority_scores']] <- list()
+  rep[["data"]][["crispr_ps"]][['target_priority_scores']][['targets']] <-
+    data.frame()
+  rep[["data"]][["crispr_ps"]][['target_priority_scores']][['n_pri_targets']] <-
+    0
+
 
   ## TCGA co-expression
   rep[["data"]][["tcga"]][["co_expression"]] <- data.frame()
@@ -292,7 +325,8 @@ init_report <- function(project_title = "Project title",
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform)
+#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
+#' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
@@ -300,9 +334,9 @@ init_report <- function(project_title = "Project title",
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed
-#' @param show_subcell_comp logical indicating if report should list subcellular compartment annotations (ComPPI)
-#' @param show_crispr_lof logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-#' @param show_complex logical indicating if report should list proteins in known protein complexes (CORUM)
+#' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
+#' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (CORUM)
 #' @export
 #'
 onco_enrich <- function(query,
@@ -320,37 +354,34 @@ onco_enrich <- function(query,
                    min_geneset_size = 10,
                    max_geneset_size = 500,
                    min_subcellcomp_confidence = 1,
-                   simplify_go = F,
+                   simplify_go = TRUE,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
-                   show_ppi = T,
-                   show_drugs_in_ppi = F,
-                   show_disease = T,
-                   show_drug = T,
-                   show_enrichment = T,
-                   show_tcga_aberration = T,
-                   show_tcga_coexpression = T,
-                   show_cell_tissue = T,
-                   show_unknown_function = T,
-                   show_prognostic_cancer_assoc = T,
-                   show_subcell_comp = T,
-                   show_crispr_lof = T,
-                   show_complex = T) {
+                   show_ppi = TRUE,
+                   show_drugs_in_ppi = TRUE,
+                   show_disease = TRUE,
+                   show_top_diseases_only = TRUE,
+                   show_drug = TRUE,
+                   show_enrichment = TRUE,
+                   show_tcga_aberration = TRUE,
+                   show_tcga_coexpression = TRUE,
+                   show_cell_tissue = TRUE,
+                   show_unknown_function = TRUE,
+                   show_prognostic_cancer_assoc = TRUE,
+                   show_subcell_comp = TRUE,
+                   show_crispr_lof = TRUE,
+                   show_complex = TRUE) {
 
   stopifnot(!is.null(query))
   stopifnot(is.character(query))
   stopifnot(length(query) >= 1)
 
-  stopifnot(p_value_adjustment_method %in% c("holm", "hochberg",
-                                             "hommel", "bonferroni",
-                                             "BH", "BY",
-                                             "fdr", "none"))
-  # if (length(query) > 800 | length(query) < 20) {
-  #   rlogging::message(paste0("ERROR: oncoEnrichR needs minimum 20 query ",
-  #   "identifiers, and accepts a maximum of 800. Query contained n = ",
-  #   length(query), " identifiers"))
-  #   return(NULL)
-  # }
+  stopifnot(
+    p_value_adjustment_method %in%
+      c("holm", "hochberg",
+        "hommel", "bonferroni",
+        "BH", "BY",
+        "fdr", "none"))
 
   if (length(query) > 800) {
     rlogging::message(
@@ -360,12 +391,26 @@ onco_enrich <- function(query,
   }
 
 
-  stopifnot(query_id_type == "symbol" | query_id_type == "entrezgene" |
-              query_id_type == "uniprot_acc" | query_id_type == "ensembl_gene_id")
-  stopifnot(ppi_score_threshold > 0 & ppi_score_threshold <= 1000)
-  stopifnot(p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
-  stopifnot(q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
-  stopifnot(min_subcellcomp_confidence >= 1 & min_subcellcomp_confidence <= 6)
+  stopifnot(query_id_type == "symbol" |
+              query_id_type == "entrezgene" |
+              query_id_type == "refseq_mrna" |
+              query_id_type == "ensembl_transcript_id" |
+              query_id_type == "uniprot_acc" |
+              query_id_type == "ensembl_gene_id")
+  stopifnot(bgset_id_type == "symbol" |
+              bgset_id_type == "entrezgene" |
+              bgset_id_type == "refseq_mrna" |
+              bgset_id_type == "ensembl_transcript_id" |
+              bgset_id_type == "uniprot_acc" |
+              bgset_id_type == "ensembl_gene_id")
+  stopifnot(ppi_score_threshold > 0 &
+              ppi_score_threshold <= 1000)
+  stopifnot(p_value_cutoff_enrichment > 0 &
+              p_value_cutoff_enrichment < 1)
+  stopifnot(q_value_cutoff_enrichment > 0 &
+              q_value_cutoff_enrichment < 1)
+  stopifnot(min_subcellcomp_confidence >= 1 &
+              min_subcellcomp_confidence <= 6)
   stopifnot(ppi_add_nodes <= 50)
 
   onc_rep <- oncoEnrichR:::init_report(
@@ -379,6 +424,7 @@ onco_enrich <- function(query,
     show_ppi = show_ppi,
     show_drugs_in_ppi = show_drugs_in_ppi,
     show_disease = show_disease,
+    show_top_diseases_only = show_top_diseases_only,
     show_drug = show_drug,
     show_enrichment = show_enrichment,
     show_tcga_aberration = show_tcga_aberration,
@@ -407,7 +453,9 @@ onco_enrich <- function(query,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
       genedb = oncoEnrichR::genedb[['all']],
-      uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
+      ensembl_trans_xref = oncoEnrichR::genedb[['ensembl_trans_xref']],
+      refseq_xref = oncoEnrichR::genedb[['refseq_xref']],
+      uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
 
   ## assign validation result to report object
   onc_rep[['data']][['query']][['target']] <-
@@ -419,13 +467,15 @@ onco_enrich <- function(query,
   ## set to FALSE, oncoEnrichR analysis will halt (no analysis modules
   ## will be included in report)
   if (qgenes_match[["match_status"]] == "imperfect_stop") {
-    for(e in c("disease","drug",
+    for(e in c("disease",
+               "drug",
                "enrichment",
-               "protein_complex","ppi",
+               "protein_complex",
+               "ppi",
                "tcga_aberration",
                "tcga_coexpression",
                "cell_tissue",
-               "loss_of_fitness",
+               "crispr_ps",
                "subcellcomp",
                "unknown_function",
                "cancer_prognosis")){
@@ -447,13 +497,17 @@ onco_enrich <- function(query,
   background_genes_match <- NULL
   if (!is.null(bgset)) {
     background_genes_match <-
-      oncoEnrichR:::validate_query_genes(bgset,
-                                       q_id_type = bgset_id_type,
-                                      genedb = oncoEnrichR::genedb[['all']],
-                                      qtype = "background",
-                                      uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
+      oncoEnrichR:::validate_query_genes(
+        bgset,
+        q_id_type = bgset_id_type,
+        genedb = oncoEnrichR::genedb[['all']],
+        qtype = "background",
+        ensembl_trans_xref = oncoEnrichR::genedb[['ensembl_trans_xref']],
+        refseq_xref = oncoEnrichR::genedb[['refseq_xref']],
+        uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
-      rlogging::message("WARNING: Background geneset not defined properly - using all protein-coding genes instead")
+      rlogging::message("WARNING: Background geneset not defined properly - ",
+                        "using all protein-coding genes instead")
       background_entrez <- unique(oncoEnrichR::genedb[['all']]$entrezgene)
     }else{
       background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
@@ -474,14 +528,16 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["disease"]][["target"]] <-
       oncoEnrichR:::target_disease_associations(
         query_symbol,
+        show_top_diseases_only = show_top_diseases_only,
         genedb = oncoEnrichR::genedb[['all']])
   }
 
   if (show_drug == T) {
-    onc_rep[["data"]][["drug"]][["target"]] <-
+    onc_rep[["data"]][["drug"]] <-
       oncoEnrichR:::target_drug_associations(
         query_symbol,
-        genedb = oncoEnrichR::genedb[['all']])
+        genedb = oncoEnrichR::genedb[['all']],
+        cancerdrugdb = oncoEnrichR::cancerdrugdb)
   }
 
   if(onc_rep[['config']][['show']][['enrichment']] == T){
@@ -533,7 +589,8 @@ onco_enrich <- function(query,
             if (!is.null(enr)) {
               onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
                 dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
-                dplyr::distinct()
+                dplyr::distinct() %>%
+                dplyr::arrange(qvalue)
             }
           }
         }
@@ -600,7 +657,7 @@ onco_enrich <- function(query,
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         corum_db = oncoEnrichR::corumdb,
-        uniprot_acc = oncoEnrichR::genedb[['uniprot_xref']])
+        uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     #}
   }
 
@@ -631,20 +688,25 @@ onco_enrich <- function(query,
   }
 
   if (show_crispr_lof == T) {
-    onc_rep[["data"]][["loss_of_fitness"]] <-
+    onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]] <-
       oncoEnrichR:::get_crispr_lof_scores(
         query_symbol,
         projectscoredb = oncoEnrichR::projectscoredb)
 
-    if (onc_rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] <= 10){
-      onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]] <- 5
+    if (onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] <= 10){
+      onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] <- 5
     }
 
-    if (onc_rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] >= 20) {
-      onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]]  <-
-        onc_rep[["config"]][["loss_of_fitness"]][["plot_height"]] +
-        as.integer((onc_rep[["data"]][["loss_of_fitness"]][["n_genes_with_hits"]] - 20)/8.5)
+    if (onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] >= 20) {
+      onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]]  <-
+        onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] +
+        as.integer((onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
     }
+
+    onc_rep[["data"]][["crispr_ps"]][["target_priority_scores"]] <-
+      oncoEnrichR:::get_target_priority_scores(
+        query_symbol,
+        projectscoredb = oncoEnrichR::projectscoredb)
   }
 
 
@@ -832,15 +894,20 @@ write <- function(report,
     rlogging::message("Writing Excel workbook with report contents")
 
     table_style_index <- 15
-    for(elem in c("query","disease",
+    for(elem in c("query",
+                  "disease",
                   "tcga_aberration",
                   "tcga_coexpression",
                   "cancer_prognosis",
                   "enrichment",
                   "drug",
+                  "drug_tractability",
                   "protein_complex",
+                  "ppi",
                   "subcellcomp",
                   "cell_tissue",
+                  "crispr_ps_fitness",
+                  "crispr_ps_prioritized",
                   "unknown_function")){
 
       show_elem <- elem
