@@ -1,19 +1,26 @@
-### Targets & cancer associations
+### Disease associations {.tabset}
 
-* Each protein in the target set is annotated with:
-   * Known associations to cancer phenotypes established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
+* Each protein in the query set is annotated with:
+   * Known associations to cancer phenotypes (_ontology terms_) established from [multiple sources](https://docs.targetvalidation.org/getting-started/scoring) through the [Open Targets Platform](https://targetvalidation.org)
    * Status with respect to roles as tumor suppressors/oncogenes, fetched from the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource and the [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
-   * Target genes are colored in varying shades of blue according to their level of association to cancer (specifically the [maximum association score](https://docs.targetvalidation.org/getting-started/scoring) to a cancer phenotype at any level of resolution)
-   
+ 
 <br><br>
 
+
+#### Query set - cancer association rank
+
+<br>
+
+* Query set genes are ranked according to their overall strength of association to cancer phenotype ontology terms, visualized in varying shades of blue. Specifically, ranking is based on the sum of mean [association scores](https://docs.targetvalidation.org/getting-started/scoring) pr. tumor type/tissue, and scaled as percent rank within the query set
+
+<br><br>
 
 ```{r filter_opentargets, echo=F, results='asis'}
 
 show_opentargets <- FALSE
 missing_opentargets <- TRUE
 
-if(nrow(onc_enrich_report[['data']][['disease']][['target']]$target) > 0){
+if(nrow(onc_enrich_report[['data']][['disease']][['target']]) > 0){
   show_opentargets <- TRUE
   missing_opentargets <- FALSE
 }
@@ -24,7 +31,7 @@ if(nrow(onc_enrich_report[['data']][['disease']][['target']]$target) > 0){
 ```{r table_browse_targets, echo=F, results = "asis", eval = show_opentargets}
 library(crosstalk)
 
-targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['disease']][['target']]$target)
+targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['disease']][['target']])
 
 crosstalk::bscols(
   list(
@@ -45,7 +52,7 @@ DT::datatable(targets_shared, escape = F,
               options=list(buttons = c('csv','excel'), 
                            dom = 'Bfrtip')) %>%
   DT::formatStyle("symbol",
-                  "ot_cancer_rank", 
+                  "targetset_cancer_prank", 
                   color = "white", 
                   backgroundColor = DT::styleInterval(
                     onc_enrich_report[['config']][['disease']][['breaks']],
@@ -63,3 +70,51 @@ cat('\n')
 
 
 <br><br>
+
+#### Query set - association strength pr. tumor type
+
+* Top cancer-associated genes (maximum 100) in the query set are shown with their specific tumor-type association strengths (percent rank)
+
+<br><br>
+
+```{r target_ttype_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 0}
+
+ttype_matrix <- 
+  onc_enrich_report[['data']][['disease']][['ttype_matrix']]
+
+if(NROW(ttype_matrix) > 100){
+  ttype_matrix <- ttype_matrix[1:100,]
+}
+
+ttype_matrix <- 
+  ttype_matrix[nrow(ttype_matrix):1, ]
+
+plotly_colors <- "Blues"
+
+target_ttype_rank_fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 400 + (14.67 * NROW(ttype_matrix))) %>%
+  plotly::add_heatmap(
+    y = rownames(ttype_matrix),
+    x = colnames(ttype_matrix),
+    z = ttype_matrix,
+    hovertext = "Tumor type percent rank",
+    yaxis = "y") %>%
+  plotly::layout(
+    title = 'Tumor type association rank',
+    xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                 tickangle = -50),
+    yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+    margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+  ) %>%
+  plotly::colorbar(
+    nticks = 10, 
+    title = list(text = "Percent rank",side = "bottom"),
+    limits = c(0, plyr::round_any(max(ttype_matrix), 100, ceiling)))
+
+target_ttype_rank_fig
+
+
+```
+

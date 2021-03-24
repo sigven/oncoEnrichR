@@ -2,13 +2,13 @@
 
 <br>
 
-* The target set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a database of subcellular localization data for human proteins, and results are here presented in two different views:
+* The query set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a database of subcellular localization data for human proteins, and results are here presented in two different views:
 
-   1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the target set
+   1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the query set
        * Compartments are here limited to the key compartments (n = 24) defined within the [gganatogram package](https://github.com/jespermaag/gganatogram#cellular-structures)
        * An accompanying legend is also provided - depicting the locations of the various subcellular structures
    2. A subcellular _data browser_
-       * All subcellular compartment annotations pr. protein in the target set ("By Gene")
+       * All subcellular compartment annotations pr. protein in the query set ("By Gene")
        * All unique subcellular compartment annotations (unfiltered) and their target members ("By Compartment")
        * Subcellular compartment annotations per gene are provided with a __confidence level__ - indicating the number of different sources that support the compartment annotation
           * Minimum confidence level set by user: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
@@ -19,7 +19,7 @@
 #### Subcellular anatogram {.tabset}
 <br>
 
-##### Heatmap - target set
+##### Heatmap - query set
 <br>
 
 * In the image below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure

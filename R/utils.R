@@ -250,7 +250,7 @@ validate_query_genes <- function(qgenes,
       rlogging::message(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ',
-               'query set (n = ',
+               'target set (n = ',
                nrow(queryset[['not_found']]),' invalid entries)'))
     }
 
@@ -311,10 +311,6 @@ validate_db_df <- function(df, dbtype = "genedb"){
     message(val)
   }
 
-  # invisible(assertthat::assert_that(
-  #   is.data.frame(df),
-  #   msg = paste0("Argument 'df' must by of ",
-  #                "type data.frame, not ", class(df))))
   dbtypes <- c("genedb",
                "corum",
                "uniprot_xref",
@@ -357,7 +353,8 @@ validate_db_df <- function(df, dbtype = "genedb"){
   }
   ## poorly defined genes (pdf)
   if(dbtype == "pdf"){
-    cols <- c('symbol','genename',
+    cols <- c('symbol',
+              'genename',
               'num_go_terms',
               'unknown_function_rank',
               'gene_summary',
@@ -461,9 +458,9 @@ add_excel_sheet <- function(
   }
 
   if(analysis_output == "disease"){
-    if(is.data.frame(report$data$disease$target$target)){
-      if(NROW(report$data$disease$target$target) > 0){
-        target_df <- report$data$disease$target$target %>%
+    if(is.data.frame(report$data$disease$target)){
+      if(NROW(report$data$disease$target) > 0){
+        target_df <- report$data$disease$target %>%
           dplyr::mutate(
             annotation_source = report$config$resources$opentargets$name,
             version = report$config$resources$opentargets$version) %>%

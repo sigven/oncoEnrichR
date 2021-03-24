@@ -3,7 +3,7 @@
 
 ```{r imperfect_stop_notice, echo = F, results = "asis", eval = onc_enrich_report[['data']][['query']]$validation_status == "imperfect_stop"}
 
-cat('<br><br>\n <span style="font-size:110%; line-height:110%; padding:3px; background-color:#800026; color:white">&nbsp;<b> - IMPORTANT NOTICE:</b> Due to invalid entries in query set, analysis is halted.&nbsp;&nbsp;<br>&nbsp;&nbsp; - Set <i>\'Ignore errenous identifiers (ignore_id_err)\'</i> = TRUE in order to ignore invalid entries and complete the analysis &nbsp;&nbsp; with <i>oncoEnrichR</i>.&nbsp;&nbsp; </span>',sep='\n')
+cat('<br><br>\n <span style="font-size:110%; line-height:110%; padding:3px; background-color:#800026; color:white">&nbsp;<b> - IMPORTANT NOTICE:</b> Due to invalid entries in the query set, analysis is halted.&nbsp;&nbsp;<br>&nbsp;&nbsp; - Set <i>\'Ignore errenous identifiers (ignore_id_err)\'</i> = TRUE in order to ignore invalid entries and complete the analysis &nbsp;&nbsp; with <i>oncoEnrichR</i>.&nbsp;&nbsp; </span>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

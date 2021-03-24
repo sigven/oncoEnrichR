@@ -1,6 +1,6 @@
-### Poorly or uncharacterized targets
+### Poorly characterized query members
 
-* The aim of this section is to highlight poorly characterized genes or genes with unknown function in the target set
+* The aim of this section is to highlight poorly characterized genes or genes with unknown function in the query set
 * A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r NROW(oncoEnrichR::genedb[['poorly_defined']])`__) _ have been established based on
    1. Genes specifically designated as uncharacterized or as _open reading frames_
    2. Missing gene function summary in [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene) AND function summary in [UniProt Knowledgebase](https://uniprot.org)
@@ -62,7 +62,7 @@ DT::datatable(targets_unknown_function,
 
 
 ```{r ufunction_genes_missing, echo=F, results = 'asis', eval = !show_ufunction_genes}
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes with unknown or poorly defined functions were detected in target set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes with unknown or poorly defined functions were detected in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

@@ -2,7 +2,7 @@
 
 <br>
 
-* Using data from the [Human Protein Atlas (HPA) - Cell/Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), we are here interrogating classification of all protein coding genes in the target set with respect to elevated expression in normal/healthy tissues and cell types
+* Using data from the [Human Protein Atlas (HPA) - Cell/Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), we are here interrogating classification of all protein coding genes in the query set with respect to elevated expression in normal/healthy tissues and cell types
   * Gene expression per tissue is based on data from [Genotype-Tissue Expression (GTex) Project](https://gtexportal.org/home/), containing data from [36 distinct tissue types](https://www.proteinatlas.org/about/assays+annotation#gtex_rna). Gene expression measure unit: [Transcripts pr million (TPM)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
   * Single cell gene expression data is based on a [meta-analysis of literature on scRNA-seq datasets](https://www.proteinatlas.org/about/assays+annotation#tcga_rna_seq_data) of healthy human tissue. Gene expression measure unit: [Normalized eXpression (NX)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
 
@@ -18,7 +18,7 @@
   * **Low tissue specificity**: Genes with an expression level greater than or equal to 1 (_TPM >= 1_) across all of the tissues that are not in any of the above 4 groups.
   * **Mixed**: Genes that are not assigned to any of the above 5 groups.
   
-* Enrichment of specific tissues in the target set (with respect to tissue-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
+* Enrichment of specific tissues in the query set (with respect to tissue-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
   * Only tissues that are enriched with an adjusted (Benjamini-Hochberg) p-value < 0.05 are listed
   
 <br><br>
@@ -104,7 +104,7 @@ DT::datatable(
 <br><br>
 
 
-##### Tissue enrichment - target set
+##### Tissue enrichment - query set
 
 
 ```{r filter_tissue, echo=F, results='asis'}
@@ -128,7 +128,7 @@ if(num_significant_tissues > 0){
 htmltools::br()
 
 cat("<ul><li>")
-cat('<i><font style="font-size: 100%">Considering the tissue specificities of members of the target set, <b>NO TISSUES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
+cat('<i><font style="font-size: 100%">Considering the tissue specificities of members of the query set, <b>NO TISSUES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
 cat('</ul></li>')
 
 htmltools::br()
@@ -170,7 +170,7 @@ htmltools::br()
   * **Low cell type specificity**: Genes with an expression level greater than or equal to 1 (_NX >= 1_) across all of the cell types that are not in any of the above 4 groups.
   * **Mixed**: Genes that are not assigned to any of the above 5 groups.
 
-* Enrichment of specific cell types in the target set (with respect to cell type-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
+* Enrichment of specific cell types in the query set (with respect to cell type-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
   * Only cell types that are enriched with an adjusted (Benjamini-Hochberg) p-value < 0.05 are listed
   
 <br><br>
@@ -257,7 +257,7 @@ DT::datatable(
 <br><br>
 
 
-##### Cell type enrichment - target set
+##### Cell type enrichment - query set
 
 <br>
 
@@ -283,7 +283,7 @@ if(num_significant_celltypes > 0){
 htmltools::br()
 
 cat("<ul><li>")
-cat('<i><font style="font-size: 100%">Considering the cell-type specificities of members of the target set, <b>NO CELL TYPES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
+cat('<i><font style="font-size: 100%">Considering the cell-type specificities of members of the query set, <b>NO CELL TYPES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</i></font>', sep='\n')
 cat('</ul></li>')
 
 htmltools::br()

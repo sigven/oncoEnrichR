@@ -224,10 +224,10 @@
     },
     "RCurl": {
       "Package": "RCurl",
-      "Version": "1.98-1.2",
+      "Version": "1.98-1.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "cf29e1b71f8736960e0e851123a83e6f"
+      "Hash": "ddac9abbfba243f9aeab9b5680b968d3"
     },
     "RISmed": {
       "Package": "RISmed",
@@ -303,10 +303,10 @@
     },
     "XML": {
       "Package": "XML",
-      "Version": "3.99-0.5",
+      "Version": "3.99-0.6",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "408d42d1359f2a84d377c1f7f0568624"
+      "Hash": "59b7d0a3d18303ae30ba1246e77faa83"
     },
     "XVector": {
       "Package": "XVector",
@@ -1347,10 +1347,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.13.0",
+      "Version": "0.13.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "9f10d9db5b50400c348920c5c603385e"
+      "Hash": "be02499761baab60d58b808efd08c3fc"
     },
     "reprex": {
       "Package": "reprex",
@@ -1533,10 +1533,10 @@
     },
     "survival": {
       "Package": "survival",
-      "Version": "3.2-9",
+      "Version": "3.2-10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "97d123547f46fce095abadc7dcb3c3e0"
+      "Hash": "6b7453cd9bb32b12577c78d54eeea56a"
     },
     "sys": {
       "Package": "sys",

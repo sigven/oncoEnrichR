@@ -2,7 +2,7 @@
 
 * Using RNA-seq data from ~9,500 primary tumor samples in TCGA, a co-expression correlation matrix (Pearson rank correlation coefficient) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
 * Here, we are showing, across the main primary tumor sites in TCGA:
-  - Tumor suppressor genes, proto-oncogenes or cancer driver genes with a **strong/very strong** (_r_ >= 0.6 or _r_ <= -0.6 ) correlation to genes in the target set
+  - Tumor suppressor genes, proto-oncogenes or cancer driver genes with a **strong/very strong** (_r_ >= 0.6 or _r_ <= -0.6 ) correlation to genes in the query set
   - Here, a maximum of 2500 associations are shown per correlation direction, the
 complete set are listed in the Excel output of oncoEnrichR
 
@@ -80,7 +80,7 @@ DT::datatable(coexp_genes_positive, escape = F,
 
 ```{r coexp_missing_positive, echo=F, results = 'asis', eval = missing_tcga_coexp[['Positive']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set with strong positive correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with strong positive correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -128,7 +128,7 @@ DT::datatable(coexp_genes_negative, escape = F,
 <br><br>
 
 ```{r coexp_missing_negative, echo=F, results = 'asis', eval = missing_tcga_coexp[['Negative']]}
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set with strong negative correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with strong negative correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 ```

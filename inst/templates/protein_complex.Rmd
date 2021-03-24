@@ -1,8 +1,8 @@
 ### Protein complexes
 
-* Each protein in the target set is annotated with:
+* Each protein in the query set is annotated with:
    * Known protein complexes as found in [CORUM](https://mips.helmholtz-muenchen.de/corum/)
-   * The complexes are ranked according to the total number of participating members in the target set
+   * The complexes are ranked according to the total number of participating members in the query set
    
 <br><br>
 
@@ -34,7 +34,7 @@ DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']],
 
 ```{r indicate_missing_complexes, echo=F, results = 'asis', eval = missing_complexes}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in target set associate with protein complexes from the CORUM database.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set associate with protein complexes from the CORUM database.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

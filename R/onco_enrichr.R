@@ -77,24 +77,32 @@ init_report <- function(project_title = "Project title",
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
+  # rep[["config"]][["disease"]][["breaks"]] <-
+  #   c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+  # rep[["config"]][["disease"]][["colors"]] <-
+  #   c("#b8b8ba","#EFF3FF","#C6DBEF",
+  #     "#9ECAE1","#6BAED6","#4292C6",
+  #     "#2171B5","#084594")
   rep[["config"]][["disease"]][["breaks"]] <-
-    c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+     c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
   rep[["config"]][["disease"]][["colors"]] <-
-    c("#b8b8ba","#EFF3FF","#C6DBEF",
-      "#9ECAE1","#6BAED6","#4292C6",
-      "#2171B5","#084594")
+    c("#b8b8ba",
+      "#c6dbef","#9ecae1",
+      "#6baed6","#4292c6",
+      "#2171b5","#08519c",
+      "#08306b")
   rep[['config']][['disease']][['show_top_diseases']] <-
     show_top_diseases_only
 
   rep[["config"]][["drug"]] <- list()
   rep[["config"]][["drug"]][["ab_levels_colors"]] <-
-    c("#b8b8ba","#bae4b3","#74c476","#238b45")
+    c("#b8b8ba","#8c96c6","#8856a7","#810f7c")
   rep[["config"]][["drug"]][["ab_levels"]] <-
     c("Unknown", "Predicted_Tractable_Medium_to_low_confidence",
       "Predicted_Tractable_High_confidence","Clinical_Precedence")
 
   rep[["config"]][["drug"]][["sm_levels_colors"]] <-
-    c("#b8b8ba","#bae4b3","#74c476","#238b45")
+    c("#b8b8ba","#8c96c6","#8856a7","#810f7c")
   rep[["config"]][["drug"]][["sm_levels"]] <-
     c("Unknown", "Predicted_Tractable",
       "Discovery_Precedence","Clinical_Precedence")
@@ -235,6 +243,7 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["disease"]][["target"]] <- data.frame()
   rep[["data"]][["disease"]][["target_assoc"]] <- data.frame()
   rep[["data"]][["disease"]][["assoc_pr_gene"]] <- list()
+  rep[["data"]][["disease"]][["ttype_matrix"]] <- matrix()
 
   ## protein-protein interactions
   rep[["data"]][["ppi"]][["complete_network"]] <- NULL
@@ -525,7 +534,7 @@ onco_enrich <- function(query,
   }
 
   if (show_disease == T) {
-    onc_rep[["data"]][["disease"]][["target"]] <-
+    onc_rep[["data"]][["disease"]] <-
       oncoEnrichR:::target_disease_associations(
         query_symbol,
         show_top_diseases_only = show_top_diseases_only,

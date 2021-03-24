@@ -1,4 +1,4 @@
-## oncoEnrichR - comprehensive gene set interpretation in cancer
+## oncoEnrichR - cancer-dedicated gene set interpretation
 
 ### Contents
 
@@ -31,15 +31,16 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* March 24th 2021: **0.9.1 release**
+  * Revised Disease Association section
+    * Genes in target set ranked according to overall cancer association strength
+    * Heatmap with tumor-type specific associations pr. gene
+  * Updated datasets: MSigDB (v7.3)
 * March 21st 2021: **0.9.0 release**
   * Added target tractability data (section _Drug-target associations_)
   * Added target priority scores (section _CRISPR/Cas9 loss-of-function_)
   * Added possibility to use Ensembl/RefSeq transcript identifiers as input
   * Added argument _show\_top\_diseases\_only_ - limits disease associations to top 15
-* March 16th 2021: **0.8.9.3 release**
-  * Fixed bug; option _ppi_score_threshold_ not propagated properly
-* March 15th 2021: **0.8.9.2 release**
-  * Fixed bug for query of type _uniprot_acc_
 
 ### Annotation resources
 
@@ -59,7 +60,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4626019.svg)](https://doi.org/10.5281/zenodo.4626019)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4635206.svg)](https://doi.org/10.5281/zenodo.4635206)
 
 
 ### Getting started
@@ -137,7 +138,7 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain disease associations (association score >= 0.4, Open Targets Platform)
-	  ```show_top_diseases_only```| logical indicating if report should only show top (15) disease associations from Open Targets Platform
+	  ```show_top_diseases_only```| logical indicating if report should only show top (20) disease associations from Open Targets Platform
 	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability data for all query entries, from Open Targets Platform)
 	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath etc.)
 	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
@@ -164,7 +165,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4626019).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4635206).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 

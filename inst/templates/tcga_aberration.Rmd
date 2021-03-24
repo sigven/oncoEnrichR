@@ -639,8 +639,7 @@ cat('<br><br>')
     2. <span style="background-color:#800026; color:white"><b>&nbsp; sCNA - homozygous deletions &nbsp; </b></span>
 * Frequency is plotted pr. primary site as 
   * *_percent_mutated_* (percent of all tumor samples with the gene amplified/lost)
-  * genes in the plot are ranked according to alteration frequency across all sites (_pancancer_),
-  limited to the top 75 genes in the target set
+  * genes in the plot are ranked according to alteration frequency across all sites (_pancancer_), limited to the top 75 genes in the query set
 * Frequencies across all subtypes per primary site are listed in an interactive table
 
 
