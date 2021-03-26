@@ -74,10 +74,17 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 #### Usage
 
-_oncoEnrichR_ works in two basic steps through the following two methods:
+_oncoEnrichR_ performs its operations through the following procedures/methods:
 
-   __1.__ `onco_enrich`
-  * Takes an input list of human gene/protein identifiers and performs various types of annotations, frequency calculations, and enrichment analyses. Currently acceptable input formats are HGNC symbols, UniProt accessions, Ensembl and Entrez gene identifiers. Returns a *list object* with all contents of the analyses performed. Arguments and default values:
+   __1.__ `oncoEnrichR::onco_enrich()`
+
+   * Consists of two main processing steps:
+
+	   1) Takes an input/query list of human gene/protein identifiers (e.g. UniProt accession, RefSeq/Ensembl transcript identifer etc.) as input and conducts uniform identifier conversion
+
+	   2) Performs extensive annotation, enrichment and membership analyses of the query set against underlying data sources on cancer-relevant properties of human genes and their interrelationships.
+
+  * Technically, the method returns a *list object* with all contents of the analyses performed. The specific arguments/options and default values are outlined below:
 
 	  ```r
 	  onco_enrich(
@@ -151,11 +158,16 @@ _oncoEnrichR_ works in two basic steps through the following two methods:
 
 
 
-  __2.__ `write`
+  __2.__ `oncoEnrichR::write()`
 
-* takes the contents of the report object retrieved in _1)_ to assemble either
-   * A) a structured and interactive _oncoEnrichR_ HTML report, OR
-   * B) a multisheet Excel workbook with results from the annotations and analyses provided
+  * Consists of two main processing steps:
+
+    1) Transform the contents of the analyses returned by _oncoEnrichR::onco_enrich()_ into various visualizations and interactive tables
+
+    2) Assemble and write the final analysis report through
+
+	   * A) a structured and interactive _oncoEnrichR_ HTML report, OR
+	   * B) a multisheet Excel workbook with results from the annotations and analyses provided
      by _oncoEnrichR_
 
 #### Example run
