@@ -22,7 +22,7 @@ tcga_oncoplot_genes <-
       dplyr::distinct()
   }
 
-  top_mutated_genes <- oncoEnrichR::tcga_aberration_stats %>%
+  top_mutated_genes <- oncoEnrichR::tcgadb[['aberration']] %>%
     dplyr::filter(variant_type == "snv_indel" &
                   genomic_strata == "gene" &
                     primary_site == site) %>%
@@ -89,7 +89,7 @@ tcga_aberration_matrix <- function(qgenes,
     color <- 'firebrick'
   }
 
-  tcga_gene_stats <- oncoEnrichR::tcga_aberration_stats %>%
+  tcga_gene_stats <- oncoEnrichR::tcgadb[['aberration']] %>%
     dplyr::filter(clinical_strata == cstrata) %>%
     dplyr::filter(primary_site != "Other/Unknown") %>%
     dplyr::inner_join(
@@ -208,7 +208,7 @@ tcga_aberration_table <- function(qgenes,
     query_genes_df <- dplyr::inner_join(genedb, query_genes_df, by = "symbol") %>% dplyr::distinct()
   }
 
-  aberration_data <- oncoEnrichR::tcga_aberration_stats %>%
+  aberration_data <- oncoEnrichR::tcgadb[['aberration']] %>%
     dplyr::filter(clinical_strata == "site_diagnosis" &
                     variant_type == vtype &
                     primary_site != "Pancancer") %>%
@@ -261,13 +261,13 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
       dplyr::distinct()
   }
 
-  coexp_target_1 <- oncoEnrichR::tcga_coexp_db %>%
+  coexp_target_1 <- oncoEnrichR::tcgadb[['co_expression']] %>%
     dplyr::select(symbol, symbol_partner,
                   corrtype, correlation, r, p_value, tumor) %>%
     dplyr::left_join(query_genes_df, by = c("symbol" = "symbol")) %>%
     dplyr::filter(!is.na(entrezgene))
 
-  coexp_target_tcga <- oncoEnrichR::tcga_coexp_db %>%
+  coexp_target_tcga <- oncoEnrichR::tcgadb[['co_expression']] %>%
     dplyr::select(symbol, symbol_partner,
                   corrtype, correlation, r, p_value, tumor) %>%
     dplyr::left_join(query_genes_df, by = c("symbol_partner" = "symbol")) %>%

@@ -315,7 +315,8 @@ init_report <- function(project_title = "Project title",
 #' Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
 #'
 #' @param query character vector with gene/query identifiers
-#' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")
+#' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
+#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
@@ -403,15 +404,19 @@ onco_enrich <- function(query,
   stopifnot(query_id_type == "symbol" |
               query_id_type == "entrezgene" |
               query_id_type == "refseq_mrna" |
-              query_id_type == "ensembl_transcript_id" |
+              query_id_type == "ensembl_mrna" |
+              query_id_type == "refseq_protein" |
+              query_id_type == "ensembl_protein" |
               query_id_type == "uniprot_acc" |
-              query_id_type == "ensembl_gene_id")
+              query_id_type == "ensembl_gene")
   stopifnot(bgset_id_type == "symbol" |
-              bgset_id_type == "entrezgene" |
-              bgset_id_type == "refseq_mrna" |
-              bgset_id_type == "ensembl_transcript_id" |
-              bgset_id_type == "uniprot_acc" |
-              bgset_id_type == "ensembl_gene_id")
+              query_id_type == "entrezgene" |
+              query_id_type == "refseq_mrna" |
+              query_id_type == "ensembl_mrna" |
+              query_id_type == "refseq_protein" |
+              query_id_type == "ensembl_protein" |
+              query_id_type == "uniprot_acc" |
+              query_id_type == "ensembl_gene")
   stopifnot(ppi_score_threshold > 0 &
               ppi_score_threshold <= 1000)
   stopifnot(p_value_cutoff_enrichment > 0 &
@@ -462,8 +467,10 @@ onco_enrich <- function(query,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
       genedb = oncoEnrichR::genedb[['all']],
-      ensembl_trans_xref = oncoEnrichR::genedb[['ensembl_trans_xref']],
-      refseq_xref = oncoEnrichR::genedb[['refseq_xref']],
+      ensembl_mrna_xref = oncoEnrichR::genedb[['ensembl_mrna_xref']],
+      refseq_mrna_xref = oncoEnrichR::genedb[['refseq_mrna_xref']],
+      ensembl_protein_xref = oncoEnrichR::genedb[['ensembl_protein_xref']],
+      refseq_protein_xref = oncoEnrichR::genedb[['refseq_protein_xref']],
       uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
 
   ## assign validation result to report object
@@ -511,8 +518,10 @@ onco_enrich <- function(query,
         q_id_type = bgset_id_type,
         genedb = oncoEnrichR::genedb[['all']],
         qtype = "background",
-        ensembl_trans_xref = oncoEnrichR::genedb[['ensembl_trans_xref']],
-        refseq_xref = oncoEnrichR::genedb[['refseq_xref']],
+        ensembl_mrna_xref = oncoEnrichR::genedb[['ensembl_mrna_xref']],
+        ensembl_protein_xref = oncoEnrichR::genedb[['ensembl_protin_xref']],
+        refseq_mrna_xref = oncoEnrichR::genedb[['refseq_mrna_xref']],
+        refseq_protein_xref = oncoEnrichR::genedb[['refseq_protein_xref']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
       rlogging::message("WARNING: Background geneset not defined properly - ",
@@ -550,8 +559,8 @@ onco_enrich <- function(query,
   }
 
   if(onc_rep[['config']][['show']][['enrichment']] == T){
-    for (c in names(oncoEnrichR::msigdb[["COLLECTION"]])) {
-      for (subcat in names(oncoEnrichR::msigdb[["COLLECTION"]][[c]])) {
+    for (c in names(oncoEnrichR::pathwaydb[["msigdb"]][["COLLECTION"]])) {
+      for (subcat in names(oncoEnrichR::pathwaydb[["msigdb"]][["COLLECTION"]][[c]])) {
         if (c == "C5" & subcat != "HPO") {
           enr <- oncoEnrichR:::get_go_enrichment(
             query_entrezgene,
@@ -591,9 +600,9 @@ onco_enrich <- function(query,
                 onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
               p_value_adjustment_method =
                 onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-              TERM2GENE = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2GENE,
-              TERM2NAME = oncoEnrichR::msigdb$COLLECTION[[c]][[subcat]]$TERM2NAME,
-              TERM2SOURCE = oncoEnrichR::msigdb$TERM2SOURCE,
+              TERM2GENE = oncoEnrichR::pathwaydb[['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2GENE,
+              TERM2NAME = oncoEnrichR::pathwaydb[['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2NAME,
+              TERM2SOURCE = oncoEnrichR::pathwaydb[['msigdb']]$TERM2SOURCE,
               dbsource = db)
             if (!is.null(enr)) {
               onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
@@ -665,7 +674,7 @@ onco_enrich <- function(query,
       oncoEnrichR:::annotate_protein_complex(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
-        corum_db = oncoEnrichR::corumdb,
+        corum_db = oncoEnrichR::genedb[['corum_xref']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     #}
   }
@@ -685,7 +694,7 @@ onco_enrich <- function(query,
         query_symbol,
         minimum_confidence = min_subcellcomp_confidence,
         genedb = oncoEnrichR::genedb[['all']],
-        comppidb = oncoEnrichR::subcellcomp$comppidb)
+        comppidb = oncoEnrichR::subcelldb[['comppidb']])
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
        subcellcomp_annotations[["all"]]

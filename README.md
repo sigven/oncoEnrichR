@@ -16,24 +16,27 @@
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **target set** below) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
+The package is intended for exploratory analysis and prioritization of a gene list (referred to as **query set** below) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
 
-  * Which diseases/tumor types are associated with genes in the target set?
-  * Which proteins in the target sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the target set, what is their likelihood of being druggable?
-  * Which protein complexes are relevant for proteins in the target set?
-  * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the target set?
-  * Are specific tissues or cell types enriched in the target set, considering tissue/cell-type specific expression patterns of target genes?
-  * Which protein-protein interactions are known within the target set? Are there interactions between members of the target set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
-  * Are there specific pathways, biological processes or molecular functions that are enriched within the target set, as compared to a reference/background set?
-  * Which members of the target set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
-  * Which members of the target set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
-  * Which members of the target set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
-  * Which members of the target set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
+  * Which diseases/tumor types are associated with genes in the query set, and to what extent?
+  * Which proteins in the query sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the query set, what is their likelihood of being druggable?
+  * Which protein complexes are relevant for proteins in the query set?
+  * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the query set?
+  * Are specific tissues or cell types enriched in the query set, considering tissue/cell-type specific expression patterns of target genes?
+  * Which protein-protein interactions are known within the query set? Are there interactions between members of the query set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
+  * Are there specific pathways, biological processes or molecular functions that are enriched within the query set, as compared to a reference/background set?
+  * Which members of the query set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
+  * Which members of the query set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
+  * Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
+  * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* March 31st 2021: **0.9.2 release**
+  * Added more protein identifier types (RefSeq peptide accession, Ensembl protein accession)
+  * Updated KEGG pathway database (2021-03-29)
 * March 24th 2021: **0.9.1 release**
   * Revised Disease Association section
-    * Genes in target set ranked according to overall cancer association strength
+    * Genes in query set ranked according to overall cancer association strength
     * Heatmap with tumor-type specific associations pr. gene
   * Updated datasets: MSigDB (v7.3)
 * March 21st 2021: **0.9.0 release**
@@ -125,13 +128,13 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	Argument      |Description
 	  ------------- |----------------
 	  ```query```     |     character vector with gene/query identifiers
-	  ```query_id_type```     |     character indicating type of identifier used for query set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_id_", "_refseq_mrna_", or "_ensembl_transcript_id_")
+	  ```query_id_type```     |     character indicating type of identifier used for query set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_", "_refseq_mrna_", "_refseq_protein_", "_ensembl_protein_", or "_ensembl_mrna_")
 	  ```ignore_id_err```     |     logical indicating if analysis should continue when erroneous/unmatched query identifiers are encountered in query or background gene set
 	  ```project_title```     |     project title (report title)
 	  ```project_owner```     |     project owner (e.g. lab/PI)
 	  ```project_description```     |     brief description of project, how target list was derived
 	  ```bgset```     |     character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-	  ```bgset_id_type```     |     character indicating type of identifier used for background set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_id_", "_refseq_mrna_", or "_ensembl_transcript_id_")
+	  ```bgset_id_type```     |     character indicating type of identifier used for background set (one of "_uniprot_acc_", "_symbol_", "_entrezgene_", "_ensembl_gene_", "_refseq_mrna_", "_refseq_protein_", "_ensembl_protein_", or "_ensembl_mrna_")
 	  ```bgset_description```     |     character with description of background gene set (e.g. 'All lipid-binding proteins (n = 200)')
 	  ```p_value_cutoff_enrichment```     |     cutoff p-value for enrichment/over-representation analysis
 	  ```p_value_adjustment_method```     |     one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
@@ -152,7 +155,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens and associated target priority scores (Project Score)
-	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in target set
+	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in query set
 	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival
 	  ```show_complex```     |     logical indicating if report should show membership of target proteins in known protein complexes (CORUM)
 

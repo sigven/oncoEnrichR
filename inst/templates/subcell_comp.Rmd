@@ -46,7 +46,7 @@ gganatogram::gganatogram(data = onc_enrich_report[['data']][['subcellcomp']][['a
 
 suppressPackageStartupMessages(library(gganatogram))
 ggpubr::ggarrange(plotlist = 
-                    oncoEnrichR::subcellcomp$gganatogram_legend[1:24], 
+                    oncoEnrichR::subcelldb$gganatogram_legend[1:24], 
                   ncol = 4, nrow = 6)
 
 ```

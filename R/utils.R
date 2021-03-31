@@ -3,25 +3,33 @@ validate_query_genes <- function(qgenes,
                                qtype = "target",
                                ignore_id_err = F,
                                genedb = NULL,
-                               ensembl_trans_xref = NULL,
-                               refseq_xref = NULL,
+                               ensembl_mrna_xref = NULL,
+                               refseq_mrna_xref = NULL,
+                               refseq_protein_xref = NULL,
+                               ensembl_protein_xref = NULL,
                                uniprot_xref = NULL){
 
   stopifnot(q_id_type == "symbol" |
               q_id_type == "entrezgene" |
-              q_id_type == "ensembl_transcript_id" |
+              q_id_type == "ensembl_mrna" |
+              q_id_type == "ensembl_protein" |
+              q_id_type == "refseq_protein" |
               q_id_type == "refseq_mrna" |
               q_id_type == "uniprot_acc" |
-              q_id_type == "ensembl_gene_id")
+              q_id_type == "ensembl_gene")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(uniprot_xref))
-  stopifnot(!is.null(refseq_xref))
-  stopifnot(!is.null(ensembl_trans_xref))
+  stopifnot(!is.null(refseq_mrna_xref))
+  stopifnot(!is.null(ensembl_mrna_xref))
+  stopifnot(!is.null(refseq_protein_xref))
+  stopifnot(!is.null(ensembl_protein_xref))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   oncoEnrichR:::validate_db_df(uniprot_xref, dbtype = "uniprot_xref")
-  oncoEnrichR:::validate_db_df(refseq_xref, dbtype = "refseq_xref")
-  oncoEnrichR:::validate_db_df(ensembl_trans_xref, dbtype = "ensembl_trans_xref")
+  oncoEnrichR:::validate_db_df(refseq_mrna_xref, dbtype = "refseq_mrna_xref")
+  oncoEnrichR:::validate_db_df(ensembl_mrna_xref, dbtype = "ensembl_mrna_xref")
+  oncoEnrichR:::validate_db_df(refseq_protein_xref, dbtype = "refseq_protein_xref")
+  oncoEnrichR:::validate_db_df(ensembl_protein_xref, dbtype = "ensembl_protein_xref")
 
 
   target_genes <- data.frame('qid' = unique(qgenes), stringsAsFactors = F)
@@ -69,7 +77,7 @@ validate_query_genes <- function(qgenes,
   }
   if(q_id_type == 'refseq_mrna'){
     target_genes <- as.data.frame(target_genes %>%
-      dplyr::left_join(refseq_xref,
+      dplyr::left_join(refseq_mrna_xref,
                        by = c("qid" = "refseq_mrna")) %>%
       dplyr::mutate(refseq_mrna = qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
@@ -83,9 +91,9 @@ validate_query_genes <- function(qgenes,
                        .groups = "drop")
     )
   }
-  if(q_id_type == 'ensembl_transcript_id'){
+  if(q_id_type == 'ensembl_mrna'){
     target_genes <- as.data.frame(target_genes %>%
-      dplyr::left_join(ensembl_trans_xref,
+      dplyr::left_join(ensembl_mrna_xref,
                        by = c("qid" = "ensembl_transcript_id")) %>%
       dplyr::mutate(ensembl_transcript_id = qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
@@ -99,7 +107,45 @@ validate_query_genes <- function(qgenes,
                        .groups = "drop")
     )
   }
-  if(q_id_type == 'ensembl_gene_id'){
+
+  if(q_id_type == 'refseq_protein'){
+    target_genes <- as.data.frame(
+      target_genes %>%
+        dplyr::left_join(refseq_protein_xref,
+                         by = c("qid" = "refseq_peptide")) %>%
+        dplyr::mutate(refseq_peptide = qid) %>%
+        dplyr::left_join(gdb, by = c("symbol")) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(symbol, entrezgene,
+                        ensembl_gene_id,
+                        name) %>%
+        dplyr::summarise(refseq_peptide =
+                           paste(refseq_peptide, collapse=","),
+                         qid = paste(qid, collapse=","),
+                         .groups = "drop")
+    )
+  }
+
+  if(q_id_type == 'ensembl_protein'){
+    target_genes <- as.data.frame(
+      target_genes %>%
+        dplyr::left_join(ensembl_protein_xref,
+                         by = c("qid" = "ensembl_protein_id")) %>%
+        dplyr::mutate(ensembl_protein_id = qid) %>%
+        dplyr::left_join(gdb, by = c("symbol")) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(symbol, entrezgene,
+                        ensembl_gene_id,
+                        name) %>%
+        dplyr::summarise(ensembl_protein_id =
+                           paste(ensembl_protein_id, collapse=","),
+                         qid = paste(qid, collapse=","),
+                         .groups = "drop")
+    )
+  }
+
+
+  if(q_id_type == 'ensembl_gene'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "ensembl_gene_id")) %>%
       dplyr::mutate(ensembl_gene_id = qid) %>%
@@ -314,8 +360,10 @@ validate_db_df <- function(df, dbtype = "genedb"){
   dbtypes <- c("genedb",
                "corum",
                "uniprot_xref",
-               "refseq_xref",
-               "ensembl_trans_xref",
+               "refseq_mrna_xref",
+               "ensembl_mrna_xref",
+               "refseq_protein_xref",
+               "ensembl_protein_xref",
                "comppidb",
                "ppi_nodes",
                "fitness_scores",
@@ -363,11 +411,17 @@ validate_db_df <- function(df, dbtype = "genedb"){
   if(dbtype == "uniprot_xref"){
     cols <- c('symbol','uniprot_acc')
   }
-  if(dbtype == "refseq_xref"){
+  if(dbtype == "refseq_mrna_xref"){
     cols <- c('symbol','refseq_mrna')
   }
-  if(dbtype == "ensembl_trans_xref"){
+  if(dbtype == "ensembl_mrna_xref"){
     cols <- c('symbol','ensembl_transcript_id')
+  }
+  if(dbtype == "ensembl_protein_xref"){
+    cols <- c('symbol','ensembl_protein_id')
+  }
+  if(dbtype == "refseq_protein_xref"){
+    cols <- c('symbol','refseq_peptide')
   }
 
   if(dbtype == "target_priority_scores"){

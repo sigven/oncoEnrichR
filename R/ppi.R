@@ -171,7 +171,7 @@ get_ppi_network <- function(qgenes,
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
-  rlogging::message("STRINGdb: retrieving protein-protein interaction network from (v11)")
+  rlogging::message("STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
   rlogging::message(paste0("STRINGdb: Settings -  required_score = ",
                            settings$minimum_score,", add_nodes = ",settings$add_nodes))
 

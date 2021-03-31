@@ -204,7 +204,7 @@ target_disease_associations <-
 
   ttype_rank_df <- dplyr::select(target_genes, symbol) %>%
     dplyr::left_join(
-      dplyr::select(otdb$site_rank, primary_site,
+      dplyr::select(oncoEnrichR::otdb$site_rank, primary_site,
                     symbol, tissue_assoc_rank),
       by = "symbol"
     )
