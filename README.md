@@ -63,7 +63,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4635206.svg)](https://doi.org/10.5281/zenodo.4635206)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4650367.svg)](https://doi.org/10.5281/zenodo.4650367)
 
 
 ### Getting started
@@ -180,7 +180,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4635206).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4650367).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
