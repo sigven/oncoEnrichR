@@ -147,16 +147,16 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
 	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-	  ```show_disease```     |     logical indicating if report should contain disease associations (association score >= 0.4, Open Targets Platform)
-	  ```show_top_diseases_only```| logical indicating if report should only show top (20) disease associations from Open Targets Platform
-	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability data for all query entries, from Open Targets Platform)
-	  ```show_enrichment```     |     logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath etc.)
-	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-	  ```show_tcga_coexpression```     |     logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
+	  ```show_disease```     |     logical indicating if report should contain ranked associations to cancer phenotypes (overall), as well as tumor-type specific rankings (association score >= 0.4, minimum number of sources contributing to association >= 2, (Open Targets Platform))
+	  ```show_top_diseases_only```| logical indicating if report should only show top (20) cancer phenotypes/disease associations from Open Targets Platform
+	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability/druggability data for all query entries, from Open Targets Platform)
+	  ```show_enrichment```     |     logical indicating if report should perform and list functional enrichment/over-representation analysis of query set (MSigDB, GO, KEGG, REACTOME, WikiPathways, NetPath)
+	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions, SNVs/InDels (oncoplots))
+	  ```show_tcga_coexpression```     |     logical indicating if report should list oncogenes/tumor suppressor genes that significantly correlate with entries in query set in terms of expression (across TCGA cohorts)
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens and associated target priority scores (Project Score)
 	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in query set
-	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival
+	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival (Human Protein Atlas - Pathology Atlas)
 	  ```show_complex```     |     logical indicating if report should show membership of target proteins in known protein complexes (CORUM)
 
 
