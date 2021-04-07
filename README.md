@@ -145,7 +145,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis (recommended)
 	  ```ppi_add_nodes```     |     number of neighbouring nodes to add to query set when computing the protein-protein interaction network (STRING)
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
-	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data (STRING)
+	  ```show_ppi```     |     logical indicating if report should contain protein-protein interaction data of query set and their closely interacting partners (STRING), local network communities, and rank of query set based on network centrality
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain ranked associations to cancer phenotypes (overall), as well as tumor-type specific rankings (association score >= 0.4, minimum number of sources contributing to association >= 2, (Open Targets Platform))
 	  ```show_top_diseases_only```| logical indicating if report should only show top (20) cancer phenotypes/disease associations from Open Targets Platform
