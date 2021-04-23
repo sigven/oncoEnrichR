@@ -58,8 +58,11 @@ plotly::ggplotly(p)
 
 
 ```{r crispr_missing_plot, echo=F, results = 'asis', eval = missing_crispr_data}
-cat('<i>No genes in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score</i>',sep='\n')
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
+
 ```
 
 <br><br><br>
@@ -101,8 +104,9 @@ DT::datatable(
 
 ```{r crispr_missing_data, echo=F, results = 'asis', eval = missing_crispr_data}
 
-cat('<i>No genes in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score</i>', sep='\n')
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+cat('<br><br>')
 
 ```
 
@@ -167,8 +171,10 @@ target_priority_fig
 
 
 ```{r crispr_missing_priority, echo=F, results = 'asis', eval = missing_priority_data}
-cat('<i>No genes in the query set nominated as prioritized targets in Project Score</i>',sep='\n')
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set nominated as prioritized targets in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
+
 ```
 
 

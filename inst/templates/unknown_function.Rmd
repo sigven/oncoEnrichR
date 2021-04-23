@@ -7,7 +7,7 @@
    2. Missing or limited (<= 2) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) and biological process (BP)
       * Ontology annotations attributed with an [electronic annotation evidence code (IEA)](http://geneontology.org/docs/guide-go-evidence-codes/) are not considered in this calculation (less reliable due to lack of manually review)
       
-* Target genes found within the set of poorly characterized genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
+* Query genes found within the set of poorly characterized genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
    
 <br><br>
 

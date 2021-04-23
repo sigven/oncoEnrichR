@@ -24,7 +24,6 @@ tcga_oncoplot_genes <-
 
   top_mutated_genes <- oncoEnrichR::tcgadb[['aberration']] %>%
     dplyr::filter(variant_type == "snv_indel" &
-                  genomic_strata == "gene" &
                     primary_site == site) %>%
     dplyr::filter(clinical_strata == cstrata) %>%
     dplyr::inner_join(dplyr::select(query_genes_df, symbol),
@@ -103,24 +102,19 @@ tcga_aberration_matrix <- function(qgenes,
     init <- data.frame('primary_site' <- tcga_ttypes,
                        'primary_diagnosis_very_simplified' = NA,
                        'symbol' = sort(unique(tcga_gene_stats$symbol))[i],
-                       'genomic_strata' = 'gene',
                        'clinical_strata' = cstrata,
                        'percent_mutated' = 0,
                        'percentile' = 0,
                        'variant_type' = vtype,
-                       'consensus_calls' = F,
-                       'fp_driver_gene' = as.logical(NA),
-                       decile = 0, stringsAsFactors = F)
+                       'decile' = 0,
+                       stringsAsFactors = F)
     colnames(init) <- c('primary_site',
                         'primary_diagnosis_very_simplified',
                         'symbol',
-                        'genomic_strata',
                         'clinical_strata',
                         'percent_mutated',
                         'percentile',
                         'variant_type',
-                        'consensus_calls',
-                        'fp_driver_gene',
                         'decile')
     gene_candidates_init <- rbind(gene_candidates_init, init)
     i <- i + 1
@@ -262,12 +256,32 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
   }
 
   coexp_target_1 <- oncoEnrichR::tcgadb[['co_expression']] %>%
+    dplyr::mutate(corrtype = dplyr::if_else(
+      r < 0,
+      "Negative",
+      as.character("Positive"))) %>%
+    dplyr::mutate(correlation = dplyr::case_when(
+      r < -0.6 & r >= -0.8 ~"Strong negative",
+      r < -0.8 ~ "Very strong negative",
+      r >= 0.6 & r < 0.8 ~"Strong positive",
+      r >= 0.8 ~ "Very strong positive",
+      TRUE ~ as.character(NA))) %>%
     dplyr::select(symbol, symbol_partner,
                   corrtype, correlation, r, p_value, tumor) %>%
     dplyr::left_join(query_genes_df, by = c("symbol" = "symbol")) %>%
     dplyr::filter(!is.na(entrezgene))
 
   coexp_target_tcga <- oncoEnrichR::tcgadb[['co_expression']] %>%
+    dplyr::mutate(corrtype = dplyr::if_else(
+      r < 0,
+      "Negative",
+      as.character("Positive"))) %>%
+    dplyr::mutate(correlation = dplyr::case_when(
+      r < -0.6 & r >= -0.8 ~"Strong negative",
+      r < -0.8 ~ "Very strong negative",
+      r >= 0.6 & r < 0.8 ~"Strong positive",
+      r >= 0.8 ~ "Very strong positive",
+      TRUE ~ as.character(NA))) %>%
     dplyr::select(symbol, symbol_partner,
                   corrtype, correlation, r, p_value, tumor) %>%
     dplyr::left_join(query_genes_df, by = c("symbol_partner" = "symbol")) %>%

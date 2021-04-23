@@ -12,6 +12,7 @@
        * All unique subcellular compartment annotations (unfiltered) and their target members ("By Compartment")
        * Subcellular compartment annotations per gene are provided with a __confidence level__ - indicating the number of different sources that support the compartment annotation
           * Minimum confidence level set by user: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
+          * Ignore cytosol as a subcellular location: __`r !onc_enrich_report$config$subcellcomp$show_cytosol`__
 
 <br><br>
 
@@ -22,23 +23,75 @@
 ##### Heatmap - query set
 <br>
 
-* In the image below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
+* In the heatmap below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
 <br><br>
 
-```{r gganatogram_plot, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 5}
+```{r gganatogram_plot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0, fig.width = 10, fig.height = 5}
 
 suppressPackageStartupMessages(library(gganatogram))
-gganatogram::gganatogram(data = onc_enrich_report[['data']][['subcellcomp']][['anatogram']],
+
+subcellcomp_geneset_density <- 
+  onc_enrich_report[['data']][['subcellcomp']][['anatogram']]
+
+if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
+  subcellcomp_geneset_density <- 
+    subcellcomp_geneset_density %>%
+    dplyr::filter(organ != "cytosol")
+}
+
+gganatogram::gganatogram(data = subcellcomp_geneset_density,
                          outline = T,
                          fillOutline = 'lightgray',
                          organism = 'cell',
                          fill = 'value') +
   ggplot2::theme_void() +
   ggplot2::coord_fixed() +
-  ggplot2::scale_fill_viridis_c()
+  ggplot2::scale_fill_gradient(low ="#FFEDA0", high = "#800026")
+  #ggplot2::scale_fill_viridis_c()
 
 ```
 <br><br>
+
+```{r subcellcomp_density_barplot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0}
+
+plot_data <- onc_enrich_report[['data']][['subcellcomp']][['anatogram']] %>%
+  dplyr::arrange(value)
+plot_data$organ <- factor(plot_data$organ, levels = plot_data$organ)
+plot_data$toDownlight <- "NO"
+
+if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
+  plot_data <- plot_data %>%
+    dplyr::mutate(toDownlight = dplyr::if_else(
+      organ == "cytosol",
+      as.character("YES"),
+      as.character(toDownlight)
+    ))
+}
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = organ, y = value, fill = toDownlight) ) +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::ylab("Percent of query gene set") +
+  ggplot2::scale_fill_manual(
+    values = c("YES"="gray", "NO"="BLACK" ), guide = FALSE ) +
+  ggplot2::xlab("") +
+  ggplot2::ylim(0,100) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    legend.position = "none",
+    axis.text.x = ggplot2::element_text(size = 11, vjust = 0.5),
+    legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 11),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = 11)
+  )
+
+plotly::ggplotly(p, width = 600, height = 600)
+
+```
+
 
 ##### Legend - subcellular structures
 <br>
@@ -56,7 +109,7 @@ ggpubr::ggarrange(plotlist =
 
 ##### By Gene
 
-```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = T}
+```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['all']]) > 0}
 library(crosstalk)
 
 
@@ -95,7 +148,7 @@ DT::datatable(subcell_comp_all, escape = F,
 
 <br>
 
-```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = T}
+```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['grouped']]) > 0}
 library(crosstalk)
 
 htmltools::br()

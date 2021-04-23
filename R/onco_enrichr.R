@@ -1,4 +1,41 @@
 
+#' Function that initiates oncoEnrichR report structure
+#'
+#' @param project_title project title (title of report)
+#' @param project_owner name of project owner
+#' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
+#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
+#' @param project_description project background information
+#' @param ppi_min_string_score minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
+#' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
+#' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
+#' @param bgset_id_type character indicating source of query (one of "uniprot_acc", "symbol",
+#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' @param p_value_cutoff_enrichment cutoff p-value for enrichment/over-representation analysis
+#' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
+#' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
+#' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
+#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
+#' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
+#' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
+#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
+#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
+#' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
+#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
+#' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
+#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
+#' @param show_tissue_cell logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
+#' of target genes, using data from the Human Protein Atlas
+#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
+#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed
+#' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
+#' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (CORUM)
+#' @export
+
 init_report <- function(project_title = "Project title",
                         project_owner = "Project owner",
                         query_id_type = "symbol",
@@ -8,12 +45,14 @@ init_report <- function(project_title = "Project title",
                         ppi_add_nodes = 50,
                         bgset_description =
                           "All annotated protein-coding genes",
+                        bgset_id_type = "symbol",
                         p_value_cutoff_enrichment = 0.05,
                         p_value_adjustment_method = "BH",
                         q_value_cutoff_enrichment = 0.2,
                         min_geneset_size = 10,
                         max_geneset_size = 500,
                         min_subcellcomp_confidence = 1,
+                        subcellcomp_show_cytosol = F,
                         simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
@@ -25,7 +64,7 @@ init_report <- function(project_title = "Project title",
                         show_tcga_coexpression = T,
                         show_subcell_comp = T,
                         show_crispr_lof = T,
-                        show_cell_tissue = T,
+                        show_cell_tissue = F,
                         show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
                         show_complex = T) {
@@ -68,21 +107,17 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["project_description"]] <- project_description
   rep[["config"]][["project_owner"]] <- project_owner
 
-
   ## config - query (id type and option to ignore errors)
   rep[["config"]][["query"]] <- list()
   rep[["config"]][["query"]][["id_type"]] <- query_id_type
   rep[["config"]][["query"]][["ignore_err"]] <- ignore_id_err
 
+  rep[["config"]][["bgset"]] <- list()
+  rep[["config"]][["bgset"]][["id_type"]] <- bgset_id_type
+
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
-  # rep[["config"]][["disease"]][["breaks"]] <-
-  #   c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
-  # rep[["config"]][["disease"]][["colors"]] <-
-  #   c("#b8b8ba","#EFF3FF","#C6DBEF",
-  #     "#9ECAE1","#6BAED6","#4292C6",
-  #     "#2171B5","#084594")
   rep[["config"]][["disease"]][["breaks"]] <-
      c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
   rep[["config"]][["disease"]][["colors"]] <-
@@ -183,6 +218,8 @@ init_report <- function(project_title = "Project title",
   rep[['config']][['subcellcomp']] <- list()
   rep[['config']][['subcellcomp']][['minimum_confidence']] <-
     min_subcellcomp_confidence
+  rep[['config']][['subcellcomp']][['show_cytosol']] <-
+    subcellcomp_show_cytosol
 
 
 
@@ -246,6 +283,7 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["disease"]][["ttype_matrix"]] <- matrix()
 
   ## protein-protein interactions
+  rep[["data"]][["ppi"]][["source"]] <- "STRING"
   rep[["data"]][["ppi"]][["complete_network"]] <- NULL
   rep[["data"]][["ppi"]][["hubscores"]] <- data.frame()
   rep[["data"]][["ppi"]][["community_network"]] <- NULL
@@ -282,6 +320,7 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["subcellcomp"]][["anatogram"]] <- data.frame()
 
   ## TCGA aberrations
+  rep[["data"]][["tcga"]][["recurrent_variants"]] <- data.frame()
   rep[["data"]][["tcga"]][["aberration"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["table"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["matrix"]] <- list()
@@ -330,6 +369,7 @@ init_report <- function(project_title = "Project title",
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
+#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -364,6 +404,7 @@ onco_enrich <- function(query,
                    min_geneset_size = 10,
                    max_geneset_size = 500,
                    min_subcellcomp_confidence = 1,
+                   subcellcomp_show_cytosol = FALSE,
                    simplify_go = TRUE,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
@@ -375,7 +416,7 @@ onco_enrich <- function(query,
                    show_enrichment = TRUE,
                    show_tcga_aberration = TRUE,
                    show_tcga_coexpression = TRUE,
-                   show_cell_tissue = TRUE,
+                   show_cell_tissue = FALSE,
                    show_unknown_function = TRUE,
                    show_prognostic_cancer_assoc = TRUE,
                    show_subcell_comp = TRUE,
@@ -450,6 +491,7 @@ onco_enrich <- function(query,
     show_crispr_lof = show_crispr_lof,
     min_geneset_size = min_geneset_size,
     max_geneset_size = max_geneset_size,
+    subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     min_subcellcomp_confidence = min_subcellcomp_confidence,
     simplify_go = simplify_go,
     show_complex = show_complex,
@@ -693,6 +735,7 @@ onco_enrich <- function(query,
       oncoEnrichR:::annotate_subcellular_compartments(
         query_symbol,
         minimum_confidence = min_subcellcomp_confidence,
+        show_cytosol = subcellcomp_show_cytosol,
         genedb = oncoEnrichR::genedb[['all']],
         comppidb = oncoEnrichR::subcelldb[['comppidb']])
 
@@ -742,6 +785,84 @@ onco_enrich <- function(query,
           qsource = "entrezgene",
           genedb = oncoEnrichR::genedb[['all']],
           vtype = v)
+    }
+
+    onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
+      oncoEnrichR::tcgadb[["recurrent_variants"]] %>%
+      dplyr::inner_join(
+        dplyr::select(qgenes_match$found, symbol),
+        by = c("SYMBOL" = "symbol")) %>%
+      dplyr::distinct()
+
+    if(nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0){
+      cosmic_variants <-
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
+        dplyr::select(VAR_ID, COSMIC_MUTATION_ID) %>%
+        dplyr::filter(!is.na(COSMIC_MUTATION_ID)) %>%
+        dplyr::distinct()
+
+      if(nrow(cosmic_variants) > 0){
+
+        cosmic_variants <- as.data.frame(
+          cosmic_variants %>%
+          tidyr::separate_rows(COSMIC_MUTATION_ID, sep="&") %>%
+          dplyr::mutate(
+            COSMIC_MUTATION_ID = paste0(
+              "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
+              COSMIC_MUTATION_ID,"\" target='_blank'>",
+              COSMIC_MUTATION_ID,"</a>"
+            )) %>%
+          dplyr::group_by(VAR_ID) %>%
+          dplyr::summarise(
+            COSMIC_MUTATION_ID =
+              paste(
+                COSMIC_MUTATION_ID, collapse=", "
+              ),
+            .groups = "drop")
+        )
+
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
+          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
+          dplyr::select(-COSMIC_MUTATION_ID) %>%
+          dplyr::left_join(cosmic_variants,
+                           by = c("VAR_ID"))
+      }
+
+      onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
+        dplyr::left_join(oncoEnrichR::pfam_domains, by = "PFAM_ID") %>%
+        dplyr::mutate(
+          PROTEIN_DOMAIN = dplyr::if_else(
+            !is.na(PFAM_ID),
+            paste0(
+            "<a href=\"http://pfam.xfam.org/family/",PFAM_ID,
+            "\" target='_blank'>",
+            PFAM_DOMAIN_NAME,
+            "</a>"),
+            as.character(NA)
+          )
+        ) %>%
+        dplyr::select(-c(PFAM_DOMAIN_NAME,PFAM_ID)) %>%
+        dplyr::left_join(dplyr::select(oncoEnrichR::genedb[['all']],
+                                       symbol, ensembl_gene_id),
+                         by = c("SYMBOL" = "symbol")) %>%
+        dplyr::rename(ENSEMBL_GENE_ID = ensembl_gene_id) %>%
+        dplyr::mutate(ENSEMBL_TRANSCRIPT_ID =
+                        paste0("<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
+                               ENSEMBL_GENE_ID,
+                               ";t=",
+                               ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
+                               ENSEMBL_TRANSCRIPT_ID,"</a>")) %>%
+        dplyr::select(-VAR_ID) %>%
+        dplyr::select(SYMBOL,
+                      CONSEQUENCE,
+                      PROTEIN_CHANGE,
+                      MUTATION_HOTSPOT,
+                      PROTEIN_DOMAIN,
+                      LOSS_OF_FUNCTION,
+                      ENSEMBL_GENE_ID,
+                      ENSEMBL_TRANSCRIPT_ID,
+                      dplyr::everything())
     }
 
     for(psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])){

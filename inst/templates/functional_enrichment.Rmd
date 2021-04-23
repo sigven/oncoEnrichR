@@ -40,6 +40,10 @@ for(type in c('go','msigdb','wikipathway','kegg','netpath')){
 
 #### Gene Ontology
 
+<br><br>
+
+
+
 ```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
 library(crosstalk)
 
@@ -56,7 +60,8 @@ enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
                 Max_Geneset_Size = setting_max_geneset_size) %>%
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
 
 
 terms_go <- crosstalk::SharedData$new(enrichment_go_display)
@@ -80,6 +85,66 @@ DT::datatable(terms_go, escape = F,
 
 ```
 
+<br><br>
+
+```{r go_enrichment_barplot, echo = F, results = "asis", eval = show_enrichment_filters[['go']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::arrange(qvalue) %>%
+  head(20) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biologial Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 11, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = 11)
+  )
+
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+p1 <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+p1
+
+```
+
+
+
 ```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
@@ -92,6 +157,8 @@ cat('<br><br>')
 <br><br><br>
 
 #### Molecular Signatures Database (MSigDB)
+
+<br><br>
 
 ```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
 library(crosstalk)
@@ -108,7 +175,8 @@ enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigd
                 Max_Geneset_Size = setting_max_geneset_size) %>%
   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
 
 terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
 
@@ -145,6 +213,8 @@ cat('<br><br>')
 
 #### KEGG
 
+<br><br>
+
 ```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['kegg']]}
 library(crosstalk)
 
@@ -165,7 +235,8 @@ enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg'
                 Max_Geneset_Size = setting_max_geneset_size) %>%
   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size)
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
 
 terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
 
@@ -198,6 +269,9 @@ cat('<br><br>')
 
 #### WikiPathways
 
+<br><br>
+
+
 ```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathway']]}
 library(crosstalk)
 
@@ -218,7 +292,8 @@ enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikip
                 Background_Ratio, Gene_Ratio, Count, 
                 P_Value_Cutoff, Q_Value_Cutoff,
                 P_Value_Adj_Method, 
-                Min_Geneset_Size, Max_Geneset_Size)
+                Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
 
 
 terms_wikipathway <- crosstalk::SharedData$new(enrichment_wikidb_display)
@@ -253,6 +328,8 @@ cat('<br><br>')
 
 #### NetPath
 
+<br><br>
+
 ```{r table_browse_netpathdb, echo=F, results = "asis", eval = show_enrichment_filters[['netpath']]}
 library(crosstalk)
 
@@ -273,7 +350,8 @@ enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netp
                 Background_Ratio, Gene_Ratio, Count, 
                 P_Value_Cutoff, Q_Value_Cutoff,
                 P_Value_Adj_Method, 
-                Min_Geneset_Size, Max_Geneset_Size)
+                Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
 
 terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)
 

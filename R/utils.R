@@ -426,6 +426,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
 
   if(dbtype == "target_priority_scores"){
     cols <- c('symbol',
+              'gene_id',
               'priority_score',
               'tumor_type')
   }
@@ -433,25 +434,23 @@ validate_db_df <- function(df, dbtype = "genedb"){
   if(dbtype == "fitness_scores"){
     cols <- c('symbol','model_name',
               'loss_of_fitness','model_id',
-              'model_link_cmp','synonyms',
               'model_type','tissue',
-              'cancer_type','cancer_type_detail',
-              'sample_site','gender',
-              'ethnicity','symbol_link_ps',
+              'entrezgene',
+              'sample_site',
               'gene_id_project_score')
   }
 
   if(dbtype == "comppidb"){
-    cols <- c('symbol','entrezgene',
-              'uniprot_acc',
-              'go_id','go_term',
-              'go_ontology',
+    cols <- c('symbol',
+              'go_id',
+              'go_term',
               'annotation_source',
               'annotation_type')
   }
 
   if(dbtype == "ppi_nodes"){
-    cols <- c('symbol','entrezgene',
+    cols <- c('symbol',
+              'entrezgene',
               'genename',
               'name',
               'gencode_gene_biotype',
@@ -577,7 +576,7 @@ add_excel_sheet <- function(
       if(NROW(report$data$unknown_function$hits_df) > 0){
         target_df <- report$data$unknown_function$hits_df %>%
           dplyr::mutate(
-            annotation_source = "GO (MsigDB 7.2)/NCBI Gene/UniProt (2021_01)",
+            annotation_source = "GO (MsigDB 7.4)/NCBI Gene/UniProt (2021_02)",
             version = NA) %>%
           dplyr::select(annotation_source, version,
                         dplyr::everything()) %>%
@@ -674,7 +673,7 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$comppi$name,
             version = report$config$resources$comppi$version) %>%
-          dplyr::select(-c(colour, ggcompartment)) %>%
+          dplyr::select(-c(ggcompartment)) %>%
           dplyr::select(annotation_source, version,
                         dplyr::everything()) %>%
           dplyr::mutate(

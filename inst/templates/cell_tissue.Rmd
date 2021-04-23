@@ -24,7 +24,7 @@
 <br><br>
 
 
-```{r tissue_category_dist, echo = F, eval = NROW(onc_enrich_report[['data']][['cell_tissue']][['tissue_overview']][['category_df']]) > 0, fig.height = 6, fig.width = 14}
+```{r tissue_category_dist, echo = F, eval = NROW(onc_enrich_report[['data']][['cell_tissue']][['tissue_overview']][['category_df']]) > 0}
 
 tissue_category_df <- 
   onc_enrich_report[['data']][['cell_tissue']][['tissue_overview']][['category_df']]
@@ -34,11 +34,6 @@ tissue_category_plot <-
                       position = ggplot2::position_dodge(0.8), width = 0.7) +
     ggsci::scale_color_locuszoom() +
     ggsci::scale_fill_locuszoom() +
-    ggplot2::geom_text(
-      ggplot2::aes(label = paste0("n: ",n), group = group),
-      position = ggplot2::position_dodge(0.8),
-      vjust = -0.6, size = 6
-    ) +
     ggplot2::ylab("Percent") +
     ggplot2::xlab("") +
     ggplot2::ylim(0,100) +
@@ -46,15 +41,18 @@ tissue_category_plot <-
     ggplot2::theme(
       legend.position = "top",
       legend.title = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 30, size = 18, vjust = 0.5),
-      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 18),
-      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 18),
-      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 18)
+      axis.text.x = ggplot2::element_text(angle = 30, size = 11, vjust = 0.5),
+      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 12),
+      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 12)
 
 
     )
 
-tissue_category_plot
+plotly::ggplotly(tissue_category_plot, height = 500, width = 900) %>%  
+  plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
+
 
 ```
 <br><br>
@@ -176,7 +174,8 @@ htmltools::br()
 <br><br>
 
 
-```{r cell_type_category_dist, echo = F, eval = NROW(onc_enrich_report[['data']][['cell_tissue']][['scRNA_overview']][['category_df']]) > 0, fig.height = 6, fig.width = 14}
+```{r cell_type_category_dist, echo = F, eval = NROW(onc_enrich_report[['data']][['cell_tissue']][['scRNA_overview']][['category_df']]) > 0}
+
 
 ctype_category_df <- 
   onc_enrich_report[['data']][['cell_tissue']][['scRNA_overview']][['category_df']]
@@ -186,11 +185,6 @@ ctype_category_plot <-
                       position = ggplot2::position_dodge(0.8), width = 0.7) +
     ggsci::scale_color_locuszoom() +
     ggsci::scale_fill_locuszoom() +
-    ggplot2::geom_text(
-      ggplot2::aes(label = paste0("n: ",n), group = group),
-      position = ggplot2::position_dodge(0.8),
-      vjust = -0.6, size = 6
-    ) +
     ggplot2::ylab("Percent") +
     ggplot2::xlab("") +
     ggplot2::ylim(0,100) +
@@ -198,15 +192,16 @@ ctype_category_plot <-
     ggplot2::theme(
       legend.position = "top",
       legend.title = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 30, size = 18, vjust = 0.5),
-      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 18),
-      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 18),
-      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 18)
-
-
+      axis.text.x = ggplot2::element_text(angle = 30, size = 11, vjust = 0.5),
+      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 12),
+      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 12)
     )
 
-ctype_category_plot
+plotly::ggplotly(ctype_category_plot, height = 500, width = 900) %>%  
+  plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
+
 
 ```
 <br><br>

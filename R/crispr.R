@@ -24,6 +24,15 @@ get_crispr_lof_scores <- function(qgenes,
 
     crispr_lof_hits <- as.data.frame(
       crispr_lof_hits %>%
+        dplyr::mutate(
+          model_link_cmp = paste0(
+            "<a href='https://cellmodelpassports.sanger.ac.uk/passports/",
+            model_id,"' target='_blank'>",
+            stringr::str_replace_all(model_name,"\\.","-"),"</a>")) %>%
+        dplyr::mutate(
+          symbol_link_ps = paste0(
+            "<a href='https://score.depmap.sanger.ac.uk/gene/",
+            gene_id_project_score,"' target='_blank'>",symbol,"</a>")) %>%
       dplyr::select(symbol, symbol_link_ps, model_name,
                     tissue, model_link_cmp) %>%
       dplyr::group_by(symbol, symbol_link_ps, tissue) %>%

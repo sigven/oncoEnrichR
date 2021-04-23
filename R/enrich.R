@@ -163,8 +163,8 @@ get_universal_enrichment <- function(query_entrez,
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(genedb) | !is.data.frame(genedb))
-  stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
-  stopifnot("standard_name" %in% colnames(TERM2SOURCE))
+  #stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
+  #stopifnot("standard_name" %in% colnames(TERM2SOURCE))
   stopifnot("symbol" %in% colnames(genedb) & "entrezgene" %in% colnames(genedb))
   if(is.null(background_entrez)){
     bg <- dplyr::select(genedb,entrezgene) %>%
@@ -189,24 +189,61 @@ get_universal_enrichment <- function(query_entrez,
   df <- as.data.frame(head(enr,5000))
   rownames(df) <- NULL
   if(nrow(df) > 0){
-    #cat(df$pvalue,df$qvalue,'\n')
-    #saveRDS(df,"df_tmp.rds")
-    #saveRDS(TERM2SOURCE,file="TERM2SOURCE.rds")
     df <- suppressWarnings(df %>%
       dplyr::rename(standard_name = ID,
                     description = Description,
                     count = Count,
                     gene_ratio = GeneRatio,
                     background_ratio = BgRatio,
-                    gene_id = geneID) %>%
-      dplyr::left_join(TERM2SOURCE,by="standard_name") %>%
-      dplyr::mutate(description_link =
-                      dplyr::if_else(!is.na(external_url),
-                                     paste0("<a href='",external_url,
-                                            "' target='_blank'>",
-                                            description,"</a>"),
-                                     description)) %>%
-        dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
+                    gene_id = geneID)
+    )
+
+    if (dbsource == "WikiPathways"){
+      df <- df %>%
+        dplyr::mutate(description_link = paste0(
+          "<a href=\"https://www.wikipathways.org/index.php/Pathway:",
+          standard_name,"\" target='_blank'>",
+          description,"</a>"
+        )) %>%
+        dplyr::mutate(exact_source = "https://wikipathways.org",
+                      db = dbsource)
+    }
+    else if(dbsource == "KEGG"){
+      df <- df %>%
+        dplyr::mutate(description_link = paste0(
+          "<a href=\"https://www.genome.jp/kegg-bin/show_pathway?",
+          stringr::str_replace(standard_name,"hsa","map"),"\" target='_blank'>",
+          description,"</a>"
+        )) %>%
+        dplyr::mutate(exact_source = "https://www.genome.jp/kegg/pathway.html",
+                      db = dbsource)
+    }
+    else if(dbsource == "NetPath"){
+      df <- df %>%
+        dplyr::mutate(description_link = paste0(
+          "<a href=\"http://netpath.org/pathways?path_id=",
+          standard_name,"\" target='_blank'>",
+          description,"</a>"
+        )) %>%
+        dplyr::mutate(exact_source = "http://netpath.org",
+                      db = dbsource)
+    }
+    else{
+      stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
+      stopifnot("standard_name" %in% colnames(TERM2SOURCE))
+      df <- df %>%
+        dplyr::left_join(TERM2SOURCE, by="standard_name") %>%
+        dplyr::mutate(description_link =
+                        dplyr::if_else(!is.na(external_url),
+                                       paste0("<a href='",external_url,
+                                              "' target='_blank'>",
+                                              description,"</a>"),
+                                       description))
+
+
+    }
+    df <- suppressWarnings(df %>%
+      dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
       dplyr::mutate(pvalue = as.numeric(pvalue)) %>%
       dplyr::mutate(
         qvalue =
@@ -231,8 +268,8 @@ get_universal_enrichment <- function(query_entrez,
           round(as.numeric((
             num_query_hits/num_query_all) /
               (num_background_hits/num_background_all)),digits = 1)) %>%
-        dplyr::select(-c(num_query_hits,num_query_all,
-                         num_background_hits,num_background_all)) %>%
+      dplyr::select(-c(num_query_hits,num_query_all,
+                       num_background_hits,num_background_all)) %>%
       dplyr::mutate(
         db = dplyr::if_else(is.na(db) &
                               nchar(dbsource) > 0,

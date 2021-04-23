@@ -77,7 +77,7 @@ cat('\n')
 
 <br><br>
 
-```{r target_ttype_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 0}
+```{r target_ttype_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2 & ncol(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2}
 
 ttype_matrix <- 
   onc_enrich_report[['data']][['disease']][['ttype_matrix']]
@@ -118,3 +118,11 @@ target_ttype_rank_fig
 
 ```
 
+```{r missing_ttype_ranked_associations, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) < 2 | ncol(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) < 2}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NOT SHOWN</b> - limited/few tumor-type specific associations found for genes in the query set.&nbsp;&nbsp;</span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+<br><br>

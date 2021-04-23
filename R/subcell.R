@@ -1,7 +1,7 @@
-#' @importFrom GSEABase GeneSet
-#'
+
 annotate_subcellular_compartments <- function(qgenes,
                                               minimum_confidence = 1,
+                                              show_cytosol = F,
                                               genedb = NULL,
                                               comppidb = NULL){
 
@@ -27,8 +27,13 @@ annotate_subcellular_compartments <- function(qgenes,
   if(nrow(target_compartments_all) > 0){
     target_compartments_all <- as.data.frame(
       target_compartments_all %>%
-      dplyr::select(-c(go_ontology,uniprot_acc)) %>%
-      dplyr::left_join(dplyr::select(genedb, symbol, genename),
+      #dplyr::select(-c(go_ontology,uniprot_acc)) %>%
+      dplyr::left_join(
+        oncoEnrichR::subcelldb[['go_gganatogram_map']],
+        by = "go_id") %>%
+      dplyr::left_join(
+        dplyr::select(genedb, symbol,
+                      entrezgene, genename),
                        by = c("symbol")) %>%
         dplyr::mutate(
           genelink =
@@ -43,8 +48,10 @@ annotate_subcellular_compartments <- function(qgenes,
     target_compartments[["grouped"]] <- as.data.frame(
       target_compartments_all %>%
         dplyr::group_by(go_id, go_term, compartment) %>%
-        dplyr::summarise(targets = paste(unique(symbol), collapse = ", "),
-                         targetlinks = paste(unique(genelink), collapse = ", "),
+        dplyr::summarise(targets = paste(unique(symbol),
+                                         collapse = ", "),
+                         targetlinks = paste(unique(genelink),
+                                             collapse = ", "),
                          n = dplyr::n()) %>%
         dplyr::arrange(desc(n)) %>%
         dplyr::ungroup() %>%
@@ -52,8 +59,10 @@ annotate_subcellular_compartments <- function(qgenes,
     )
 
     target_compartments[["all"]] <- target_compartments_all %>%
-      dplyr::select(-c(entrezgene, go_id, go_term, genelink)) %>%
-      dplyr::select(symbol, genename, compartment, dplyr::everything())
+      dplyr::select(-c(entrezgene, go_id,
+                       go_term, genelink)) %>%
+      dplyr::select(symbol, genename,
+                    compartment, dplyr::everything())
 
     n_genes <- length(unique(target_compartments_all$symbol))
     target_compartments[["anatogram"]] <- gganatogram::cell_key$cell %>%
@@ -72,9 +81,11 @@ annotate_subcellular_compartments <- function(qgenes,
       dplyr::select(organ, value)
     )
 
-    target_compartments[["anatogram"]] <- target_compartments[["anatogram"]] %>%
+    target_compartments[["anatogram"]] <-
+      target_compartments[["anatogram"]] %>%
       dplyr::left_join(anatogram_values, by = "organ") %>%
-      dplyr::mutate(value = dplyr::if_else(is.na(value), 0 ,as.numeric(value)))
+      dplyr::mutate(value = dplyr::if_else(
+        is.na(value), 0 ,as.numeric(value)))
 
 
   }
