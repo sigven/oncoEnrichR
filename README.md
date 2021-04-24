@@ -31,19 +31,15 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
-* March 31st 2021: **0.9.2 release**
-  * Added more protein identifier types (RefSeq peptide accession, Ensembl protein accession)
-  * Updated KEGG pathway database (2021-03-29)
-* March 24th 2021: **0.9.1 release**
-  * Revised Disease Association section
-    * Genes in query set ranked according to overall cancer association strength
-    * Heatmap with tumor-type specific associations pr. gene
-  * Updated datasets: MSigDB (v7.3)
-* March 21st 2021: **0.9.0 release**
-  * Added target tractability data (section _Drug-target associations_)
-  * Added target priority scores (section _CRISPR/Cas9 loss-of-function_)
-  * Added possibility to use Ensembl/RefSeq transcript identifiers as input
-  * Added argument _show\_top\_diseases\_only_ - limits disease associations to top 15
+* April 24th 2021: **0.9.3 release**
+  * Added option to _onco_enrich_ that may ignore cytosol as a structure in subcelluar heatmap
+  * Added interactive table with recurrent somatic variants (TCGA) overlapping query set in the _SNVs/InDels_ section
+  * Added barplot for subcellular locations
+  * Added barplot for most significant GO terms enriched in query set
+  * Revised oncoplots (improved font sizing, also including mutation types)
+  * Fixed bug in PPI's for query sets with few/none interactions
+  * Updated datasets: MSigDB/GO/Reactome (MSigDB v7.4), UniProt (2021_02)
+
 
 ### Annotation resources
 
@@ -52,7 +48,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 * [Open Targets Platform](https://targetvalidation.org) - human drug-target associations and comprehensive disease-target associations
 * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined database of drivers, oncogenes and tumor suppressors in cancer
 * [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in ~9,500 primary tumor samples
-* [The Human Protein Atlas]() - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
+* [The Human Protein Atlas](https://www.proteinatlas.org) - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
 * [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
 * [NetPath](http://www.netpath.org) - signaling transduction pathways
 * [STRING](https://string-db.org) - protein-protein interaction database
@@ -106,6 +102,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	    min_geneset_size = 10,
 	    max_geneset_size = 500,
 	    min_subcellcomp_confidence = 1,
+	    subcellcomp_show_cytosol = FALSE,
 	    simplify_go = TRUE,
 	    ppi_add_nodes = 50,
 	    ppi_score_threshold = 900,
@@ -119,7 +116,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	    show_tcga_coexpression = TRUE,
 	    show_subcell_comp = TRUE,
 	    show_crispr_lof = TRUE,
-	    show_cell_tissue = TRUE,
+	    show_cell_tissue = FALSE,
 	    show_prognostic_cancer_assoc = TRUE,
 	    show_complex = TRUE)
 	  ```
@@ -142,6 +139,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```min_geneset_size```     |     minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```max_geneset_size```     |     maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 	  ```min_subcellcomp_confidence```|     minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
+	  ```subcellcomp_show_cytosol``` | logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 	  ```simplify_go```     |     remove highly similar GO terms in results from GO enrichment/over-representation analysis (recommended)
 	  ```ppi_add_nodes```     |     number of neighbouring nodes to add to query set when computing the protein-protein interaction network (STRING)
 	  ```ppi_score_threshold```     |     minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)
