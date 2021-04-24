@@ -485,7 +485,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
 add_excel_sheet <- function(
   report = NULL,
   workbook = NULL,
-  analysis_output = "disease",
+  analysis_output = "disease_association",
   tableStyle = "TableStyleMedium15"){
 
   invisible(assertthat::assert_that(!is.null(report)))
@@ -510,7 +510,7 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "disease"){
+  if(analysis_output == "disease_association"){
     if(is.data.frame(report$data$disease$target)){
       if(NROW(report$data$disease$target) > 0){
         target_df <- report$data$disease$target %>%
@@ -598,7 +598,7 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "cancer_prognosis"){
+  if(analysis_output == "prognostic_association"){
     if(is.data.frame(report$data$cancer_prognosis$assocs)){
       if(NROW(report$data$cancer_prognosis$assocs) > 0){
         target_df <- report$data$cancer_prognosis$assocs %>%
@@ -617,7 +617,7 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "tcga_coexpression"){
+  if(analysis_output == "coexpression"){
 
     ## co-expression
     if(is.data.frame(report$data$tcga$co_expression)){
@@ -637,7 +637,7 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "tcga_aberration"){
+  if(analysis_output == "aberration"){
 
     ## cna aberrations
     for(t in c('cna_ampl','cna_homdel')){
@@ -715,7 +715,7 @@ add_excel_sheet <- function(
     target_df <- enrichment_df
   }
 
-  if(analysis_output == "drug"){
+  if(analysis_output == "drug_known"){
     if(is.data.frame(report$data$drug$target_drugs)){
       if(NROW(report$data$drug$target_drugs)){
         target_df <- report$data$drug$target_drugs %>%

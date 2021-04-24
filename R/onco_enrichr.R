@@ -1034,22 +1034,38 @@ write <- function(report,
 
     table_style_index <- 15
     for(elem in c("query",
-                  "disease",
-                  "tcga_aberration",
-                  "tcga_coexpression",
-                  "cancer_prognosis",
-                  "enrichment",
-                  "drug",
+                  "disease_association",
+                  "unknown_function",
+                  "drug_known",
                   "drug_tractability",
                   "protein_complex",
-                  "ppi",
                   "subcellcomp",
                   "cell_tissue",
+                  "ppi",
+                  "enrichment",
+                  "aberration",
+                  "coexpression",
+                  "prognostic_association",
                   "crispr_ps_fitness",
-                  "crispr_ps_prioritized",
-                  "unknown_function")){
+                  "crispr_ps_prioritized"
+                  )){
 
       show_elem <- elem
+      if(elem == "disease_association"){
+        show_elem <- "disease"
+      }
+      if(elem == "prognostic_association"){
+        show_elem <- "cancer_prognosis"
+      }
+      if(elem == "drug_known"){
+        show_elem <- "drug"
+      }
+      if(elem == "aberration"){
+        show_elem <- "tcga_aberration"
+      }
+      if(elem == "coexpression"){
+        show_elem <- "tcga_coexpression"
+      }
 
       if(report[['config']][['show']][[show_elem]] == FALSE){
         next
