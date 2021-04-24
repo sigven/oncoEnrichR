@@ -683,8 +683,8 @@ cat('<br><br>')
 * Browse recurrent, protein-coding somatic SNVs/InDels from TCGA in the query set 
   * Variants are listed as one record _per tissue/site_, in effect making the same variant occurring in multiple rows
   * A _maximum of 5000_ site-specific variants are listed
-  * Variants can be filtered based on _Site/tissue variant recurrence_, as well as overall recurrence across all tumor sites (column __Pancancer variant recurrence__)
-  * Notably, each variant have also been annotated/classified with a 
+  * Variants can be filtered based on various properties, e.g. __Site/tissue variant recurrence__, as well as overall recurrence across all tumor sites (column __Pancancer variant recurrence__)
+  * Notably, each variant have been annotated/classified with a 
     1. _loss-of-function_ status, based on the [LOFTEE plugin in VEP](https://github.com/konradjk/loftee)
     2. Status as <span style="background-color:black; padding:2x; color:white">&nbsp;<b>somatic mutation hotspots&nbsp;</b></span> in cancer, according to [cancerhotspots.org](https://cancerhotspots.org)
     
@@ -788,6 +788,7 @@ cat('<br><br>')
   * *_percent_mutated_* (percent of all tumor samples with the gene amplified/lost)
   * genes in the plot are ranked according to alteration frequency across all sites (_pancancer_), limited to the top 75 genes in the query set
 * Frequencies across all subtypes per primary site are listed in an interactive table
+  * Only including genes that are aberrant in >= 1 percent of samples for a given tumor type/subtype
 
 
 <br><br>
