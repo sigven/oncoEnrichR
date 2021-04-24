@@ -31,6 +31,8 @@ The package is intended for exploratory analysis and prioritization of a gene li
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* April 25th 2021: **0.9.4 release**
+  * Cleaned Excel output
 * April 24th 2021: **0.9.3 release**
   * Added option to _onco_enrich_ that may ignore cytosol as a structure in subcelluar heatmap
   * Added interactive table with recurrent somatic variants (TCGA) overlapping query set in the _SNVs/InDels_ section
@@ -59,8 +61,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4650367.svg)](https://doi.org/10.5281/zenodo.4650367)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4718011.svg)](https://doi.org/10.5281/zenodo.4718011)
 
 ### Getting started
 
@@ -178,13 +179,13 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4650367).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4718011).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
  * `library(oncoEnrichR)`
  * `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
- * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
+ * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 
