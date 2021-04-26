@@ -16,7 +16,7 @@ __oncoEnrichR__ is an R package for functional interrogation of human genesets i
 <br><br>
 
 
-<img align="center" width = "560" height = "700" src="oncoenrichr_slideshow2.gif">
+<img align="center" width = "560" height = "750" border = 2, src="oncoenrichr_slideshow2.gif"/>
 
 <br><br>
 
