@@ -65,8 +65,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4718011.svg)](https://doi.org/10.5281/zenodo.4718011)
-
+<a href="https://doi.org/10.5281/zenodo.4718011"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4718011.svg" alt="DOI"></a>
 
 ### Getting started
 
