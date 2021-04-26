@@ -11,12 +11,16 @@
 
 ### Overview
 
-<img align="center" width = "560" height = "700" src="docs/oncoenrichr2.gif">
+__oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer. The package is intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
+
+<br><br>
 
 
-__oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer.
+<img align="center" width = "560" height = "700" src="oncoenrichr_slideshow2.gif">
 
-The package is intended for exploratory analysis and prioritization of a gene list (referred to as **query set** below) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report. The contents of the final report attempts to shed light on the following questions:
+<br><br>
+
+The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the query set, and to what extent?
   * Which proteins in the query sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the query set, what is their likelihood of being druggable?
