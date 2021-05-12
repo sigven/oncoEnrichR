@@ -686,7 +686,7 @@ cat('<br><br>')
   * Variants can be filtered based on various properties, e.g. __Site/tissue variant recurrence__, as well as overall recurrence across all tumor sites (column __Pancancer variant recurrence__)
   * Notably, each variant have been annotated/classified with a 
     1. _loss-of-function_ status, based on the [LOFTEE plugin in VEP](https://github.com/konradjk/loftee)
-    2. Status as <span style="background-color:black; padding:2x; color:white">&nbsp;<b>somatic mutation hotspots&nbsp;</b></span> in cancer, according to [cancerhotspots.org](https://cancerhotspots.org). Format: _<GENE>|<CODON>|<Q-VALUE>_
+    2. Status as <span style="background-color:black; padding:2x; color:white">&nbsp;<b>somatic mutation hotspots&nbsp;</b></span> in cancer, according to [cancerhotspots.org](https://cancerhotspots.org). Format: _\<GENE\>|\<CODON\>|\<Q-VALUE\>_
     
 <br><br>
 

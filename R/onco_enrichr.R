@@ -24,6 +24,7 @@
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
 #' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
+#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
@@ -58,6 +59,7 @@ init_report <- function(project_title = "Project title",
                         show_drugs_in_ppi = T,
                         show_disease = T,
                         show_top_diseases_only = T,
+                        show_cancer_hallmarks = T,
                         show_drug = T,
                         show_enrichment = T,
                         show_tcga_aberration = T,
@@ -98,6 +100,7 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["show"]][["crispr_ps_fitness"]] <- show_crispr_lof
   rep[["config"]][["show"]][["crispr_ps_prioritized"]] <- show_crispr_lof
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
+  rep[["config"]][["show"]][["cancer_hallmark"]] <- show_cancer_hallmarks
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
     show_prognostic_cancer_assoc
@@ -231,6 +234,7 @@ init_report <- function(project_title = "Project title",
                      "tcga",
                      "enrichment",
                      "drug",
+                     "cancer_hallmark",
                      "protein_complex",
                      "subcellcomp",
                      "crispr_ps",
@@ -246,6 +250,9 @@ init_report <- function(project_title = "Project title",
 
   ## prognosis/survival - gene expression (HPA)
   rep[["data"]][["cancer_prognosis"]][['assocs']] <- data.frame()
+
+  ## cancer hallmarks
+  rep[["data"]][["cancer_hallmark"]][["target"]] <- data.frame()
 
   ## tissue and cell type enrichment
   rep[['data']][['cell_tissue']] <- list()
@@ -377,6 +384,7 @@ init_report <- function(project_title = "Project title",
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
 #' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
+#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
@@ -412,6 +420,7 @@ onco_enrich <- function(query,
                    show_drugs_in_ppi = TRUE,
                    show_disease = TRUE,
                    show_top_diseases_only = TRUE,
+                   show_cancer_hallmarks = TRUE,
                    show_drug = TRUE,
                    show_enrichment = TRUE,
                    show_tcga_aberration = TRUE,
@@ -480,6 +489,7 @@ onco_enrich <- function(query,
     show_drugs_in_ppi = show_drugs_in_ppi,
     show_disease = show_disease,
     show_top_diseases_only = show_top_diseases_only,
+    show_cancer_hallmarks = show_cancer_hallmarks,
     show_drug = show_drug,
     show_enrichment = show_enrichment,
     show_tcga_aberration = show_tcga_aberration,
@@ -533,6 +543,7 @@ onco_enrich <- function(query,
                "tcga_aberration",
                "tcga_coexpression",
                "cell_tissue",
+               "cancer_hallmark",
                "crispr_ps",
                "subcellcomp",
                "unknown_function",
@@ -561,7 +572,7 @@ onco_enrich <- function(query,
         genedb = oncoEnrichR::genedb[['all']],
         qtype = "background",
         ensembl_mrna_xref = oncoEnrichR::genedb[['ensembl_mrna_xref']],
-        ensembl_protein_xref = oncoEnrichR::genedb[['ensembl_protin_xref']],
+        ensembl_protein_xref = oncoEnrichR::genedb[['ensembl_protein_xref']],
         refseq_mrna_xref = oncoEnrichR::genedb[['refseq_mrna_xref']],
         refseq_protein_xref = oncoEnrichR::genedb[['refseq_protein_xref']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
@@ -875,6 +886,27 @@ onco_enrich <- function(query,
     }
   }
 
+  if (show_cancer_hallmarks == T){
+
+    rlogging::message("Retrieving genes with evidence of cancer hallmark properties")
+    onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
+      oncoEnrichR::genedb[["cancer_hallmark"]][["short"]] %>%
+      dplyr::inner_join(
+        dplyr::select(qgenes_match$found, symbol),
+        by = c("target_symbol" = "symbol")) %>%
+      dplyr::distinct() %>%
+      dplyr::select(-target_symbol)
+
+    n_genes_cancerhallmarks <- 0
+
+    if(nrow(onc_rep[["data"]][["cancer_hallmark"]][["target"]]) > 0){
+      n_genes_cancerhallmarks <- length(unique(onc_rep[["data"]][["cancer_hallmark"]][["target"]]$symbol))
+    }
+    rlogging::message(paste0("Number of query genes attributed with cancer hallmark properties: ",
+                             n_genes_cancerhallmarks))
+
+  }
+
   if (show_tcga_coexpression == T) {
     onc_rep[["data"]][["tcga"]][["co_expression"]] <-
       oncoEnrichR:::tcga_co_expression(
@@ -1036,6 +1068,7 @@ write <- function(report,
     for(elem in c("query",
                   "disease_association",
                   "unknown_function",
+                  "cancer_hallmark",
                   "drug_known",
                   "drug_tractability",
                   "protein_complex",

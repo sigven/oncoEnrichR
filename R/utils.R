@@ -198,8 +198,8 @@ validate_query_genes <- function(qgenes,
 
             rlogging::message(
               paste0("Mapped query identifiers as gene aliases ",
-                     paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
-                     paste0(query_as_alias$qid,collapse=", ")))
+                     paste0(queryset[['not_found']]$qid, collapse=", ")," ---> ",
+                     paste0(query_as_alias$symbol, collapse=", ")))
 
             queryset[['found']] <-
               dplyr::bind_rows(queryset[['found']], query_as_alias)
@@ -509,6 +509,24 @@ add_excel_sheet <- function(
       }
     }
   }
+
+  if(analysis_output == "cancer_hallmark"){
+    if(is.data.frame(report$data$cancer_hallmark$target)){
+      if(NROW(report$data$cancer_hallmark$target) > 0){
+        target_df <- report$data$cancer_hallmark$target %>%
+          dplyr::mutate(
+            symbol =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(symbol)
+                )
+              )
+          ) %>%
+          dplyr::select(-literature_support)
+      }
+    }
+  }
+
 
   if(analysis_output == "disease_association"){
     if(is.data.frame(report$data$disease$target)){

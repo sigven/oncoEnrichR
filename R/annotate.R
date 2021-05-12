@@ -36,11 +36,14 @@ target_disease_associations <-
     ) %>%
     dplyr::select(symbol, genename,
                   ensembl_gene_id,
-                  oncogene, tumor_suppressor,
+                  oncogene,
+                  tumor_suppressor,
                   cancergene_support,
                   ot_association_score,
-                  efo_id, efo_name,
-                  primary_site, ot_link,
+                  disease_efo_id,
+                  efo_name,
+                  primary_site,
+                  ot_link,
                   gene_summary)
 
   if(nrow(tmp) > 0){
