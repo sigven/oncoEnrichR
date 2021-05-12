@@ -23,6 +23,7 @@ __oncoEnrichR__ is an R package for functional interrogation of human genesets i
 The contents of the final report attempts to shed light on the following questions:
 
   * Which diseases/tumor types are associated with genes in the query set, and to what extent?
+  * Which genes in the query set are attributed with cancer hallmark evidence?
   * Which proteins in the query sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the query set, what is their likelihood of being druggable?
   * Which protein complexes are relevant for proteins in the query set?
   * Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the query set?
@@ -35,16 +36,10 @@ The contents of the final report attempts to shed light on the following questio
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
-* April 25th 2021: **0.9.4 release**
-  * Cleaned Excel output
-* April 24th 2021: **0.9.3 release**
-  * Added option to _onco_enrich_ that may ignore cytosol as a structure in subcelluar heatmap
-  * Added interactive table with recurrent somatic variants (TCGA) overlapping query set in the _SNVs/InDels_ section
-  * Added barplot for subcellular locations
-  * Added barplot for most significant GO terms enriched in query set
-  * Revised oncoplots (improved font sizing, also including mutation types)
-  * Fixed bug in PPI's for query sets with few/none interactions
-  * Updated datasets: MSigDB/GO/Reactome (MSigDB v7.4), UniProt (2021_02)
+* May 12th 2021: **0.9.6 release**
+  * Added cancer hallmarks evidence
+  * Fixed minor bugs
+  * Drug retrieval from Open Targets Platform v2021.04
 
 
 ### Annotation resources
@@ -65,7 +60,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.4718011"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4718011.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.4751107"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4751107.svg" alt="DOI"></a>
 
 ### Getting started
 
@@ -115,6 +110,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	    show_drugs_in_ppi = TRUE,
 	    show_disease = TRUE,
 	    show_top_diseases_only = TRUE,
+	    show_cancer_hallmarks = TRUE,
 	    show_drug = TRUE,
 	    show_enrichment = TRUE,
 	    show_tcga_aberration = TRUE,
@@ -152,6 +148,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```show_drugs_in_ppi```     |     logical indicating if targeted drugs (>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 	  ```show_disease```     |     logical indicating if report should contain ranked associations to cancer phenotypes (overall), as well as tumor-type specific rankings (association score >= 0.4, minimum number of sources contributing to association >= 2, (Open Targets Platform))
 	  ```show_top_diseases_only```| logical indicating if report should only show top (20) cancer phenotypes/disease associations from Open Targets Platform
+	  ```show_cancer_hallmarks```| logical indicating if report should show evidence that relates query member genes to cancer hallmarks
 	  ```show_drug``` | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability/druggability data for all query entries, from Open Targets Platform)
 	  ```show_enrichment```     |     logical indicating if report should perform and list functional enrichment/over-representation analysis of query set (MSigDB, GO, KEGG, REACTOME, WikiPathways, NetPath)
 	  ```show_tcga_aberration```     |     logical indicating if report should contain TCGA aberration plots (amplifications/deletions, SNVs/InDels (oncoplots))
@@ -183,7 +180,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4718011).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4751107).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
