@@ -1,0 +1,5 @@
+home:
+  strip_header: false
+template:
+  params:
+    bootswatch: yeti

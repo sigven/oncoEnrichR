@@ -13,10 +13,9 @@
 
 __oncoEnrichR__ is an R package for functional interrogation of human genesets in the context of cancer. The package is intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
 
-<br><br>
+<br>
 
-
-<img align="center" width = "560" height = "750" border = 2, src="oncoenrichr_slideshow2.gif"/>
+<img align="center" border = 2, src="man/figures/oncoenrichr_overview.png"/>
 
 <br><br>
 
@@ -61,6 +60,11 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 ### Example report
 
 <a href="https://doi.org/10.5281/zenodo.4751107"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4751107.svg" alt="DOI"></a>
+
+<br>
+
+<img align="center" width = "560" height = "750" border = 2, src="man/figures/oncoenrichr_slideshow2.gif"/>
+
 
 ### Getting started
 
@@ -203,10 +207,10 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
 
 <p float="left">
   <a href="https://www.med.uio.no/cancell/english/">
-     <img src="can-cell.png" width="150" >
+     <img src="man/figures/can-cell.png" width="150" >
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://elixir.no/organization/organisation/elixir-uio">
-     <img src="elixir_norway.png" width="200" />
+     <img src="man/figures/elixir_norway.png" width="200" />
   </a>
 </p>
