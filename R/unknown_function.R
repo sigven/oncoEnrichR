@@ -2,7 +2,7 @@
 get_genes_unknown_function <- function(qgenes, genedb = NULL,
                                        poorly_defined_genes = NULL){
 
-  rlogging::message("Retrieval of genes with unknown/poorly defined function in target set")
+  oncoEnrichR:::log4r_info("Retrieval of genes with unknown/poorly defined function in target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(poorly_defined_genes))
@@ -20,8 +20,8 @@ get_genes_unknown_function <- function(qgenes, genedb = NULL,
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }
 
-  rlogging::message("Detected n = ", nrow(results),
-                    " (", pct,"%) target genes with unknown/poorly defined function")
+  oncoEnrichR:::log4r_info(paste0("Detected n = ", nrow(results),
+                    " (", pct,"%) target genes with unknown/poorly defined function"))
   return(results)
 
 }

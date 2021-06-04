@@ -4,7 +4,7 @@ annotate_protein_complex <- function(qgenes,
                                      corum_db = NULL,
                                      uniprot_xref = NULL){
 
-  rlogging::message("CORUM: retrieval of protein complex information for target set")
+  oncoEnrichR:::log4r_info("CORUM: retrieval of protein complex information for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(corum_db))

@@ -14,7 +14,7 @@ target_disease_associations <-
     dplyr::inner_join(genedb, by = "symbol") %>%
       dplyr::distinct()
 
-  rlogging::message(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
+  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
 
   target_assocs <- target_genes %>%
     dplyr::left_join(oncoEnrichR::otdb$all, by=c("ensembl_gene_id","symbol"))
@@ -268,7 +268,7 @@ target_drug_associations <- function(qgenes,
     dplyr::inner_join(genedb, by = "symbol") %>%
     dplyr::distinct()
 
-  rlogging::message(paste0("Open Targets Platform: annotation of protein targets to targeted drugs"))
+  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs"))
 
   result <- list()
   result[['target_drugs']] <- data.frame()
@@ -282,7 +282,7 @@ target_drug_associations <- function(qgenes,
     dplyr::filter(!is.na(targeted_cancer_drugs_lp) |
                     !is.na(targeted_cancer_drugs_ep))
 
-  rlogging::message(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
+  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
 
   result[['tractability_ab']] <- target_genes %>%
     dplyr::select(ensembl_gene_id) %>%

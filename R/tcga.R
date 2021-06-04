@@ -5,7 +5,7 @@ tcga_oncoplot_genes <-
            genedb = "NULL",
            site = "Breast"){
 
-  rlogging::message(paste0("TCGA: generating oncoplot, tissue =  ", site))
+  oncoEnrichR:::log4r_info(paste0("TCGA: generating oncoplot, tissue =  ", site))
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
@@ -41,7 +41,7 @@ tcga_oncoplot_genes <-
     head(50)
 
   #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-  rlogging::message(
+  oncoEnrichR:::log4r_info(
     paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
 
   return(top_mutated_genes)
@@ -56,7 +56,7 @@ tcga_aberration_matrix <- function(qgenes,
                                  genedb = NULL,
                                  percentile = FALSE){
 
-  rlogging::message(paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
+  oncoEnrichR:::log4r_info(paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
@@ -189,7 +189,7 @@ tcga_aberration_table <- function(qgenes,
                                   genedb = NULL,
                                   vtype = "snv_indel"){
 
-  rlogging::message(paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
+  oncoEnrichR:::log4r_info(paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
@@ -238,7 +238,7 @@ tcga_aberration_table <- function(qgenes,
 
 tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
 
-  rlogging::message("TCGA: collecting co-expression data (strong negative and positive correlations)")
+  oncoEnrichR:::log4r_info("TCGA: collecting co-expression data (strong negative and positive correlations)")
   stopifnot(!is.null(genedb))
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")

@@ -249,7 +249,15 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["query"]][["validation_status"]] <- "perfect_go"
 
   ## prognosis/survival - gene expression (HPA)
-  rep[["data"]][["cancer_prognosis"]][['assocs']] <- data.frame()
+  rep[["data"]][["cancer_prognosis"]][['hpa']] <- list()
+  rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <- data.frame()
+
+  ## prognosis/survival - gene expression, mutation, CNA (CSHL)
+  rep[["data"]][["cancer_prognosis"]][['km_cshl']] <- list()
+  rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']] <- list()
+  rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['cna']] <- data.frame()
+  rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['mut']] <- data.frame()
+  rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['exp']] <- data.frame()
 
   ## cancer hallmarks
   rep[["data"]][["cancer_hallmark"]][["target"]] <- data.frame()
@@ -432,6 +440,16 @@ onco_enrich <- function(query,
                    show_crispr_lof = TRUE,
                    show_complex = TRUE) {
 
+  my_log4r_layout <- function(level, ...) {
+    paste0(format(Sys.time()), " - ", level, " - ", ..., "\n", collapse = "")
+  }
+  logger <- log4r::logger(threshold = "INFO", appenders = log4r::console_appender(my_log4r_layout))
+  if(!is.null(logger)){
+    assign("log4r_logger",
+           logger, envir = .GlobalEnv)
+  }
+
+
   stopifnot(!is.null(query))
   stopifnot(is.character(query))
   stopifnot(length(query) >= 1)
@@ -444,7 +462,7 @@ onco_enrich <- function(query,
         "fdr", "none"))
 
   if (length(query) > 800) {
-    rlogging::message(
+    oncoEnrichR:::log4r_info(
       paste0("WARNING: Due to size limitations, oncoEnrichR is limited to the analysis of n = 800 entries. Query contained n = ",
              length(query), " identifiers, limiting to top 800 genes"))
     query <- head(unique(query), 800)
@@ -476,6 +494,8 @@ onco_enrich <- function(query,
   stopifnot(min_subcellcomp_confidence >= 1 &
               min_subcellcomp_confidence <= 6)
   stopifnot(ppi_add_nodes <= 50)
+
+
 
   onc_rep <- oncoEnrichR:::init_report(
     project_title = project_title,
@@ -555,7 +575,7 @@ onco_enrich <- function(query,
 
   if(NROW(qgenes_match[["found"]]) < 5){
     onc_rep[['config']][['show']][['enrichment']] <- F
-    rlogging::message(
+    oncoEnrichR:::log4r_info(
       paste0("WARNING: Function and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
              NROW(qgenes_match[["found"]])," valid entries"))
   }
@@ -577,8 +597,8 @@ onco_enrich <- function(query,
         refseq_protein_xref = oncoEnrichR::genedb[['refseq_protein_xref']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
-      rlogging::message("WARNING: Background geneset not defined properly - ",
-                        "using all protein-coding genes instead")
+      oncoEnrichR:::log4r_info(paste0("WARNING: Background geneset not defined properly - ",
+                        "using all protein-coding genes instead"))
       background_entrez <- unique(oncoEnrichR::genedb[['all']]$entrezgene)
     }else{
       background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
@@ -718,7 +738,7 @@ onco_enrich <- function(query,
     ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
     # service_is_down <- unique(is.na(pingr::ping("omnipathdb.org")))
     # if(service_is_down){
-    #   rlogging::message("EXCEPTION: https://omnipathdb.org is NOT responding - ",
+    #   oncoEnrichR:::log4r_info("EXCEPTION: https://omnipathdb.org is NOT responding - ",
     #                     "skipping retrievel of protein complexes")
     #
     #   onc_rep[["config"]][["show"]][["protein_complex"]] <- FALSE
@@ -888,7 +908,7 @@ onco_enrich <- function(query,
 
   if (show_cancer_hallmarks == T){
 
-    rlogging::message("Retrieving genes with evidence of cancer hallmark properties")
+    oncoEnrichR:::log4r_info("Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
       oncoEnrichR::genedb[["cancer_hallmark"]][["short"]] %>%
       dplyr::inner_join(
@@ -902,7 +922,7 @@ onco_enrich <- function(query,
     if(nrow(onc_rep[["data"]][["cancer_hallmark"]][["target"]]) > 0){
       n_genes_cancerhallmarks <- length(unique(onc_rep[["data"]][["cancer_hallmark"]][["target"]]$symbol))
     }
-    rlogging::message(paste0("Number of query genes attributed with cancer hallmark properties: ",
+    oncoEnrichR:::log4r_info(paste0("Number of query genes attributed with cancer hallmark properties: ",
                              n_genes_cancerhallmarks))
 
   }
@@ -915,10 +935,17 @@ onco_enrich <- function(query,
   }
 
   if(show_prognostic_cancer_assoc == T){
-    onc_rep[["data"]][["cancer_prognosis"]][['assocs']] <-
+    onc_rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <-
       oncoEnrichR:::hpa_prognostic_genes(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
+
+    for(feature in c('exp', 'mut', 'cna')){
+      onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
+        oncoEnrichR:::km_cshl_survival_genes(
+          query_symbol,
+          projectsurvivaldb = oncoEnrichR::projectsurvivaldb[[feature]])
+    }
 
   }
 
@@ -1024,7 +1051,6 @@ write <- function(report,
   }
 
   ## TODO: check that report parameter is a valid oncoEnrichR result object
-
   if(!is.null(report)){
     assign("onc_enrich_report",
            report, envir = .GlobalEnv)
@@ -1039,30 +1065,33 @@ write <- function(report,
                               package = "oncoEnrichR")
     report_theme <- "default"
 
-    rlogging::message("------")
-    rlogging::message("Writing HTML file with report contents")
+    oncoEnrichR:::log4r_info("------")
+    oncoEnrichR:::log4r_info("Writing HTML file with report contents")
     markdown_input <- system.file("templates", "onco_enrich_report.Rmd",
                                   package = "oncoEnrichR")
     rmarkdown::render(
       markdown_input,
       output_format = rmarkdown::html_document(
-        theme = report_theme, toc = T, toc_depth = 3,
-        toc_float = T, number_sections = F,
+        theme = report_theme,
+        toc = T,
+        toc_depth = 3,
+        toc_float = T,
+        number_sections = F,
         includes = rmarkdown::includes(after_body = disclaimer)),
       output_file = file_basename,
       output_dir = output_directory,
       clean = T,
       intermediates_dir = output_directory,
       quiet = T)
-    rlogging::message(paste0("Output file: ",
+    oncoEnrichR:::log4r_info(paste0("Output file: ",
                              file))
-    rlogging::message("------")
+    oncoEnrichR:::log4r_info("------")
   }
   if (format == "excel") {
 
     wb <- openxlsx::createWorkbook()
-    rlogging::message("------")
-    rlogging::message("Writing Excel workbook with report contents")
+    oncoEnrichR:::log4r_info("------")
+    oncoEnrichR:::log4r_info("Writing Excel workbook with report contents")
 
     table_style_index <- 15
     for(elem in c("query",
@@ -1079,6 +1108,7 @@ write <- function(report,
                   "aberration",
                   "coexpression",
                   "prognostic_association",
+                  "survival_association",
                   "crispr_ps_fitness",
                   "crispr_ps_prioritized"
                   )){
@@ -1088,6 +1118,9 @@ write <- function(report,
         show_elem <- "disease"
       }
       if(elem == "prognostic_association"){
+        show_elem <- "cancer_prognosis"
+      }
+      if(elem == "survival_association"){
         show_elem <- "cancer_prognosis"
       }
       if(elem == "drug_known"){
@@ -1122,12 +1155,12 @@ write <- function(report,
     }
 
     openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
-    rlogging::message(paste0("Output file: ",file))
-    rlogging::message("------")
+    oncoEnrichR:::log4r_info(paste0("Output file: ",file))
+    oncoEnrichR:::log4r_info("------")
   }
   else{
     if(format == "json"){
-      rlogging::message("JSON output not yet implemented")
+      oncoEnrichR:::log4r_info("JSON output not yet implemented")
     }
   }
 }

@@ -3,9 +3,9 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.4 (April 2021)'
-wikipathways_version <- "20210410"
+wikipathways_version <- "20210510"
 netpath_version <- "2010"
-kegg_version <- "20210501"
+kegg_version <- "20210531"
 update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- F
@@ -92,7 +92,7 @@ ts_oncogene_annotations <-
 
 ## Open Targets Platform: Target-disease associations target tractability
 opentarget_associations <-
-  get_opentarget_associations(
+  get_opentarget_associations_v2(
     basedir = here::here(),
     min_num_sources = 2,
     min_overall_score = 0.2,
@@ -893,7 +893,7 @@ gene_identifiers <- read.csv(file="data-raw/project_score/gene_identifiers.csv",
 
 ## Fitness scores
 cell_fitness_scores <-
-  read.table(file="data-raw/project_score/binary_dep_scores.tsv",header=T,
+  read.table(file="data-raw/project_score/binaryDepScores.tsv",header=T,
                                   quote="",sep="\t", stringsAsFactors = F)
 
 rownames(cell_fitness_scores) <- cell_fitness_scores$Gene
@@ -1079,6 +1079,78 @@ for(p in c('early_phase','late_phase')){
   }
 
 }
+
+####--- Cancer-KM-Survival (CSHL) ---####
+
+for(feature_type in c('CNAs','Mutations','Gene expression',
+                      'miRNA expression','Protein expression')){
+  destfile_fname <- paste0("data-raw/km_survival_cshl/",
+                     tolower(
+                       stringr::str_replace(
+                         stringr::str_replace(feature_type," ","_"),
+                         "s$","")),
+                     ".xlsx")
+  if(!file.exists(destfile_fname)){
+    download.file(url = paste0(
+      "https://storage.googleapis.com/cancer-survival-km-2021/cancer-survival-km/full-downloads/",
+      stringr::str_replace(feature_type," ","%20"),".xlsx"),
+      destfile = destfile_fname,
+      quiet = T)
+  }
+
+}
+
+project_survival <- list()
+for(feature_type in c('cna','mutation','gene_expression')){
+
+  fname <- file.path("data-raw","km_survival_cshl",
+                     paste0(feature_type,".xlsx"))
+  data <- openxlsx::read.xlsx(fname)
+
+  if(feature_type == 'protein_expression'){
+    rownames(data) <- data$Protein
+    data$Protein <- NULL
+  }else{
+    rownames(data) <- data$Gene
+    data$Gene <- NULL
+  }
+
+  feattype_brief <- feature_type
+  if(feattype_brief == "mutation"){
+    feattype_brief <- "mut"
+  }
+  if(feattype_brief == "gene_expression"){
+    feattype_brief <- "exp"
+  }
+
+  data <- as.matrix(data)
+  project_survival_df <-
+    as.data.frame(setNames(reshape2::melt(data, na.rm = T),
+                           c('symbol', 'tcga_cohort', 'z_score'))) %>%
+    #dplyr::mutate(feature_type = feattype_brief) %>%
+    dplyr::mutate(z_score = as.numeric(stringr::str_trim(z_score))) %>%
+    dplyr::mutate(symbol = stringr::str_replace(
+      symbol,"^'","")) %>%
+    dplyr::filter(!stringr::str_detect(tcga_cohort,"^Stouffer")) %>%
+    dplyr::left_join(dplyr::select(gene_info,
+                                   symbol, gene_biotype),
+                     by = "symbol") %>%
+    dplyr::filter(gene_biotype == "protein-coding") %>%
+    dplyr::select(-gene_biotype)
+
+  pancancer_trend <- as.data.frame(
+    project_survival_df %>%
+      dplyr::group_by(symbol) %>%
+      dplyr::summarise(tot_z_score = sum(z_score)) %>%
+      dplyr::arrange(desc(tot_z_score)))
+
+  project_survival[[feattype_brief]] <- project_survival_df %>%
+    dplyr::mutate(
+      symbol = factor(symbol, levels = pancancer_trend$symbol))
+}
+
+
+
 
 ####--- Human Protein Atlas ---####
 
@@ -1768,6 +1840,8 @@ genedb[['ensembl_protein_xref']] <- ensembl_protein_xref
 genedb[['corum_xref']] <- corumdb
 genedb[['cancer_hallmark']] <- hallmark_data
 
+projectsurvivaldb <- project_survival
+
 usethis::use_data(pathwaydb, overwrite = T)
 usethis::use_data(tcgadb, overwrite = T)
 usethis::use_data(maf_codes, overwrite = T)
@@ -1778,10 +1852,14 @@ usethis::use_data(hpa, overwrite = T)
 usethis::use_data(release_notes, overwrite = T)
 usethis::use_data(subcelldb, overwrite = T)
 usethis::use_data(projectscoredb, overwrite = T)
+usethis::use_data(projectsurvivaldb, overwrite = T)
 usethis::use_data(cancerdrugdb, overwrite = T)
 usethis::use_data(pfam_domains, overwrite = T)
 
 rm(tcga_aberration_stats)
+rm(project_survival)
+rm(projectsurvivaldb)
+rm(project_survival_df)
 rm(data)
 rm(gene_xref)
 rm(gencode)

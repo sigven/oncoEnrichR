@@ -3,7 +3,7 @@ title: "OncoEnrichR report - `r onc_enrich_report[['config']][['project_title']]
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
 nocite: |
-  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn, @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da
+  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn, @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, @Smith2021-fh
 output: 
   html_document:
     toc: true
@@ -66,7 +66,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_tcga_coexpression, child='tcga_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_coexpression']]}
 ```
 
-```{r target_cancer_prognosis, child='prognosis_expression.Rmd', eval = onc_enrich_report[['config']][['show']][['cancer_prognosis']]}
+```{r target_cancer_prognosis, child='prognosis_survival.Rmd', eval = onc_enrich_report[['config']][['show']][['cancer_prognosis']]}
 ```
 
 ```{r target_lof, child='crispr_lof.Rmd', eval = onc_enrich_report[['config']][['show']][['crispr_ps']]}

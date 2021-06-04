@@ -31,10 +31,14 @@ The contents of the final report attempts to shed light on the following questio
   * Are there specific pathways, biological processes or molecular functions that are enriched within the query set, as compared to a reference/background set?
   * Which members of the query set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
   * Which members of the query set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
-  * Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels in tumors?
+  * Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels, mutation, or copy number status in tumors?
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* June 5th 2021: **0.9.7 release**
+  * Added more prognostic associations from [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1)
+  * KEGG update (20210531)
+  * Disease associations from Open Targets Platform v2021.04
 * May 12th 2021: **0.9.6 release**
   * Added cancer hallmarks evidence
   * Fixed minor bugs
@@ -59,7 +63,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.4751107"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4751107.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.4902166"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4902166.svg" alt="DOI"></a>
 
 <br>
 
@@ -184,7 +188,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4751107).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4902166).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 

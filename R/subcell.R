@@ -5,7 +5,7 @@ annotate_subcellular_compartments <- function(qgenes,
                                               genedb = NULL,
                                               comppidb = NULL){
 
-  rlogging::message("ComPPI: retrieval of subcellular compartments for target set")
+  oncoEnrichR:::log4r_info("ComPPI: retrieval of subcellular compartments for target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(comppidb))

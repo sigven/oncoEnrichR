@@ -10,7 +10,7 @@ gene_tissue_cell_spec_cat <-
       etype <- "cell type"
       edb <- "HPA"
     }
-    rlogging::message(
+    oncoEnrichR:::log4r_info(
       paste0("Retrieving ", etype,
              " specificity (", edb,
              ") category of target genes")
@@ -157,7 +157,7 @@ gene_tissue_cell_enrichment <-
       etype <- "cell types"
       edb <- "HPA"
     }
-    rlogging::message(
+    oncoEnrichR:::log4r_info(
       paste0("Estimating enrichment of ", etype,
              " (", edb,
              ") in target set with TissueEnrich"))

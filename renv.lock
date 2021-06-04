@@ -1132,6 +1132,13 @@
       "Repository": "CRAN",
       "Hash": "e055d75b424a33fdc8904e5f81263789"
     },
+    "log4r": {
+      "Package": "log4r",
+      "Version": "0.3.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5ce4d2c11689134403962d6229395314"
+    },
     "logger": {
       "Package": "logger",
       "Version": "0.2.0",
@@ -1279,19 +1286,19 @@
     },
     "oncoPharmaDB": {
       "Package": "oncoPharmaDB",
-      "Version": "0.3.6",
+      "Version": "0.4.1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oncoPharmaDB",
       "RemoteUsername": "sigven",
       "RemoteRef": "HEAD",
-      "RemoteSha": "2b5639112c62ffe7a782e18875895bcacb0dc4d2",
-      "Hash": "c0cb61db73d6b4bbf16b028877c8d49f"
+      "RemoteSha": "45acfd73689f4ab82d561b321a71576b1a6d5019",
+      "Hash": "19f2ebfcaf86cbeed90d212fa8651575"
     },
     "oncoPhenoMap": {
       "Package": "oncoPhenoMap",
-      "Version": "0.1.1",
+      "Version": "0.1.2",
       "Source": "GitHub",
       "Remotes": "mjkallen/rlogging",
       "RemoteType": "github",
@@ -1299,8 +1306,8 @@
       "RemoteRepo": "oncoPhenoMap",
       "RemoteUsername": "sigven",
       "RemoteRef": "HEAD",
-      "RemoteSha": "6311dee245efee8dc77376d5324417d1db88b86a",
-      "Hash": "039698b3dfa7e8c34259f10095f32eef"
+      "RemoteSha": "7cce8e8d30ea8bf9f2a5787ddf548441a9153484",
+      "Hash": "c1787d3d22e001dd7e7fbf1b7df703b4"
     },
     "openssl": {
       "Package": "openssl",

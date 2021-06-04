@@ -10,12 +10,12 @@ get_go_enrichment <- function(query_entrez,
                               simplify = F,
                               pool = F){
 
-  rlogging::message(
+  oncoEnrichR:::log4r_info(
     paste0("Enrichment - GO: performing gene enrichment analysis of target set (subontology ",ontology,")"))
-  rlogging::message(paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  rlogging::message(paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  rlogging::message(paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
-  rlogging::message(paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
 
 
   stopifnot(is.character(query_entrez))
@@ -155,11 +155,11 @@ get_universal_enrichment <- function(query_entrez,
                                      TERM2SOURCE = NULL,
                                      dbsource = ""){
 
-  rlogging::message(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
-  rlogging::message(paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  rlogging::message(paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  rlogging::message(paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
-  rlogging::message(paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
+  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(genedb) | !is.data.frame(genedb))

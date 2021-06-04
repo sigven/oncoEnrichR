@@ -168,8 +168,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        oncoEnrichR:::log4r_info(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        oncoEnrichR:::log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -196,7 +196,7 @@ validate_query_genes <- function(qgenes,
               dplyr::distinct() %>%
               dplyr::mutate(alias = T)
 
-            rlogging::message(
+            oncoEnrichR:::log4r_info(
               paste0("Mapped query identifiers as gene aliases ",
                      paste0(queryset[['not_found']]$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
@@ -207,8 +207,8 @@ validate_query_genes <- function(qgenes,
               dplyr::anti_join(query_as_alias, by = "qid")
 
             if(nrow(queryset[['not_found']]) > 0){
-              rlogging::message(
-                paste0("WARNING: query gene identifiers NOT found: ",
+              oncoEnrichR:::log4r_warn(
+                paste0("Query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
             }else{
@@ -216,14 +216,14 @@ validate_query_genes <- function(qgenes,
             }
           }
         }else{
-          rlogging::message(
-            paste0("WARNING: query gene identifiers NOT found: ",
+          oncoEnrichR:::log4r_warn(
+            paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
         }
 
       }else{
-        rlogging::message(paste0("WARNING: query gene identifiers NOT found: ",
+        oncoEnrichR:::log4r_warn(paste0("Query gene identifiers NOT found: ",
                                  paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
@@ -232,8 +232,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        rlogging::message(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        rlogging::message(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        oncoEnrichR:::log4r_warn(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        oncoEnrichR:::log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -249,7 +249,7 @@ validate_query_genes <- function(qgenes,
           dplyr::mutate(alias = T)
 
 
-          rlogging::message(
+          oncoEnrichR:::log4r_info(
             paste0("Mapped query identifiers as gene aliases ",
                    paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$qid,collapse=", ")))
@@ -260,8 +260,8 @@ validate_query_genes <- function(qgenes,
             dplyr::anti_join(query_as_alias, by = "qid")
 
           if(nrow(queryset[['not_found']]) > 0){
-            rlogging::message(
-              paste0("ERROR: query gene identifiers NOT found: ",
+            oncoEnrichR:::log4r_info(
+              paste0("ERROR: Query gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
                      " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
           }else{
@@ -269,31 +269,31 @@ validate_query_genes <- function(qgenes,
 
           }
         }else{
-          rlogging::message(paste0("ERROR: query gene identifiers NOT found: ",
+          oncoEnrichR:::log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
 
         }
       }
       else{
-        rlogging::message(paste0("ERROR: query gene identifiers NOT found: ",
+        oncoEnrichR:::log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
       }
     }
   }
   if(nrow(queryset[['found']]) == length(qgenes)){
-    rlogging::message(paste0('SUCCESS: Identified all genes (n = ',
+    oncoEnrichR:::log4r_info(paste0('SUCCESS: Identified all genes (n = ',
                              nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
     if(nrow(queryset[['found']]) == 0){
-      rlogging::message(paste0(
+      oncoEnrichR:::log4r_info(paste0(
         "ERROR: NO query gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?"),"\n")
       queryset[['match_status']] <- "imperfect_stop"
     }else{
-      rlogging::message(
+      oncoEnrichR:::log4r_info(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ',
                'target set (n = ',
@@ -368,6 +368,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
                "ppi_nodes",
                "fitness_scores",
                "target_priority_scores",
+               "survival_km_cshl",
                "ppi_edges",
                "pdf")
   if(!(dbtype %in% dbtypes)){
@@ -398,6 +399,11 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'complex_comment',
               'disease_comment',
               'citation','citation_link')
+  }
+  if(dbtype == "survival_km_cshl"){
+    cols <- c('symbol',
+              'tcga_cohort',
+              'z_score')
   }
   ## poorly defined genes (pdf)
   if(dbtype == "pdf"){
@@ -617,9 +623,9 @@ add_excel_sheet <- function(
   }
 
   if(analysis_output == "prognostic_association"){
-    if(is.data.frame(report$data$cancer_prognosis$assocs)){
-      if(NROW(report$data$cancer_prognosis$assocs) > 0){
-        target_df <- report$data$cancer_prognosis$assocs %>%
+    if(is.data.frame(report$data$cancer_prognosis$hpa$assocs)){
+      if(NROW(report$data$cancer_prognosis$hpa$assocs) > 0){
+        target_df <- report$data$cancer_prognosis$hpa$assocs %>%
           dplyr::mutate(
             annotation_source = report$config$resources$hpa$name,
             version = report$config$resources$hpa$version) %>%
@@ -631,6 +637,26 @@ add_excel_sheet <- function(
                 textclean::replace_html(tumor_types)
               )
           )
+      }
+    }
+  }
+
+  if(analysis_output == "survival_association"){
+    for(t in c('cna','mut','exp')){
+      if(is.data.frame(report$data$cancer_prognosis$km_cshl$assocs[[t]])){
+        if(NROW(report$data$cancer_prognosis$km_cshl$assocs[[t]]) > 0){
+          df <- report$data$cancer_prognosis$km_cshl$assocs[[t]] %>%
+            dplyr::mutate(
+              annotation_source = "Genetic determinants of survival in cancer (Smith et al., bioRxiv, 2021)",
+              version = "v2") %>%
+            dplyr::mutate(feature_type = t) %>%
+            dplyr::select(annotation_source, version,
+                          dplyr::everything())
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+
+        }
       }
     }
   }
@@ -975,5 +1001,19 @@ add_excel_sheet <- function(
   }
 
   return(workbook)
+}
+
+
+
+log4r_info <- function(msg) {
+  log4r::info(log4r_logger, msg)
+}
+
+log4r_debug <- function(msg) {
+  log4r::debug(log4r_logger, msg)
+}
+
+log4r_warn <- function(msg) {
+  log4r::warn(log4r_logger, msg)
 }
 

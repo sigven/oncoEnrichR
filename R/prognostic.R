@@ -2,7 +2,7 @@ hpa_prognostic_genes <- function(qgenes,
                                  q_id_type = "symbol",
                                 genedb = "NULL"){
 
-  rlogging::message(
+  oncoEnrichR:::log4r_info(
     paste0("Human Protein Atlas: retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
@@ -102,9 +102,51 @@ hpa_prognostic_genes <- function(qgenes,
   }
 
   #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-  rlogging::message(paste0("Found n = ",n_query_associations,
+  oncoEnrichR:::log4r_info(paste0("Found n = ",n_query_associations,
                            " prognostic cancer associations within the target set"))
 
   return(prognostic_query_associations)
 
 }
+
+km_cshl_survival_genes <-
+
+  function(qgenes,
+           qsource = "symbol",
+           projectsurvivaldb = NULL){
+
+    oncoEnrichR:::log4r_info(paste0("Project Survival_KM_CSHL: retrieval of ",
+                                    "genetic determinants of cancer survival"
+                                    ))
+    stopifnot(is.character(qgenes))
+    stopifnot(!is.null(projectsurvivaldb))
+    oncoEnrichR:::validate_db_df(projectsurvivaldb,
+                                 dbtype = "survival_km_cshl")
+
+    target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
+
+    km_survival_targets <- data.frame()
+
+    targets_survival <- as.data.frame(
+      projectsurvivaldb %>%
+        dplyr::inner_join(target_genes, by = c("symbol"))
+    )
+
+    symlevels <- levels(projectsurvivaldb$symbol)
+
+    if(nrow(targets_survival) > 0){
+
+      km_survival_targets <- as.data.frame(
+        targets_survival %>%
+          dplyr::select(symbol, tcga_cohort, z_score) %>%
+        dplyr::mutate(
+          symbol = factor(symbol, levels = symlevels))
+      )
+
+
+    }
+
+    return(km_survival_targets)
+
+  }
+

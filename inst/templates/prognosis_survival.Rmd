@@ -1,0 +1,354 @@
+### TCGA prognostic associations 
+
+#### Gene expression associations - Human Protein Atlas {.tabset}
+
+* Based on data from the [Human Protein Atlas - Pathology Atlas](https://www.proteinatlas.org/humanproteome/pathology), we are here listing significant results from correlation analyses of mRNA expression levels of human genes in tumor tissue and the clinical outcome (survival) for ~8,000 cancer patients (TCGA)
+* All correlation analyses have been performed in a gene-centric manner, and associations are only shown for genes in the query set. We separate between 
+  * <span style="background-color:#005a32; padding:2x; color:white"><b>&nbsp; Favorable associations &nbsp; </b></span> : high expression of a given gene is associated with better survival
+  * <span style="background-color:#99000d; padding:2x; color:white"><b>&nbsp; Unfavorable associations &nbsp; </b></span> : high expression of a given gene is associated with worse survival
+* Strength of associations are provided through p-values (only associations with a p-value< = 0.001 are provided), in addition we provide a percentile rank for associations considering 
+  a) all significant (p-value <= 0.001) associations across all tumor sites, and 
+  b) only significant (p-value <= 0.001) associations found in the same tumor site
+
+
+<br><br>
+
+```{r filter_hpa_prognostic, echo=F, results='asis'}
+
+show_hpa_prognostic <- list()
+missing_hpa_prognostic <- list()
+prognostic_assoc_data <- list()
+
+for(n in c('favorable','unfavorable')){
+    show_hpa_prognostic[[n]] <- TRUE
+    missing_hpa_prognostic[[n]] <- FALSE
+    prognostic_assoc_data[[n]] <- data.frame()
+  
+    prognostic_assoc_data[[n]] <- 
+      onc_enrich_report[['data']][['cancer_prognosis']][['hpa']][['assocs']] %>% 
+      dplyr::filter(evidence_direction == n) %>%
+      dplyr::select(-evidence_direction)
+    
+    if(nrow(prognostic_assoc_data[[n]]) == 0){
+      missing_hpa_prognostic[[n]] <- TRUE
+      show_hpa_prognostic[[n]] <- FALSE
+    }
+}
+
+```
+
+
+##### Favorable associations
+
+```{r table_browse_hpa_prognostic_favorable, echo=F, results = "asis", eval = show_hpa_prognostic[['favorable']]}
+library(crosstalk)
+
+
+prognostic_genes_favorable <- crosstalk::SharedData$new(prognostic_assoc_data[['favorable']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("symbol", "Target gene", prognostic_genes_favorable, ~symbol),
+    crosstalk::filter_slider("log10_p_value", "-log10 (p-value)", 
+                             prognostic_genes_favorable, ~log10_p_value, step = 1,
+                             min = 3, max = 16)
+  ),
+  list(
+    crosstalk::filter_select("primary_site", "Primary tumor site", prognostic_genes_favorable, ~primary_site),
+    crosstalk::filter_slider("percentile_rank_all", "Percentile rank (any tumor site)", 
+                             prognostic_genes_favorable, ~percentile_rank_all, 
+                             step = 10, min = 0, max = 100),
+    crosstalk::filter_slider("percentile_rank_site", "Percentile rank (tumor site)", 
+                             prognostic_genes_favorable, ~percentile_rank_site, 
+                             step = 10, min = 0, max = 100)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(prognostic_genes_favorable, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')) %>%
+  DT::formatStyle("symbol","log10_p_value", 
+                  color = "white", 
+                  fontWeight = "bold",
+                  backgroundColor = 
+                    DT::styleInterval(onc_enrich_report[['config']][['prognosis']][['breaks']], onc_enrich_report[['config']][['prognosis']][['colors_favorable']]))
+
+
+```
+
+
+```{r prognostic_missing_favorable, echo=F, results = 'asis', eval = missing_hpa_prognostic[['favorable']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with favorable gene expression association to prognosis&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br><br>
+
+
+##### Unfavorable associations
+
+```{r table_browse_hpa_prognostic_unfavorable, echo=F, results = "asis", eval = show_hpa_prognostic[['unfavorable']]}
+library(crosstalk)
+
+
+prognostic_genes_unfavorable <- crosstalk::SharedData$new(prognostic_assoc_data[['unfavorable']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("symbol", "Target gene", prognostic_genes_unfavorable, ~symbol),
+    crosstalk::filter_slider("log10_p_value", "-log10 (p-value)", 
+                             prognostic_genes_unfavorable, ~log10_p_value, step = 1,
+                             min = 3, max = 16)
+  ),
+  list(
+    crosstalk::filter_select("primary_site", "Primary tumor site", prognostic_genes_unfavorable, ~primary_site),
+    crosstalk::filter_slider("percentile_rank_all", "Percentile rank (any tumor site)", 
+                             prognostic_genes_unfavorable, ~percentile_rank_all, 
+                             step = 10, min = 0, max = 100),
+    crosstalk::filter_slider("percentile_rank_site", "Percentile rank (tumor site)", 
+                             prognostic_genes_unfavorable, ~percentile_rank_site, 
+                             step = 10, min = 0, max = 100)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(prognostic_genes_unfavorable, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')) %>%
+  DT::formatStyle("symbol","log10_p_value", 
+                  color = "white", 
+                  fontWeight = "bold",
+                  backgroundColor = 
+                    DT::styleInterval(onc_enrich_report[['config']][['prognosis']][['breaks']], onc_enrich_report[['config']][['prognosis']][['colors_unfavorable']]))
+
+
+```
+<br><br>
+
+```{r prognostic_missing_unfavorable, echo=F, results = 'asis', eval = missing_hpa_prognostic[['unfavorable']]}
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with unfavorable gene expression association to prognosis&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+```
+
+<br><br><br>
+
+#### Genetic determinants of survival in cancer {.tabset}
+
+* Based on data recently calculated by [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1), we here show the relative prognostic implications of genes in the query set, for different genetic features ( here limited to **expression**, **mutation** and **CNA**).
+  * The data provided by [Smith et al.](http://survival.cshl.edu) was harvested through analysis of TCGA datasets, in which [Cox proportional hazards models](http://survival.cshl.edu/?faqs#How%20was%20this%20analysis%20conducted%3F) were generated linking the expression, copy number, or mutation status of every gene in the genome with patient outcome in different cancer types profiled by the TCGA.
+  * Kaplan-Meier curves were generated by dividing patients into two groups and comparing the survival times between each group. For RNA-Seq, the division is made based on the mean expression of the feature. For CNAs, the division is made based on the mean copy number of the feature. For mutations, the division is made between patients who have a mutation (protein-coding only) in a gene and patients who lack mutations in a gene.
+  * Each gene has been attributed, for each genetic feature, with a [**Z-score (Wald statistic)**](http://survival.cshl.edu/#What%20is%20a%20Z%20score?), indicating the relative strength of association of a particular feature to either
+     * <span style="background-color:#2166AC; padding:2x; color:white"><b>&nbsp;Death (positive scores) &nbsp; </b></span>, or 
+     * <span style="background-color:#B2182B; padding:2x; color:white"><b>&nbsp;Survival (negative scores) &nbsp; </b></span>
+  * Shown here are three heatmaps (CNA, expression, mutation) with prognostic **Z-scores** for members of the query set (limited to the top 100). Tumor type cohorts are designated with TCGA abbreviations (COAD (Colon Adenocarcinoma), BRCA (Breast Invasive Carcinoma) etc.) 
+  
+<br>
+
+##### Mutation
+
+
+<br>
+
+```{r mutation_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']]) > 0}
+
+mutation_zscore_matrix <- as.data.frame(
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']] %>%
+  tidyr::pivot_wider(names_from = tcga_cohort,
+                     values_from = z_score) %>%
+    dplyr::arrange(symbol)
+)
+rownames(mutation_zscore_matrix) <-
+  mutation_zscore_matrix$symbol
+mutation_zscore_matrix$symbol <- NULL
+mutation_zscore_matrix <- as.matrix(mutation_zscore_matrix)
+
+if(NROW(mutation_zscore_matrix) > 100){
+  mutation_zscore_matrix <- mutation_zscore_matrix[1:100,]
+}
+
+mutation_zscore_matrix <- 
+  mutation_zscore_matrix[nrow(mutation_zscore_matrix):1, ]
+
+plotly_colors <- "RdBu"
+
+mutation_survival_fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 400 + (14.67 * NROW(mutation_zscore_matrix))) %>%
+  plotly::add_heatmap(
+    y = rownames(mutation_zscore_matrix),
+    x = colnames(mutation_zscore_matrix),
+    z = mutation_zscore_matrix,
+    hovertext = "Z-score",
+    yaxis = "y") %>%
+  plotly::layout(
+    title = 'Target survival associations (mutation)',
+    xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                 tickangle = -50),
+    yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+    margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+  ) %>%
+  plotly::colorbar(
+    nticks = 10, 
+    title = list(text = "Z-score",side = "bottom"),
+    limits = c(plyr::round_any(min(mutation_zscore_matrix), -12, ceiling),
+               plyr::round_any(max(mutation_zscore_matrix), 12, ceiling)))
+
+mutation_survival_fig
+
+
+```
+
+
+```{r prognostic_missing_cshl_mutation, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']])  == 0}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set with survival association scores (mutation). &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+
+```
+
+<br><br><br>
+
+##### Expression
+
+
+<br>
+
+```{r expression_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']]) > 0}
+
+expression_zscore_matrix <- as.data.frame(
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']] %>%
+  tidyr::pivot_wider(names_from = tcga_cohort,
+                     values_from = z_score) %>%
+    dplyr::arrange(symbol)
+)
+rownames(expression_zscore_matrix) <-
+  expression_zscore_matrix$symbol
+expression_zscore_matrix$symbol <- NULL
+expression_zscore_matrix <- as.matrix(expression_zscore_matrix)
+
+if(NROW(expression_zscore_matrix) > 100){
+  expression_zscore_matrix <- expression_zscore_matrix[1:100,]
+}
+
+expression_zscore_matrix <- 
+  expression_zscore_matrix[nrow(expression_zscore_matrix):1, ]
+
+plotly_colors <- "RdBu"
+
+expression_survival_fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 400 + (14.67 * NROW(expression_zscore_matrix))) %>%
+  plotly::add_heatmap(
+    y = rownames(expression_zscore_matrix),
+    x = colnames(expression_zscore_matrix),
+    z = expression_zscore_matrix,
+    hovertext = "Z-score",
+    yaxis = "y") %>%
+  plotly::layout(
+    title = 'Target survival associations (expression)',
+    xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                 tickangle = -50),
+    yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+    margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+  ) %>%
+  plotly::colorbar(
+    nticks = 10, 
+    title = list(text = "Z-score",side = "bottom"),
+   limits = c(plyr::round_any(min(expression_zscore_matrix), -12, ceiling),
+               plyr::round_any(max(expression_zscore_matrix), 12, ceiling)))
+
+expression_survival_fig
+
+
+```
+
+
+```{r prognostic_missing_cshl_expression, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']])  == 0}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set with survival association scores (expression). &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+
+```
+
+
+<br><br><br>
+
+
+
+##### CNA
+
+
+<br>
+
+```{r cna_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']]) > 0}
+
+cna_zscore_matrix <- as.data.frame(
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']] %>%
+  tidyr::pivot_wider(names_from = tcga_cohort,
+                     values_from = z_score) %>%
+    dplyr::arrange(symbol)
+)
+rownames(cna_zscore_matrix) <-
+  cna_zscore_matrix$symbol
+cna_zscore_matrix$symbol <- NULL
+cna_zscore_matrix <- as.matrix(cna_zscore_matrix)
+
+if(NROW(cna_zscore_matrix) > 100){
+  cna_zscore_matrix <- cna_zscore_matrix[1:100,]
+}
+
+cna_zscore_matrix <- 
+  cna_zscore_matrix[nrow(cna_zscore_matrix):1, ]
+
+plotly_colors <- "RdBu"
+
+cna_survival_fig <- plotly::plot_ly(
+  colors = plotly_colors,
+  width = 800,
+  height = 400 + (14.67 * NROW(cna_zscore_matrix))) %>%
+  plotly::add_heatmap(
+    y = rownames(cna_zscore_matrix),
+    x = colnames(cna_zscore_matrix),
+    z = cna_zscore_matrix,
+    hovertext = "Z-score",
+    yaxis = "y") %>%
+  plotly::layout(
+    title = 'Target survival associations (CNA)',
+    xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                 tickangle = -50),
+    yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+    margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+  ) %>%
+  plotly::colorbar(
+    nticks = 10, 
+    title = list(text = "Z-score",side = "bottom"),
+    limits = c(plyr::round_any(min(cna_zscore_matrix), -12, ceiling),
+               plyr::round_any(max(cna_zscore_matrix), 12, ceiling)))
+
+cna_survival_fig
+
+
+```
+
+
+```{r prognostic_missing_cshl_cna, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']])  == 0}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set with survival association scores (CNA). &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+
+```
+
+
+<br><br><br>
+

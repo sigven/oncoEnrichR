@@ -2,8 +2,8 @@ get_crispr_lof_scores <- function(qgenes,
                                   qsource = "symbol",
                                   projectscoredb = NULL) {
 
-  rlogging::message("Project Score (CRISPR/Cas9 screen): retrieval of genes ",
-                    "associated with loss-of-fitness in cancer cell lines")
+  oncoEnrichR:::log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of genes ",
+                    "associated with loss-of-fitness in cancer cell lines"))
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(projectscoredb))
   stopifnot(!is.null(projectscoredb[['fitness_scores']]))
@@ -62,9 +62,9 @@ get_target_priority_scores <-
            qsource = "symbol",
            projectscoredb = NULL){
 
-    rlogging::message("Project Score (CRISPR/Cas9 screen): retrieval of ",
+    oncoEnrichR:::log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of ",
                       "prioritized targets from loss-of-fitness screens ",
-                      "in cancer cell lines")
+                      "in cancer cell lines"))
     stopifnot(is.character(qgenes))
     stopifnot(!is.null(projectscoredb))
     stopifnot(!is.null(projectscoredb[['target_priority_scores']]))
