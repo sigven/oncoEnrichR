@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.9.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/annotation_sources.html">Annotation sources</a>
+      <a href="../articles/annotation_sources.html">Gene annotation sources</a>
     </li>
   </ul>
 </li>
@@ -148,6 +148,7 @@
   min_geneset_size <span class='op'>=</span> <span class='fl'>10</span>,
   max_geneset_size <span class='op'>=</span> <span class='fl'>500</span>,
   min_subcellcomp_confidence <span class='op'>=</span> <span class='fl'>1</span>,
+  subcellcomp_show_cytosol <span class='op'>=</span> <span class='cn'>FALSE</span>,
   simplify_go <span class='op'>=</span> <span class='cn'>TRUE</span>,
   ppi_add_nodes <span class='op'>=</span> <span class='fl'>50</span>,
   ppi_score_threshold <span class='op'>=</span> <span class='fl'>900</span>,
@@ -155,11 +156,12 @@
   show_drugs_in_ppi <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_disease <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_top_diseases_only <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  show_cancer_hallmarks <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_drug <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_enrichment <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_tcga_aberration <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_tcga_coexpression <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  show_cell_tissue <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  show_cell_tissue <span class='op'>=</span> <span class='cn'>FALSE</span>,
   show_unknown_function <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_prognostic_cancer_assoc <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_subcell_comp <span class='op'>=</span> <span class='cn'>TRUE</span>,
@@ -176,7 +178,8 @@
     </tr>
     <tr>
       <th>query_id_type</th>
-      <td><p>character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")</p></td>
+      <td><p>character indicating source of query (one of "uniprot_acc", "symbol",
+"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")</p></td>
     </tr>
     <tr>
       <th>ignore_id_err</th>
@@ -231,6 +234,10 @@
       <td><p>minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)</p></td>
     </tr>
     <tr>
+      <th>subcellcomp_show_cytosol</th>
+      <td><p>logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not</p></td>
+    </tr>
+    <tr>
       <th>simplify_go</th>
       <td><p>remove highly similar GO terms in results from GO enrichment/over-representation analysis</p></td>
     </tr>
@@ -257,6 +264,10 @@
     <tr>
       <th>show_top_diseases_only</th>
       <td><p>logical indicating if report should contain top (15) disease associations only (Open Targets Platform)</p></td>
+    </tr>
+    <tr>
+      <th>show_cancer_hallmarks</th>
+      <td><p>logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene</p></td>
     </tr>
     <tr>
       <th>show_enrichment</th>

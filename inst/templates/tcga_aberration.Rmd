@@ -687,6 +687,7 @@ cat('<br><br>')
   * Notably, each variant have been annotated/classified with a 
     1. _loss-of-function_ status, based on the [LOFTEE plugin in VEP](https://github.com/konradjk/loftee)
     2. Status as <span style="background-color:black; padding:2x; color:white">&nbsp;<b>somatic mutation hotspots&nbsp;</b></span> in cancer, according to [cancerhotspots.org](https://cancerhotspots.org). Format: _\<GENE\>|\<CODON\>|\<Q-VALUE\>_
+* Top 2,500 recurrent variants are listed here (all variants are listed in the Excel output of oncoEnrichR)
     
 <br><br>
 
@@ -716,7 +717,7 @@ vars <- vars %>%
   dplyr::mutate(CONSEQUENCE = stringr::str_replace_all(
     CONSEQUENCE,"&",", "
   )) %>%
-  head(5000)
+  head(2500)
 
 if(length(mutation_hotspot_levels) > 0){
   vars <- vars %>%
@@ -789,6 +790,7 @@ cat('<br><br>')
   * genes in the plot are ranked according to alteration frequency across all sites (_pancancer_), limited to the top 75 genes in the query set
 * Frequencies across all subtypes per primary site are listed in an interactive table
   * Only including genes that are aberrant in >= 1 percent of samples for a given tumor type/subtype
+  * Limited here to top 2,500 gene-subtype frequencies (all frequencies in Excel output of oncoEnrichR)
 
 
 <br><br>
@@ -894,7 +896,9 @@ all_targets_vtypes <-
   dplyr::bind_rows(
     onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
     ) %>%
-  dplyr::arrange(desc(percent_mutated))
+  dplyr::arrange(desc(percent_mutated)) %>%
+  head(2500)
+  
 targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 
 crosstalk::bscols(

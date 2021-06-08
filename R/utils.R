@@ -650,6 +650,7 @@ add_excel_sheet <- function(
               annotation_source = "Genetic determinants of survival in cancer (Smith et al., bioRxiv, 2021)",
               version = "v2") %>%
             dplyr::mutate(feature_type = t) %>%
+            dplyr::arrange(feature_type, z_score) %>%
             dplyr::select(annotation_source, version,
                           dplyr::everything())
 

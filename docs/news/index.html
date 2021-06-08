@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.9.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -94,7 +94,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/annotation_sources.html">Annotation sources</a>
+      <a href="../articles/annotation_sources.html">Gene annotation sources</a>
     </li>
   </ul>
 </li>
@@ -126,20 +126,41 @@
       <small>Source: <a href='https://github.com/sigven/oncoEnrichR/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="version-097-june-4th-2021" class="section level1">
-<h1 class="page-header" data-toc-text="0.9.7">
-<a href="#version-097-june-4th-2021" class="anchor"></a>Version 0.9.7 (June 4th 2021)</h1>
+    <div id="version-100" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.0">
+<a href="#version-100" class="anchor"></a>Version 1.0.0</h1>
 <div id="new" class="section level2">
 <h2 class="hasAnchor">
 <a href="#new" class="anchor"></a>New</h2>
 <ul>
-<li>More prognostic associations - harvested from <a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>
+<li>Added prognostic Z-scores also for methylation features (<a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>)</li>
+<li>To keep the file size of output Excel/HTML at managable levels, maximum size of queryset is reduced to <strong>n = 600 genes</strong>
 </li>
 </ul>
 </div>
 <div id="fixed" class="section level2">
 <h2 class="hasAnchor">
 <a href="#fixed" class="anchor"></a>Fixed</h2>
+<ul>
+<li>Fixed assymetrical scales of prognostic Z-score plots</li>
+<li>To decrease the size of the HTML report, limited datatable output of recurrent somatic SNVs/InDels and sCNA frequencies to top 2,500 (full set is kept in Excel output)</li>
+</ul>
+</div>
+</div>
+    <div id="version-097-june-4th-2021" class="section level1">
+<h1 class="page-header" data-toc-text="0.9.7">
+<a href="#version-097-june-4th-2021" class="anchor"></a>Version 0.9.7 (June 4th 2021)</h1>
+<div id="new-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#new-1" class="anchor"></a>New</h2>
+<ul>
+<li>More prognostic associations - harvested from <a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>
+</li>
+</ul>
+</div>
+<div id="fixed-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fixed-1" class="anchor"></a>Fixed</h2>
 <ul>
 <li>DESCRIPTION: Added <code>TissueEnrich</code> and <code>assertable</code> dependency</li>
 </ul>
@@ -174,9 +195,9 @@
 <li>Cancer hallmarks evidence</li>
 </ul>
 </div>
-<div id="fixed-1" class="section level2">
+<div id="fixed-2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed-1" class="anchor"></a>Fixed</h2>
+<a href="#fixed-2" class="anchor"></a>Fixed</h2>
 <ul>
 <li>Minor bugs (background query specificiation)</li>
 </ul>
@@ -192,9 +213,9 @@
     <div id="version-094-april-25th-2021" class="section level1">
 <h1 class="page-header" data-toc-text="0.9.4">
 <a href="#version-094-april-25th-2021" class="anchor"></a>Version 0.9.4 (April 25th 2021)</h1>
-<div id="fixed-2" class="section level2">
+<div id="fixed-3" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed-2" class="anchor"></a>Fixed</h2>
+<a href="#fixed-3" class="anchor"></a>Fixed</h2>
 <ul>
 <li>Cleaned Excel output</li>
 </ul>
@@ -213,9 +234,9 @@
 <li>Barplot for most significant GO terms enriched in query set</li>
 </ul>
 </div>
-<div id="fixed-3" class="section level2">
+<div id="fixed-4" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed-3" class="anchor"></a>Fixed</h2>
+<a href="#fixed-4" class="anchor"></a>Fixed</h2>
 <ul>
 <li>Bug in PPI’s for query sets with few/none interactions</li>
 </ul>

@@ -7,7 +7,7 @@
 onco_enrich(
   query,
   query_id_type = "symbol",
-  ignore_id_err = FALSE,
+  ignore_id_err = TRUE,
   project_title = "Project title",
   project_owner = "Project owner",
   project_description = "Project description",
@@ -20,28 +20,32 @@ onco_enrich(
   min_geneset_size = 10,
   max_geneset_size = 500,
   min_subcellcomp_confidence = 1,
-  simplify_go = F,
+  subcellcomp_show_cytosol = FALSE,
+  simplify_go = TRUE,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
-  show_ppi = T,
-  show_drugs_in_ppi = F,
-  show_disease = T,
-  show_drug = T,
-  show_enrichment = T,
-  show_tcga_aberration = T,
-  show_tcga_coexpression = T,
-  show_cell_tissue = T,
-  show_unknown_function = T,
-  show_prognostic_cancer_assoc = T,
-  show_subcell_comp = T,
-  show_crispr_lof = T,
-  show_complex = T
+  show_ppi = TRUE,
+  show_drugs_in_ppi = TRUE,
+  show_disease = TRUE,
+  show_top_diseases_only = TRUE,
+  show_cancer_hallmarks = TRUE,
+  show_drug = TRUE,
+  show_enrichment = TRUE,
+  show_tcga_aberration = TRUE,
+  show_tcga_coexpression = TRUE,
+  show_cell_tissue = FALSE,
+  show_unknown_function = TRUE,
+  show_prognostic_cancer_assoc = TRUE,
+  show_subcell_comp = TRUE,
+  show_crispr_lof = TRUE,
+  show_complex = TRUE
 )
 }
 \arguments{
 \item{query}{character vector with gene/query identifiers}
 
-\item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol", "entrezgene", or "ensembl_gene_id")}
+\item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
+"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
 
 \item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
@@ -69,6 +73,8 @@ onco_enrich(
 
 \item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
 
+\item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
+
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
 \item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
@@ -79,7 +85,11 @@ onco_enrich(
 
 \item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
 
-\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform)}
+\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)}
+
+\item{show_top_diseases_only}{logical indicating if report should contain top (15) disease associations only (Open Targets Platform)}
+
+\item{show_cancer_hallmarks}{logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene}
 
 \item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)}
 
@@ -91,11 +101,11 @@ onco_enrich(
 
 \item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed}
 
-\item{show_subcell_comp}{logical indicating if report should list subcellular compartment annotations (ComPPI)}
+\item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
-\item{show_crispr_lof}{logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
+\item{show_crispr_lof}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
-\item{show_complex}{logical indicating if report should list proteins in known protein complexes (CORUM)}
+\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (CORUM)}
 
 \item{show_tissue_cell}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
 of target genes, using data from the Human Protein Atlas}

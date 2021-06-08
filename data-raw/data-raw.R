@@ -1082,7 +1082,7 @@ for(p in c('early_phase','late_phase')){
 
 ####--- Cancer-KM-Survival (CSHL) ---####
 
-for(feature_type in c('CNAs','Mutations','Gene expression',
+for(feature_type in c('CNAs','Mutations','Gene expression','Methylation',
                       'miRNA expression','Protein expression')){
   destfile_fname <- paste0("data-raw/km_survival_cshl/",
                      tolower(
@@ -1101,7 +1101,7 @@ for(feature_type in c('CNAs','Mutations','Gene expression',
 }
 
 project_survival <- list()
-for(feature_type in c('cna','mutation','gene_expression')){
+for(feature_type in c('cna','mutation','gene_expression','methylation')){
 
   fname <- file.path("data-raw","km_survival_cshl",
                      paste0(feature_type,".xlsx"))
@@ -1121,6 +1121,9 @@ for(feature_type in c('cna','mutation','gene_expression')){
   }
   if(feattype_brief == "gene_expression"){
     feattype_brief <- "exp"
+  }
+  if(feattype_brief == "methylation"){
+    feattype_brief <- "meth"
   }
 
   data <- as.matrix(data)

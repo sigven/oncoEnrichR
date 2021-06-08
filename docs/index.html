@@ -44,7 +44,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.9.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -67,7 +67,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/annotation_sources.html">Annotation sources</a>
+      <a href="articles/annotation_sources.html">Gene annotation sources</a>
     </li>
   </ul>
 </li>
@@ -114,7 +114,7 @@
 <a href="#overview" class="anchor"></a>Overview</h3>
 <p><strong>oncoEnrichR</strong> is an R package for functional interrogation of human genesets in the context of cancer. The package is intended for exploratory analysis and prioritization of a gene list (referred to here as <strong>query set</strong>) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).</p>
 <p><br></p>
-<p><img align="center" border="2," src="reference/figures/oncoenrichr_overview.png"></p>
+<p><img align="center" border="1," src="reference/figures/oncoenrichr_overview.png"></p>
 <p><br><br></p>
 <p>The contents of the final report attempts to shed light on the following questions:</p>
 <ul>
@@ -136,6 +136,15 @@
 <h3 class="hasAnchor">
 <a href="#news" class="anchor"></a>News</h3>
 <ul>
+<li>June 8th 2021: <strong>1.0.0 release</strong>
+<ul>
+<li>Added methylation as prognostic feature from <a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>
+</li>
+<li>To keep the size of output Excel/HTML files at managable levels, maximum size of queryset is reduced to <strong>n = 600 genes</strong>
+</li>
+<li>Fixed assymetrical scales of prognostic Z-score plots</li>
+</ul>
+</li>
 <li>June 5th 2021: <strong>0.9.7 release</strong>
 <ul>
 <li>Added more prognostic associations from <a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>
@@ -178,12 +187,14 @@
 <a href="http://comppi.linkgroup.hu/">ComPPI</a> - subcellular compartment database</li>
 <li>
 <a href="https://score.depmap.sanger.ac.uk">Project Score</a> - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation</li>
+<li>
+<a href="http://survival.cshl.edu/">Genetic determinants of survival in cancer</a> - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers</li>
 </ul>
 </div>
 <div id="example-report" class="section level3">
 <h3 class="hasAnchor">
 <a href="#example-report" class="anchor"></a>Example report</h3>
-<p><a href="https://doi.org/10.5281/zenodo.4902166"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4902166.svg" alt="DOI"></a></p>
+<p><a href="https://doi.org/10.5281/zenodo.4911899"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4911899.svg" alt="DOI"></a></p>
 <p><br></p>
 <p><img align="center" width="560" height="750" border="2," src="reference/figures/oncoenrichr_slideshow2.gif"></p>
 </div>
@@ -384,7 +395,7 @@
 </tr>
 <tr class="even">
 <td><code>show_prognostic_cancer_assoc</code></td>
-<td>logical indicating if report should list results from significant associations between gene expression and survival (Human Protein Atlas - Pathology Atlas)</td>
+<td>logical indicating if report should list results from significant associations between gene expression, mutation, methylation and survival (Human Protein Atlas - Pathology Atlas, and survival.cshl.edu)</td>
 </tr>
 <tr class="odd">
 <td><code>show_complex</code></td>
@@ -416,7 +427,7 @@
 <li><code>project_title = "cMYC_BioID_screen"</code></li>
 <li><code>project_owner = "Raught et al."</code></li>
 </ul>
-<p>and produced the <a href="https://doi.org/10.5281/zenodo.4902166">following HTML report with results</a>.</p>
+<p>and produced the <a href="https://doi.org/10.5281/zenodo.4911899">following HTML report with results</a>.</p>
 <p>Below are R commands provided to reproduce the example output. <strong>NOTE</strong>: Replace “LOCAL_FOLDER” with a directory on your local computer:</p>
 <ul>
 <li><code><a href="https://github.com/sigven/oncoEnrichR">library(oncoEnrichR)</a></code></li>

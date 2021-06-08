@@ -15,7 +15,7 @@ __oncoEnrichR__ is an R package for functional interrogation of human genesets i
 
 <br>
 
-<img align="center" border = 2, src="man/figures/oncoenrichr_overview.png"/>
+<img align="center" border = 1, src="man/figures/oncoenrichr_overview.png"/>
 
 <br><br>
 
@@ -35,6 +35,11 @@ The contents of the final report attempts to shed light on the following questio
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* June 8th 2021: **1.0.0 release**
+  * Added methylation as prognostic feature from [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1)
+  * To keep the size of output Excel/HTML files at managable levels, maximum size of queryset is reduced to **n = 600 genes**
+  * Fixed assymetrical scales of prognostic Z-score plots
+
 * June 5th 2021: **0.9.7 release**
   * Added more prognostic associations from [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1)
   * KEGG update (20210531)
@@ -59,11 +64,12 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 * [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
 * [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
 * [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+* [Genetic determinants of survival in cancer](http://survival.cshl.edu/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
 
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.4902166"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4902166.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.4911899"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4911899.svg" alt="DOI"></a>
 
 <br>
 
@@ -164,7 +170,7 @@ _oncoEnrichR_ performs its operations through the following procedures/methods:
 	  ```show_subcell_comp```     |     logical indicating if report should list subcellular compartment annotations (ComPPI)
 	  ```show_crispr_lof```     |     logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens and associated target priority scores (Project Score)
 	  ```show_cell_tissue```    | 	logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in query set
-	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression and survival (Human Protein Atlas - Pathology Atlas)
+	  ```show_prognostic_cancer_assoc```  |    logical indicating if report should list results from significant associations between gene expression, mutation, methylation and survival (Human Protein Atlas - Pathology Atlas, and survival.cshl.edu)
 	  ```show_complex```     |     logical indicating if report should show membership of target proteins in known protein complexes (CORUM)
 
 
@@ -188,7 +194,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4902166).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4911899).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 

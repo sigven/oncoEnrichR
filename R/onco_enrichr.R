@@ -31,7 +31,7 @@
 #' @param show_tissue_cell logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed
+#' @param show_prognostic_cancer_assoc  logical indicating if prognostic gene associations to cancer types (mutation, expression, methylation, CNA) should be listed
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (CORUM)
@@ -461,11 +461,11 @@ onco_enrich <- function(query,
         "BH", "BY",
         "fdr", "none"))
 
-  if (length(query) > 800) {
+  if (length(query) > 600) {
     oncoEnrichR:::log4r_info(
-      paste0("WARNING: Due to size limitations, oncoEnrichR is limited to the analysis of n = 800 entries. Query contained n = ",
-             length(query), " identifiers, limiting to top 800 genes"))
-    query <- head(unique(query), 800)
+      paste0("WARNING: Due to size limitations, oncoEnrichR is limited to the analysis of n = 600 entries. Query contained n = ",
+             length(query), " identifiers, limiting to top 600 genes"))
+    query <- head(unique(query), 600)
   }
 
 
@@ -940,7 +940,7 @@ onco_enrich <- function(query,
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
 
-    for(feature in c('exp', 'mut', 'cna')){
+    for(feature in c('exp', 'mut', 'cna', 'meth')){
       onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
         oncoEnrichR:::km_cshl_survival_genes(
           query_symbol,

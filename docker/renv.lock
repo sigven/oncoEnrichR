@@ -72,9 +72,9 @@
     },
     "Biostrings": {
       "Package": "Biostrings",
-      "Version": "2.60.0",
+      "Version": "2.60.1",
       "Source": "Bioconductor",
-      "Hash": "b6102c0a5ee15f50c8c08c685ad1052a"
+      "Hash": "ee27fadce643ce9df34bb1778748af38"
     },
     "DBI": {
       "Package": "DBI",
@@ -558,10 +558,10 @@
     },
     "corrplot": {
       "Package": "corrplot",
-      "Version": "0.88",
+      "Version": "0.89",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "73276adb48c37144836420004f59d546"
+      "Hash": "98960b099023f7d04dd5a46bd4ff5d45"
     },
     "cowplot": {
       "Package": "cowplot",
@@ -883,10 +883,10 @@
     },
     "ggtree": {
       "Package": "ggtree",
-      "Version": "3.0.1",
+      "Version": "3.0.2",
       "Source": "Bioconductor",
       "Remotes": "GuangchuangYu/treeio",
-      "Hash": "cac7a08335a187db4d06f2eddc6b89bd"
+      "Hash": "d40b77638096a53b9012627e2a9aadb8"
     },
     "gh": {
       "Package": "gh",
@@ -1471,10 +1471,10 @@
     },
     "quantreg": {
       "Package": "quantreg",
-      "Version": "5.85",
+      "Version": "5.86",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d41a5849071941c6c269b57324515398"
+      "Hash": "28692dfa3efea8e19d29347d05f5a489"
     },
     "qvalue": {
       "Package": "qvalue",
@@ -1760,10 +1760,10 @@
     },
     "textshape": {
       "Package": "textshape",
-      "Version": "1.7.1",
+      "Version": "1.7.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d87f0855e8cf57a3bd2506f7e5aa4459"
+      "Hash": "a459e600b09f7847fef41465ce7d58b5"
     },
     "textshaping": {
       "Package": "textshaping",
@@ -1816,10 +1816,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.31",
+      "Version": "0.32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "25b572f764f3c19fef9aac33b5724f3d"
+      "Hash": "db9a6f2cf147751322d22c9f6647c7bd"
     },
     "treeio": {
       "Package": "treeio",
