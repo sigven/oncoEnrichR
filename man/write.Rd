@@ -2,29 +2,32 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{write}
 \alias{write}
-\title{Function that writes the contents of the oncoEnrichR report object to either
-A) interactive HTML report, or B) Excel workbook}
+\title{Function that writes an oncoEnrichR report object to file}
 \usage{
 write(
   report,
   file = "testReport.html",
   ignore_file_extension = T,
-  overwrite = T,
-  format = "html"
+  overwrite = F,
+  format = "html",
+  ...
 )
 }
 \arguments{
 \item{report}{object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)}
 
-\item{file}{filename for report output}
+\item{file}{full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")}
 
 \item{ignore_file_extension}{logical to accept any type of filaname extensions (for Galaxy integration)}
 
-\item{overwrite}{logical indicating if file contents may be overwritten}
+\item{overwrite}{logical indicating if existing output files may be overwritten}
 
 \item{format}{file format of output (html/excel)}
+
+\item{...}{options for Galaxy/non self-contained HTML. Set 'selfcontained_html' to
+FALSE for a smaller HTML output file with external dependencies (CSS/JavaScript) in
+external olders.}
 }
 \description{
-Function that writes the contents of the oncoEnrichR report object to either
-A) interactive HTML report, or B) Excel workbook
+Function that writes an oncoEnrichR report object to file
 }

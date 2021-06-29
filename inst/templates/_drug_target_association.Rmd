@@ -1,0 +1,87 @@
+### Drug associations
+
+* Each protein/protein in the query set is annotated with:
+   * Targeted cancer drugs (inhibitors/antagonists), as found through the [Open Targets Platform](https://targetvalidation.org)
+   * We distinguish between drugs in <i>early clinical development/phase (<b>ep</b>)</i>, and drugs already in <i>late clinical development/phase (<b>lp</b>)</i>
+
+<br><br>
+
+
+```{r table_browse_drug_targets, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['drug']][['target_drugs']]) > 0}
+library(crosstalk)
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['drug']][['target_drugs']], escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip'))
+
+
+
+```
+
+
+```{r drug_targets_missing, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['drug']][['target_drugs']]) == 0}
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query proteins with cancer drug associations from Open Targets Platform were found. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>
+
+#### Target tractabilities {.tabset }
+
+* Each gene/protein in the query set is annotated with _[target tractability information](https://docs.targetvalidation.org/getting-started/target-tractability)_ (aka druggability) towards
+small molecules/compounds and antibodies
+* Query genes are colored in varying shades of purple (from <span style="background-color:#b8b8ba; padding:2x; color:white">&nbsp;unknown tractability&nbsp;</span> to <span style="background-color:#810f7c; padding:2x; color:white">&nbsp;clinical precedence&nbsp;</span>)
+   
+
+<br><br>
+
+##### Small molecules/compounds 
+
+```{r table_browse_tractability_sm, echo=F, results = "asis", eval = T}
+library(crosstalk)
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['drug']][['tractability_sm']], escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), dom = 'Bfrtip')) %>%
+   DT::formatStyle(
+    "SM_tractability_category", 
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["drug"]][["sm_levels"]],
+      onc_enrich_report[["config"]][["drug"]][["sm_levels_colors"]]
+    )
+  )
+
+
+
+```
+
+
+##### Antibodies
+
+```{r table_browse_tractability_ab, echo=F, results = "asis", eval = T}
+library(crosstalk)
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['drug']][['tractability_ab']], escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), dom = 'Bfrtip')) %>%
+   DT::formatStyle(
+    "AB_tractability_category", 
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["drug"]][["ab_levels"]],
+      onc_enrich_report[["config"]][["drug"]][["ab_levels_colors"]]
+    )
+  )
+
+
+
+```
+

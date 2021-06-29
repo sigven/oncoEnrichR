@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{onco_enrich}
 \alias{onco_enrich}
-\title{Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance}
+\title{Interrogate a gene list for cancer relevance}
 \usage{
 onco_enrich(
   query,
@@ -38,7 +38,8 @@ onco_enrich(
   show_prognostic_cancer_assoc = TRUE,
   show_subcell_comp = TRUE,
   show_crispr_lof = TRUE,
-  show_complex = TRUE
+  show_complex = TRUE,
+  ...
 )
 }
 \arguments{
@@ -111,5 +112,5 @@ onco_enrich(
 of target genes, using data from the Human Protein Atlas}
 }
 \description{
-Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
+Interrogate a gene list for cancer relevance
 }

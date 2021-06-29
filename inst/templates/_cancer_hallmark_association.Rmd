@@ -1,0 +1,48 @@
+### Cancer hallmark evidence
+
+* Each gene in the query set is annotated with cancer hallmarks evidence ([Hanahan & Weinberg, Cell, 2011](https://pubmed.ncbi.nlm.nih.gov/21376230/)), indicating genes associated with essential alterations in cell physiology that can dictate malignant growth.
+* Data has been collected from the [Open Targets Platform](https://targetvalidation.org), and we list evidence for each hallmark per gene, indicated as either being <span style="background-color:#005a32; color:white"><b>&nbsp;promoted &nbsp;</b></span>, or <span style="background-color:#800026; color:white"><b>&nbsp;suppressed &nbsp; </b></span>
+
+<br><br>
+
+
+```{r table_browse_hallmarks, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['cancer_hallmark']][['target']]) > 0}
+library(crosstalk)
+
+target_hm_shared <- onc_enrich_report[['data']][['cancer_hallmark']][['target']]
+
+htmltools::br()
+DT::datatable(target_hm_shared, 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+  DT::formatStyle(columns = c("promotes"),
+                  valueColumns = c('promotes'),
+                  color = "white", 
+                  backgroundColor = DT::styleEqual(
+                  c(TRUE, FALSE), 
+                  c("#005a32","#989898"))
+  ) %>%
+   DT::formatStyle(columns = c("suppresses"),
+                  valueColumns = c('suppresses'),
+                  color = "white", 
+                  backgroundColor = DT::styleEqual(
+                  c(TRUE, FALSE), 
+                  c("#800026","#989898"))
+  )
+
+
+
+```
+
+
+```{r hallmarks_missing, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['cancer_hallmark']][['target']]) == 0}
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query genes with cancer hallmark associations from Open Targets Platform were found. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>

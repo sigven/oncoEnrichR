@@ -1,0 +1,79 @@
+---
+title: "OncoEnrichR report - `r onc_enrich_report[['config']][['project_title']]`"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
+nocite: |
+  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn, @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, @Smith2021-fh
+output: 
+  html_document:
+    toc: true
+    theme: default
+    number_sections: false
+    toc_float: true
+    toc_depth: 4
+    fig_width: 5
+    fig_height: 4
+    highlight: null
+    mathjax: null
+---
+
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
+```
+
+<br>
+```{r project_background, child='_project_background.Rmd', eval = T}
+```
+
+```{r project_background, child='_query_verification.Rmd', eval = T}
+```
+
+```{r target_disease, child='_disease_association.Rmd', eval = onc_enrich_report[['config']][['show']][['disease']]}
+```
+
+```{r target_hallmark, child='_cancer_hallmark_association.Rmd', eval = onc_enrich_report[['config']][['show']][['cancer_hallmark']]}
+```
+
+```{r target_unknown, child='_unknown_function.Rmd', eval = onc_enrich_report[['config']][['show']][['unknown_function']]}
+```
+
+```{r target_drug, child='_drug_target_association.Rmd', eval = onc_enrich_report[['config']][['show']][['drug']]}
+```
+
+```{r target_complex, child='_protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
+```
+
+```{r target_subcell, child='_subcell_comp.Rmd', eval = onc_enrich_report[['config']][['show']][['subcellcomp']]}
+```
+
+```{r target_cell_tissue, child='_cell_tissue.Rmd', eval = onc_enrich_report[['config']][['show']][['cell_tissue']]}
+```
+
+```{r target_ppi, child='_ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
+```
+
+```{r target_enrichment_invalid, child='_functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == "found")) < 5}
+```
+
+
+```{r target_enrichment, child='_functional_enrichment.Rmd', eval = onc_enrich_report[['config']][['show']][['enrichment']]}
+```
+
+```{r target_tcga_aberration, child='_tcga_aberration.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_aberration']]}
+```
+
+```{r target_tcga_coexpression, child='_tcga_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_coexpression']]}
+```
+
+```{r target_cancer_prognosis, child='_prognosis_survival.Rmd', eval = onc_enrich_report[['config']][['show']][['cancer_prognosis']]}
+```
+
+```{r target_lof, child='_crispr_lof.Rmd', eval = onc_enrich_report[['config']][['show']][['crispr_ps']]}
+```
+
+```{r documentation_workflow, child='_documentation_workflow.Rmd', eval = onc_enrich_report[['data']][['query']]$validation_status != "imperfect_stop"}
+```
+
+### References
+

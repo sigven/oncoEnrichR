@@ -1,0 +1,48 @@
+---
+title: "Gene annotation sources"
+author: "Sigve Nakken"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Annotation sources}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+##
+
+This article will describe the underlying annotation sources of _oncoEnrichR_ in detail, how
+they have been subject to quality control/filtering for use in the package. _IN PROGRESS_
+
+### Target-disease associations
+
+### Target-drug associations
+
+### Tumor suppressor/oncogene annotation
+
+### Cancer hallmark evidence
+
+### Copy number amplifications/homozygous deletions
+
+### Recurrent SNVs/InDels
+
+### Co-expression (RNA-seq)
+
+### Molecular signatures / pathways
+
+### Cell/tissue-specific expression patterns
+
+### Gene fitness effects
+
+### Subcellular localization
+
+### Protein-protein interactions
+
+### Genetic determinants of survival

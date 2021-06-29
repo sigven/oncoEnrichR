@@ -1,0 +1,396 @@
+### Function and pathway enrichment {.tabset}
+
+* Each protein in the query set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment/overrepresentation with respect to:
+   * [Gene Ontology terms](https://geneontology.org). All three subontologies: _Molecular Function_ (GO_MF), _Cellular Component_ (GO_CC) & _Biological Process_ (GO_BP)
+   * Molecular signalling networks from [KEGG](https://www.genome.jp/kegg/pathway.html)
+   * Cellular pathways from [Reactome](https://reactome.org/), and other curated gene signature sets from the [Molecular Signatures Database (MSiGDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
+   * [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
+   * Manually curated signal transduction pathways from [NetPath](http://www.netpath.org)
+  
+<br>
+
+* Enrichment/overrepresentation test settings
+   * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
+   * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
+   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
+   * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
+   * Maximal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`
+   * Background gene set: `r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`
+   
+
+<br><br>
+
+
+```{r prepare_enrichment_data, echo=F, results='asis'}
+
+show_enrichment_filters <- list()
+missing_enrichment_items <- list()
+eitems <- list()
+for(type in c('go','msigdb','wikipathway','kegg','netpath')){
+  show_enrichment_filters[[type]] <- F
+  missing_enrichment_items[[type]] <- T
+  if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
+    show_enrichment_filters[[type]] <- T
+    missing_enrichment_items[[type]] <- F
+  }
+}
+
+```
+
+
+#### Gene Ontology
+
+<br><br>
+
+
+
+```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
+library(crosstalk)
+
+enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
+
+
+terms_go <- crosstalk::SharedData$new(enrichment_go_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_go, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Ontology", terms_go, ~DB)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_go, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+rm(terms_go)
+rm(enrichment_go_display)
+
+
+```
+
+<br><br>
+
+```{r go_enrichment_barplot, echo = F, results = "asis", eval = show_enrichment_filters[['go']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::arrange(qvalue) %>%
+  head(20) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biologial Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 11, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = 11),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = 11)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+
+
+```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br><br>
+
+#### Molecular Signatures Database (MSigDB)
+
+<br><br>
+
+```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
+library(crosstalk)
+
+enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] %>%
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
+
+terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_msigdb, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Signature collection", terms_msigdb, ~DB)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_msigdb, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')
+)
+rm(terms_msigdb)
+rm(enrichment_msigdb_display)
+```
+
+
+```{r msigdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['msigdb']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br><br>
+
+#### KEGG
+
+<br><br>
+
+```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['kegg']]}
+library(crosstalk)
+
+enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] %>%
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue,  
+                P_Value = pvalue,
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
+
+terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_keggdb, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+rm(terms_keggdb)
+rm(enrichment_keggdb_display)
+
+
+```
+
+
+```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['kegg']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br><br>
+
+
+#### WikiPathways
+
+<br><br>
+
+
+```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathway']]}
+library(crosstalk)
+
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] %>%
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
+                 DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, 
+                P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, 
+                Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
+
+
+terms_wikipathway <- crosstalk::SharedData$new(enrichment_wikidb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_wikipathway, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_wikipathway, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+
+rm(terms_wikipathway)
+rm(enrichment_wikidb_display)
+
+
+
+```
+
+
+```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathway']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+
+```
+
+
+<br><br><br>
+
+#### NetPath
+
+<br><br>
+
+```{r table_browse_netpathdb, echo=F, results = "asis", eval = show_enrichment_filters[['netpath']]}
+library(crosstalk)
+
+enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netpath']] %>%
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio, Count = count,
+                P_Value_Cutoff = setting_p_value_cutoff,
+                Q_Value_Cutoff = setting_q_value_cutoff,
+                P_Value_Adj_Method = setting_p_value_adj_method,
+                Min_Geneset_Size = setting_min_geneset_size,
+                Max_Geneset_Size = setting_max_geneset_size) %>%
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
+                 DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio, Count, 
+                P_Value_Cutoff, Q_Value_Cutoff,
+                P_Value_Adj_Method, 
+                Min_Geneset_Size, Max_Geneset_Size) %>%
+  dplyr::arrange(Q_Value)
+
+terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_netpath, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_netpath, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+
+rm(terms_netpath)
+rm(enrichment_netpath_display)
+
+```
+
+
+```{r netpath_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['netpath']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+
+```
+
+
+<br><br><br>

@@ -35,20 +35,15 @@ The contents of the final report attempts to shed light on the following questio
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* June 29th 2021: **1.0.3 release**
+  * Minor typo fixes in HTML output
+  * Data upgrade: KEGG, WikiPathways, CancerMine
+  * **NEW**: web interface to oncoEnrichR: [oncotools.elixir.no](https://oncotools.elixir.no)
+  
 * June 8th 2021: **1.0.0 release**
   * Added methylation as prognostic feature from [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1)
   * To keep the size of output Excel/HTML files at managable levels, maximum size of queryset is reduced to **n = 600 genes**
   * Fixed assymetrical scales of prognostic Z-score plots
-
-* June 5th 2021: **0.9.7 release**
-  * Added more prognostic associations from [Smith et al., *bioRxiv*, 2021](https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1)
-  * KEGG update (20210531)
-  * Disease associations from Open Targets Platform v2021.04
-* May 12th 2021: **0.9.6 release**
-  * Added cancer hallmarks evidence
-  * Fixed minor bugs
-  * Drug retrieval from Open Targets Platform v2021.04
-
 
 ### Annotation resources
 
@@ -69,7 +64,7 @@ Data harvested from the following resources form the backbone of _oncoEnrichR_:
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.4911899"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4911899.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.4945414"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4945414.svg" alt="DOI"></a>
 
 <br>
 
@@ -194,7 +189,7 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
   * `project_title = "cMYC_BioID_screen"`
   * `project_owner = "Raught et al."`
 
- and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4911899).
+ and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4945414).
 
  Below are R commands provided to reproduce the example output. __NOTE__: Replace "LOCAL_FOLDER" with a directory on your local computer:
 

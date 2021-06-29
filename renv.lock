@@ -22,9 +22,9 @@
   "Packages": {
     "AnnotationDbi": {
       "Package": "AnnotationDbi",
-      "Version": "1.54.0",
+      "Version": "1.54.1",
       "Source": "Bioconductor",
-      "Hash": "64e12f6cf13e85d9f44877c22d86b5e5"
+      "Hash": "5c5813b294bf80a7664ffbaea0e719ba"
     },
     "BH": {
       "Package": "BH",
@@ -461,10 +461,10 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "0.7.6",
+      "Version": "0.7.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "06015476250468fc013c30022118ce3a"
+      "Hash": "2368dde18d8ef1ca933e7e2eea3ece57"
     },
     "cachem": {
       "Package": "cachem",
@@ -766,10 +766,10 @@
     },
     "formatR": {
       "Package": "formatR",
-      "Version": "1.10",
+      "Version": "1.11",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "8c445628912fee7939563bea3c238e57"
+      "Hash": "2590a6a868515a69f258640a51b724c9"
     },
     "fs": {
       "Package": "fs",
@@ -1196,10 +1196,10 @@
     },
     "matrixStats": {
       "Package": "matrixStats",
-      "Version": "0.58.0",
+      "Version": "0.59.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c318d148056e5bb8d7de79b0876f9ae6"
+      "Hash": "45a2fee40a2f1bcad392cbe8a5f10d4f"
     },
     "memoise": {
       "Package": "memoise",
@@ -1286,19 +1286,19 @@
     },
     "oncoPharmaDB": {
       "Package": "oncoPharmaDB",
-      "Version": "0.4.1",
+      "Version": "0.4.2",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oncoPharmaDB",
       "RemoteUsername": "sigven",
       "RemoteRef": "HEAD",
-      "RemoteSha": "45acfd73689f4ab82d561b321a71576b1a6d5019",
-      "Hash": "19f2ebfcaf86cbeed90d212fa8651575"
+      "RemoteSha": "f0b8edbb0d3ca22c37d04064954e4502698a58b9",
+      "Hash": "fd6b0957caed027054446b846827ec6d"
     },
     "oncoPhenoMap": {
       "Package": "oncoPhenoMap",
-      "Version": "0.1.2",
+      "Version": "0.1.3",
       "Source": "GitHub",
       "Remotes": "mjkallen/rlogging",
       "RemoteType": "github",
@@ -1306,8 +1306,8 @@
       "RemoteRepo": "oncoPhenoMap",
       "RemoteUsername": "sigven",
       "RemoteRef": "HEAD",
-      "RemoteSha": "7cce8e8d30ea8bf9f2a5787ddf548441a9153484",
-      "Hash": "c1787d3d22e001dd7e7fbf1b7df703b4"
+      "RemoteSha": "2af17047a8a155d8b0de80d7f775cd230fee4b23",
+      "Hash": "72976803c742c039b74572393aafb87e"
     },
     "openssl": {
       "Package": "openssl",
@@ -1380,10 +1380,10 @@
     },
     "plotly": {
       "Package": "plotly",
-      "Version": "4.9.3",
+      "Version": "4.9.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f6b85d9e4ed88074ea0ede1aa74bb00e"
+      "Hash": "3f385f2cd5c270ea3bbe68cb94f7c558"
     },
     "plyr": {
       "Package": "plyr",
@@ -1490,10 +1490,10 @@
     },
     "ragg": {
       "Package": "ragg",
-      "Version": "1.1.2",
+      "Version": "1.1.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3f0ac98597bebdc31b747def3eb9b6ca"
+      "Hash": "663065eff8c6c08eaa9955c6f478ee7a"
     },
     "rappdirs": {
       "Package": "rappdirs",
@@ -1767,10 +1767,10 @@
     },
     "textshaping": {
       "Package": "textshaping",
-      "Version": "0.3.4",
+      "Version": "0.3.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "b47ec0c0b55d1cf4d5b8f2da3fe2024e"
+      "Hash": "6bb7e974b464fe72f192e51b4dab67f2"
     },
     "tibble": {
       "Package": "tibble",
@@ -1927,10 +1927,10 @@
     },
     "zip": {
       "Package": "zip",
-      "Version": "2.1.1",
+      "Version": "2.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3bc8405c637d988801ec5ea88372d0c2"
+      "Hash": "c7eef2996ac270a18c2715c997a727c5"
     },
     "zlibbioc": {
       "Package": "zlibbioc",

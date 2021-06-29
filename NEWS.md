@@ -1,3 +1,16 @@
+# Version 1.0.3
+
+## Added
+
+* Functionality for Galaxy-specific HTML output (non-selfcontained HTML)
+* Data updates: WikiPathways (20210610), KEGG (20210610), CancerMine (v36, 20210611)
+* Web-based interface to oncoEnrichR available: [oncotools.elixir.no](https://oncotools.elixir.no)
+
+## Fixed
+
+* Minor typos in HTML output
+* Ambiguous Entrez gene identifiers (towards gene symbols)
+
 # Version 1.0.0
 
 ## New

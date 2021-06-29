@@ -1,0 +1,38 @@
+### Protein complexes
+
+* Each protein in the query set is annotated with:
+   * Known protein complexes as found in [CORUM](https://mips.helmholtz-muenchen.de/corum/)
+   * The complexes are ranked according to the total number of participating members in the query set
+   
+<br><br>
+
+
+```{r table_browse_complex, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['complex']]) > 0}
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              style = 'bootstrap',
+              rownames = F,
+              options=list(buttons = c('csv','excel'),
+                           pageLength = 10,
+                           bPaginate = T,
+                           dom = 'Bfrtip') 
+)
+
+
+```
+
+
+```{r indicate_missing_complexes, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['protein_complex']][['complex']]) == 0}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes from the CORUM database.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>
