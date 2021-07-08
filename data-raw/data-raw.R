@@ -3,13 +3,13 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.4 (April 2021)'
-wikipathways_version <- "20210510"
+wikipathways_version <- "20210610"
 netpath_version <- "2010"
-kegg_version <- "20210531"
+kegg_version <- "20210610"
 update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- F
-uniprot_release <- "2021_02"
+uniprot_release <- "2021_03"
 
 software_db_version <-
   read.table(file="data-raw/RELEASE_NOTES",
@@ -75,7 +75,8 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     basedir = here::here(),
     gene_info = gene_info,
-    version = "35") %>%
+    version = "37") %>%
+  dplyr::filter(symbol != "TTN") %>%
   dplyr::select(
     symbol, tumor_suppressor,
     oncogene, citation_links_oncogene,
@@ -92,10 +93,10 @@ ts_oncogene_annotations <-
 
 ## Open Targets Platform: Target-disease associations target tractability
 opentarget_associations <-
-  get_opentarget_associations_v2(
+  get_opentarget_associations(
     basedir = here::here(),
     min_num_sources = 2,
-    min_overall_score = 0.2,
+    min_overall_score = 0.1,
     direct_associations_only = T)
 
 ####---UniProt/CORUM----####
@@ -125,6 +126,49 @@ gencode <-
 
 gencode <- map_uniprot_accession(gencode = gencode,
                                  uniprot_map = uniprot_map)
+
+
+
+####---- Resolve ambiguious entrezgene identifiers ----####
+ambiguous_entrezgene_ids <- as.data.frame(
+  gencode %>%
+    dplyr::select(symbol, entrezgene) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(entrezgene) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::filter(n > 1) %>%
+    dplyr::select(-n)
+)
+
+nonambiguous_entrezgene_ids <- as.data.frame(
+  gencode %>%
+    dplyr::select(symbol, entrezgene) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(entrezgene) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::filter(n == 1) %>%
+    dplyr::select(-n)
+)
+
+
+gencode_nonambiguous <-
+  gencode %>% dplyr::inner_join(
+    nonambiguous_entrezgene_ids, by = "entrezgene"
+  )
+
+gencode_ambiguous_resolved <-
+  gencode %>% dplyr::inner_join(
+    ambiguous_entrezgene_ids, by = "entrezgene"
+  ) %>%
+  dplyr::filter(symbol != "Vault") %>%
+  dplyr::filter(symbol != "AC006115.7") %>%
+  dplyr::filter(symbol == "VTRNA2-1" |
+                  symbol == "ZIM2-AS1" |
+                  !stringr::str_detect(symbol,"-"))
+
+gencode <- gencode_nonambiguous %>%
+  dplyr::bind_rows(gencode_ambiguous_resolved)
+
 
 ## Gene summaries from NCBI (provided by RefSeq/OMIM):
 if(update_ncbi_gene_summary == T){
@@ -1925,6 +1969,13 @@ rm(maf_path)
 rm(t)
 rm(n)
 rm(p)
+rm(pancancer_trend)
+rm(pfam_domains)
+rm(phenotype_cancer_efo)
+rm(tcgadb)
+rm(go_gganatogram_map)
+rm(hallmark_data)
+
 rm(otdb_all)
 rm(otdb_site_rank)
 rm(otdb_tissue_scores)
@@ -1935,3 +1986,6 @@ rm(target_tractabilities)
 rm(ensembl_protein_xref)
 rm(netpath_idmapping)
 rm(netpath_pathway_data)
+rm(gencode_ambiguous_resolved)
+rm(gencode_nonambiguous)
+rm(nonambiguous_entrezgene_ids)
