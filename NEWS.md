@@ -1,3 +1,10 @@
+# Version 1.0.4
+
+## Added
+
+* Data updates: Open Targets Platform (21.06), CancerMine (v37)
+* Software upgrades: multiple R packages, including clusterProfiler (4.0.2)
+
 # Version 1.0.3
 
 ## Added

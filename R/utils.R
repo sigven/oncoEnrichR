@@ -1018,3 +1018,9 @@ log4r_warn <- function(msg) {
   log4r::warn(log4r_logger, msg)
 }
 
+
+file_is_writable <- function(path) {
+  assertthat::is.string(path) &&
+    file.exists(path) &&
+    assertthat::is.writeable(path)
+}

@@ -366,7 +366,7 @@ init_report <- function(project_title = "Project title",
   return(rep)
 }
 
-#' Function that interrogates and analyzes a list of human protein-coding genes for cancer relevance
+#' Interrogate a gene list for cancer relevance
 #'
 #' @param query character vector with gene/query identifiers
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
@@ -438,7 +438,8 @@ onco_enrich <- function(query,
                    show_prognostic_cancer_assoc = TRUE,
                    show_subcell_comp = TRUE,
                    show_crispr_lof = TRUE,
-                   show_complex = TRUE) {
+                   show_complex = TRUE,
+                   ...) {
 
   my_log4r_layout <- function(level, ...) {
     paste0(format(Sys.time()), " - ", level, " - ", ..., "\n", collapse = "")
@@ -449,6 +450,7 @@ onco_enrich <- function(query,
            logger, envir = .GlobalEnv)
   }
 
+  dot_args <- list(...)
 
   stopifnot(!is.null(query))
   stopifnot(is.character(query))
@@ -461,11 +463,25 @@ onco_enrich <- function(query,
         "BH", "BY",
         "fdr", "none"))
 
-  if (length(query) > 600) {
+  #galaxy <- F
+  oncoenrichr_query_limit <- 600
+
+  if(length(names(dot_args)) > 0){
+    if("galaxy" %in% names(dot_args))
+      if(is.logical(dot_args$galaxy)){
+        if(dot_args$galaxy == T){
+          oncoenrichr_query_limit <- 500
+        }
+      }
+  }
+
+  if (length(query) > oncoenrichr_query_limit) {
     oncoEnrichR:::log4r_info(
-      paste0("WARNING: Due to size limitations, oncoEnrichR is limited to the analysis of n = 600 entries. Query contained n = ",
-             length(query), " identifiers, limiting to top 600 genes"))
-    query <- head(unique(query), 600)
+      paste0("WARNING: oncoEnrichR is limited to the analysis of n = ",
+             oncoenrichr_query_limit," entries. Query contained n = ",
+             length(query), " identifiers, limiting to top ",
+             oncoenrichr_query_limit," genes"))
+    query <- head(unique(query), oncoenrichr_query_limit)
   }
 
 
@@ -944,7 +960,8 @@ onco_enrich <- function(query,
       onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
         oncoEnrichR:::km_cshl_survival_genes(
           query_symbol,
-          projectsurvivaldb = oncoEnrichR::projectsurvivaldb[[feature]])
+          projectsurvivaldb = oncoEnrichR::projectsurvivaldb[[feature]],
+          genetic_feature = feature)
     }
 
   }
@@ -981,53 +998,102 @@ onco_enrich <- function(query,
 
 }
 
-#' Function that writes the contents of the oncoEnrichR report object to either
-#' A) interactive HTML report, or B) Excel workbook
+#' Function that writes an oncoEnrichR report object to file
 #'
 #' @param report object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)
-#' @param file filename for report output
+#' @param file full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")
 #' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
-#' @param overwrite logical indicating if file contents may be overwritten
+#' @param overwrite logical indicating if existing output files may be overwritten
 #' @param format file format of output (html/excel)
+#' @param ... options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy
 #' @export
 
 write <- function(report,
-                  #project_directory,
                   file = "testReport.html",
-                  ignore_file_extension = T,
-                  overwrite = T,
-                  format = "html") {
+                  ignore_file_extension = F,
+                  overwrite = F,
+                  format = "html",
+                  ...) {
 
+  selfcontained <- T
+  galaxy_run <- T
+  html_extern_path <- NA
+  dot_args <- list(...)
+  if(length(names(dot_args)) > 0){
+
+    for(arg in names(dot_args)){
+      if(!(arg == "selfcontained_html" | arg == "galaxy" | arg == "extra_files_path")){
+        oncoEnrichR:::log4r_info(paste0(
+          "ERROR: argument '",arg,"' does not exist for oncoEnrichR::write()"))
+        return()
+      }
+    }
+
+    if("selfcontained_html" %in% names(dot_args)){
+      if(is.logical(dot_args$selfcontained_html)){
+        selfcontained <- dot_args$selfcontained_html
+      }
+    }
+    if("galaxy" %in% names(dot_args)){
+      if(is.logical(dot_args$galaxy)){
+        galaxy_run <- dot_args$galaxy
+      }
+    }
+    if("extra_files_path" %in% names(dot_args)){
+      if(is.character(dot_args$extra_files_path)){
+        html_extern_path <- dot_args$extra_files_path
+
+        system(paste0('mkdir ', html_extern_path))
+        # val <- assertthat::validate_that(
+        #   dir.exists(html_extern_path)
+        # )
+        # if(!is.logical(val)){
+        #   oncoEnrichR:::log4r_info(paste0("ERROR: ",val))
+        #   return()
+        # }
+      }
+    }
+  }
 
   val <- assertthat::validate_that(
     format %in% c("html","excel")
   )
   if(!is.logical(val)){
-    message(val)
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR: ",val))
+    return()
   }
 
   val <- assertthat::validate_that(
-      is.character(file)
+    is.character(file)
   )
   if(!is.logical(val)){
-    message(val)
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR: ",val))
+    return()
   }
 
   val <- assertthat::validate_that(
     is.logical(overwrite)
   )
   if(!is.logical(val)){
-    message(val)
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR: ",val))
+    return()
   }
 
   output_directory <- dirname(file)
   file_basename <- basename(file)
+  file_basename_prefix <- stringr::str_replace(
+    file_basename,"\\.(html|xlsx)$","")
+
   if(output_directory != "."){
     val <- assertthat::validate_that(
       dir.exists(output_directory)
     )
     if(!is.logical(val)){
-      message(val)
+      oncoEnrichR:::log4r_info(paste0("ERROR: ",val))
+      return()
     }
   }
 
@@ -1035,18 +1101,28 @@ write <- function(report,
     val <- assertthat::validate_that(
       file.exists(file)
     )
-    if(!is.logical(val)){
-      message(val)
+    if(is.logical(val)){
+      oncoEnrichR:::log4r_info(
+        paste0("ERROR: output file (",file, ") exists, (overwrite = F)"))
+      return()
     }
   }
 
   if(ignore_file_extension == F){
     if(format == "html" & tools::file_ext(file) != "html"){
-      message("oncoEnrichR HTML output: File name must end with .html, not ",file)
+      oncoEnrichR:::log4r_info(paste0(
+        "ERROR: oncoEnrichR HTML output: File name must end with .html, not ",
+        tools::file_ext(file))
+      )
+      return()
     }
 
     if(format == "excel" & tools::file_ext(file) != "xlsx"){
-      message("oncoEnrichR Excel output: File name must end with .xlsx, not ",file)
+      oncoEnrichR:::log4r_info(paste0(
+        "ERROR: oncoEnrichR Excel output: File name must end with .xlsx, not ",
+        tools::file_ext(file))
+      )
+      return()
     }
   }
 
@@ -1055,37 +1131,157 @@ write <- function(report,
     assign("onc_enrich_report",
            report, envir = .GlobalEnv)
   }else{
-    message("ERROR: report object is NULL - cannot write report contents")
+    oncoEnrichR:::log4r_info(
+      "ERROR: oncoEnrichR report object is NULL - cannot write report contents")
+    return()
   }
+
 
   if (format == "html") {
 
-    disclaimer <- system.file("templates",
-                              "disclaimer.md",
-                              package = "oncoEnrichR")
-    report_theme <- "default"
-
     oncoEnrichR:::log4r_info("------")
     oncoEnrichR:::log4r_info("Writing HTML file with report contents")
-    markdown_input <- system.file("templates", "onco_enrich_report.Rmd",
-                                  package = "oncoEnrichR")
-    rmarkdown::render(
-      markdown_input,
-      output_format = rmarkdown::html_document(
-        theme = report_theme,
-        toc = T,
-        toc_depth = 3,
-        toc_float = T,
-        number_sections = F,
-        includes = rmarkdown::includes(after_body = disclaimer)),
-      output_file = file_basename,
-      output_dir = output_directory,
-      clean = T,
-      intermediates_dir = output_directory,
-      quiet = T)
-    oncoEnrichR:::log4r_info(paste0("Output file: ",
-                             file))
-    oncoEnrichR:::log4r_info("------")
+
+    if(selfcontained == F){
+
+      oe_rmarkdown_template_dir <-
+        system.file("templates", package = "oncoEnrichR")
+      tmpdir <-
+        file.path(
+          output_directory,
+          paste0("tmp_",
+                 stringi::stri_rand_strings(
+                   1, 20, pattern = "[A-Za-z0-9]")
+          )
+        )
+      system(paste0('mkdir ', tmpdir))
+      system(paste0('cp ', oe_rmarkdown_template_dir,"/* ",
+                    tmpdir))
+
+      rmdown_html <- file.path(tmpdir,"_site", "index.html")
+      rmdown_supporting1 <- file.path(tmpdir,"_site","index_files")
+      rmdown_supporting2 <- file.path(tmpdir,"_site","site_libs")
+
+      if(galaxy_run == T){
+
+        if(dir.exists(file.path(
+          html_extern_path,"site_libs"))){
+          if(overwrite == F){
+            oncoEnrichR:::log4r_info(paste0(
+              "ERROR: Cannot create HTML since 'site_libs' exist in output_directory",
+              " and 'overwrite' is FALSE")
+            )
+            return()
+          }else{
+            system(paste0('rm -rf ',file.path(
+              html_extern_path, "site_libs"
+            )))
+          }
+        }
+        if(dir.exists(file.path(
+          html_extern_path,"index_files"))){
+          if(overwrite == F){
+            oncoEnrichR:::log4r_info(paste0(
+              "ERROR: Cannot create HTML since 'index_files' exist in output_directory",
+              " and 'overwrite' is FALSE")
+            )
+            return()
+          }
+          else{
+            system(paste0('rm -rf ',file.path(
+              html_extern_path, "index_files"
+            )))
+          }
+        }
+
+        rmarkdown::render_site(
+          input = tmpdir,
+          quiet = T
+        )
+
+        # target_html <- file.path(output_directory, paste0(
+        #   file_basename_prefix, ".html")
+        # )
+
+        if(file.exists(rmdown_html) & dir.exists(rmdown_supporting1) &
+           dir.exists(rmdown_supporting2)){
+          system(paste0('mv ', rmdown_html, ' ',
+                        file))
+          system(paste0('mv ', rmdown_supporting1," ", html_extern_path))
+          system(paste0('mv ', rmdown_supporting2," ", html_extern_path))
+          system(paste0('rm -rf ',tmpdir))
+
+          oncoEnrichR:::log4r_info(paste0("Output file: ",
+                                          file))
+          oncoEnrichR:::log4r_info("------")
+        }
+      }
+      # else{
+      #
+      #   target_zip <- file.path(output_directory, paste0(
+      #     file_basename_prefix, ".zip")
+      #   )
+      #   if(file.exists(target_zip)){
+      #     if(overwrite == F){
+      #       oncoEnrichR:::log4r_info(paste0(
+      #         "ERROR: Cannot create zipped HTML folder since ",
+      #         target_zip, " exist ",
+      #         " and 'overwrite' is FALSE")
+      #       )
+      #       return()
+      #     }else{
+      #       system(paste0('rm -rf ',target_zip))
+      #     }
+      #
+      #   }
+      #
+      #   rmarkdown::render_site(
+      #     input = tmpdir,
+      #     quiet = T
+      #   )
+      #
+      #   zip(target_zip, files = c(rmdown_html,
+      #                             rmdown_supporting1,
+      #                             rmdown_supporting2),
+      #       flags = "-rj")
+      #
+      #   oncoEnrichR:::log4r_info(paste0("Output file (HTML with external dependencies (CSS/Javascript)): ",
+      #                                   target_zip))
+      #   oncoEnrichR:::log4r_info("------")
+      #   system(paste0('rm -rf ',tmpdir))
+      #
+      # }
+
+    }else{
+
+      disclaimer <- system.file("templates",
+                                "_disclaimer.md",
+                                package = "oncoEnrichR")
+      report_theme <- "default"
+
+      markdown_input <- system.file("templates", "index.Rmd",
+                                    package = "oncoEnrichR")
+      rmarkdown::render(
+        markdown_input,
+        output_format = rmarkdown::html_document(
+          theme = report_theme,
+          toc = T,
+          toc_depth = 3,
+          toc_float = T,
+          number_sections = F,
+          includes = rmarkdown::includes(after_body = disclaimer)),
+        output_file = file_basename,
+        output_dir = output_directory,
+        clean = T,
+        intermediates_dir = output_directory,
+        quiet = T)
+
+      oncoEnrichR:::log4r_info(paste0("Output file (self-contained HTML): ",
+                                      file))
+      oncoEnrichR:::log4r_info("------")
+    }
+
+
   }
   if (format == "excel") {
 

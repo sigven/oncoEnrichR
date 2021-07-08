@@ -175,6 +175,52 @@ get_ppi_network <- function(qgenes,
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
+  ## Occasionally, some entrezgene identifiers are ambiguous (wrt. gene symbols)
+  ## if this is the case, pick random entry from duplicate records, so that
+  ## all entrezgene identifiers point to a unique row
+
+  if(nrow(query_nodes) > length(qgenes)){
+
+
+    duplicate_records <- as.data.frame(
+      query_nodes %>%
+      dplyr::group_by(entrezgene) %>%
+      dplyr::summarise(n = dplyr::n(),
+                       .groups = "drop") %>%
+      dplyr::filter(n > 1)
+    )
+
+    oncoEnrichR:::log4r_info(paste0(
+      "Resolving ambiguous Entrez gene identifiers: ",
+      paste(duplicate_records$entrezgene, collapse=", ")))
+
+    query_nodes_clean <-
+      as.data.frame(
+        query_nodes %>%
+          dplyr::group_by(entrezgene) %>%
+          dplyr::summarise(n = dplyr::n(),
+                           .groups = "drop") %>%
+          dplyr::filter(n == 1)
+      )
+
+    for(i in 1:nrow(duplicate_records)){
+      entrezgene_id = duplicate_records[i,]$entrezgene
+      sample_row <- dplyr::sample_n(
+        dplyr::filter(query_nodes, entrezgene == entrezgene_id),
+        1
+      )
+      query_nodes_clean <- query_nodes_clean %>%
+        dplyr::bind_rows(sample_row)
+
+      i <- i + 1
+    }
+
+    if(length(query) == nrow(query_nodes_clean)){
+      query_nodes <- query_nodes_clean
+    }
+
+  }
+
   oncoEnrichR:::log4r_info("STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
   oncoEnrichR:::log4r_info(paste0("STRINGdb: Settings -  required_score = ",
                            settings$minimum_score,", add_nodes = ",settings$add_nodes))

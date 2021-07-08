@@ -113,11 +113,15 @@ km_cshl_survival_genes <-
 
   function(qgenes,
            qsource = "symbol",
-           projectsurvivaldb = NULL){
+           projectsurvivaldb = NULL,
+           ...){
 
-    oncoEnrichR:::log4r_info(paste0("Project Survival_KM_CSHL: retrieval of ",
-                                    "genetic determinants of cancer survival"
-                                    ))
+    dot_args <- list(...)
+    oncoEnrichR:::log4r_info(
+      paste0("Project Survival_KM_CSHL: retrieval of ",
+             "genetic determinants of cancer survival - ",
+            dot_args$genetic_feature
+      ))
     stopifnot(is.character(qgenes))
     stopifnot(!is.null(projectsurvivaldb))
     oncoEnrichR:::validate_db_df(projectsurvivaldb,
