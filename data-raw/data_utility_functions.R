@@ -520,18 +520,19 @@ get_curated_fp_cancer_genes <- function(basedir = NULL,
 
 }
 
-
-get_opentarget_associations_v2 <-
-  function(basedir = NULL,
+get_opentarget_associations <-
+  function(basedir = '/Users/sigven/research/DB/var_annotation_tracks',
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2021_04",
+           release = "2021.06",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
       readRDS(
         paste0(basedir,
-               "/data-raw/opentargets/opentargets_target_2021.04.rds")
+               "/data-raw/opentargets/opentargets_target_",
+               release,
+               ".rds")
       ) %>%
         dplyr::select(target_symbol,
                       tractability_antibody,
@@ -547,16 +548,17 @@ get_opentarget_associations_v2 <-
     opentarget_associations <- as.data.frame(
       readRDS(
         paste0(basedir,
-               "/data-raw/opentargets/opentargets_association_direct_HC_2021.04.rds")
+               "/data-raw/opentargets/opentargets_association_direct_HC_",
+               release,
+               ".rds")
       ) %>%
-        dplyr::rename(disease_efo_id = efo_id, symbol = target_symbol) %>%
+        dplyr::rename(disease_efo_id = disease_id, symbol = target_symbol) %>%
         dplyr::mutate(disease_efo_id = stringr::str_replace(disease_efo_id,":","_")) %>%
-        dplyr::mutate(overall_datatype_harmonic_score =
-                        round(overall_datatype_harmonic_score, digits = 7)) %>%
-        dplyr::filter(overall_datatype_harmonic_score >= min_overall_score) %>%
+        dplyr::filter(score >= min_overall_score) %>%
+        dplyr::filter(stringr::str_count(datatype_items,",") >= min_num_sources - 1) %>%
         dplyr::mutate(association_key =
                         paste(disease_efo_id, "T",
-                              overall_datatype_harmonic_score,
+                              score,
                               sep=":")) %>%
         dplyr::group_by(symbol) %>%
         dplyr::summarise(
@@ -567,68 +569,10 @@ get_opentarget_associations_v2 <-
     ot_associations <- opentarget_targets %>%
       dplyr::left_join(opentarget_associations, by = "symbol")
 
+
     return(ot_associations)
+
   }
-
-get_opentarget_associations <- function(basedir = NULL,
-                                        min_overall_score = 0.4,
-                                        min_num_sources = 2,
-                                        version = "2021_02",
-                                        direct_associations_only = F){
-
-  rlogging::message("Retrieving target-disease associations and target tractability evidence from OpenTargets platform (",version,")")
-  opentarget <- as.data.frame(
-    readr::read_tsv(file=paste0(basedir,"/data-raw/opentargets/opentargets_associations.tsv.gz"), progress = F) %>%
-      dplyr::mutate(disease_efo_id = stringr::str_replace(disease_efo_id,"_",":"))
-  )
-
-  #efo_map <- readRDS(file=paste0(basedir,"/phenotype_ontology/efo_map.rds")) %>%
-  #dplyr::select(efo_id, cui)
-
-  if(direct_associations_only == T){
-    opentarget <- opentarget %>% dplyr::filter(association_is_direct == T)
-  }
-
-  opentarget_associations <- as.data.frame(
-    opentarget %>%
-      dplyr::filter(association_overall >= min_overall_score) %>%
-      dplyr::mutate(num_sources = 0) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_progeny != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_sysbio != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_expression_atlas != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_europepmc != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_uniprot_literature != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_phenodigm != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_eva != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_gene2phenotype != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_slapenrich != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_genomics_england != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_postgap != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_chembl != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_cancer_gene_census != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_reactome != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_eva_somatic != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_phewas_catalog != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_crispr != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_ot_genetics_portal != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_clingen != 0,num_sources + 1,num_sources)) %>%
-      dplyr::mutate(num_sources = dplyr::if_else(association_intogen != 0,num_sources + 1,num_sources)) %>%
-      dplyr::filter(num_sources >= min_num_sources) %>%
-      dplyr::mutate(disease_efo_id = stringr::str_replace(disease_efo_id,":","_")) %>%
-      dplyr::mutate(association_key =
-                      paste(disease_efo_id, association_is_direct,
-                            association_overall,sep=":")) %>%
-      dplyr::rename(symbol = target_symbol) %>%
-      dplyr::group_by(symbol) %>%
-      dplyr::summarise(
-        ot_association = paste(association_key, collapse = "&"),
-        ot_tractability_compound = paste(unique(tractability_small_molecule), collapse = "&"),
-        ot_tractability_antibody = paste(unique(tractability_antibody), collapse = "&"),
-        .groups = "drop"))
-
-  return(opentarget_associations)
-
-}
 
 get_dbnsfp_gene_annotations <- function(basedir = '/Users/sigven/research/DB/var_annotation_tracks'){
 
