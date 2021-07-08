@@ -35,6 +35,9 @@ The contents of the final report attempts to shed light on the following questio
   * Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+* July 8th 2021: **1.0.4 release**
+  * Fixed a bug in v1.0.3 - HTML report generation failed
+  
 * June 29th 2021: **1.0.3 release**
   * Minor typo fixes in HTML output
   * Data upgrade: KEGG, WikiPathways, CancerMine
