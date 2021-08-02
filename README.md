@@ -7,6 +7,7 @@
 - [Annotation resources](#annotation-resources)
 - [Example report](#example-report)
 - [Getting started](#getting-started)
+- [Citation](#citation)
 - [Contact](#contact)
 
 ### Overview
@@ -201,6 +202,12 @@ A target list of _n = 134_ high-confidence interacting proteins with the c-MYC o
  * `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
  * `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
+
+### Citation
+
+If you use oncoEnrichR, please cite the following preprint:
+
+[https://arxiv.org/abs/2107.13247](https://arxiv.org/abs/2107.13247)
 
 ### Contact
 
