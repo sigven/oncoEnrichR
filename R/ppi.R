@@ -80,7 +80,7 @@ get_string_network_nodes_edges <-
   query_list <- paste(qgenes, collapse="%0d")
 
   edges <- jsonlite::fromJSON(
-    paste0("https://string-db.org/api/json/",
+    paste0("https://string-db.org/api1/json/",
            settings$query_type, "?species=9606&identifiers=",
            query_list, "&required_score=",
            settings$minimum_score, "&add_nodes=", settings$add_nodes))
