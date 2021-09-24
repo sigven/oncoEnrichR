@@ -9,6 +9,8 @@
 -   [Getting started](#getting-started)
 -   [Citation](#citation)
 -   [Contact](#contact)
+-   [Funding and Collaboration](#funding-and-collaboration)
+-   [Code of Conduct](#code-of-conduct)
 
 ### Overview
 
@@ -212,7 +214,7 @@ If you use oncoEnrichR, please cite the following preprint:
 
 sigven AT ifi.uio.no
 
-### Funding & collaboration
+### Funding and Collaboration
 
 OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://www.med.uio.no/cancell/english/) at the [University of Oslo](https://www.uio.no)/[Oslo University Hospital](https://radium.no), and [Elixir Norway (Oslo node)](https://elixir.no/organization/organisation/elixir-uio).
 
@@ -228,6 +230,6 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
   </a>
 </p>
 
-## Code of Conduct
+### Code of Conduct
 
 Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
