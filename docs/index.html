@@ -44,7 +44,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
       </span>
     </div>
 
@@ -94,6 +94,7 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="oncoenrichr---cancer-dedicated-gene-set-interpretation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#oncoenrichr---cancer-dedicated-gene-set-interpretation" class="anchor"></a>oncoEnrichR - cancer-dedicated gene set interpretation</h2>
@@ -106,6 +107,7 @@
 <li><a href="#annotation-resources">Annotation resources</a></li>
 <li><a href="#example-report">Example report</a></li>
 <li><a href="#getting-started">Getting started</a></li>
+<li><a href="#citation">Citation</a></li>
 <li><a href="#contact">Contact</a></li>
 </ul>
 </div>
@@ -114,7 +116,7 @@
 <a href="#overview" class="anchor"></a>Overview</h3>
 <p><strong>oncoEnrichR</strong> is an R package for functional interrogation of human genesets in the context of cancer. The package is intended for exploratory analysis and prioritization of a gene list (referred to here as <strong>query set</strong>) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).</p>
 <p><br></p>
-<p><img align="center" border="1," src="reference/figures/oncoenrichr_overview.png"></p>
+<p><img src="reference/figures/oncoenrichr_overview.png" align="center" border="1,"></p>
 <p><br><br></p>
 <p>The contents of the final report attempts to shed light on the following questions:</p>
 <ul>
@@ -136,7 +138,14 @@
 <h3 class="hasAnchor">
 <a href="#news" class="anchor"></a>News</h3>
 <ul>
-<li>June 29th 2021: <strong>1.0.3 release</strong>
+<li>
+<p>July 8th 2021: <strong>1.0.4 release</strong></p>
+<ul>
+<li>Fixed a bug in v1.0.3 - HTML report generation failed</li>
+</ul>
+</li>
+<li>
+<p>June 29th 2021: <strong>1.0.3 release</strong></p>
 <ul>
 <li>Minor typo fixes in HTML output</li>
 <li>Data upgrade: KEGG, WikiPathways, CancerMine</li>
@@ -145,7 +154,8 @@
 </li>
 </ul>
 </li>
-<li>June 8th 2021: <strong>1.0.0 release</strong>
+<li>
+<p>June 8th 2021: <strong>1.0.0 release</strong></p>
 <ul>
 <li>Added methylation as prognostic feature from <a href="https://www.biorxiv.org/content/10.1101/2021.06.01.446243v1">Smith et al., <em>bioRxiv</em>, 2021</a>
 </li>
@@ -190,7 +200,7 @@
 <a href="#example-report" class="anchor"></a>Example report</h3>
 <p><a href="https://doi.org/10.5281/zenodo.4945414"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4945414.svg" alt="DOI"></a></p>
 <p><br></p>
-<p><img align="center" width="560" height="750" border="2," src="reference/figures/oncoenrichr_slideshow2.gif"></p>
+<p><img src="reference/figures/oncoenrichr_slideshow2.gif" align="center" width="560" height="750" border="2,"></p>
 </div>
 <div id="getting-started" class="section level3">
 <h3 class="hasAnchor">
@@ -255,8 +265,8 @@
   show_complex <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="44%">
-<col width="55%">
+<col width="11%">
+<col width="88%">
 </colgroup>
 <thead><tr class="header">
 <th>Argument</th>
@@ -432,6 +442,12 @@
 </ul>
 </div>
 </div>
+<div id="citation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#citation" class="anchor"></a>Citation</h3>
+<p>If you use oncoEnrichR, please cite the following preprint:</p>
+<p><a href="https://arxiv.org/abs/2107.13247" class="uri">https://arxiv.org/abs/2107.13247</a></p>
+</div>
 <div id="contact" class="section level3">
 <h3 class="hasAnchor">
 <a href="#contact" class="anchor"></a>Contact</h3>
@@ -447,6 +463,12 @@
 </p>
 </div>
 </div>
+<div id="code-of-conduct" class="section level2">
+<h2 class="hasAnchor">
+<a href="#code-of-conduct" class="anchor"></a>Code of Conduct</h2>
+<p>Please note that this project is released with a <a href="https://github.com/sigven/oncoEnrichR/blob/master/CODE_OF_CONDUCT.md">Contributor Code of Conduct</a>. By participating in this project you agree to abide by its terms.</p>
+</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -463,6 +485,12 @@
 <h2>License</h2>
 <ul class="list-unstyled">
 <li><a href="https://opensource.org/licenses/mit-license.php">MIT</a></li>
+</ul>
+</div>
+<div class="community">
+<h2>Community</h2>
+<ul class="list-unstyled">
+<li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
 </ul>
 </div>
 <div class="developers">
