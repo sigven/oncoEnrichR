@@ -1,16 +1,22 @@
-### Protein complexes
+### Protein complexes {.tabset}
 
-* Each protein in the query set is annotated with:
-   * Known protein complexes as found in [CORUM](https://mips.helmholtz-muenchen.de/corum/)
-   * The complexes are ranked according to the total number of participating members in the query set
+* Here we show how members of the query set that are involved in *known* protein complexes, using two different collections of protein complex annotations:
+
+  1. [OmniPath](https://omnipathdb.org/) - a meta-database of molecular biology prior knowledge, containing protein complex annotations predominantly from [CORUM](http://mips.helmholtz-muenchen.de/corum/), [ComplexPortal](https://www.ebi.ac.uk/complexportal/home), [Compleat](https://fgr.hms.harvard.edu/compleat), and [PDB](https://www.rcsb.org/).
+     * We limit complex annotations to those that are supported by references to the scientific literature (i.e. manually curated)
+  2. [Human Protein Complex Map - hu.MAP v2.0](http://humap2.proteincomplexes.org/)  - created through an integration of > 15,000 proteomics experiments (biochemical fractionation data, proximity labeling data, and RNA hairpin pulldown data)
+     * Each complex comes with a confidence score from clustering (1=Extremely High, 2=Very High, 3=High, 4=Medium High, 5=Medium)
+   
+* The protein complexes that overlap with members of the query set are ranked according to the total number of participating members in the query set
    
 <br><br>
 
+#### OmniPath
 
-```{r table_browse_complex, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['complex']]) > 0}
+```{r table_browse_complex_omnipath, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0}
 
 htmltools::br()
-DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']], 
+DT::datatable(onc_enrich_report[['data']][['protein_complex']][['omnipath']], 
               escape = F, 
               extensions=c("Buttons","Responsive"), 
               width = "100%",
@@ -26,9 +32,42 @@ DT::datatable(onc_enrich_report[['data']][['protein_complex']][['complex']],
 ```
 
 
-```{r indicate_missing_complexes, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['protein_complex']][['complex']]) == 0}
+```{r indicate_missing_complexes, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) == 0}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes from the CORUM database.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes found in the OmniPath database .&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>
+
+
+#### hu.MAP v2.0
+
+```{r table_browse_complex_humap2, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) > 0}
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['protein_complex']][['humap2']], 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              style = 'bootstrap',
+              rownames = F,
+              options=list(buttons = c('csv','excel'),
+                           pageLength = 10,
+                           bPaginate = T,
+                           dom = 'Bfrtip') 
+)
+
+
+```
+
+
+```{r indicate_missing_complexes_humap2, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) == 0}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes established by the <b>hu.MAP v2.0</b> protein complex map .&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

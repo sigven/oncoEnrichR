@@ -7,7 +7,7 @@
 write(
   report,
   file = "testReport.html",
-  ignore_file_extension = T,
+  ignore_file_extension = F,
   overwrite = F,
   format = "html",
   ...
@@ -24,9 +24,7 @@ write(
 
 \item{format}{file format of output (html/excel)}
 
-\item{...}{options for Galaxy/non self-contained HTML. Set 'selfcontained_html' to
-FALSE for a smaller HTML output file with external dependencies (CSS/JavaScript) in
-external olders.}
+\item{...}{options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy}
 }
 \description{
 Function that writes an oncoEnrichR report object to file

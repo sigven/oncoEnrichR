@@ -1,0 +1,151 @@
+### Ligand-receptor interactions {.tabset}
+
+<br>
+
+* Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are here interrogating ligand-receptor interactions for members of the query set. Putative interactions are displayed along three different axes with respect to cell-cell comunication:
+
+   1) Secreted Signaling (Paracrine/autocrine signaling)
+   2) ECM-Receptor (extracellular matrix-receptor interactions)
+   3) Cell-Cell Contact
+
+
+<br><br>
+
+#### Secreted Signaling
+
+
+```{r lig_rec_interactions_1, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['secreted_signaling']]) > 0}
+
+ligand_interactions_ss <- 
+  crosstalk::SharedData$new(onc_enrich_report[['data']][['ligand_receptor']][['secreted_signaling']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("ligand", "Ligand", ligand_interactions_ss, ~ligand)
+  ),
+  list(
+    crosstalk::filter_select("receptor", "Receptor", ligand_interactions_ss, ~receptor)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  ligand_interactions_ss, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )
+
+
+```
+<br><br>
+
+
+```{r no_lig_receptor_interactions1, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['secreted_signaling']]) == 0}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in ligand-receptor interactions (<b>CellChatDB - Secreted signalling</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>
+
+#### ECM-Receptor
+
+
+```{r lig_rec_interactions_2, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['ecm_receptor']]) > 0}
+
+ligand_interactions_ecm <- 
+  crosstalk::SharedData$new(onc_enrich_report[['data']][['ligand_receptor']][['ecm_receptor']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("ligand", "Ligand", ligand_interactions_ecm, ~ligand)
+  ),
+  list(
+    crosstalk::filter_select("receptor", "Receptor", ligand_interactions_ecm, ~receptor)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  ligand_interactions_ecm, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )
+
+
+```
+<br><br>
+
+
+```{r no_lig_receptor_interactions2, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['ecm_receptor']]) == 0}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in ligand-receptor interactions (<b>CellChatDB - ECM Receptor</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+#### Cell-Cell Contact
+
+
+```{r lig_rec_interactions_3, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['cell_cell_contact']]) > 0}
+
+ligand_interactions_ccc <- 
+  crosstalk::SharedData$new(onc_enrich_report[['data']][['ligand_receptor']][['cell_cell_contact']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("ligand", "Ligand", ligand_interactions_ccc, ~ligand)
+  ),
+  list(
+    crosstalk::filter_select("receptor", "Receptor", ligand_interactions_ccc, ~receptor)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  ligand_interactions_ccc, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )
+
+
+```
+<br><br>
+
+
+```{r no_lig_receptor_interactions3, echo=F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['cell_cell_contact']]) == 0}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in ligand-receptor interactions (<b>CellChatDB - Cell-Cell Contact</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>

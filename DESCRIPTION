@@ -1,8 +1,8 @@
 Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
-Version: 1.0.4
-Date: 2021-07-08
+Version: 1.0.6
+Date: 2021-10-12
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -21,7 +21,8 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     patterns in human tumor samples), STRING (protein-protein interaction networks), 
     CORUM (curated protein complexes), COMPPI (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
-    prognostic associations), and Gene Ontology/MSigDB/REACTOME/KEGG/NetPath 
+    prognostic associations), CellChatDB (ligand-receptor interactions),
+    DoRothEA (regulatory interactions), and Gene Ontology/MSigDB/REACTOME/KEGG/NetPath 
     (functional enrichment/over-representation analysis with respect to gene 
     function and cellular pathways). The package outputs both an interactive HTML 
     report and an Excel workbook in which the user can interrogate the various 
@@ -29,14 +30,14 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
 Depends: 
     R (>= 4.0), SummarizedExperiment (>= 1.22.0), GSEABase (>= 1.54.0)
 biocViews: 
-Imports: tidyverse (>= 1.3.1), visNetwork (>= 2.0.9), DT (>= 0.18), plotly (>= 4.9.3), pals (>= 1.7), 
-    org.Hs.eg.db, magrittr (>= 2.0.1), clusterProfiler (>= 4.0.0), igraph (>= 1.2.6), reshape2 (>= 1.4.4), log4r (>= 0.3.2),
+Imports: tidyverse (>= 1.3.1), visNetwork (>= 2.1.0), DT (>= 0.18), plotly (>= 4.9.4), pals (>= 1.7), 
+    org.Hs.eg.db, magrittr (>= 2.0.1), clusterProfiler (>= 4.0.5), igraph (>= 1.2.6), reshape2 (>= 1.4.4), log4r (>= 0.3.2),
     gganatogram, maftools (>= 2.8.0), SummarizedExperiment (>= 1.22.0), GSEABase (>= 1.54.0),
-    oncoPharmaDB (>= 0.3.1), ggpubr (>= 0.4.0), assertable (>= 0.2.8), TissueEnrich (>= 1.12.0),
+    ggpubr (>= 0.4.0), assertable (>= 0.2.8), TissueEnrich (>= 1.12.0),
     textclean (>= 0.9.3)
 License: MIT
 Encoding: UTF-8
-Remotes: jespermaag/gganatogram, sigven/oncoPharmaDB
+Remotes: jespermaag/gganatogram
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)

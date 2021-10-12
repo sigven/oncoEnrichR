@@ -358,7 +358,9 @@ validate_db_df <- function(df, dbtype = "genedb"){
   }
 
   dbtypes <- c("genedb",
-               "corum",
+               "protein_complex",
+               "dorothea",
+               "ligand_receptor",
                "uniprot_xref",
                "refseq_mrna_xref",
                "ensembl_mrna_xref",
@@ -387,18 +389,47 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'name',
               'gene_summary',
               'gencode_gene_biotype',
-              'ot_tractability_compound',
+              'AB_tractability_category',
+              'AB_tractability_support',
+              'SM_tractability_category',
+              'SM_tractability_support',
               'genename',
               'targeted_cancer_drugs_lp',
               'targeted_cancer_drugs_ep')
   }
-  if(dbtype == "corum"){
+  if(dbtype == "protein_complex"){
     cols <- c('complex_id',
               'complex_name',
-              'protein_complex_purification_method',
+              'purification_method',
               'complex_comment',
               'disease_comment',
-              'citation','citation_link')
+              'sources',
+              'confidence',
+              'complex_literature',
+              'complex_literature_support')
+  }
+  if(dbtype == "ligand_receptor"){
+    cols <- c('interaction_id',
+              'interaction_name',
+              'annotation',
+              'pathway_name',
+              'interaction_members',
+              'ligand',
+              'receptor',
+              'agonist',
+              'antagonist',
+              'co_A_receptor',
+              'co_I_receptor',
+              'literature_support')
+  }
+  if(dbtype == "dorothea"){
+    cols <- c('regulator',
+              'target',
+              'interaction_sources',
+              'confidence_level',
+              'mode_of_regulation',
+              'tf_target_literature_support',
+              'tf_target_literature')
   }
   if(dbtype == "survival_km_cshl"){
     cols <- c('symbol',
@@ -438,9 +469,12 @@ validate_db_df <- function(df, dbtype = "genedb"){
   }
 
   if(dbtype == "fitness_scores"){
-    cols <- c('symbol','model_name',
-              'loss_of_fitness','model_id',
-              'model_type','tissue',
+    cols <- c('symbol',
+              'model_name',
+              'loss_of_fitness',
+              'model_id',
+              'model_type',
+              'tissue',
               'entrezgene',
               'sample_site',
               'gene_id_project_score')
@@ -458,25 +492,40 @@ validate_db_df <- function(df, dbtype = "genedb"){
     cols <- c('symbol',
               'entrezgene',
               'genename',
-              'name',
-              'gencode_gene_biotype',
-              'ot_tractability_compound',
+              #'name',
+              #'gencode_gene_biotype',
+              #'SM_tractability_category',
               'query_node',
               'cancer_driver',
               'id',
-              'tumor_suppressor','oncogene')
+              'tumor_suppressor',
+              'oncogene')
   }
 
   if(dbtype == "ppi_edges"){
-    cols <- c('preferredName_A','preferredName_B',
-              'entrezgene_a','entrezgene_b',
-              'oncogene_A','oncogene_B',
-              'tsgene_A','tsgene_B',
-              'cdriver_A','cdriver_B',
-              'query_node_A','query_node_B',
-              'weight','from','to','fscore',
-              'tscore','score','ascore',
-              'pscore','nscore','dscore','escore',
+    cols <- c('preferredName_A',
+              'preferredName_B',
+              'entrezgene_a',
+              'entrezgene_b',
+              'oncogene_A',
+              'oncogene_B',
+              'tsgene_A',
+              'tsgene_B',
+              'cdriver_A',
+              'cdriver_B',
+              'query_node_A',
+              'query_node_B',
+              'weight',
+              'from',
+              'to',
+              'fscore',
+              'tscore',
+              'score',
+              'ascore',
+              'pscore',
+              'nscore',
+              'dscore',
+              'escore',
               'interaction_symbol')
 
   }
@@ -516,23 +565,32 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "cancer_hallmark"){
-    if(is.data.frame(report$data$cancer_hallmark$target)){
-      if(NROW(report$data$cancer_hallmark$target) > 0){
-        target_df <- report$data$cancer_hallmark$target %>%
+  if(analysis_output == "unknown_function"){
+    if(is.data.frame(report$data$unknown_function$hits_df)){
+      if(NROW(report$data$unknown_function$hits_df) > 0){
+        target_df <- report$data$unknown_function$hits_df %>%
           dplyr::mutate(
-            symbol =
-              stringr::str_squish(
-                stringr::str_trim(
-                  textclean::replace_html(symbol)
-                )
+            annotation_source = "GO (MsigDB 7.4)/NCBI Gene/UniProt (2021_02)",
+            version = NA) %>%
+          dplyr::select(annotation_source, version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            genename =
+              stringr::str_trim(
+                textclean::replace_html(genename)
               )
           ) %>%
-          dplyr::select(-literature_support)
+          dplyr::mutate(
+            gene_summary =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(gene_summary)
+                )
+              )
+          )
       }
     }
   }
-
 
   if(analysis_output == "disease_association"){
     if(is.data.frame(report$data$disease$target)){
@@ -564,44 +622,31 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "protein_complex"){
-    if(is.data.frame(report$data$protein_complex$complex)){
-      if(NROW(report$data$protein_complex$complex) > 0){
-        target_df <- report$data$protein_complex$complex %>%
+  if(analysis_output == "cancer_hallmark"){
+    if(is.data.frame(report$data$cancer_hallmark$target)){
+      if(NROW(report$data$cancer_hallmark$target) > 0){
+        target_df <- report$data$cancer_hallmark$target %>%
           dplyr::mutate(
-            annotation_source = report$config$resources$corum$name,
-            version = report$config$resources$corum$version) %>%
-          dplyr::select(annotation_source, version,
-                        dplyr::everything()) %>%
-          dplyr::mutate(
-            complex_genes =
-              stringr::str_replace_all(
-                stringr::str_squish(
-                  stringr::str_trim(
-                    textclean::replace_html(complex_genes)
-                  )
-                ),
-                " , ",
-                ", "
+            symbol =
+              stringr::str_squish(
+                stringr::str_trim(
+                  textclean::replace_html(symbol)
+                )
               )
           ) %>%
-          dplyr::mutate(
-            citation =
-              stringr::str_trim(
-                textclean::replace_html(citation)
-              )
-          )
+          dplyr::select(-literature_support)
       }
     }
   }
 
-  if(analysis_output == "unknown_function"){
-    if(is.data.frame(report$data$unknown_function$hits_df)){
-      if(NROW(report$data$unknown_function$hits_df) > 0){
-        target_df <- report$data$unknown_function$hits_df %>%
+
+  if(analysis_output == "drug_known"){
+    if(is.data.frame(report$data$drug$target_drugs)){
+      if(NROW(report$data$drug$target_drugs)){
+        target_df <- report$data$drug$target_drugs %>%
           dplyr::mutate(
-            annotation_source = "GO (MsigDB 7.4)/NCBI Gene/UniProt (2021_02)",
-            version = NA) %>%
+            annotation_source = report$config$resources$opentargets$name,
+            version = report$config$resources$opentargets$version) %>%
           dplyr::select(annotation_source, version,
                         dplyr::everything()) %>%
           dplyr::mutate(
@@ -611,16 +656,152 @@ add_excel_sheet <- function(
               )
           ) %>%
           dplyr::mutate(
-            gene_summary =
-              stringr::str_squish(
-                stringr::str_trim(
-                  textclean::replace_html(gene_summary)
-                )
+            targeted_cancer_drugs_lp =
+              stringr::str_replace_all(
+                stringr::str_squish(
+                  stringr::str_trim(
+                    textclean::replace_html(targeted_cancer_drugs_lp)
+                  )
+                ),
+                " , ",
+                ", "
+              )
+          ) %>%
+          dplyr::mutate(
+            targeted_cancer_drugs_ep =
+              stringr::str_replace_all(
+                stringr::str_squish(
+                  stringr::str_trim(
+                    textclean::replace_html(targeted_cancer_drugs_ep)
+                  )
+                ),
+                " , ",
+                ", "
               )
           )
       }
     }
   }
+
+  if (analysis_output == "drug_tractability") {
+    if (is.data.frame(report$data$drug$tractability_ab) &
+        is.data.frame(report$data$drug$tractability_sm)) {
+      if (NROW(report$data$drug$tractability_ab) |
+          NROW(report$data$drug$tractability_sm)) {
+
+        target_df <- data.frame()
+
+        if (NROW(report$data$drug$tractability_sm)){
+          df <- report$data$drug$tractability_sm %>%
+            dplyr::mutate(
+              annotation_source = report$config$resources$opentargets$name,
+              version = report$config$resources$opentargets$version) %>%
+            dplyr::rename(tractability_category = SM_tractability_category,
+                          tractability_support = SM_tractability_support) %>%
+            dplyr::mutate(tractability_drugtype = "Small molecules/compounds") %>%
+            dplyr::select(annotation_source, version,
+                          tractability_drugtype,
+                          dplyr::everything()) %>%
+            dplyr::mutate(
+              symbol =
+                stringr::str_trim(
+                  textclean::replace_html(symbol)
+                )
+            ) %>%
+            dplyr::mutate(
+              tractability_support =
+                stringr::str_trim(
+                  textclean::replace_html(tractability_support)
+                )
+            )
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+
+        if (NROW(report$data$drug$tractability_ab)){
+          df <- report$data$drug$tractability_ab %>%
+            dplyr::mutate(
+              annotation_source = report$config$resources$opentargets$name,
+              version = report$config$resources$opentargets$version) %>%
+            dplyr::rename(tractability_category = AB_tractability_category,
+                          tractability_support = AB_tractability_support) %>%
+            dplyr::mutate(tractability_drugtype = "Antibody") %>%
+            dplyr::select(annotation_source, version,
+                          tractability_drugtype,
+                          dplyr::everything()) %>%
+            dplyr::mutate(
+              symbol =
+                stringr::str_trim(
+                  textclean::replace_html(symbol)
+                )
+            ) %>%
+            dplyr::mutate(
+              tractability_support =
+                stringr::str_trim(
+                  textclean::replace_html(tractability_support)
+                )
+            )
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+      }
+    }
+  }
+
+  if(analysis_output == "protein_complex"){
+
+    for(c in c('omnipath','humap2')){
+
+      if(is.data.frame(report$data$protein_complex[[c]])){
+        if(NROW(report$data$protein_complex[[c]]) > 0){
+
+
+          df <- report$data$protein_complex[[c]] %>%
+            dplyr::mutate(
+              annotation_source = report$config$resources[[c]]$name,
+              version = report$config$resources[[c]]$version) %>%
+            dplyr::select(annotation_source, version,
+                          dplyr::everything()) %>%
+            dplyr::mutate(
+              complex_genes =
+                stringr::str_replace_all(
+                  stringr::str_squish(
+                    stringr::str_trim(
+                      textclean::replace_html(complex_genes)
+                    )
+                  ),
+                  " , ",
+                  ", "
+                )
+            )
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+      }
+    }
+
+    if(NROW(target_df) > 0 &
+       "literature" %in% colnames(target_df)){
+      target_df <- target_df %>%
+        dplyr::mutate(
+          literature =
+            stringr::str_trim(
+              textclean::replace_html(literature)
+            )
+        ) %>%
+        dplyr::mutate(
+          complex_name =
+            stringr::str_trim(
+              textclean::replace_html(complex_name)
+            )
+        )
+    }
+
+  }
+
 
   if(analysis_output == "prognostic_association"){
     if(is.data.frame(report$data$cancer_prognosis$hpa$assocs)){
@@ -680,6 +861,47 @@ add_excel_sheet <- function(
                         dplyr::everything())
       }
     }
+  }
+
+  if(analysis_output == "regulatory"){
+
+    ## regulatory interactions
+    for(c in c('pancancer','global')){
+
+      if(is.data.frame(report$data$regulatory$interactions[[c]])){
+        if(NROW(report$data$regulatory$interactions[[c]]) > 0){
+          df <- report$data$regulatory$interactions[[c]] %>%
+            dplyr::mutate(
+              dorothea_collection = c,
+              annotation_source = report$config$resources$dorothea$name,
+              version = report$config$resources$dorothea$version) %>%
+            dplyr::select(annotation_source, version, dorothea_collection,
+                          dplyr::everything()) %>%
+            dplyr::mutate(
+              target_name =
+                stringr::str_trim(
+                  textclean::replace_html(target_name)
+                )
+            ) %>%
+            dplyr::mutate(
+              regulator_name =
+                stringr::str_trim(
+                  textclean::replace_html(regulator_name)
+                )
+            ) %>%
+            dplyr::mutate(
+              literature_support =
+                stringr::str_trim(
+                  textclean::replace_html(literature_support)
+                )
+            )
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+      }
+    }
+
   }
 
   if(analysis_output == "aberration"){
@@ -760,115 +982,7 @@ add_excel_sheet <- function(
     target_df <- enrichment_df
   }
 
-  if(analysis_output == "drug_known"){
-    if(is.data.frame(report$data$drug$target_drugs)){
-      if(NROW(report$data$drug$target_drugs)){
-        target_df <- report$data$drug$target_drugs %>%
-          dplyr::mutate(
-            annotation_source = report$config$resources$opentargets$name,
-            version = report$config$resources$opentargets$version) %>%
-          dplyr::select(annotation_source, version,
-                        dplyr::everything()) %>%
-          dplyr::mutate(
-            genename =
-              stringr::str_trim(
-                textclean::replace_html(genename)
-              )
-          ) %>%
-          dplyr::mutate(
-            targeted_cancer_drugs_lp =
-              stringr::str_replace_all(
-                stringr::str_squish(
-                  stringr::str_trim(
-                    textclean::replace_html(targeted_cancer_drugs_lp)
-                  )
-                ),
-                " , ",
-                ", "
-              )
-          ) %>%
-          dplyr::mutate(
-            targeted_cancer_drugs_ep =
-              stringr::str_replace_all(
-                stringr::str_squish(
-                  stringr::str_trim(
-                    textclean::replace_html(targeted_cancer_drugs_ep)
-                  )
-                ),
-                " , ",
-                ", "
-              )
-          )
-      }
-    }
-  }
 
-  if (analysis_output == "drug_tractability") {
-    if (is.data.frame(report$data$drug$tractability_ab) &
-       is.data.frame(report$data$drug$tractability_sm)) {
-      if (NROW(report$data$drug$tractability_ab) |
-         NROW(report$data$drug$tractability_sm)) {
-
-        target_df <- data.frame()
-
-        if (NROW(report$data$drug$tractability_sm)){
-          df <- report$data$drug$tractability_sm %>%
-            dplyr::mutate(
-              annotation_source = report$config$resources$opentargets$name,
-              version = report$config$resources$opentargets$version) %>%
-            dplyr::rename(tractability_category = SM_tractability_category,
-                          tractability_support = SM_tractability_support) %>%
-            dplyr::mutate(tractability_drugtype = "Small molecules/compounds") %>%
-            dplyr::select(annotation_source, version,
-                          tractability_drugtype,
-                          dplyr::everything()) %>%
-            dplyr::mutate(
-              symbol =
-                stringr::str_trim(
-                  textclean::replace_html(symbol)
-                )
-            ) %>%
-            dplyr::mutate(
-              tractability_support =
-                stringr::str_trim(
-                  textclean::replace_html(tractability_support)
-                )
-            )
-
-          target_df <- target_df %>%
-            dplyr::bind_rows(df)
-        }
-
-        if (NROW(report$data$drug$tractability_ab)){
-          df <- report$data$drug$tractability_ab %>%
-            dplyr::mutate(
-              annotation_source = report$config$resources$opentargets$name,
-              version = report$config$resources$opentargets$version) %>%
-            dplyr::rename(tractability_category = AB_tractability_category,
-                          tractability_support = AB_tractability_support) %>%
-            dplyr::mutate(tractability_drugtype = "Antibody") %>%
-            dplyr::select(annotation_source, version,
-                          tractability_drugtype,
-                          dplyr::everything()) %>%
-            dplyr::mutate(
-              symbol =
-                stringr::str_trim(
-                  textclean::replace_html(symbol)
-                )
-            ) %>%
-            dplyr::mutate(
-              tractability_support =
-                stringr::str_trim(
-                  textclean::replace_html(tractability_support)
-                )
-            )
-
-          target_df <- target_df %>%
-            dplyr::bind_rows(df)
-        }
-      }
-    }
-  }
 
   if(analysis_output == "crispr_ps_fitness"){
     if(is.data.frame(report$data$crispr_ps$fitness_scores$targets)){

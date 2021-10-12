@@ -1,6 +1,6 @@
 ### Protein-protein interaction network {.tabset}
 
-* The query set is queried against known protein-protein interactions, as evident from the [STRING API (v11)](http://string-db.org)
+* Using *known* protein-protein interactions (PPI), as evident from the [STRING API (v11.5)](http://string-db.org), we here create a dedicated PPI network for members of the query set
   * Note that interactions in STRING are assembled from multiple sources, including co-expression, co-occurrence in the literature, experimental data, curated databases etc
   * In addition to potential interactions within the query set, the network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['stringdb']][['add_nodes']]`__ proteins that interact with proteins in the query set
   * Network is here restricted to interactions with __STRING association score >= `r onc_enrich_report[['config']][['ppi']][['stringdb']][['minimum_score']]`__ (range 0-1000))
@@ -23,7 +23,7 @@
   
 <br>
 
-* Use the mouse to zoom in/out, alter the position of nodes, mouse-over to view gene names/drug mechanism of actions (with indications)
+* Use the mouse to zoom in/out, alter the position of nodes, mouse-over edges and nodes to view gene names/drug mechanism of actions (with indications)/interaction scores
 
 <br><br>
 

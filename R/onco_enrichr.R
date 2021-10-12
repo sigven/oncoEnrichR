@@ -3,6 +3,8 @@
 #'
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
+#' @param html_floating_toc logical - float the table of contents to the left of the main document content. The floating table of contents will always be visible even when the document is scrolled
+#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
@@ -19,26 +21,31 @@
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
+#' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
 #' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
-#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene
-#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
+#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
+#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
-#' @param show_tissue_cell logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
+#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
+#' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
-#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
-#' @param show_prognostic_cancer_assoc  logical indicating if prognostic gene associations to cancer types (mutation, expression, methylation, CNA) should be listed
+#' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
+#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
+#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (CORUM)
+#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #' @export
 
 init_report <- function(project_title = "Project title",
                         project_owner = "Project owner",
+                        html_floating_toc = T,
+                        html_report_theme = "default",
                         query_id_type = "symbol",
                         ignore_id_err = TRUE,
                         project_description = "Project description",
@@ -54,6 +61,7 @@ init_report <- function(project_title = "Project title",
                         max_geneset_size = 500,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = F,
+                        min_confidence_reg_interaction = "D",
                         simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
@@ -67,6 +75,8 @@ init_report <- function(project_title = "Project title",
                         show_subcell_comp = T,
                         show_crispr_lof = T,
                         show_cell_tissue = F,
+                        show_ligand_receptor = T,
+                        show_regulatory_interactions = T,
                         show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
                         show_complex = T) {
@@ -100,6 +110,8 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["show"]][["crispr_ps_fitness"]] <- show_crispr_lof
   rep[["config"]][["show"]][["crispr_ps_prioritized"]] <- show_crispr_lof
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
+  rep[["config"]][["show"]][["regulatory"]] <- show_regulatory_interactions
+  rep[["config"]][["show"]][["ligand_receptor"]] <- show_ligand_receptor
   rep[["config"]][["show"]][["cancer_hallmark"]] <- show_cancer_hallmarks
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
@@ -109,6 +121,9 @@ init_report <- function(project_title = "Project title",
   rep[["config"]][["project_title"]] <- project_title
   rep[["config"]][["project_description"]] <- project_description
   rep[["config"]][["project_owner"]] <- project_owner
+  rep[["config"]][["rmarkdown"]] <- list()
+  rep[["config"]][["rmarkdown"]][["floating_toc"]] <- html_floating_toc
+  rep[["config"]][["rmarkdown"]][["theme"]] <- html_report_theme
 
   ## config - query (id type and option to ignore errors)
   rep[["config"]][["query"]] <- list()
@@ -117,6 +132,24 @@ init_report <- function(project_title = "Project title",
 
   rep[["config"]][["bgset"]] <- list()
   rep[["config"]][["bgset"]][["id_type"]] <- bgset_id_type
+
+  rep[["config"]][["regulatory"]] <- list()
+  rep[["config"]][["regulatory"]][["target_levels"]] <-
+    c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C","TF_TARGET_D",
+      "TARGET_A","TARGET_B","TARGET_C","TARGET_D")
+  rep[["config"]][["regulatory"]][["target_colors"]] <-
+    c("#08306b","#08519c","#2171b5", "#4292c6",
+      "#08306b","#08519c","#2171b5", "#4292c6")
+
+  rep[["config"]][["regulatory"]][["tf_levels"]] <-
+    c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C","TF_TARGET_D",
+      "TF_A","TF_B","TF_C","TF_D")
+  rep[["config"]][["regulatory"]][["tf_colors"]] <-
+    c("#08306b","#08519c","#2171b5", "#4292c6",
+      "#08306b","#08519c","#2171b5", "#4292c6")
+
+  rep[["config"]][["regulatory"]][["min_confidence"]] <-
+    min_confidence_reg_interaction
 
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
@@ -225,7 +258,6 @@ init_report <- function(project_title = "Project title",
     subcellcomp_show_cytosol
 
 
-
   ## initialize all data elements
   for (analysis in c("query",
                      "tcga",
@@ -234,8 +266,10 @@ init_report <- function(project_title = "Project title",
                      "tcga",
                      "enrichment",
                      "drug",
+                     "regulatory",
                      "cancer_hallmark",
                      "protein_complex",
+                     "ligand_receptor",
                      "subcellcomp",
                      "crispr_ps",
                      "cell_tissue",
@@ -252,12 +286,28 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["cancer_prognosis"]][['hpa']] <- list()
   rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <- data.frame()
 
+  ## regulatory interactions (DoRothEA)
+  rep[["data"]][["regulatory"]][["interactions"]] <- list()
+  rep[["data"]][["regulatory"]][["interactions"]][["global"]] <- data.frame()
+  rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]] <- data.frame()
+
+  rep[["data"]][["regulatory"]][["network"]] <- list()
+  rep[["data"]][["regulatory"]][["network"]][["edges"]] <- data.frame()
+  rep[["data"]][["regulatory"]][["network"]][["nodes"]] <- data.frame()
+
   ## prognosis/survival - gene expression, mutation, CNA (CSHL)
   rep[["data"]][["cancer_prognosis"]][['km_cshl']] <- list()
   rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']] <- list()
   rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['cna']] <- data.frame()
   rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['mut']] <- data.frame()
   rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][['exp']] <- data.frame()
+
+  ## ligand-receptor interactions
+  rep[["data"]][["ligand_receptor"]][["cell_cell_contact"]] <- data.frame()
+  rep[["data"]][["ligand_receptor"]][["ecm_receptor"]] <- data.frame()
+  rep[["data"]][["ligand_receptor"]][["secreted_signaling"]] <- data.frame()
+
+
 
   ## cancer hallmarks
   rep[["data"]][["cancer_hallmark"]][["target"]] <- data.frame()
@@ -327,7 +377,8 @@ init_report <- function(project_title = "Project title",
   rep[["data"]][["tcga"]][["co_expression"]] <- data.frame()
 
   ## Protein complexes
-  rep[["data"]][["protein_complex"]][["complex"]] <- data.frame()
+  rep[["data"]][["protein_complex"]][["humap2"]] <- data.frame()
+  rep[["data"]][["protein_complex"]][["omnipath"]] <- data.frame()
 
   ## Subcellular localizations
   rep[["data"]][["subcellcomp"]][["all"]] <- data.frame()
@@ -371,6 +422,8 @@ init_report <- function(project_title = "Project title",
 #' @param query character vector with gene/query identifiers
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
+#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
@@ -385,6 +438,7 @@ init_report <- function(project_title = "Project title",
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
+#' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -392,22 +446,26 @@ init_report <- function(project_title = "Project title",
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
 #' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
-#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene
-#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)
+#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
+#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes
-#' @param show_tissue_cell logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
+#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
+#' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
-#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed
+#' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
+#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
+#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (CORUM)
+#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #' @export
 #'
 onco_enrich <- function(query,
                    query_id_type = "symbol",
                    ignore_id_err = TRUE,
+                   html_floating_toc = T,
+                   html_report_theme = "default",
                    project_title = "Project title",
                    project_owner = "Project owner",
                    project_description = "Project description",
@@ -421,6 +479,7 @@ onco_enrich <- function(query,
                    max_geneset_size = 500,
                    min_subcellcomp_confidence = 1,
                    subcellcomp_show_cytosol = FALSE,
+                   min_confidence_reg_interaction = "D",
                    simplify_go = TRUE,
                    ppi_add_nodes = 50,
                    ppi_score_threshold = 900,
@@ -434,6 +493,8 @@ onco_enrich <- function(query,
                    show_tcga_aberration = TRUE,
                    show_tcga_coexpression = TRUE,
                    show_cell_tissue = FALSE,
+                   show_ligand_receptor = TRUE,
+                   show_regulatory_interactions = TRUE,
                    show_unknown_function = TRUE,
                    show_prognostic_cancer_assoc = TRUE,
                    show_subcell_comp = TRUE,
@@ -456,12 +517,44 @@ onco_enrich <- function(query,
   stopifnot(is.character(query))
   stopifnot(length(query) >= 1)
 
-  stopifnot(
-    p_value_adjustment_method %in%
-      c("holm", "hochberg",
-        "hommel", "bonferroni",
-        "BH", "BY",
-        "fdr", "none"))
+  val <- assertthat::validate_that(
+    p_value_adjustment_method %in% c("holm", "hochberg",
+                                     "hommel", "bonferroni",
+                                     "BH", "BY",
+                                     "fdr", "none")
+  )
+  if(!is.logical(val)){
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR - 'p_value_adjustment_method' must have any of the following values: ",
+      "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
+      " (value provided was '", p_value_adjustment_method,"')"))
+    return()
+  }
+
+  val <- assertthat::validate_that(
+    min_confidence_reg_interaction %in% c("A", "B",
+                                          "C", "D")
+  )
+  if(!is.logical(val)){
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR - 'min_confidence_reg_interaction' must have any of the following values: 'A', 'B', 'C', 'D'",
+      " (value provided was '", min_confidence_reg_interaction,"')"))
+    return()
+  }
+
+  val <- assertthat::validate_that(
+    html_report_theme %in% c("bootstrap","cerulean","cosmo","default",
+                        "flatly","journal","lumen","paper","sandstone",
+                        "simplex","spacelab","united","yeti")
+  )
+  if(!is.logical(val)){
+    oncoEnrichR:::log4r_info(paste0(
+      "ERROR - 'html_report_theme' must have any of the following values: ",
+      "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
+      "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
+      " (value provided was '", p_value_adjustment_method,"')"))
+    return()
+  }
 
   #galaxy <- F
   oncoenrichr_query_limit <- 600
@@ -516,11 +609,25 @@ onco_enrich <- function(query,
   onc_rep <- oncoEnrichR:::init_report(
     project_title = project_title,
     project_owner = project_owner,
+    html_report_theme = html_report_theme,
+    html_floating_toc = html_floating_toc,
     query_id_type = query_id_type,
     ignore_id_err = ignore_id_err,
     project_description = project_description,
     ppi_min_string_score = ppi_score_threshold,
     ppi_add_nodes = ppi_add_nodes,
+    bgset_description =
+      bgset_description,
+    bgset_id_type = bgset_id_type,
+    p_value_cutoff_enrichment = p_value_cutoff_enrichment,
+    p_value_adjustment_method = p_value_adjustment_method,
+    q_value_cutoff_enrichment = q_value_cutoff_enrichment,
+    min_geneset_size = min_geneset_size,
+    max_geneset_size = max_geneset_size,
+    min_subcellcomp_confidence = min_subcellcomp_confidence,
+    subcellcomp_show_cytosol = subcellcomp_show_cytosol,
+    min_confidence_reg_interaction = min_confidence_reg_interaction,
+    simplify_go = simplify_go,
     show_ppi = show_ppi,
     show_drugs_in_ppi = show_drugs_in_ppi,
     show_disease = show_disease,
@@ -530,23 +637,15 @@ onco_enrich <- function(query,
     show_enrichment = show_enrichment,
     show_tcga_aberration = show_tcga_aberration,
     show_tcga_coexpression = show_tcga_coexpression,
+    show_subcell_comp = show_subcell_comp,
+    show_crispr_lof = show_crispr_lof,
     show_cell_tissue = show_cell_tissue,
+    show_ligand_receptor = show_ligand_receptor,
+    show_regulatory_interactions = show_regulatory_interactions,
     show_unknown_function = show_unknown_function,
     show_prognostic_cancer_assoc =
       show_prognostic_cancer_assoc,
-    show_crispr_lof = show_crispr_lof,
-    min_geneset_size = min_geneset_size,
-    max_geneset_size = max_geneset_size,
-    subcellcomp_show_cytosol = subcellcomp_show_cytosol,
-    min_subcellcomp_confidence = min_subcellcomp_confidence,
-    simplify_go = simplify_go,
-    show_complex = show_complex,
-    show_subcell_comp = show_subcell_comp,
-    bgset_description =
-      bgset_description,
-    p_value_cutoff_enrichment = p_value_cutoff_enrichment,
-    p_value_adjustment_method = p_value_adjustment_method,
-    q_value_cutoff_enrichment = q_value_cutoff_enrichment)
+    show_complex = show_complex)
 
   ## validate query gene set
   qgenes_match <-
@@ -581,6 +680,8 @@ onco_enrich <- function(query,
                "cell_tissue",
                "cancer_hallmark",
                "crispr_ps",
+               "regulatory_interactions",
+               "ligand_receptor",
                "subcellcomp",
                "unknown_function",
                "cancer_prognosis")){
@@ -645,6 +746,14 @@ onco_enrich <- function(query,
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         cancerdrugdb = oncoEnrichR::cancerdrugdb)
+  }
+
+  if (show_ligand_receptor == T) {
+    onc_rep[["data"]][["ligand_receptor"]] <-
+      oncoEnrichR:::annotate_ligand_receptor_interactions(
+        query_symbol,
+        genedb = oncoEnrichR::genedb[['all']],
+        ligandreceptordb = oncoEnrichR::ligandreceptordb)
   }
 
   if(onc_rep[['config']][['show']][['enrichment']] == T){
@@ -732,14 +841,8 @@ onco_enrich <- function(query,
   }
 
   if (show_ppi == T) {
-    ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
+    ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING
     # service_is_down <- unique(is.na(pingr::ping("string-db.org")))
-    # if(service_is_down){
-    #   message("EXCEPTION: https://string-db.org is NOT responding - ",
-    #           "skipping retrievel of protein-protein interactions")
-    #
-    #   onc_rep[["config"]][["show"]][["ppi"]] <- FALSE
-    # }else{
     onc_rep[["data"]][["ppi"]] <-
       oncoEnrichR:::get_ppi_network(
         query_entrezgene,
@@ -751,21 +854,12 @@ onco_enrich <- function(query,
   }
 
   if (show_complex == T) {
-    ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING (NOT SURE WHY)
-    # service_is_down <- unique(is.na(pingr::ping("omnipathdb.org")))
-    # if(service_is_down){
-    #   oncoEnrichR:::log4r_info("EXCEPTION: https://omnipathdb.org is NOT responding - ",
-    #                     "skipping retrievel of protein complexes")
-    #
-    #   onc_rep[["config"]][["show"]][["protein_complex"]] <- FALSE
-    # }else{
-    onc_rep[["data"]][["protein_complex"]][["complex"]] <-
+    onc_rep[["data"]][["protein_complex"]] <-
       oncoEnrichR:::annotate_protein_complex(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
-        corum_db = oncoEnrichR::genedb[['corum_xref']],
+        complex_db = oncoEnrichR::genedb[['protein_complex']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
-    #}
   }
 
   if (show_unknown_function == T) {
@@ -948,6 +1042,27 @@ onco_enrich <- function(query,
       oncoEnrichR:::tcga_co_expression(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
+  }
+
+  if (show_regulatory_interactions == T) {
+
+    for(collection in c('global','pancancer')){
+      onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
+        oncoEnrichR:::annotate_tf_targets(
+          query_symbol,
+          genedb = oncoEnrichR::genedb[['all']],
+          tf_target_interactions = oncoEnrichR::tf_target_interactions,
+          collection = collection,
+          min_confidence_reg_interaction = min_confidence_reg_interaction)
+    }
+
+    if(NROW(onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]) > 0){
+      onc_rep[["data"]][["regulatory"]][["network"]] <-
+        oncoEnrichR:::retrieve_tf_target_network(
+          tf_target_interactions =
+            onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]
+        )
+    }
   }
 
   if(show_prognostic_cancer_assoc == T){
@@ -1216,58 +1331,30 @@ write <- function(report,
           oncoEnrichR:::log4r_info("------")
         }
       }
-      # else{
-      #
-      #   target_zip <- file.path(output_directory, paste0(
-      #     file_basename_prefix, ".zip")
-      #   )
-      #   if(file.exists(target_zip)){
-      #     if(overwrite == F){
-      #       oncoEnrichR:::log4r_info(paste0(
-      #         "ERROR: Cannot create zipped HTML folder since ",
-      #         target_zip, " exist ",
-      #         " and 'overwrite' is FALSE")
-      #       )
-      #       return()
-      #     }else{
-      #       system(paste0('rm -rf ',target_zip))
-      #     }
-      #
-      #   }
-      #
-      #   rmarkdown::render_site(
-      #     input = tmpdir,
-      #     quiet = T
-      #   )
-      #
-      #   zip(target_zip, files = c(rmdown_html,
-      #                             rmdown_supporting1,
-      #                             rmdown_supporting2),
-      #       flags = "-rj")
-      #
-      #   oncoEnrichR:::log4r_info(paste0("Output file (HTML with external dependencies (CSS/Javascript)): ",
-      #                                   target_zip))
-      #   oncoEnrichR:::log4r_info("------")
-      #   system(paste0('rm -rf ',tmpdir))
-      #
-      # }
 
     }else{
 
       disclaimer <- system.file("templates",
                                 "_disclaimer.md",
                                 package = "oncoEnrichR")
-      report_theme <- "default"
+
+      report_theme <- onc_enrich_report$config$rmarkdown$theme
+      toc_float <- onc_enrich_report$config$rmarkdown$floating_toc
+      #report_theme <- "default"
 
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")
+
+      #toc = T,
+      #toc_depth = toc_depth,
+
       rmarkdown::render(
         markdown_input,
         output_format = rmarkdown::html_document(
           theme = report_theme,
           toc = T,
           toc_depth = 3,
-          toc_float = T,
+          toc_float = toc_float,
           number_sections = F,
           includes = rmarkdown::includes(after_body = disclaimer)),
         output_file = file_basename,
@@ -1297,9 +1384,11 @@ write <- function(report,
                   "drug_known",
                   "drug_tractability",
                   "protein_complex",
+                  "regulatory",
                   "subcellcomp",
                   "cell_tissue",
                   "ppi",
+                  "ligand_receptor",
                   "enrichment",
                   "aberration",
                   "coexpression",

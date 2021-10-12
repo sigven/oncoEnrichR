@@ -8,6 +8,8 @@ onco_enrich(
   query,
   query_id_type = "symbol",
   ignore_id_err = TRUE,
+  html_floating_toc = T,
+  html_report_theme = "default",
   project_title = "Project title",
   project_owner = "Project owner",
   project_description = "Project description",
@@ -21,6 +23,7 @@ onco_enrich(
   max_geneset_size = 500,
   min_subcellcomp_confidence = 1,
   subcellcomp_show_cytosol = FALSE,
+  min_confidence_reg_interaction = "D",
   simplify_go = TRUE,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
@@ -34,6 +37,8 @@ onco_enrich(
   show_tcga_aberration = TRUE,
   show_tcga_coexpression = TRUE,
   show_cell_tissue = FALSE,
+  show_ligand_receptor = TRUE,
+  show_regulatory_interactions = TRUE,
   show_unknown_function = TRUE,
   show_prognostic_cancer_assoc = TRUE,
   show_subcell_comp = TRUE,
@@ -49,6 +54,10 @@ onco_enrich(
 "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
 
 \item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
+
+\item{html_floating_toc}{logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled}
+
+\item{html_report_theme}{Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")}
 
 \item{project_title}{project title (title of report)}
 
@@ -76,6 +85,8 @@ onco_enrich(
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
 
+\item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
+
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
 \item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
@@ -90,26 +101,30 @@ onco_enrich(
 
 \item{show_top_diseases_only}{logical indicating if report should contain top (15) disease associations only (Open Targets Platform)}
 
-\item{show_cancer_hallmarks}{logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene}
+\item{show_cancer_hallmarks}{logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)}
 
-\item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)}
+\item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)}
 
 \item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
 
-\item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes}
+\item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes}
 
-\item{show_unknown_function}{logical indicating if report should highlight target genes with unknown or poorly defined functions}
+\item{show_cell_tissue}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
+of target genes, using data from the Human Protein Atlas}
 
-\item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed}
+\item{show_ligand_receptor}{logical indicating if report should contain ligand-receptor interactions (CellChatDB)}
+
+\item{show_regulatory_interactions}{logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)}
+
+\item{show_unknown_function}{logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)}
+
+\item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
 \item{show_crispr_lof}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
-\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (CORUM)}
-
-\item{show_tissue_cell}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
-of target genes, using data from the Human Protein Atlas}
+\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 }
 \description{
 Interrogate a gene list for cancer relevance

@@ -159,7 +159,7 @@ htmltools::br()
   * **Not detected**: Genes with a mean expression level less than 1 (_NX < 1_) across all the cell types.
   * **Cell type enriched**: Genes with a mean expression level greater than or equal to 1 (_NX >= 1_) that also have at least four-fold higher expression levels in a particular cell type compared to all other cell types.
   * **Group enriched**: Genes with a mean expression level greater than or equal to 1 (_NX >= 1_) that also have at least four-fold higher expression levels in a group of 2-10 cell types compared to all other cell types, and that are not considered *Cell type enriched*.
-  * **Cell type enhanced**: Genes with a mean expression level greater than or equal to 1 (_NX >= 1_) that also have at least four-fold higher expression levels in a particular cell type compared to the average levels in all other cell types, and that are not considered *Cell type enriched* or *Cell type enriched*.
+  * **Cell type enhanced**: Genes with a mean expression level greater than or equal to 1 (_NX >= 1_) that also have at least four-fold higher expression levels in a particular cell type compared to the average levels in all other cell types, and that are not considered *Cell type enriched* or *Group enriched*.
   * **Low cell type specificity**: Genes with an expression level greater than or equal to 1 (_NX >= 1_) across all of the cell types that are not in any of the above 4 groups.
   * **Mixed**: Genes that are not assigned to any of the above 5 groups.
 

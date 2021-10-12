@@ -189,10 +189,10 @@ target_disease_associations <-
     dplyr::select(symbol, genename,
                   ensembl_gene_id,
                   oncogene, tumor_suppressor,
+                  targetset_cancer_prank,
                   cancergene_support,
                   ot_cancer_diseases,
                   ot_cancer_links,
-                  targetset_cancer_prank,
                   targetset_disease_prank,
                   ot_diseases,
                   ot_links,
@@ -268,7 +268,7 @@ target_drug_associations <- function(qgenes,
     dplyr::inner_join(genedb, by = "symbol") %>%
     dplyr::distinct()
 
-  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs"))
+  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs (cancer indications only)"))
 
   result <- list()
   result[['target_drugs']] <- data.frame()
@@ -289,14 +289,16 @@ target_drug_associations <- function(qgenes,
     dplyr::inner_join(cancerdrugdb[['tractability']][['ab']],
                       by = "ensembl_gene_id") %>%
     dplyr::select(-ensembl_gene_id) %>%
-    dplyr::arrange(AB_tractability_category)
+    dplyr::arrange(AB_tractability_category,
+                   desc(nchar(AB_tractability_support)))
 
   result[['tractability_sm']] <- target_genes %>%
     dplyr::select(ensembl_gene_id) %>%
     dplyr::inner_join(cancerdrugdb[['tractability']][['sm']],
                       by = "ensembl_gene_id") %>%
     dplyr::select(-ensembl_gene_id) %>%
-    dplyr::arrange(SM_tractability_category)
+    dplyr::arrange(SM_tractability_category,
+                   desc(nchar(SM_tractability_support)))
 
   return(result)
 

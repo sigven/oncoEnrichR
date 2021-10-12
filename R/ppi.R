@@ -118,6 +118,7 @@ get_string_network_nodes_edges <-
                        by = c("preferredName_B" = "symbol")) %>%
       dplyr::rename(query_node_B = query_node) %>%
       dplyr::mutate(weight = score) %>%
+      dplyr::mutate(title = paste0("Interaction score:", score)) %>%
       dplyr::distinct() %>%
       dplyr::select(-c(ncbiTaxonId,stringId_A,stringId_B))
 
@@ -125,8 +126,12 @@ get_string_network_nodes_edges <-
       "symbol" = unique(c(edges$preferredName_A, edges$preferredName_B)),
       stringsAsFactors = F) %>%
       dplyr::distinct() %>%
-      dplyr::left_join(genedb, by = c("symbol" = "symbol")) %>%
-      dplyr::select(-ensembl_gene_id) %>%
+      dplyr::left_join(dplyr::select(
+        genedb, symbol, entrezgene, tumor_suppressor, oncogene,
+        cancer_driver, genename,
+        targeted_cancer_drugs_ep, targeted_cancer_drugs_lp),
+        by = c("symbol" = "symbol")) %>%
+      #dplyr::select(-ensembl_gene_id) %>%
       dplyr::filter(!is.na(entrezgene)) %>%
       dplyr::left_join(dplyr::select(all_query_nodes,
                                      symbol, query_node),
@@ -135,8 +140,8 @@ get_string_network_nodes_edges <-
       dplyr::distinct() %>%
       dplyr::bind_rows(all_query_nodes) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(query_node = dplyr::if_else(is.na(query_node),
-                                                FALSE, as.logical(query_node)))
+      dplyr::mutate(query_node = dplyr::if_else(
+        is.na(query_node), FALSE, as.logical(query_node)))
 
     network <- list()
     network$edges <- edges
@@ -164,14 +169,20 @@ get_ppi_network <- function(qgenes,
   stopifnot(!is.null(cancerdrugdb[['ppi']]))
   stopifnot(settings$query_type == "interaction_partners" | settings$query_type == "network")
   oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
-  #oncoEnrichR::validate_db_df(cancerdrugdb[['ppi']], dbtype = "drug_ppi")
 
 
   query_nodes <- data.frame("entrezgene" = qgenes, stringsAsFactors = F) %>%
     dplyr::distinct() %>%
-    dplyr::left_join(genedb, by = c("entrezgene" = "entrezgene")) %>%
+
+    dplyr::left_join(dplyr::select(
+      genedb, symbol, entrezgene, tumor_suppressor,
+      cancer_driver, oncogene, genename,
+      targeted_cancer_drugs_ep, targeted_cancer_drugs_lp),
+      by = c("entrezgene" = "entrezgene")) %>%
+
+    #dplyr::left_join(genedb, by = c("entrezgene" = "entrezgene")) %>%
     dplyr::mutate(id = paste0("s",entrezgene)) %>%
-    dplyr::select(-ensembl_gene_id) %>%
+    #dplyr::select(-ensembl_gene_id) %>%
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
@@ -223,7 +234,7 @@ get_ppi_network <- function(qgenes,
 
   oncoEnrichR:::log4r_info("STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
   oncoEnrichR:::log4r_info(paste0("STRINGdb: Settings -  required_score = ",
-                           settings$minimum_score,", add_nodes = ",settings$add_nodes))
+                                  settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
   all_edges <- data.frame()
   all_nodes <- data.frame()
@@ -234,10 +245,11 @@ get_ppi_network <- function(qgenes,
     while(i <= length(qgenes)){
       qgenes_set <- qgenes[i:min(length(qgenes),i + 199)]
 
-      ppi_network_data <- get_string_network_nodes_edges(qgenes = qgenes_set,
-                                                         all_query_nodes = query_nodes,
-                                                         settings = settings,
-                                                         genedb = genedb)
+      ppi_network_data <- get_string_network_nodes_edges(
+        qgenes = qgenes_set,
+        all_query_nodes = query_nodes,
+        settings = settings,
+        genedb = genedb)
 
       all_edges <- all_edges %>%
         dplyr::bind_rows(ppi_network_data$edges) %>%
@@ -249,10 +261,11 @@ get_ppi_network <- function(qgenes,
     }
 
   }else{
-    ppi_network_data <- get_string_network_nodes_edges(qgenes = qgenes,
-                                                       all_query_nodes = query_nodes,
-                                                       settings = settings,
-                                                       genedb = genedb)
+    ppi_network_data <- get_string_network_nodes_edges(
+      qgenes = qgenes,
+      all_query_nodes = query_nodes,
+      settings = settings,
+      genedb = genedb)
 
     if(!is.null(ppi_network_data)){
 
@@ -277,32 +290,34 @@ get_ppi_network <- function(qgenes,
       lapply(stringr::str_match_all(
         all_nodes$genename,">.+<"), paste, collapse=","))
     all_nodes$title <- stringr::str_replace_all(all_nodes$title,">|<", "")
-    all_nodes$label  <- all_nodes$symbol # Node label
+    all_nodes$label <- all_nodes$symbol # Node label
 
     all_edges$width <- all_edges$weight
 
     all_nodes$gene_category <- "protein_coding"
     all_nodes$size <- 25
     all_nodes <- all_nodes %>%
-      dplyr::mutate(color.background  =
-                      dplyr::if_else(query_node == T, "lightblue", "mistyrose")) %>%
-      dplyr::mutate(color.background =
-                      dplyr::if_else(tumor_suppressor == T & oncogene == F,
-                                     "firebrick", as.character(color.background),
-                                     as.character(color.background))) %>%
-      dplyr::mutate(color.background =
-                      dplyr::if_else(oncogene == T & tumor_suppressor == F,
-                                     "darkolivegreen", as.character(color.background),
-                                     as.character(color.background))) %>%
-      dplyr::mutate(color.background =
-                      dplyr::if_else(oncogene == T & tumor_suppressor == T,
-                                     "black", as.character(color.background),
-                                     as.character(color.background))) %>%
-      dplyr::mutate(color.border = "black", color.highlight.background = "orange",
-                    color.highlight.border = "darkred", font.color = "white") %>%
-      dplyr::mutate(font.color =
-                      dplyr::if_else(query_node == T | color.background == "mistyrose",
-                                     "black", as.character(font.color), as.character(font.color)))
+      dplyr::mutate(color.background  = dplyr::if_else(
+        query_node == T, "lightblue", "mistyrose")) %>%
+      dplyr::mutate(color.background = dplyr::if_else(
+        tumor_suppressor == T & oncogene == F,
+        "firebrick", as.character(color.background),
+        as.character(color.background))) %>%
+      dplyr::mutate(color.background = dplyr::if_else(
+        oncogene == T & tumor_suppressor == F,
+        "darkolivegreen", as.character(color.background),
+        as.character(color.background))) %>%
+      dplyr::mutate(color.background = dplyr::if_else(
+        oncogene == T & tumor_suppressor == T,
+        "black", as.character(color.background),
+        as.character(color.background))) %>%
+      dplyr::mutate(color.border = "black",
+                    color.highlight.background = "orange",
+                    color.highlight.border = "darkred",
+                    font.color = "white") %>%
+      dplyr::mutate(font.color = dplyr::if_else(
+        query_node == T | color.background == "mistyrose",
+        "black", as.character(font.color), as.character(font.color)))
 
     nodes_with_drugs <- all_nodes
     edges_with_drugs <- all_edges

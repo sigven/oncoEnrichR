@@ -295,12 +295,12 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::left_join(dplyr::select(genedb, name,
                                    oncogene, cancer_driver,
                                    tumor_suppressor,
-                                   symbol, ot_tractability_compound),
+                                   symbol, SM_tractability_category),
                      by = c("symbol_partner" = "symbol")) %>%
     dplyr::rename(target_gene = symbol,
                   partner_gene = symbol_partner,
                   partner_genename = name,
-                  target_tractability = ot_tractability_compound) %>%
+                  target_tractability = SM_tractability_category) %>%
     dplyr::mutate(r = as.numeric(round(r, digits = 3))) %>%
     dplyr::filter(stringr::str_detect(tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|ESCA|MESO|UCEC|OV|CHOL|THCA|COAD|BLCA|STAD|KIRP|GBM|HNSC")) %>%
     dplyr::mutate(primary_site = "Breast") %>%

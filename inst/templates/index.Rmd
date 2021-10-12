@@ -3,7 +3,7 @@ title: "OncoEnrichR report - `r onc_enrich_report[['config']][['project_title']]
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 bibliography: '`r system.file("bibliography.bib",package = "oncoEnrichR")`'
 nocite: |
-  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn, @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, @Smith2021-fh
+  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, @Lever2019-xn, @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, @Smith2021-fh, @Turei2016-wq, @Drew2021-kd, @Garcia-Alonso2019-mr, @Jin2021-tf
 output: 
   html_document:
     toc: true
@@ -44,6 +44,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_complex, child='_protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
 ```
 
+```{r target_regulatory, child='_transcription_regulatory_interactions.Rmd', eval = onc_enrich_report[['config']][['show']][['regulatory']]}
+```
+
+
 ```{r target_subcell, child='_subcell_comp.Rmd', eval = onc_enrich_report[['config']][['show']][['subcellcomp']]}
 ```
 
@@ -52,6 +56,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 
 ```{r target_ppi, child='_ppi.Rmd', eval = onc_enrich_report[['config']][['show']][['ppi']]}
 ```
+
+```{r target_ligand_receptor, child='_ligand_receptor.Rmd', eval = onc_enrich_report[['config']][['show']][['ligand_receptor']]}
+```
+
 
 ```{r target_enrichment_invalid, child='_functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == "found")) < 5}
 ```

@@ -9,7 +9,14 @@
 ```{r table_browse_hallmarks, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['cancer_hallmark']][['target']]) > 0}
 library(crosstalk)
 
-target_hm_shared <- onc_enrich_report[['data']][['cancer_hallmark']][['target']]
+target_hm_shared <- crosstalk::SharedData$new(
+  onc_enrich_report[['data']][['cancer_hallmark']][['target']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("hallmark", "Cancer hallmark", target_hm_shared, ~hallmark)
+  )
+)
 
 htmltools::br()
 DT::datatable(target_hm_shared, 
