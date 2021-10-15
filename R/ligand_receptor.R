@@ -50,7 +50,8 @@ annotate_ligand_receptor_interactions <- function(qgenes,
           dplyr::filter(annotation == "Cell-Cell Contact") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%
-      dplyr::select(-c(interaction_id, annotation, interaction_members))
+      dplyr::select(-c(interaction_id, annotation, interaction_members)) %>%
+      dplyr::distinct()
 
     ligand_receptor_results[['secreted_signaling']] <-
       as.data.frame(
@@ -58,7 +59,8 @@ annotate_ligand_receptor_interactions <- function(qgenes,
           dplyr::filter(annotation == "Secreted Signaling") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%
-      dplyr::select(-c(interaction_id, annotation, interaction_members))
+      dplyr::select(-c(interaction_id, annotation, interaction_members)) %>%
+      dplyr::distinct()
 
 
     ligand_receptor_results[['ecm_receptor']] <-
@@ -67,7 +69,8 @@ annotate_ligand_receptor_interactions <- function(qgenes,
           dplyr::filter(annotation == "ECM-Receptor") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%
-      dplyr::select(-c(interaction_id, annotation, interaction_members))
+      dplyr::select(-c(interaction_id, annotation, interaction_members)) %>%
+      dplyr::distinct()
 
   }
 

@@ -91,7 +91,7 @@ get_target_priority_scores <-
         targets_crispr_priority %>%
         dplyr::mutate(symbol = factor(symbol, levels =
                  levels(projectscoredb[['target_priority_scores']]$symbol))) %>%
-        dplyr::arrange(symbol) %>%
+        dplyr::arrange(desc(priority_score)) %>%
         dplyr::select(symbol, tumor_type, priority_score) # %>%
 
       )

@@ -107,6 +107,7 @@ cat('<br><br>')
 
 oe_priority_matrix <- as.data.frame(
   onc_enrich_report[['data']][['crispr_ps']][['target_priority_scores']][['targets']] %>%
+  dplyr::arrange(symbol) %>%
   tidyr::pivot_wider(names_from = tumor_type,
                      values_from = priority_score)
 )

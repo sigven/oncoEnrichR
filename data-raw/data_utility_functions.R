@@ -10,29 +10,40 @@ chunk <- function(x,n) split(x, factor(sort(rank(x)%%n)))
 get_citations_pubmed <- function(pmid){
 
   ## make chunk of maximal 400 PMIDs from input array (limit by EUtils)
-  pmid_chunks <- chunk(pmid,ceiling(length(pmid)/400))
+  pmid_chunks <- chunk(pmid, ceiling(length(pmid)/20))
   j <- 0
   all_citations <- data.frame()
   cat('Retrieving PubMed citations for PMID list, total length', length(pmid))
   cat('\n')
   while(j < length(pmid_chunks)){
+    #cat(unlist(pmid_chunks),"\n")
     pmid_chunk <- pmid_chunks[[as.character(j)]]
+    cat(unlist(pmid_chunk),"\n")
     cat('Processing chunk ',j,' with ',length(pmid_chunk),'PMIDS')
     cat('\n')
     pmid_string <- paste(pmid_chunk,collapse = " ")
-    res <- RISmed::EUtilsSummary(pmid_string, type="esearch", db="pubmed", retmax = 5000)
-    year <- RISmed::YearPubmed(RISmed::EUtilsGet(res))
-    authorlist <- RISmed::Author(RISmed::EUtilsGet(res))
-    pmid_list <- RISmed::PMID(RISmed::EUtilsGet(res))
+    res <- RISmed::EUtilsGet(
+      RISmed::EUtilsSummary(pmid_string, type="esearch", db="pubmed", retmax = 5000)
+    )
+
+
+    year <- RISmed::YearPubmed(res)
+    authorlist <- RISmed::Author(res)
+    pmid_list <- RISmed::PMID(res)
     i <- 1
     first_author <- c()
     while(i <= length(authorlist)){
+
       first_author <- c(first_author,paste(authorlist[[i]][1,]$LastName," et al.",sep=""))
       i <- i + 1
     }
-    journal <- RISmed::ISOAbbreviation(RISmed::EUtilsGet(res))
-    citations <- data.frame('pmid' = as.integer(pmid_list), 'citation' = paste(first_author,year,journal,sep=", "), stringsAsFactors = F)
-    citations$link <- paste0('<a href=\'https://www.ncbi.nlm.nih.gov/pubmed/',citations$pmid,'\' target=\'_blank\'>',citations$citation,'</a>')
+    journal <- RISmed::ISOAbbreviation(res)
+    citations <- data.frame('pmid' = as.integer(pmid_list),
+                            'citation' = paste(first_author,year,journal,sep=", "),
+                            stringsAsFactors = F)
+    citations$link <- paste0('<a href=\'https://www.ncbi.nlm.nih.gov/pubmed/',
+                             citations$pmid,'\' target=\'_blank\'>',
+                             citations$citation,'</a>')
     all_citations <- dplyr::bind_rows(all_citations, citations)
     j <- j + 1
   }
@@ -279,7 +290,7 @@ get_msigdb_signatures <- function(basedir = NULL,
 
 
 get_ts_oncogene_annotations <- function(basedir = NULL,
-                                        version = "34",
+                                        version = "39",
                                         gene_info = NULL){
   rlogging::message(
     "Retrieving proto-oncogenes/tumor suppressor status ",
@@ -292,12 +303,13 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                     stringsAsFactors = F, sep = "\t", quote = "", comment.char = "") %>%
     janitor::clean_names() %>%
     dplyr::mutate(
-      ncg_tumor_suppressor = dplyr::if_else(stringr::str_detect(cgc_annotation,"TSG") | ncg6_tsg == 1,
+      ncg_tumor_suppressor = dplyr::if_else(stringr::str_detect(cgc_annotation,"TSG") | ncg_tsg == 1,
                                             as.logical(TRUE),as.logical(FALSE))) %>%
     dplyr::mutate(
-      ncg_oncogene = dplyr::if_else(stringr::str_detect(cgc_annotation,"oncogene") | ncg6_oncogene == 1,
+      ncg_oncogene = dplyr::if_else(stringr::str_detect(cgc_annotation,"oncogene") | ncg_oncogene == 1,
                                     as.logical(TRUE),as.logical(FALSE))) %>%
     dplyr::select(symbol, entrez, ncg_tumor_suppressor, ncg_oncogene) %>%
+    dplyr::filter(!(ncg_tumor_suppressor == F & ncg_oncogene == F)) %>%
     dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
     dplyr::select(-entrez) %>%
     dplyr::distinct()
@@ -386,15 +398,17 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
 
   rlogging::message("Retrieving known proto-oncogenes/tumor suppressor genes from CancerMine")
-  oncogene <- as.data.frame(readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
-                                            col_names = T,na ="-", comment = "#", quote = "") %>%
-                              dplyr::filter(role == "Oncogene") %>%
-                              dplyr::rename(symbol = gene_normalized) %>%
-                              dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
-                              dplyr::group_by(symbol) %>%
-                              dplyr::summarise(doid_oncogene = paste(unique(cancer_id),collapse=","), .groups = "drop") %>%
-                              dplyr::inner_join(pmids_oncogene, by = "symbol") %>%
-                              dplyr::distinct())
+  oncogene <- as.data.frame(
+    readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
+                    col_names = T,na ="-", comment = "#", quote = "",
+                    show_col_types = F) %>%
+      dplyr::filter(role == "Oncogene") %>%
+      dplyr::rename(symbol = gene_normalized) %>%
+      dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
+      dplyr::group_by(symbol) %>%
+      dplyr::summarise(doid_oncogene = paste(unique(cancer_id),collapse=","), .groups = "drop") %>%
+      dplyr::inner_join(pmids_oncogene, by = "symbol") %>%
+      dplyr::distinct())
 
   n_hc_oncogene <- oncogene %>%
     dplyr::filter(oncogene_cancermine == "HC") %>%
@@ -403,7 +417,8 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
   tsgene <- as.data.frame(
     readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
-                    col_names = T,na ="-", comment = "#", quote = "") %>%
+                    col_names = T,na ="-", comment = "#", quote = "",
+                    show_col_types = F) %>%
       dplyr::filter(role == "Tumor_Suppressor") %>%
       dplyr::rename(symbol = gene_normalized) %>%
       dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
@@ -419,7 +434,8 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
   cdriver <- as.data.frame(
     readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
-                    col_names = T,na ="-", comment = "#", quote = "") %>%
+                    col_names = T,na ="-", comment = "#", quote = "",
+                    show_col_types = F) %>%
       dplyr::filter(role == "Driver") %>%
       dplyr::rename(symbol = gene_normalized) %>%
       dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
@@ -524,7 +540,7 @@ get_opentarget_associations <-
   function(basedir = '/Users/sigven/research/DB/var_annotation_tracks',
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2021.06",
+           release = "2021.09",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -535,14 +551,17 @@ get_opentarget_associations <-
                ".rds")
       ) %>%
         dplyr::select(target_symbol,
-                      tractability_antibody,
-                      tractability_small_molecule) %>%
+                      target_ensembl_gene_id,
+                      SM_tractability_category,
+                      SM_tractability_support,
+                      AB_tractability_category,
+                      AB_tractability_support) %>%
         dplyr::rename(symbol = target_symbol) %>%
-        dplyr::group_by(symbol) %>%
-        dplyr::summarise(
-          ot_tractability_compound = paste(unique(tractability_small_molecule), collapse = "&"),
-          ot_tractability_antibody = paste(unique(tractability_antibody), collapse = "&"),
-          .groups = "drop"))
+        dplyr::mutate(target_tractability_symbol = paste0(
+          "<a href='https://platform.opentargets.org/target/", target_ensembl_gene_id,"' target='_blank'>",symbol,"</a>")
+        )
+      )
+
 
 
     opentarget_associations <- as.data.frame(
@@ -594,13 +613,13 @@ get_dbnsfp_gene_annotations <- function(basedir = '/Users/sigven/research/DB/var
   return(dbnsfp_gene)
 }
 
-get_gencode_transcripts <- function(basedir = "/Users/sigven/research/DB/var_annotation_tracks",
-                                            build = "grch38",
-                                            append_regulatory_region = FALSE,
-                                            gencode_version = "38",
-                                            gene_info = NULL){
+get_gencode_transcripts <- function(
+  basedir = "/Users/sigven/research/DB/var_annotation_tracks",
+  build = "grch38",
+  append_regulatory_region = FALSE,
+  gencode_version = "38",
+  gene_info = NULL){
   gencode_ftp_url <- "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/"
-
 
   rlogging::message(paste0("Retrieving GENCODE transcripts - version ",
                            gencode_version,", build ",build))
@@ -737,9 +756,6 @@ get_gencode_transcripts <- function(basedir = "/Users/sigven/research/DB/var_ann
                        .groups = "drop") %>%
       dplyr::ungroup()
   )
-
-
-
 
   queryAttributes <- c('ensembl_gene_id','hgnc_symbol','hgnc_id')
   ensembl_genes_xref3 <- as.data.frame(
@@ -1081,57 +1097,188 @@ map_uniprot_accession <- function(gencode, uniprot_map){
 }
 
 get_cancer_hallmarks <- function(basedir = NULL,
-                                 gene_info = NULL){
+                                 gene_info = NULL,
+                                 opentargets_version = "2021.09",
+                                 update = T){
 
-  hallmark_data_long <- as.data.frame(
-    readRDS(file=paste0(basedir,"/data-raw/opentargets/opentargets_target_2021.04.rds")) %>%
-      dplyr::select(target_symbol, cancer_hallmark) %>%
-      dplyr::filter(!is.na(cancer_hallmark)) %>%
-      tidyr::separate_rows(cancer_hallmark, sep="@@@") %>%
-      tidyr::separate(cancer_hallmark,
-                      into = c('hallmark','promote','suppress','literature_support'),
-                      remove = F, sep = '\\|') %>%
-      dplyr::rename(promotes = promote, suppresses = suppress) %>%
-      dplyr::mutate(hallmark = stringr::str_to_title(hallmark)) %>%
-      tidyr::separate_rows(literature_support, sep="&") %>%
-      dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
-      dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
-      tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
-      dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
-  )
+  if(update == T){
+    hallmark_data_long <- as.data.frame(
+      readRDS(file=paste0(basedir,"/data-raw/opentargets/opentargets_target_",
+                          opentargets_version, ".rds")) %>%
+        dplyr::select(target_symbol, cancer_hallmark) %>%
+        dplyr::filter(!is.na(cancer_hallmark)) %>%
+        tidyr::separate_rows(cancer_hallmark, sep="@@@") %>%
+        tidyr::separate(cancer_hallmark,
+                        into = c('hallmark','promote','suppress','literature_support'),
+                        remove = F, sep = '\\|') %>%
+        dplyr::rename(promotes = promote, suppresses = suppress) %>%
+        dplyr::mutate(hallmark = stringr::str_to_title(hallmark)) %>%
+        tidyr::separate_rows(literature_support, sep="&") %>%
+        dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
+        dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
+        tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
+        dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
+    )
 
-  pmid_data <- get_citations_pubmed(unique(hallmark_data_long$pmid)) %>%
-    dplyr::mutate(pmid = as.character(pmid))
+    pmid_data <- get_citations_pubmed(unique(hallmark_data_long$pmid)) %>%
+      dplyr::mutate(pmid = as.character(pmid))
 
 
-  hallmark_data_long <- hallmark_data_long %>%
-    dplyr::left_join(pmid_data, by = "pmid")
+    hallmark_data_long <- hallmark_data_long %>%
+      dplyr::left_join(pmid_data, by = "pmid")
 
-  hallmark_data_short <- as.data.frame(
-    hallmark_data_long %>%
-      dplyr::select(target_symbol, hallmark,
-                    promotes, suppresses, pmid_summary,
-                    link) %>%
-      dplyr::mutate(literature_support = paste0(pmid_summary," (",link,")")) %>%
-      dplyr::group_by(target_symbol, hallmark,
-                      promotes, suppresses) %>%
-      dplyr::summarise(literature_support = paste(
-        literature_support, collapse=". "),
-        .groups = "drop") %>%
-      dplyr::left_join(dplyr::select(gene_info,
-                                     symbol, entrezgene),
-                       by = c("target_symbol" = "symbol")) %>%
-      dplyr::mutate(symbol =
-        paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
-                 entrezgene,"' target='_blank'>",target_symbol,"</a>")) %>%
-      dplyr::select(-entrezgene) %>%
-      dplyr::select(target_symbol, symbol, hallmark, promotes, suppresses,
-                    literature_support)
-  )
+    hallmark_data_short <- as.data.frame(
+      hallmark_data_long %>%
+        dplyr::select(target_symbol, hallmark,
+                      promotes, suppresses, pmid_summary,
+                      link) %>%
+        dplyr::mutate(literature_support = paste0(pmid_summary," (",link,")")) %>%
+        dplyr::group_by(target_symbol, hallmark,
+                        promotes, suppresses) %>%
+        dplyr::summarise(literature_support = paste(
+          literature_support, collapse=". "),
+          .groups = "drop") %>%
+        dplyr::left_join(dplyr::select(gene_info,
+                                       symbol, entrezgene),
+                         by = c("target_symbol" = "symbol")) %>%
+        dplyr::mutate(symbol =
+          paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+                   entrezgene,"' target='_blank'>",target_symbol,"</a>")) %>%
+        dplyr::select(-entrezgene) %>%
+        dplyr::select(target_symbol, symbol, hallmark, promotes, suppresses,
+                      literature_support)
+    )
 
-  return(list('long' = hallmark_data_long,
-              'short' = hallmark_data_short))
+    hallmark_data <- list('long' = hallmark_data_long,
+                          'short' = hallmark_data_short)
+
+    saveRDS(hallmark_data,
+            file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
+                          opentargets_version, ".rds"))
+  }
+  else{
+    hallmark_data <- readRDS(
+      file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
+                    opentargets_version, ".rds"))
+  }
+
+  return(hallmark_data)
 
 }
 
+get_regulatory_interactions <- function(dorothea_levels = c("A","B","C","D")){
 
+  omnipath_interactions_regulatory <- as.data.frame(
+    OmnipathR::import_transcriptional_interactions(
+      organism = 9606,
+      dorothea_levels = c("A","B", "C", "D")
+    )
+  ) %>%
+    dplyr::mutate(
+      references = stringr::str_replace_all(
+        references, "DoRothEA:|HTRIdb:|PAZAR:|SIGNOR:|ORegAnno:",""
+      ))
+
+
+  tmp <- dplyr::select(interactions_regulatory, source, target,
+                       references) %>%
+    dplyr::filter(!is.na(references)) %>%
+    tidyr::separate_rows(references, sep=";") %>%
+    dplyr::distinct()
+}
+
+
+get_gencode_data <- function(
+  basedir = NULL,
+  gencode_version = "38",
+  build = "grch38",
+  uniprot_map = NULL,
+  gene_info = NULL,
+  update = T){
+
+  gencode <- data.frame()
+
+  if(update == T){
+    gencode <-
+      get_gencode_transcripts(
+        basedir = basedir,
+        build = build,
+        gene_info = gene_info,
+        gencode_version = gencode_version) %>%
+      dplyr::select(ensembl_gene_id,
+                    symbol,
+                    refseq_mrna,
+                    refseq_peptide,
+                    name,
+                    ensembl_transcript_id,
+                    ensembl_protein_id,
+                    entrezgene,
+                    gencode_gene_biotype) %>%
+      dplyr::distinct() %>%
+      dplyr::filter(!is.na(entrezgene)) %>%
+      dplyr::mutate(entrezgene = as.character(entrezgene))
+
+    gencode <-
+      map_uniprot_accession(
+        gencode = gencode,
+        uniprot_map = uniprot_map)
+
+    ####---- Resolve ambiguious entrezgene identifiers ----####
+    ambiguous_entrezgene_ids <- as.data.frame(
+      gencode %>%
+        dplyr::select(symbol, entrezgene) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(entrezgene) %>%
+        dplyr::summarise(n = dplyr::n()) %>%
+        dplyr::filter(n > 1) %>%
+        dplyr::select(-n)
+    )
+
+    nonambiguous_entrezgene_ids <- as.data.frame(
+      gencode %>%
+        dplyr::select(symbol, entrezgene) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(entrezgene) %>%
+        dplyr::summarise(n = dplyr::n()) %>%
+        dplyr::filter(n == 1) %>%
+        dplyr::select(-n)
+    )
+
+    gencode_nonambiguous <-
+      gencode %>% dplyr::inner_join(
+        nonambiguous_entrezgene_ids, by = "entrezgene"
+      )
+
+    gencode_ambiguous_resolved <-
+      gencode %>% dplyr::inner_join(
+        ambiguous_entrezgene_ids, by = "entrezgene"
+      ) %>%
+      dplyr::filter(symbol != "Vault") %>%
+      dplyr::filter(symbol != "AC006115.7") %>%
+      dplyr::filter(symbol == "VTRNA2-1" |
+                      symbol == "ZIM2-AS1" |
+                      !stringr::str_detect(symbol,"-"))
+
+    gencode <- gencode_nonambiguous %>%
+      dplyr::bind_rows(gencode_ambiguous_resolved)
+
+    rm(gencode_ambiguous_resolved)
+    rm(gencode_nonambiguous)
+    rm(nonambiguous_entrezgene_ids)
+    rm(ambiguous_entrezgene_ids)
+
+
+    saveRDS(gencode, file = paste0(basedir,"/data-raw/gencode/gencode_",
+                                   gencode_version,"_",
+                                   build,".rds"))
+
+  }
+  else{
+    gencode <-
+      readRDS(file = paste0(basedir,"/data-raw/gencode/gencode_",
+                            gencode_version,"_",
+                            build,".rds"))
+
+  }
+  return(gencode)
+}
