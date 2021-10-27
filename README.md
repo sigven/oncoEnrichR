@@ -16,6 +16,8 @@
 
 **oncoEnrichR** is an R package for functional interrogation of human genesets in the context of cancer. The package leverages an extensive amount of prior molecular knowledge for geneset interpretation along multiple dimensions.
 
+Web-based access to **oncoEnrichR** is available at <https://oncotools.elixir.no>
+
 **oncoEnrichR** is primarily intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
 
 <br>
@@ -46,11 +48,16 @@ The contents of the final report attempt to provide answers to the following que
 -   October 27th 2021: **1.0.6 release**
 
     -   Addition of new modules
+
         -   Regulatory interactions - DoRothEA
         -   Ligand-receptor interactions - CellChatDB
+
     -   Data updates: Open Targets Platform, KEGG, WikiPathways, CancerMine, TCGA, EFO, DiseaseOntology
+
     -   Additional dedicated enrichment plots (GO)
+
     -   Improved target rankings (tissue- and celltype enrichment, regulatory interactions)
+
     -   See complete [CHANGELOG](https://sigven.github.io/oncoEnrichR/news/index.html)
 
 -   July 8th 2021: **1.0.4 release**
@@ -83,7 +90,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 -   [NetPath](http://www.netpath.org) - signaling transduction pathways
 -   [STRING](https://string-db.org) - protein-protein interaction database
 -   [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
--   [Compleat](https://fgr.hms.harvard.edu/compleat>) - protein complex resource
+-   [Compleat](https://fgr.hms.harvard.edu/compleat%3E) - protein complex resource
 -   [ComplexPortal](https://www.ebi.ac.uk/complexportal/home) - manually curated, encyclopaedic resource of macromolecular complexes
 -   [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex map
 -   [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
