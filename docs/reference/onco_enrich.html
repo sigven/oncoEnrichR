@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.6</span>
       </span>
     </div>
 
@@ -136,6 +136,8 @@
   <span class='va'>query</span>,
   query_id_type <span class='op'>=</span> <span class='st'>"symbol"</span>,
   ignore_id_err <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  html_floating_toc <span class='op'>=</span> <span class='cn'>T</span>,
+  html_report_theme <span class='op'>=</span> <span class='st'>"default"</span>,
   project_title <span class='op'>=</span> <span class='st'>"Project title"</span>,
   project_owner <span class='op'>=</span> <span class='st'>"Project owner"</span>,
   project_description <span class='op'>=</span> <span class='st'>"Project description"</span>,
@@ -147,8 +149,10 @@
   q_value_cutoff_enrichment <span class='op'>=</span> <span class='fl'>0.2</span>,
   min_geneset_size <span class='op'>=</span> <span class='fl'>10</span>,
   max_geneset_size <span class='op'>=</span> <span class='fl'>500</span>,
+  num_terms_enrichment_plot <span class='op'>=</span> <span class='fl'>20</span>,
   min_subcellcomp_confidence <span class='op'>=</span> <span class='fl'>1</span>,
   subcellcomp_show_cytosol <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  min_confidence_reg_interaction <span class='op'>=</span> <span class='st'>"D"</span>,
   simplify_go <span class='op'>=</span> <span class='cn'>TRUE</span>,
   ppi_add_nodes <span class='op'>=</span> <span class='fl'>50</span>,
   ppi_score_threshold <span class='op'>=</span> <span class='fl'>900</span>,
@@ -162,6 +166,8 @@
   show_tcga_aberration <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_tcga_coexpression <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_cell_tissue <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  show_ligand_receptor <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  show_regulatory_interactions <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_unknown_function <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_prognostic_cancer_assoc <span class='op'>=</span> <span class='cn'>TRUE</span>,
   show_subcell_comp <span class='op'>=</span> <span class='cn'>TRUE</span>,
@@ -185,6 +191,14 @@
     <tr>
       <th>ignore_id_err</th>
       <td><p>logical indicating if analysis should continue when uknown query identifiers are encountered</p></td>
+    </tr>
+    <tr>
+      <th>html_floating_toc</th>
+      <td><p>logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled</p></td>
+    </tr>
+    <tr>
+      <th>html_report_theme</th>
+      <td><p>Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")</p></td>
     </tr>
     <tr>
       <th>project_title</th>
@@ -231,12 +245,20 @@
       <td><p>maximal size of geneset annotated by term for testing in enrichment/over-representation analysis</p></td>
     </tr>
     <tr>
+      <th>num_terms_enrichment_plot</th>
+      <td><p>number of top enriched Gene Ontology terms (max) to show in enrichment barplot</p></td>
+    </tr>
+    <tr>
       <th>min_subcellcomp_confidence</th>
       <td><p>minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)</p></td>
     </tr>
     <tr>
       <th>subcellcomp_show_cytosol</th>
       <td><p>logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not</p></td>
+    </tr>
+    <tr>
+      <th>min_confidence_reg_interaction</th>
+      <td><p>minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')</p></td>
     </tr>
     <tr>
       <th>simplify_go</th>
@@ -260,19 +282,19 @@
     </tr>
     <tr>
       <th>show_disease</th>
-      <td><p>logical indicating if report should contain disease associations (Open Targets Platform, association_score &gt;= 0.4)</p></td>
+      <td><p>logical indicating if report should contain disease associations (Open Targets Platform, association_score &gt;= 0.05, support from at least two data types)</p></td>
     </tr>
     <tr>
       <th>show_top_diseases_only</th>
-      <td><p>logical indicating if report should contain top (15) disease associations only (Open Targets Platform)</p></td>
+      <td><p>logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)</p></td>
     </tr>
     <tr>
       <th>show_cancer_hallmarks</th>
-      <td><p>logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene</p></td>
+      <td><p>logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)</p></td>
     </tr>
     <tr>
       <th>show_enrichment</th>
-      <td><p>logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME etc.)</p></td>
+      <td><p>logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)</p></td>
     </tr>
     <tr>
       <th>show_tcga_aberration</th>
@@ -280,15 +302,28 @@
     </tr>
     <tr>
       <th>show_tcga_coexpression</th>
-      <td><p>logical indicating if report should contain TCGA co-expression data (RNAseq) of queryset with oncogenes/tumor suppressor genes</p></td>
+      <td><p>logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes</p></td>
+    </tr>
+    <tr>
+      <th>show_cell_tissue</th>
+      <td><p>logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
+of target genes, using data from the Human Protein Atlas</p></td>
+    </tr>
+    <tr>
+      <th>show_ligand_receptor</th>
+      <td><p>logical indicating if report should contain ligand-receptor interactions (CellChatDB)</p></td>
+    </tr>
+    <tr>
+      <th>show_regulatory_interactions</th>
+      <td><p>logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)</p></td>
     </tr>
     <tr>
       <th>show_unknown_function</th>
-      <td><p>logical indicating if report should highlight target genes with unknown or poorly defined functions</p></td>
+      <td><p>logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)</p></td>
     </tr>
     <tr>
       <th>show_prognostic_cancer_assoc</th>
-      <td><p>logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed</p></td>
+      <td><p>logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)</p></td>
     </tr>
     <tr>
       <th>show_subcell_comp</th>
@@ -300,12 +335,7 @@
     </tr>
     <tr>
       <th>show_complex</th>
-      <td><p>logical indicating if report should provide target memberships in known protein complexes (CORUM)</p></td>
-    </tr>
-    <tr>
-      <th>show_tissue_cell</th>
-      <td><p>logical indicating if report should contain tissue-specificity and single cell-type specificity assessments
-of target genes, using data from the Human Protein Atlas</p></td>
+      <td><p>logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)</p></td>
     </tr>
     </table>
 

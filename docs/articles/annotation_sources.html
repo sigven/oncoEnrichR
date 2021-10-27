@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.6</span>
       </span>
     </div>
 
@@ -85,7 +85,7 @@
       <h1 data-toc-skip>Gene annotation sources</h1>
                         <h4 class="author">Sigve Nakken</h4>
             
-            <h4 class="date">2021-09-25</h4>
+            <h4 class="date">2021-10-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/sigven/oncoEnrichR/blob/master/vignettes/annotation_sources.Rmd"><code>vignettes/annotation_sources.Rmd</code></a></small>
       <div class="hidden name"><code>annotation_sources.Rmd</code></div>
@@ -94,69 +94,129 @@
 
     
     
-<div id="section" class="section level2">
-<h2></h2>
-<p>This article will describe the underlying annotation sources of <em>oncoEnrichR</em> in detail, how they have been subject to quality control/filtering for use in the package. <em>IN PROGRESS</em></p>
+<p>This article describes the underlying annotation sources of <em>oncoEnrichR</em> in detail, and to what extent they are subject to quality control/filtering for use within the package.</p>
 <div id="target-disease-associations" class="section level3">
 <h3 class="hasAnchor">
 <a href="#target-disease-associations" class="anchor"></a>Target-disease associations</h3>
+<ul>
+<li>Associations between genes and diseases/tumor types are harvested from the <a href="https://targetvalidation.org">Open Targets Platform</a>. To increase the confidence of target-disease associations shown, we include only associations with support from at least two <a href="https://platform-docs.opentargets.org/associations">data types</a>, and where the overall association score is greater or equal to 0.1 (range 0-1).</li>
+</ul>
 </div>
 <div id="target-drug-associations" class="section level3">
 <h3 class="hasAnchor">
 <a href="#target-drug-associations" class="anchor"></a>Target-drug associations</h3>
+<ul>
+<li>Target-drug associations are primarily harvested from the <a href="https://targetvalidation.org">Open Targets Platform</a>. Through the use of our own <a href="https://github.com/sigven/oncoPharmaDB">oncoPharmaDB R package</a>, a dedicated cancer drug resource, we ensure that target-drug associations included in <em>oncoEnrichR</em> are limited to those indicated for cancer conditions.</li>
+</ul>
 </div>
-<div id="tumor-suppressoroncogene-annotation" class="section level3">
+<div id="tumor-suppressoroncogenedriver-annotation" class="section level3">
 <h3 class="hasAnchor">
-<a href="#tumor-suppressoroncogene-annotation" class="anchor"></a>Tumor suppressor/oncogene annotation</h3>
+<a href="#tumor-suppressoroncogenedriver-annotation" class="anchor"></a>Tumor suppressor/oncogene/driver annotation</h3>
+<ul>
+<li>Classification of genes as oncogenes and/or tumor suppressor genes are done according to the following scheme:
+<ul>
+<li>Five or more publications in the biomedical literature that suggests an oncogenic/tumor suppressor role for a given gene (as collected from the <a href="http://bionlp.bcgsc.ca/cancermine/">CancerMine text-mining resource</a>), <strong>OR</strong>
+</li>
+<li>At least two publications from CancerMine that suggests an oncogenic/tumor suppressor role for a given gene <strong>AND</strong> an existing record for the same gene as a tumor suppressor/oncogene in the <a href="http://ncg.kcl.ac.uk/">Network of Cancer Genes (NCG)</a>
+</li>
+<li>Status as oncogene is ignored if a given gene has three times as much (literature evidence) support for a role as a tumor suppressor gene (and vice versa)</li>
+<li>Oncogenes/tumor suppressor candidates from CancerMine/NCG that are found in the <a href="https://www.ncbi.nlm.nih.gov/pubmed/30096302">curated list of false positive cancer drivers compiled by Bailey et al. (Cell, 2018)</a> have been excluded</li>
+</ul>
+</li>
+<li>Classification of genes as <strong>cancer drivers</strong> need support from five or more publications in the biomedical literature (as collected from the <a href="http://bionlp.bcgsc.ca/cancermine/">CancerMine text-mining resource</a>)</li>
+</ul>
 </div>
 <div id="cancer-hallmark-evidence" class="section level3">
 <h3 class="hasAnchor">
 <a href="#cancer-hallmark-evidence" class="anchor"></a>Cancer hallmark evidence</h3>
+<ul>
+<li>The <a href="https://pubmed.ncbi.nlm.nih.gov/21376230/">hallmarks of cancer</a> comprise six biological capabilities acquired during the multistep development of human tumors. Genes attributed to the hallmarks of cancer have been retrieved from the <a href="https://targetvalidation.org">Open Targets Platform/COSMIC</a>
+</li>
+</ul>
 </div>
 <div id="copy-number-amplificationshomozygous-deletions" class="section level3">
 <h3 class="hasAnchor">
 <a href="#copy-number-amplificationshomozygous-deletions" class="anchor"></a>Copy number amplifications/homozygous deletions</h3>
+<ul>
+<li>Somatic copy number amplifications and homozygous deletions have been retrieved from <a href="https://portal.gdc.cancer.gov/">The Cancer Genome Atlas (TCGA)</a>, focusing on gene-level calls processed with their <a href="https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/CNV_Pipeline/">copy number variation analysis pipeline</a>. Copy number events included in <em>oncoEnrichR</em> are limited to high-level amplifications (GISTIC2 CNA value: <strong>2</strong>) and homozygous deletions (GISTIC2 CNA value: <strong>-2</strong>)</li>
+</ul>
 </div>
 <div id="recurrent-snvsindels" class="section level3">
 <h3 class="hasAnchor">
 <a href="#recurrent-snvsindels" class="anchor"></a>Recurrent SNVs/InDels</h3>
+<ul>
+<li>Recurrent somatic SNVs/InDels (occuring in more than one tumor sample) have been retrieved from <a href="https://portal.gdc.cancer.gov/">The Cancer Genome Atlas (TCGA)</a>. SNVs/InDels have been annotated further with information on mutation hotspots in cancer (<a href="https://cancerhotspots.org">cancerhotspots.org</a>), protein domains from <a href="https://pfam.xfam.org">PFAM</a>, and their predicted status as loss-of-function variants (<a href="https://github.com/konradjk/loftee">LOFTEE</a>). Only protein-altering and canonical splice site mutations are included.</li>
+</ul>
 </div>
 <div id="co-expression-rna-seq" class="section level3">
 <h3 class="hasAnchor">
 <a href="#co-expression-rna-seq" class="anchor"></a>Co-expression (RNA-seq)</h3>
+<ul>
+<li>Co-expression correlation coefficients between genes in tumors have been pre-calculated, using RNAseq data available in <a href="https://portal.gdc.cancer.gov/">The Cancer Genome Atlas (TCGA)</a>. We calculate separate correlation coefficients for each tumor type, and we further more limit pairs of co-expressed genes to those that include either a tumor suppressor, an oncogene, or a predicted cancer driver (as predicted from CancerMine). Only strong correlation coeffecients are included (positive or negative)</li>
+</ul>
 </div>
 <div id="molecular-signatures-pathways" class="section level3">
 <h3 class="hasAnchor">
 <a href="#molecular-signatures-pathways" class="anchor"></a>Molecular signatures / pathways</h3>
+<ul>
+<li>A comprehensive set of pathway annotations and molecular gene signatures form the basis for the functional enrichment module offered by <em>oncoEnrichR</em>. We include a diverse set of molecular signatures from <a href="https://www.gsea-msigdb.org/gsea/msigdb/">MSigDB</a>, annotations with respect to molecular function, biological processes and cellular components from <a href="http://geneontology.org/">Gene Ontology (GO)</a>, and pathway annotations from <a href="https://www.genome.jp/kegg/pathway.html">KEGG</a>, <a href="https://www.wikipathways.org/">WikiPathways</a>, <a href="http://netpath.org">NetPath</a>, and <a href="https://reactome.org/">Reactome</a>
+</li>
+</ul>
 </div>
 <div id="celltissue-specific-expression-patterns" class="section level3">
 <h3 class="hasAnchor">
 <a href="#celltissue-specific-expression-patterns" class="anchor"></a>Cell/tissue-specific expression patterns</h3>
+<ul>
+<li>We provide tissue- and cell-type specific gene expression annotations from the <a href="https://proteinatlas.org">Human Protein Atlas</a>. Tissue-specific patterns are derived from <a href="https://www.proteinatlas.org/humanproteome/tissue">The Tissue Atlas</a>, where tissue specificity is derived from deep sequencing of RNA (RNA-seq) in 37 different normal tissue types. All putative protein -coding genes have been classified with respect to abundance (tissue enriched, tissue enhanced etc.) for different tissues. For cell type specificity, we utilize data from <a href="https://www.proteinatlas.org/humanproteome/celltype">The Cell Type Atlas</a>. Here, classification of all protein-coding genes based on single cell type-specific expression in 13 different human tissues are performed; determining the types of genes elevated (cell type enriched, cell type enhanced etc.) in a particular cell type compared to all other cell types.</li>
+</ul>
 </div>
 <div id="gene-fitness-effects" class="section level3">
 <h3 class="hasAnchor">
 <a href="#gene-fitness-effects" class="anchor"></a>Gene fitness effects</h3>
+<ul>
+<li>Gene fitness effects are retrieved from <a href="https://score.depmap.sanger.ac.uk/">Project Score</a>. We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).</li>
+</ul>
 </div>
 <div id="subcellular-localization" class="section level3">
 <h3 class="hasAnchor">
 <a href="#subcellular-localization" class="anchor"></a>Subcellular localization</h3>
+<ul>
+<li>Subcellular locationalization annotations have been retrieved from <a href="https://comppi.linkgroup.hu/">ComPPI</a>. Users have the possibility to set threshold with respect to the confidence (number of underlying sources, <strong>1-6</strong>) for each target-localization annotation.</li>
+</ul>
 </div>
 <div id="protein-protein-interactions" class="section level3">
 <h3 class="hasAnchor">
 <a href="#protein-protein-interactions" class="anchor"></a>Protein-protein interactions</h3>
+<ul>
+<li>Protein-protein interactions are retrieved from the <a href="https://string-db.org/">STRING</a> resource, utilizing their publicly available <a href="https://string-db.org/cgi/help?subpage=api">API</a> for network retrieval. In <em>oncoEnrichR</em>, users provide a required (minimum) interaction score threshold, limiting the interactions retrieved to those with an interaction score greater or equal than this threshold.</li>
+</ul>
 </div>
-<div id="genetic-determinants-of-survival" class="section level3">
+<div id="regulatory-interactions" class="section level3">
 <h3 class="hasAnchor">
-<a href="#genetic-determinants-of-survival" class="anchor"></a>Genetic determinants of survival</h3>
+<a href="#regulatory-interactions" class="anchor"></a>Regulatory interactions</h3>
+<ul>
+<li>Regulatory interactions (TF-target) have been retrieved from the <a href="https://saezlab.github.io/dorothea/">DoRothEA</a> resource. Two collections of interactions are subject to overlap against the queryset in <em>oncoEnrichR</em>: a <strong>global set</strong> of regulatory interactions, many of which are inferred from gene expression patterns in normal tissues (GTex), and a <strong>cancer-focused set</strong>, the latter inferred from gene expression patterns in tumors (TCGA).</li>
+</ul>
 </div>
+<div id="prognostic-associations" class="section level3">
+<h3 class="hasAnchor">
+<a href="#prognostic-associations" class="anchor"></a>Prognostic associations</h3>
+<ul>
+<li>Prognostic associations (gene expression versus survival) are collected from <a href="https://www.proteinatlas.org/humanproteome/pathology">The Human Pathology Atlas</a>, which have underdaken correlation analyses of mRNA expression levels of human genes in tumor tissue and the clinical outcome (survival) for ~8,000 cancer patients (underlying data from TCGA). Correlation analyses resulted in more than 10,000 prognostic genes. We show prognostic genes with regard to cancer type and whether they are favorable or unfavorable in terms of clinical outcome.</li>
+</ul>
+</div>
+<div id="ligand-receptor-interactions" class="section level3">
+<h3 class="hasAnchor">
+<a href="#ligand-receptor-interactions" class="anchor"></a>Ligand-receptor interactions</h3>
+<ul>
+<li>Ligand-receptor interactions have been collected from the <a href="http://www.cellchat.org">CellChatDB</a> resource. In the <em>oncoEnrichR</em> module for these interactions, only interactions where <strong>both ligand and receptor are found in the queryset</strong> are shown.</li>
+</ul>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 

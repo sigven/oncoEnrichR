@@ -40,17 +40,28 @@ for(cl in c('global','pancancer')){
   reg_interactions[[cl]][['tf_only']] <- data.frame()
   reg_interactions[[cl]][['target_only']] <- data.frame()
 
-  reg_interactions[[cl]][['tf_target']] <- 
-    onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-    dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_"))
-  
-  reg_interactions[[cl]][['tf_only']] <- 
-    onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-    dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$"))
-  
-  reg_interactions[[cl]][['target_only']] <- 
-    onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-    dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$"))
+  if(NROW(onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]]) > 0){
+    reg_interactions[[cl]][['tf_target']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
+      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_")) %>%
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) %>%
+      head(2500)
+    
+    reg_interactions[[cl]][['tf_only']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$")) %>%
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) %>%
+      head(2500)
+    
+    reg_interactions[[cl]][['target_only']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$")) %>%
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) %>%
+      head(2500)
+  }
 }
 
 ```
@@ -419,25 +430,26 @@ cat('<br><br>')
 
 #### Key regulatory network interactions
 
-* Visualization of all known regulatory interactions (**DoRothEA - cancer-focused set**) where both **regulator** and **target** are found in the query set
+* Visualization of known regulatory interactions (**DoRothEA - cancer-focused set**) where both **regulator** and **target** are found in the query set
 
-   * Edge width indicates confidence level of regulatory interaction
-   * Edge color indicates mode of regulation (**Stimulation/Repression**)
+   * Edge *length* between nodes reflects confidence level of regulatory interaction (shorter lengths - higher confidence)
+   * Edge *color* between nodes indicates mode of regulation (<span style="background-color:darkgreen; padding:2x; color:white"><b>&nbsp; Stimulation &nbsp; </b></span> vs. <span style="background-color:darkred; padding:2x; color:white"><b>&nbsp; Repression &nbsp; </b></span>)
 
 <br><br>
 
-```{r regulatory_network, echo = F, results = 'asis', fig.width = 12, fig.height=10, eval = NROW(onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]) > 0 & NROW(onc_enrich_report[['data']][['regulatory']][['network']][['edges']]) > 0}
+```{r regulatory_network, echo = F, results = 'asis', fig.width = 14, fig.height=12, eval = NROW(onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]) > 0 & NROW(onc_enrich_report[['data']][['regulatory']][['network']][['edges']]) > 0}
 
 regulatory_nodes <- onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]
 regulatory_edges <- onc_enrich_report[['data']][['regulatory']][['network']][['edges']]
 
 visNetwork::visNetwork(regulatory_nodes, regulatory_edges) %>% 
   visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) %>%
-  visNetwork::visIgraphLayout(layout="layout_nicely")
+  visNetwork::visLegend()
+  #visNetwork::visIgraphLayout(layout="layout_nicely")
 ```
 
 ```{r regulatory_network_missing, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]) == 0}
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in regulatory interactions (<b>DoRothEA - cancer-focused set</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in regulatory interactions (<b>as reported in DoRothEA - cancer-focused set</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

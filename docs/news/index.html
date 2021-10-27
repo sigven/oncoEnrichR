@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.6</span>
       </span>
     </div>
 
@@ -126,12 +126,90 @@
       <small>Source: <a href='https://github.com/sigven/oncoEnrichR/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="version-105" class="section level1">
-<h1 class="page-header" data-toc-text="1.0.5">
-<a href="#version-105" class="anchor"></a>Version 1.0.5</h1>
+    <div id="version-106" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.6">
+<a href="#version-106" class="anchor"></a>Version 1.0.6</h1>
 <div id="added" class="section level2">
 <h2 class="hasAnchor">
 <a href="#added" class="anchor"></a>Added</h2>
+<ul>
+<li>Data updates
+<ul>
+<li>KEGG (20211013)</li>
+<li>WikiPathways (20211010)</li>
+<li>Open Targets Platform (2021.09)</li>
+<li>EFO (v3.35.0), DiseaseOntology (v2021-10-11)</li>
+<li>TCGA (v30, 2021-09-23)</li>
+<li>Protein complex annotations - additions from <a href="https://fgr.hms.harvard.edu/compleat">Compleat</a>, <a href="https://www.ebi.ac.uk/complexportal/home">ComplexPortal</a>, <a href="https://www.rcsb.org/">PDB</a>, <a href="http://humap2.proteincomplexes.org/">hu.MAP2</a>
+</li>
+</ul>
+</li>
+<li>New functionality
+<ul>
+<li>Report modules
+<ul>
+<li>
+<strong>Regulatory interactions</strong> - (<a href="https://saezlab.github.io/dorothea/">DoRothEA</a>)
+<ul>
+<li>View overlap between members of queryset with previously established regulatory interactions (TF-target relationships) from the DoRothEA resource</li>
+</ul>
+</li>
+<li>
+<strong>Ligand-receptor interactions</strong> - (<a href="http://www.cellchat.org/">CellChatDB</a>)
+<ul>
+<li>Explore potential ligand-receptor interactions in the query set, as found in the CellChat database</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Report styling options
+<ul>
+<li>Choose your own Bootswatch theme for HTML report - option <code>html_report_theme</code>
+</li>
+<li>Choose where the table of contents are placed in the HTML report (floating-left or static at the top) - option <code>html_floating_toc</code>
+</li>
+</ul>
+</li>
+<li>Arguments to <code>oncoEnichR::onco_enrich()</code>:
+<ul>
+<li>
+<code>html_floating_toc</code> - logical, if set to FALSE, table of contents in HTML report will be placed on top of the main document</li>
+<li>
+<code>html_report_theme</code> - character, choose between different Bootswatch themes for style in HTML report</li>
+<li>
+<code>show_regulatory</code> - logical, show regulatory interactions module (DoRothEA)</li>
+<li>
+<code>min_confidence_reg_interaction</code> - character, minimum confidence of regulatory interactions included from DoRothEA (‘A’,‘B’,‘C’, or ‘D’)</li>
+<li>
+<code>show_ligand_receptor</code> - logical, show ligand-receptor interaction module (CellChatDB)</li>
+<li>
+<code>num_terms_enrichment_plot</code> - integer, number of enriched Gene Ontology terms (max) to show in enrichment barplots (module <em>Functional Enrichment</em>)</li>
+</ul>
+</li>
+<li>Default gene rankings
+<ul>
+<li>In the modules <strong>Regulatory Interactions</strong> and <strong>Tissue and cell type enrichment</strong>, interactions/targets are ranked according to a quantitative cancer association score <em>cancer_max_rank</em> (maximum gene-cancer association rank (Open Targets Platform) across primary sites)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="fixed" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fixed" class="anchor"></a>Fixed</h2>
+<ul>
+<li>Report <em>disclaimer</em> occurring at the bottom of the report is no longer missing from web-based analysis (oncotools.elixir.no) - file <code>_site.yml</code> in <code>inst/templates</code>
+</li>
+</ul>
+</div>
+</div>
+    <div id="version-105" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.5">
+<a href="#version-105" class="anchor"></a>Version 1.0.5</h1>
+<div id="added-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#added-1" class="anchor"></a>Added</h2>
 <ul>
 <li>Data updates: KEGG (20210916), WikiPathways (20210910), CancerMine (v39), EFO (v3.34.0)</li>
 </ul>
@@ -140,9 +218,9 @@
     <div id="version-104" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.4">
 <a href="#version-104" class="anchor"></a>Version 1.0.4</h1>
-<div id="added-1" class="section level2">
+<div id="added-2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#added-1" class="anchor"></a>Added</h2>
+<a href="#added-2" class="anchor"></a>Added</h2>
 <ul>
 <li>Data updates: Open Targets Platform (21.06), CancerMine (v37)</li>
 <li>Software upgrades: multiple R packages, including clusterProfiler (4.0.2)</li>
@@ -152,9 +230,9 @@
     <div id="version-103" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.3">
 <a href="#version-103" class="anchor"></a>Version 1.0.3</h1>
-<div id="added-2" class="section level2">
+<div id="added-3" class="section level2">
 <h2 class="hasAnchor">
-<a href="#added-2" class="anchor"></a>Added</h2>
+<a href="#added-3" class="anchor"></a>Added</h2>
 <ul>
 <li>Functionality for Galaxy-specific HTML output (non-selfcontained HTML)</li>
 <li>Data updates: WikiPathways (20210610), KEGG (20210610), CancerMine (v36, 20210611)</li>
@@ -162,9 +240,9 @@
 </li>
 </ul>
 </div>
-<div id="fixed" class="section level2">
+<div id="fixed-1" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed" class="anchor"></a>Fixed</h2>
+<a href="#fixed-1" class="anchor"></a>Fixed</h2>
 <ul>
 <li>Minor typos in HTML output</li>
 <li>Ambiguous Entrez gene identifiers (towards gene symbols)</li>
@@ -183,9 +261,9 @@
 </li>
 </ul>
 </div>
-<div id="fixed-1" class="section level2">
+<div id="fixed-2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed-1" class="anchor"></a>Fixed</h2>
+<a href="#fixed-2" class="anchor"></a>Fixed</h2>
 <ul>
 <li>Fixed assymetrical scales of prognostic Z-score plots</li>
 <li>To decrease the size of the HTML report, limited datatable output of recurrent somatic SNVs/InDels and sCNA frequencies to top 2,500 (full set is kept in Excel output)</li>
@@ -203,9 +281,9 @@
 </li>
 </ul>
 </div>
-<div id="fixed-2" class="section level2">
+<div id="fixed-3" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fixed-2" class="anchor"></a>Fixed</h2>
+<a href="#fixed-3" class="anchor"></a>Fixed</h2>
 <ul>
 <li>DESCRIPTION: Added <code>TissueEnrich</code> and <code>assertable</code> dependency</li>
 </ul>
@@ -218,79 +296,6 @@
 <li>WikiPathways (20210510)</li>
 <li>Disease Ontology (20210603)</li>
 <li>KEGG (20210531)</li>
-</ul>
-</div>
-<div id="software-upgrade" class="section level2">
-<h2 class="hasAnchor">
-<a href="#software-upgrade" class="anchor"></a>Software upgrade</h2>
-<ul>
-<li>Bioconductor 3.13</li>
-<li>Logging now performed with <a href="https://github.com/johnmyleswhite/log4r">log4r</a>
-</li>
-</ul>
-</div>
-</div>
-    <div id="version-096-may-12th-2021" class="section level1">
-<h1 class="page-header" data-toc-text="0.9.6">
-<a href="#version-096-may-12th-2021" class="anchor"></a>Version 0.9.6 (May 12th 2021)</h1>
-<div id="added-3" class="section level2">
-<h2 class="hasAnchor">
-<a href="#added-3" class="anchor"></a>Added</h2>
-<ul>
-<li>Cancer hallmarks evidence</li>
-</ul>
-</div>
-<div id="fixed-3" class="section level2">
-<h2 class="hasAnchor">
-<a href="#fixed-3" class="anchor"></a>Fixed</h2>
-<ul>
-<li>Minor bugs (background query specificiation)</li>
-</ul>
-</div>
-<div id="data-upgrade-1" class="section level2">
-<h2 class="hasAnchor">
-<a href="#data-upgrade-1" class="anchor"></a>Data upgrade</h2>
-<ul>
-<li>Drug retrieval from Open Targets Platform (v2021.04)</li>
-</ul>
-</div>
-</div>
-    <div id="version-094-april-25th-2021" class="section level1">
-<h1 class="page-header" data-toc-text="0.9.4">
-<a href="#version-094-april-25th-2021" class="anchor"></a>Version 0.9.4 (April 25th 2021)</h1>
-<div id="fixed-4" class="section level2">
-<h2 class="hasAnchor">
-<a href="#fixed-4" class="anchor"></a>Fixed</h2>
-<ul>
-<li>Cleaned Excel output</li>
-</ul>
-</div>
-</div>
-    <div id="version-093-april-24th-2021" class="section level1">
-<h1 class="page-header" data-toc-text="0.9.3">
-<a href="#version-093-april-24th-2021" class="anchor"></a>Version 0.9.3 (April 24th 2021)</h1>
-<div id="added-4" class="section level2">
-<h2 class="hasAnchor">
-<a href="#added-4" class="anchor"></a>Added</h2>
-<ul>
-<li>Option to <em>onco_enrich</em> that may ignore cytosol as a structure in subcelluar heatmap</li>
-<li>Interactive table with recurrent somatic variants (TCGA) overlapping query set in the <em>SNVs/InDels</em> section</li>
-<li>Barplot for subcellular locations</li>
-<li>Barplot for most significant GO terms enriched in query set</li>
-</ul>
-</div>
-<div id="fixed-5" class="section level2">
-<h2 class="hasAnchor">
-<a href="#fixed-5" class="anchor"></a>Fixed</h2>
-<ul>
-<li>Bug in PPI’s for query sets with few/none interactions</li>
-</ul>
-</div>
-<div id="data-upgrade-2" class="section level2">
-<h2 class="hasAnchor">
-<a href="#data-upgrade-2" class="anchor"></a>Data upgrade</h2>
-<ul>
-<li>MSigDB/GO/Reactome (MSigDB v7.4), UniProt (2021_02)</li>
 </ul>
 </div>
 </div>

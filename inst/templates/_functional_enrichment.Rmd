@@ -1,6 +1,6 @@
-### Function and pathway enrichment {.tabset}
+### Function and pathway enrichment 
 
-* Each protein in the query set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment/overrepresentation with respect to:
+* The query set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment/overrepresentation with respect to:
    * [Gene Ontology terms](https://geneontology.org). All three subontologies: _Molecular Function_ (GO_MF), _Cellular Component_ (GO_CC) & _Biological Process_ (GO_BP)
    * Molecular signalling networks from [KEGG](https://www.genome.jp/kegg/pathway.html)
    * Cellular pathways from [Reactome](https://reactome.org/), and other curated gene signature sets from the [Molecular Signatures Database (MSiGDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
@@ -9,7 +9,7 @@
   
 <br>
 
-* Enrichment/overrepresentation test settings
+* Enrichment/overrepresentation test settings (clusterProfiler)
    * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
    * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
    * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
@@ -35,10 +35,46 @@ for(type in c('go','msigdb','wikipathway','kegg','netpath')){
   }
 }
 
+plot_fontsize <- 10
+
+subontology_plots <- list()
+subontology_plots[['ALL']] <- T
+subontology_plots[['BP']] <- T
+subontology_plots[['MF']] <- T
+subontology_plots[['CC']] <- T
+
+#for(ont in c('GO_BP','GO_CC','GO_MF')){
+if(show_enrichment_filters[['go']] == T){
+  subont_bp <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+    dplyr::filter(db == 'GO_BP')
+  
+  if(nrow(subont_bp) == 0){subontology_plots[['BP']] <- F}
+  
+  subont_mf <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+    dplyr::filter(db == 'GO_MF')
+  
+  if(nrow(subont_mf) == 0){subontology_plots[['MF']] <- F}
+  
+  subont_cc <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+    dplyr::filter(db == 'GO_CC')
+  
+  if(nrow(subont_cc) == 0){subontology_plots[['CC']] <- F}
+  
+}else{
+  subontology_plots[['ALL']] <- F
+}
+
+
+
+
 ```
 
 
-#### Gene Ontology
+#### Enrichment tables {.tabset}
+
+<br><br>
+
+##### Gene Ontology
 
 <br><br>
 
@@ -89,65 +125,6 @@ rm(enrichment_go_display)
 
 <br><br>
 
-```{r go_enrichment_barplot, echo = F, results = "asis", eval = show_enrichment_filters[['go']]}
-
-plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::select(description, enrichment_factor, qvalue, db) %>%
-  dplyr::arrange(qvalue) %>%
-  head(20) %>%
-  dplyr::arrange(desc(qvalue)) %>%
-  dplyr::rename(Subontology = db) %>%
-  dplyr::mutate(
-    Subontology = dplyr::case_when(
-      Subontology == "GO_BP" ~ "Biologial Process",
-      Subontology == "GO_CC" ~ "Cellular Component",
-      Subontology == "GO_MF" ~ "Molecular Function",
-      TRUE ~ as.character(Subontology)
-    ))
-
-plot_data$description <- 
-  factor(plot_data$description, levels = plot_data$description)
-
-max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
-
-p <- ggplot2::ggplot(
-  plot_data, 
-  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
-  ggplot2::geom_bar( stat = "identity" ) +
-  ggplot2::xlab("") +
-  ggplot2::ylab("-log10(Q-value)") +
-  ggplot2::ylim(0, max_y) +
-  ggplot2::theme_classic() +
-  ggplot2::coord_flip() +
-  ggplot2::theme(
-    #legend.position = "none",
-    legend.title = ggplot2::element_blank(),
-    axis.text.x = ggplot2::element_text(size = 11, vjust = 0.5),
-    axis.text.y = ggplot2::element_text(family = "Helvetica", size = 11),
-    axis.title.x = ggplot2::element_text(family = "Helvetica", size = 11),
-    axis.title.y = ggplot2::element_text(family = "Helvetica", size = 11)
-  )
-
-rm(max_y)
-
-height_plot <- 500
-if(nrow(plot_data) <= 15){
-  height_plot <- 400
-}
-if(nrow(plot_data) <= 10){
-  height_plot <- 300
-}
-
-enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
-    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
-
-enrichment_barplot
-rm(height_plot)
-rm(plot_data)
-
-```
-
 
 
 ```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
@@ -161,7 +138,7 @@ cat('<br><br>')
 
 <br><br><br>
 
-#### Molecular Signatures Database (MSigDB)
+##### Molecular Signatures Database (MSigDB)
 
 <br><br>
 
@@ -217,7 +194,7 @@ cat('<br><br>')
 
 <br><br><br>
 
-#### KEGG
+##### KEGG
 
 <br><br>
 
@@ -275,7 +252,7 @@ cat('<br><br>')
 <br><br><br>
 
 
-#### WikiPathways
+##### WikiPathways
 
 <br><br>
 
@@ -337,7 +314,7 @@ cat('<br><br>')
 
 <br><br><br>
 
-#### NetPath
+##### NetPath
 
 <br><br>
 
@@ -394,3 +371,263 @@ cat('<br><br>')
 
 
 <br><br><br>
+
+#### GO enrichment plots {.tabset}
+
+<br><br>
+
+##### All subontologies
+
+```{r go_enrichment_barplot_all, echo = F, results = "asis", eval = subontology_plots[['ALL']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::arrange(qvalue) %>%
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+<br><br>
+
+##### Molecular function
+
+```{r go_enrichment_barplot_mf, echo = F, results = "asis", eval = subontology_plots[['MF']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::filter(db == 'GO_MF') %>%
+  dplyr::arrange(qvalue) %>%
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+<br><br>
+
+##### Biological Process
+
+```{r go_enrichment_barplot_bp, echo = F, results = "asis", eval = subontology_plots[['BP']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::filter(db == 'GO_BP') %>%
+  dplyr::arrange(qvalue) %>%
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+<br><br>
+
+
+##### Cellular Component
+
+```{r go_enrichment_barplot_cc, echo = F, results = "asis", eval = subontology_plots[['CC']]}
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  dplyr::select(description, enrichment_factor, qvalue, db) %>%
+  dplyr::filter(db == 'GO_CC') %>%
+  dplyr::arrange(qvalue) %>%
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  dplyr::arrange(desc(qvalue)) %>%
+  dplyr::rename(Subontology = db) %>%
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if(nrow(plot_data) <= 15){
+  height_plot <- 400
+}
+if(nrow(plot_data) <= 10){
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+<br><br>

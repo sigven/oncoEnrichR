@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoEnrichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.6</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
     <pre class="usage"><span class='fu'>write</span><span class='op'>(</span>
   <span class='va'>report</span>,
   file <span class='op'>=</span> <span class='st'>"testReport.html"</span>,
-  ignore_file_extension <span class='op'>=</span> <span class='cn'>T</span>,
+  ignore_file_extension <span class='op'>=</span> <span class='cn'>F</span>,
   overwrite <span class='op'>=</span> <span class='cn'>F</span>,
   format <span class='op'>=</span> <span class='st'>"html"</span>,
   <span class='va'>...</span>
@@ -166,9 +166,7 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>options for Galaxy/non self-contained HTML. Set 'selfcontained_html' to
-FALSE for a smaller HTML output file with external dependencies (CSS/JavaScript) in
-external olders.</p></td>
+      <td><p>options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy</p></td>
     </tr>
     </table>
 

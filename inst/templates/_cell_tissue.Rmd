@@ -63,7 +63,8 @@ rm(oe_tissue_category_plot)
 ```{r tissue_specs_per_gene, echo = F, results = 'asis'}
 
 tissue_specs_per_gene <- 
-  crosstalk::SharedData$new(onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']])
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']] %>% dplyr::select(-cancer_max_rank))
 
 crosstalk::bscols(
   list(
@@ -210,7 +211,7 @@ rm(oe_ctype_category_plot)
 
 celltype_specs_per_gene <- 
   crosstalk::SharedData$new(
-    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']])
+    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']] %>% dplyr::select(-cancer_max_rank))
 
 crosstalk::bscols(
   list(

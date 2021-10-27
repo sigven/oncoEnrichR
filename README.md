@@ -14,7 +14,9 @@
 
 ### Overview
 
-**oncoEnrichR** is an R package for functional interrogation of human genesets in the context of cancer. The package is intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
+**oncoEnrichR** is an R package for functional interrogation of human genesets in the context of cancer. The package leverages an extensive amount of prior molecular knowledge for geneset interpretation along multiple dimensions.
+
+**oncoEnrichR** is primarily intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
 
 <br>
 
@@ -22,22 +24,34 @@
 
 <br><br>
 
-The contents of the final report attempts to shed light on the following questions:
+The contents of the final report attempt to provide answers to the following questions:
 
--   Which diseases/tumor types are associated with genes in the query set, and to what extent?
+-   Which diseases/tumor types are known to be associated with genes in the query set, and to what extent?
 -   Which genes in the query set are attributed with cancer hallmark evidence?
 -   Which proteins in the query sets are druggable in diffferent cancer conditions (early and late clinical development phases)? For other proteins in the query set, what is their likelihood of being druggable?
--   Which protein complexes are relevant for proteins in the query set?
+-   Which protein complexes involve proteins in the query set?
 -   Which subcellular compartments (nucleus, cytosol, plasma membrane etc) are dominant localizations for proteins in the query set?
 -   Are specific tissues or cell types enriched in the query set, considering tissue/cell-type specific expression patterns of target genes?
 -   Which protein-protein interactions are known within the query set? Are there interactions between members of the query set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
--   Are there specific pathways, biological processes or molecular functions that are enriched within the query set, as compared to a reference/background set?
+-   Which known regulatory interactions (TF-target) are found within the query set, and what is their mode of regulation (repressive vs. stimulating)?
+-   Are there occurrences of known ligand-receptor interactions within the query set?
+-   Are there specific pathways, biological processes, or pre-defined molecular signatures that are enriched within the query set, as compared to a reference/background set?
 -   Which members of the query set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
 -   Which members of the query set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
 -   Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels, mutation, or copy number status in tumors?
 -   Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ### News
+
+-   October 27th 2021: **1.0.6 release**
+
+    -   Addition of new modules
+        -   Regulatory interactions - DoRothEA
+        -   Ligand-receptor interactions - CellChatDB
+    -   Data updates: Open Targets Platform, KEGG, WikiPathways, CancerMine, TCGA, EFO, DiseaseOntology
+    -   Additional dedicated enrichment plots (GO)
+    -   Improved target rankings (tissue- and celltype enrichment, regulatory interactions)
+    -   See complete [CHANGELOG](https://sigven.github.io/oncoEnrichR/news/index.html)
 
 -   July 8th 2021: **1.0.4 release**
 
@@ -61,19 +75,24 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 
 -   [Open Targets Platform](https://targetvalidation.org) - human drug-target associations and comprehensive disease-target associations
 -   [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined database of drivers, oncogenes and tumor suppressors in cancer
--   [The Cancer Genome Atlas](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in \~9,500 primary tumor samples
+-   [DoRothEA](https://saezlab.github.io/dorothea/index.html) - gene set resource containing signed transcription factor (TF) - target (regulatory) interactions
+-   [CellChatDB](http://www.cellchat.org/) - ligand-receptor interaction resource
+-   [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/) - gene aberration frequencies and co-expression patterns in \~9,500 primary tumor samples
 -   [The Human Protein Atlas](https://www.proteinatlas.org) - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
 -   [Molecular Signatures Database (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) - collection of annotated (e.g. towards pathways) genesets for enrichment/overrepresentation analysis. This includes genesets from [Gene Ontology](http://geneontology.org/), [Reactome](https://reactome.org/), [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways), [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways), as well as curated [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7) and [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6) signatures.
 -   [NetPath](http://www.netpath.org) - signaling transduction pathways
 -   [STRING](https://string-db.org) - protein-protein interaction database
 -   [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex database
+-   [Compleat](https://fgr.hms.harvard.edu/compleat>) - protein complex resource
+-   [ComplexPortal](https://www.ebi.ac.uk/complexportal/home) - manually curated, encyclopaedic resource of macromolecular complexes
+-   [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex map
 -   [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
 -   [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
 -   [Genetic determinants of survival in cancer](http://survival.cshl.edu/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.4945414"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4945414.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.5602807"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5602807.svg" alt="DOI"/></a>
 
 <br>
 
@@ -108,6 +127,8 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
       query,
       query_id_type = "symbol",
       ignore_id_err = TRUE,
+      html_floating_toc = TRUE,
+      html_report_theme = "default",
       project_title = "Project title",
       project_owner = "Project owner",
       project_description = "Project description",
@@ -119,62 +140,31 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
       q_value_cutoff_enrichment = 0.2,
       min_geneset_size = 10,
       max_geneset_size = 500,
+      num_terms_enrichment_plot = 20,
       min_subcellcomp_confidence = 1,
       subcellcomp_show_cytosol = FALSE,
-      simplify_go = TRUE,
-      ppi_add_nodes = 50,
-      ppi_score_threshold = 900,
-      show_ppi = TRUE,
-      show_drugs_in_ppi = TRUE,
-      show_disease = TRUE,
-      show_top_diseases_only = TRUE,
-      show_cancer_hallmarks = TRUE,
-      show_drug = TRUE,
-      show_enrichment = TRUE,
-      show_tcga_aberration = TRUE,
-      show_tcga_coexpression = TRUE,
-      show_subcell_comp = TRUE,
-      show_crispr_lof = TRUE,
-      show_cell_tissue = FALSE,
-      show_prognostic_cancer_assoc = TRUE,
-      show_complex = TRUE)
+      min_confidence_reg_interaction = "D",
+      simplify_go = F,
+      show_ppi = T,
+      show_drugs_in_ppi = T,
+      show_disease = T,
+      show_top_diseases_only = T,
+      show_cancer_hallmarks = T,
+      show_drug = T,
+      show_enrichment = T,
+      show_tcga_aberration = T,
+      show_tcga_coexpression = T,
+      show_subcell_comp = T,
+      show_crispr_lof = T,
+      show_cell_tissue = F,
+      show_ligand_receptor = T,
+      show_regulatory_interactions = T,
+      show_unknown_function = T,
+      show_prognostic_cancer_assoc = T,
+      show_complex = T)
     ```
 
-    | Argument                       | Description                                                                                                                                                                                                                                               |
-    |--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `query`                        | character vector with gene/query identifiers                                                                                                                                                                                                              |
-    | `query_id_type`                | character indicating type of identifier used for query set (one of "*uniprot_acc*", "*symbol*", "*entrezgene*", "*ensembl_gene*", "*refseq_mrna*", "*refseq_protein*", "*ensembl_protein*", or "*ensembl_mrna*")                                          |
-    | `ignore_id_err`                | logical indicating if analysis should continue when erroneous/unmatched query identifiers are encountered in query or background gene set                                                                                                                 |
-    | `project_title`                | project title (report title)                                                                                                                                                                                                                              |
-    | `project_owner`                | project owner (e.g. lab/PI)                                                                                                                                                                                                                               |
-    | `project_description`          | brief description of project, how target list was derived                                                                                                                                                                                                 |
-    | `bgset`                        | character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis                                                                                                                                          |
-    | `bgset_id_type`                | character indicating type of identifier used for background set (one of "*uniprot_acc*", "*symbol*", "*entrezgene*", "*ensembl_gene*", "*refseq_mrna*", "*refseq_protein*", "*ensembl_protein*", or "*ensembl_mrna*")                                     |
-    | `bgset_description`            | character with description of background gene set (e.g. 'All lipid-binding proteins (n = 200)')                                                                                                                                                           |
-    | `p_value_cutoff_enrichment`    | cutoff p-value for enrichment/over-representation analysis                                                                                                                                                                                                |
-    | `p_value_adjustment_method`    | one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"                                                                                                                                                                              |
-    | `q_value_cutoff_enrichment`    | cutoff q-value for enrichment/over-representation analysis                                                                                                                                                                                                |
-    | `min_geneset_size`             | minimal size of geneset annotated by term for testing in enrichment/over-representation analysis                                                                                                                                                          |
-    | `max_geneset_size`             | maximal size of geneset annotated by term for testing in enrichment/over-representation analysis                                                                                                                                                          |
-    | `min_subcellcomp_confidence`   | minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)                                                                                                                                                       |
-    | `subcellcomp_show_cytosol`     | logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not                                                                                                                                               |
-    | `simplify_go`                  | remove highly similar GO terms in results from GO enrichment/over-representation analysis (recommended)                                                                                                                                                   |
-    | `ppi_add_nodes`                | number of neighbouring nodes to add to query set when computing the protein-protein interaction network (STRING)                                                                                                                                          |
-    | `ppi_score_threshold`          | minimum significance score (0-1000) for protein-protein interactions to be included in network (STRING)                                                                                                                                                   |
-    | `show_ppi`                     | logical indicating if report should contain protein-protein interaction data of query set and their closely interacting partners (STRING), local network communities, and rank of query set based on network centrality                                   |
-    | `show_drugs_in_ppi`            | logical indicating if targeted drugs (\>= phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)                                                                                                                     |
-    | `show_disease`                 | logical indicating if report should contain ranked associations to cancer phenotypes (overall), as well as tumor-type specific rankings (association score \>= 0.4, minimum number of sources contributing to association \>= 2, (Open Targets Platform)) |
-    | `show_top_diseases_only`       | logical indicating if report should only show top (20) cancer phenotypes/disease associations from Open Targets Platform                                                                                                                                  |
-    | `show_cancer_hallmarks`        | logical indicating if report should show evidence that relates query member genes to cancer hallmarks                                                                                                                                                     |
-    | `show_drug`                    | logical indicating if report should contain cancer drugs targeted towards proteins in the query list (early and late development phase) and tractability/druggability data for all query entries, from Open Targets Platform)                             |
-    | `show_enrichment`              | logical indicating if report should perform and list functional enrichment/over-representation analysis of query set (MSigDB, GO, KEGG, REACTOME, WikiPathways, NetPath)                                                                                  |
-    | `show_tcga_aberration`         | logical indicating if report should contain TCGA aberration plots (amplifications/deletions, SNVs/InDels (oncoplots))                                                                                                                                     |
-    | `show_tcga_coexpression`       | logical indicating if report should list oncogenes/tumor suppressor genes that significantly correlate with entries in query set in terms of expression (across TCGA cohorts)                                                                             |
-    | `show_subcell_comp`            | logical indicating if report should list subcellular compartment annotations (ComPPI)                                                                                                                                                                     |
-    | `show_crispr_lof`              | logical indicating if report should list results from CRISPR/Cas9 loss-of-fitness screens and associated target priority scores (Project Score)                                                                                                           |
-    | `show_cell_tissue`             | logical indicating if report should list results from tissue (GTex)- and cell-type (HPA) specific gene expression patterns in query set                                                                                                                   |
-    | `show_prognostic_cancer_assoc` | logical indicating if report should list results from significant associations between gene expression, mutation, methylation and survival (Human Protein Atlas - Pathology Atlas, and survival.cshl.edu)                                                 |
-    | `show_complex`                 | logical indicating if report should show membership of target proteins in known protein complexes (CORUM)                                                                                                                                                 |
+    See [detailed descriptions of all options here](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html)
 
 **2.** `oncoEnrichR::write()`
 
@@ -194,7 +184,7 @@ A target list of *n = 134* high-confidence interacting proteins with the c-MYC o
 -   `project_title = "cMYC_BioID_screen"`
 -   `project_owner = "Raught et al."`
 
-and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.4945414).
+and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.5602807).
 
 Below are R commands provided to reproduce the example output. **NOTE**: Replace "LOCAL_FOLDER" with a directory on your local computer:
 

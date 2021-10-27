@@ -169,11 +169,13 @@ gene_tissue_cell_enrichment <-
     stopifnot(resolution == "tissue" | resolution == "single_cell")
     assertable::assert_colnames(
       genedb, c("ensembl_gene_id","entrezgene",
-                "gencode_gene_biotype"),
+                "gencode_gene_biotype","cancer_max_rank"),
       only_colnames = F, quiet = T)
 
     df <- data.frame('entrezgene' = as.character(qgenes_entrez),
-                     stringsAsFactors = F)
+                     stringsAsFactors = F) %>%
+      dplyr::left_join(dplyr::select(genedb, entrezgene, cancer_max_rank),
+                       by = "entrezgene")
 
     bg <- oncoEnrichR::tissue_cell_expr[[resolution]][['te_df']]
 
@@ -187,16 +189,19 @@ gene_tissue_cell_enrichment <-
     specificities_per_gene <- bg %>%
       dplyr::filter(!is.na(entrezgene)) %>%
       dplyr::inner_join(df, by = "entrezgene")
+
     if(nrow(specificities_per_gene) > 0){
 
       if(resolution == "tissue"){
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, genename, category, tissue) %>%
-          dplyr::arrange(category)
+          dplyr::select(symbol, genename, category, tissue,
+                        cancer_max_rank) %>%
+          dplyr::arrange(category, desc(cancer_max_rank))
       }else{
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, genename, category, cell_type) %>%
-          dplyr::arrange(category)
+          dplyr::select(symbol, genename, category, cell_type,
+                        cancer_max_rank) %>%
+          dplyr::arrange(category, desc(cancer_max_rank))
       }
     }
 

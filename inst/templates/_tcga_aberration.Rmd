@@ -794,7 +794,7 @@ cat('<br><br>')
 
 <br><br>
 
-```{r tcga_ampl_plot, echo = F, eval = T}
+```{r tcga_ampl_plot, echo = F, eval = !is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']])}
 
 suppressMessages(library(plotly))
 gene_aberration_top_mat <- 
@@ -831,9 +831,16 @@ fig
 
 ```
 
+```{r tcga_amplificiations_too_few, echo=F, results = 'asis', eval = is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']])}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in copy number amplifications (<b>< 5, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
 <br><br>
 
-```{r tcga_homdel_plot, echo = F, eval = T}
+```{r tcga_homdel_plot, echo = F, eval = !is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']])}
 
 suppressMessages(library(plotly))
 gene_aberration_top_mat <- 
@@ -868,6 +875,15 @@ fig
 
 
 ```
+
+```{r tcga_homdel_too_few, echo=F, results = 'asis', eval = is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']])}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in homozygous deletions (<b>< 5, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
 <br><br>
 
 

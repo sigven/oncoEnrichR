@@ -61,25 +61,30 @@ annotate_tf_targets <- function(qgenes,
         dplyr::summarise(queryset_overlap = paste(queryset_overlap, collapse=";"),
                          .groups = "drop") %>%
         dplyr::left_join(dplyr::select(oncoEnrichR::genedb$all,
-                                       symbol, genename),
+                                       symbol, genename, cancer_max_rank),
                          by = c("regulator" = "symbol")) %>%
-        dplyr::rename(regulator_name = genename) %>%
+        dplyr::rename(regulator_name = genename,
+                      regulator_cancer_max_rank = cancer_max_rank) %>%
         dplyr::left_join(dplyr::select(oncoEnrichR::genedb$all,
-                                       symbol, genename),
+                                       symbol, genename, cancer_max_rank),
                          by = c("target" = "symbol")) %>%
-        dplyr::rename(target_name = genename) %>%
+        dplyr::rename(target_name = genename,
+                      target_cancer_max_rank = cancer_max_rank) %>%
         dplyr::mutate(queryset_overlap = stringr::str_replace(
           queryset_overlap, "(A|B|C|D);","")) %>%
         dplyr::mutate(queryset_overlap = factor(
           queryset_overlap, levels = c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C",
                                        "TF_TARGET_D","TF_A","TF_B","TF_C","TF_D",
                                        "TARGET_A","TARGET_B","TARGET_C","TARGET_D"))) %>%
-        dplyr::arrange(queryset_overlap, confidence_level) %>%
+        dplyr::arrange(queryset_overlap, confidence_level,
+                       desc(regulator_cancer_max_rank),
+                       desc(target_cancer_max_rank)) %>%
         dplyr::rename(literature_support = tf_target_literature_support) %>%
         dplyr::select(regulator, regulator_name, target, target_name,
                       confidence_level, mode_of_regulation,
                       literature_support, interaction_sources,
-                      queryset_overlap)
+                      queryset_overlap, regulator_cancer_max_rank,
+                      target_cancer_max_rank)
     )
   }
 
@@ -98,7 +103,8 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL){
   if(NROW(tf_target_interactions) > 0){
 
     complete_interactions <- tf_target_interactions %>%
-      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_"))
+      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_")) %>%
+      head(200)
 
     if(NROW(complete_interactions) > 0){
 
@@ -108,18 +114,23 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL){
         dplyr::mutate(title = paste0(mode_of_regulation, ": confidence level ",
                                      confidence_level)) %>%
         dplyr::mutate(arrows = "to") %>%
-        dplyr::mutate(value = dplyr::case_when(
-          confidence_level == "A" ~ 2,
-          confidence_level == "B" ~ 1.75,
-          confidence_level == "C" ~ 1.5,
-          confidence_level == "D" ~ 1.25
+        dplyr::mutate(length = dplyr::case_when(
+          confidence_level == "A" ~ 150,
+          confidence_level == "B" ~ 200,
+          confidence_level == "C" ~ 250,
+          confidence_level == "D" ~ 300,
         )) %>%
-        dplyr::mutate(group = dplyr::case_when(
-          mode_of_regulation == "Stimulation" ~ "A",
-          mode_of_regulation == "Repression" ~ "B"
-        )) %>%
+        dplyr::mutate(dashes = T) %>%
+        dplyr::mutate(color = dplyr::case_when(
+           mode_of_regulation == "Stimulation" ~ "darkgreen",
+           mode_of_regulation == "Repression" ~ "darkred",
+         )) %>%
+        # dplyr::mutate(label = dplyr::case_when(
+        #   mode_of_regulation == "Stimulation" ~ "Stimulation",
+        #   mode_of_regulation == "Repression" ~ "Repression",
+        # )) %>%
         dplyr::arrange(confidence_level) %>%
-        head(100)
+        head(150)
 
       all_nodes <-
       #tf_target_network[['nodes']] <-
@@ -158,6 +169,54 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL){
         nodeset1 %>%
         dplyr::bind_rows(nodeset2) %>%
         dplyr::distinct()
+
+
+      regulators <- tf_target_network[['edges']] %>%
+        dplyr::select(from) %>%
+        dplyr::inner_join(
+          dplyr::select(tf_target_network[['nodes']], id),
+          by = c("from" = "id")
+          ) %>%
+        dplyr::rename(id = from) %>%
+        dplyr::distinct()
+
+      targets <- tf_target_network[['edges']] %>%
+        dplyr::select(to) %>%
+        dplyr::inner_join(
+          dplyr::select(tf_target_network[['nodes']], id),
+          by = c("to" = "id")
+        ) %>%
+        dplyr::rename(id = to) %>%
+        dplyr::distinct()
+
+      target_and_regulator <- targets %>%
+        dplyr::inner_join(regulators, by = "id")
+
+      if(nrow(target_and_regulator) > 0){
+        regulators <- regulators %>%
+          dplyr::anti_join(target_and_regulator, by = "id") %>%
+          dplyr::mutate(group = "Regulator")
+
+        targets <- targets %>%
+          dplyr::anti_join(target_and_regulator, by = "id") %>%
+          dplyr::mutate(group = "Target")
+
+        target_and_regulator <- target_and_regulator %>%
+          dplyr::mutate(group = "Regulator/target")
+      }else{
+        regulators <- regulators %>%
+          dplyr::mutate(group = "Regulator")
+
+        targets <- targets %>%
+          dplyr::mutate(group = "Target")
+      }
+
+      all_shapes <- regulators %>%
+        dplyr::bind_rows(targets) %>%
+        dplyr::bind_rows(target_and_regulator)
+
+      tf_target_network[['nodes']] <- tf_target_network[['nodes']] %>%
+        dplyr::left_join(all_shapes, by = "id")
 
     }
 

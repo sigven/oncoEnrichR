@@ -19,14 +19,15 @@
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param num_terms_enrichment_plot number of top enriched Gene Ontology terms (max) to show in enrichment barplot
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
-#' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
+#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
+#' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
@@ -59,6 +60,7 @@ init_report <- function(project_title = "Project title",
                         q_value_cutoff_enrichment = 0.2,
                         min_geneset_size = 10,
                         max_geneset_size = 500,
+                        num_terms_enrichment_plot = 20,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = F,
                         min_confidence_reg_interaction = "D",
@@ -208,6 +210,8 @@ init_report <- function(project_title = "Project title",
     simplify_go
   rep[["config"]][["enrichment"]][["bgset_description"]] <-
     bgset_description
+  rep[["config"]][["enrichment"]][["num_terms_enrichment_plot"]] <-
+    num_terms_enrichment_plot
 
 
   ## specifiy plot height (tile/heatmap) - genes along y-axis
@@ -436,6 +440,7 @@ init_report <- function(project_title = "Project title",
 #' @param q_value_cutoff_enrichment cutoff q-value for enrichment analysis
 #' @param min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
+#' @param num_terms_enrichment_plot number of top enriched Gene Ontology terms (max) to show in enrichment barplot
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
@@ -444,8 +449,8 @@ init_report <- function(project_title = "Project title",
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)
-#' @param show_top_diseases_only logical indicating if report should contain top (15) disease associations only (Open Targets Platform)
+#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
+#' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
@@ -477,6 +482,7 @@ onco_enrich <- function(query,
                    q_value_cutoff_enrichment = 0.2,
                    min_geneset_size = 10,
                    max_geneset_size = 500,
+                   num_terms_enrichment_plot = 20,
                    min_subcellcomp_confidence = 1,
                    subcellcomp_show_cytosol = FALSE,
                    min_confidence_reg_interaction = "D",
@@ -596,6 +602,8 @@ onco_enrich <- function(query,
               query_id_type == "ensembl_gene")
   stopifnot(ppi_score_threshold > 0 &
               ppi_score_threshold <= 1000)
+  stopifnot(num_terms_enrichment_plot >= 10 &
+              num_terms_enrichment_plot <= 30)
   stopifnot(p_value_cutoff_enrichment > 0 &
               p_value_cutoff_enrichment < 1)
   stopifnot(q_value_cutoff_enrichment > 0 &
@@ -624,6 +632,7 @@ onco_enrich <- function(query,
     q_value_cutoff_enrichment = q_value_cutoff_enrichment,
     min_geneset_size = min_geneset_size,
     max_geneset_size = max_geneset_size,
+    num_terms_enrichment_plot = num_terms_enrichment_plot,
     min_subcellcomp_confidence = min_subcellcomp_confidence,
     subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     min_confidence_reg_interaction = min_confidence_reg_interaction,
@@ -850,7 +859,6 @@ onco_enrich <- function(query,
         genedb = oncoEnrichR::genedb[['all']],
         cancerdrugdb = oncoEnrichR::cancerdrugdb,
         settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
-    #}
   }
 
   if (show_complex == T) {
@@ -1158,7 +1166,9 @@ write <- function(report,
       if(is.character(dot_args$extra_files_path)){
         html_extern_path <- dot_args$extra_files_path
 
-        system(paste0('mkdir ', html_extern_path))
+        if(!dir.exists(html_extern_path)){
+          system(paste0('mkdir ', html_extern_path))
+        }
         # val <- assertthat::validate_that(
         #   dir.exists(html_extern_path)
         # )
@@ -1270,8 +1280,29 @@ write <- function(report,
           )
         )
       system(paste0('mkdir ', tmpdir))
-      system(paste0('cp ', oe_rmarkdown_template_dir,"/* ",
+      system(paste0('cp ', oe_rmarkdown_template_dir, "/* ",
                     tmpdir))
+
+      floating_toc <- "false"
+      if(onc_enrich_report$config$rmarkdown$floating_toc == T){
+        floating_toc <- "true"
+      }
+
+      sink(file = file.path(tmpdir,"_site.yml"))
+      cat("output:",
+          "  html_document:",
+          "    number_sections: false",
+          "    toc: true",
+          "    fig_width: 5",
+          "    fig_height: 4",
+          "    toc_depth: 3",
+          paste0("    toc_float: ", floating_toc),
+          "    highlight: null",
+          "    mathjax: null",
+          paste0("    theme: ", onc_enrich_report$config$rmarkdown$theme),
+          "    include:",
+          "      after_body: _disclaimer.md", sep="\n")
+      sink()
 
       rmdown_html <- file.path(tmpdir,"_site", "index.html")
       rmdown_supporting1 <- file.path(tmpdir,"_site","index_files")
@@ -1280,7 +1311,7 @@ write <- function(report,
       if(galaxy_run == T){
 
         if(dir.exists(file.path(
-          html_extern_path,"site_libs"))){
+          html_extern_path, "site_libs"))){
           if(overwrite == F){
             oncoEnrichR:::log4r_info(paste0(
               "ERROR: Cannot create HTML since 'site_libs' exist in output_directory",
@@ -1294,7 +1325,7 @@ write <- function(report,
           }
         }
         if(dir.exists(file.path(
-          html_extern_path,"index_files"))){
+          html_extern_path, "index_files"))){
           if(overwrite == F){
             oncoEnrichR:::log4r_info(paste0(
               "ERROR: Cannot create HTML since 'index_files' exist in output_directory",
@@ -1340,19 +1371,19 @@ write <- function(report,
 
       report_theme <- onc_enrich_report$config$rmarkdown$theme
       toc_float <- onc_enrich_report$config$rmarkdown$floating_toc
-      #report_theme <- "default"
 
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")
-
-      #toc = T,
-      #toc_depth = toc_depth,
 
       rmarkdown::render(
         markdown_input,
         output_format = rmarkdown::html_document(
           theme = report_theme,
           toc = T,
+          fig_width = 5,
+          highlight = NULL,
+          mathjax = NULL,
+          fig_height = 4,
           toc_depth = 3,
           toc_float = toc_float,
           number_sections = F,
@@ -1384,12 +1415,12 @@ write <- function(report,
                   "drug_known",
                   "drug_tractability",
                   "protein_complex",
+                  "enrichment",
                   "regulatory",
                   "subcellcomp",
                   "cell_tissue",
                   "ppi",
                   "ligand_receptor",
-                  "enrichment",
                   "aberration",
                   "coexpression",
                   "prognostic_association",

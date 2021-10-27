@@ -750,6 +750,35 @@ add_excel_sheet <- function(
     }
   }
 
+  if(analysis_output == "ligand_receptor"){
+    for(c in c('secreted_signaling','cell_cell_contact',
+               'ecm_receptor')){
+
+      if(is.data.frame(report$data$ligand_receptor[[c]])){
+        if(NROW(report$data$ligand_receptor[[c]]) > 0){
+
+          df <- report$data$ligand_receptor[[c]] %>%
+            dplyr::mutate(
+              annotation_source = report$config$resources[['cellchatdb']]$name,
+              version = report$config$resources[['cellchatdb']]$version) %>%
+            dplyr::select(annotation_source, version,
+                          dplyr::everything()) %>%
+            dplyr::mutate(
+              literature_support =
+                stringr::str_trim(
+                  textclean::replace_html(literature_support)
+                )
+            )
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+        }
+      }
+
+    }
+  }
+
+
   if(analysis_output == "protein_complex"){
 
     for(c in c('omnipath','humap2')){

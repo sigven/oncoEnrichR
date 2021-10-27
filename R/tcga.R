@@ -95,6 +95,16 @@ tcga_aberration_matrix <- function(qgenes,
       dplyr::select(query_genes_df, symbol),
       by=c("symbol"))
 
+  ## return NULL if no genes are found with copy number data from TCGA
+  if(nrow(tcga_gene_stats) == 0){
+    return(NULL)
+  }
+  num_genes <- length(unique(tcga_gene_stats$symbol))
+
+  if(num_genes < 5){
+    return(NULL)
+  }
+
 
   gene_candidates_init <- data.frame()
   tcga_ttypes <- sort(unique(tcga_gene_stats$primary_site))

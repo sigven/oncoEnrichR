@@ -21,6 +21,7 @@ onco_enrich(
   q_value_cutoff_enrichment = 0.2,
   min_geneset_size = 10,
   max_geneset_size = 500,
+  num_terms_enrichment_plot = 20,
   min_subcellcomp_confidence = 1,
   subcellcomp_show_cytosol = FALSE,
   min_confidence_reg_interaction = "D",
@@ -81,6 +82,8 @@ onco_enrich(
 
 \item{max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
 
+\item{num_terms_enrichment_plot}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
+
 \item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
@@ -97,9 +100,9 @@ onco_enrich(
 
 \item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
 
-\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.4)}
+\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)}
 
-\item{show_top_diseases_only}{logical indicating if report should contain top (15) disease associations only (Open Targets Platform)}
+\item{show_top_diseases_only}{logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)}
 
 \item{show_cancer_hallmarks}{logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)}
 

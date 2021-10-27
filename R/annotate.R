@@ -4,11 +4,11 @@ target_disease_associations <-
   function(qgenes,
            genedb = NULL,
            show_top_diseases_only = FALSE,
-           min_association_score = 0.2){
+           min_association_score = 0.1){
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
@@ -23,7 +23,7 @@ target_disease_associations <-
   result[['target']] <- target_genes
   result[['target_assoc']] <- target_assocs
   result[['assoc_pr_gene']] <- list()
-  result[['assoc_pr_gene']][['any']] <- data.frame()
+  result[['assoc_pr_gene']][['other']] <- data.frame()
   result[['assoc_pr_gene']][['cancer']] <- data.frame()
   result[['ttype_matrix']] <- matrix()
 
@@ -78,9 +78,6 @@ target_disease_associations <-
         result[['assoc_pr_gene']][['cancer']] %>%
           dplyr::group_by(symbol) %>%
           dplyr::summarise(
-            #n_cancer_phenotypes = dplyr::n(),
-            # ot_cancer_rank =
-            #   as.numeric(max(ot_association_score)),
             targetset_cancer_prank =
               as.numeric(mean(targetset_cancer_prank)),
             ot_cancer_links =
@@ -97,11 +94,6 @@ target_disease_associations <-
         result[['assoc_pr_gene']][['cancer']] %>%
           dplyr::group_by(symbol) %>%
           dplyr::summarise(
-            #n_cancer_phenotypes = dplyr::n(),
-            # ot_cancer_rank =
-            #   as.numeric(max(ot_association_score)),
-            # ot_cancer_rank =
-            #   as.numeric(mean(ot_association_score)),
             targetset_cancer_prank =
               as.numeric(mean(targetset_cancer_prank)),
             ot_cancer_links =
@@ -177,14 +169,38 @@ target_disease_associations <-
 
   rm(tmp)
   rm(tmp2)
+
+  if(nrow(result[['assoc_pr_gene']][['cancer']]) > 0){
+    result[['target']] <- result[['target']] %>%
+      dplyr::left_join(
+        result[['assoc_pr_gene']][['cancer']],by="symbol"
+        )
+  }else{
+    result[['target']]$targetset_cancer_prank <- NA
+    result[['target']]$ot_cancer_links <- NA
+    result[['target']]$ot_cancer_diseases <- NA
+  }
+
+  if(nrow(result[['assoc_pr_gene']][['other']]) > 0){
+    result[['target']] <- result[['target']] %>%
+      dplyr::left_join(
+        result[['assoc_pr_gene']][['other']],by="symbol"
+      )
+  }else{
+    result[['target']]$targetset_disease_prank <- NA
+    result[['target']]$ot_links <- NA
+    result[['target']]$ot_diseases <- NA
+  }
+
   result[['target']] <- result[['target']] %>%
-    dplyr::left_join(result[['assoc_pr_gene']][['cancer']],by="symbol") %>%
-    dplyr::left_join(result[['assoc_pr_gene']][['other']],by="symbol") %>%
     dplyr::mutate(
       targetset_cancer_prank =
-        dplyr::if_else(is.na(targetset_cancer_prank),
-                       as.numeric(0),
-                       as.numeric(targetset_cancer_prank))) %>%
+        dplyr::if_else(
+          is.na(targetset_cancer_prank),
+          as.numeric(0),
+          as.numeric(targetset_cancer_prank)
+          )
+      ) %>%
     dplyr::arrange(desc(targetset_cancer_prank)) %>%
     dplyr::select(symbol, genename,
                   ensembl_gene_id,
@@ -260,7 +276,7 @@ target_drug_associations <- function(qgenes,
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(cancerdrugdb))
   stopifnot(!is.null(cancerdrugdb[['tractability']]))
-  validate_db_df(genedb, dbtype = "genedb")
+  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
   #validate_db_df(genedb, dbtype = "drug_tractability")
 
   target_genes <- data.frame('symbol' = qgenes,
