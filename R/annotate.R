@@ -8,13 +8,13 @@ target_disease_associations <-
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
       dplyr::distinct()
 
-  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
+  log4r_info(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
 
   target_assocs <- target_genes %>%
     dplyr::left_join(oncoEnrichR::otdb$all, by=c("ensembl_gene_id","symbol"))
@@ -31,60 +31,63 @@ target_disease_associations <-
 
   tmp <- target_assocs %>%
     dplyr::filter(
-      !is.na(primary_site) &
-        ot_association_score >= min_association_score
+      !is.na(.data$primary_site) &
+        .data$ot_association_score >= min_association_score
     ) %>%
-    dplyr::select(symbol, genename,
-                  ensembl_gene_id,
-                  oncogene,
-                  tumor_suppressor,
-                  cancergene_support,
-                  ot_association_score,
-                  disease_efo_id,
-                  efo_name,
-                  primary_site,
-                  ot_link,
-                  gene_summary)
+    dplyr::select(.data$symbol,
+                  .data$genename,
+                  .data$ensembl_gene_id,
+                  .data$oncogene,
+                  .data$tumor_suppressor,
+                  .data$cancergene_support,
+                  .data$ot_association_score,
+                  .data$disease_efo_id,
+                  .data$efo_name,
+                  .data$primary_site,
+                  .data$ot_link,
+                  .data$gene_summary)
 
   if(nrow(tmp) > 0){
 
     gene_targetset_cancer_rank <- as.data.frame(
       tmp %>%
-        dplyr::group_by(symbol, primary_site) %>%
+        dplyr::group_by(.data$symbol, .data$primary_site) %>%
         dplyr::summarise(
-          mean_tissue_score = mean(ot_association_score),
+          mean_tissue_score = mean(.data$ot_association_score),
           .groups = "drop") %>%
         dplyr::ungroup() %>%
-        dplyr::group_by(symbol) %>%
+        dplyr::group_by(.data$symbol) %>%
         dplyr::summarise(
-          target_cancer_score = sum(mean_tissue_score),
+          target_cancer_score = sum(.data$mean_tissue_score),
           .groups = "drop") %>%
-        dplyr::arrange(desc(target_cancer_score)) %>%
+        dplyr::arrange(dplyr::desc(.data$target_cancer_score)) %>%
         dplyr::mutate(
           targetset_cancer_prank = round(
-            dplyr::percent_rank(target_cancer_score),
+            dplyr::percent_rank(.data$target_cancer_score),
             digits = 2)
         ) %>%
-        dplyr::select(symbol, targetset_cancer_prank)
+        dplyr::select(.data$symbol,
+                      .data$targetset_cancer_prank)
     )
 
     result[['assoc_pr_gene']][['cancer']] <- tmp %>%
       dplyr::left_join(gene_targetset_cancer_rank,
                         by = "symbol") %>%
-      dplyr::arrange(desc(targetset_cancer_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
         result[['assoc_pr_gene']][['cancer']] %>%
-          dplyr::group_by(symbol) %>%
+          dplyr::group_by(.data$symbol) %>%
           dplyr::summarise(
             targetset_cancer_prank =
-              as.numeric(mean(targetset_cancer_prank)),
+              as.numeric(mean(.data$targetset_cancer_prank)),
             ot_cancer_links =
-              paste(head(ot_link, num_top_disease_terms), collapse=", "),
+              paste(utils::head(.data$ot_link,
+                                .data$num_top_disease_terms), collapse=", "),
             ot_cancer_diseases =
-              paste(head(stringr::str_to_title(efo_name),
-                         num_top_disease_terms),collapse=", "),
+              paste(utils::head(stringr::str_to_title(.data$efo_name),
+                                num_top_disease_terms), collapse=", "),
             .groups = "drop"
           )
       )
@@ -92,14 +95,14 @@ target_disease_associations <-
 
       result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
         result[['assoc_pr_gene']][['cancer']] %>%
-          dplyr::group_by(symbol) %>%
+          dplyr::group_by(.data$symbol) %>%
           dplyr::summarise(
             targetset_cancer_prank =
-              as.numeric(mean(targetset_cancer_prank)),
+              as.numeric(mean(.data$targetset_cancer_prank)),
             ot_cancer_links =
-              paste(unique(ot_link), collapse=", "),
+              paste(unique(.data$ot_link), collapse=", "),
             ot_cancer_diseases =
-              paste(unique(stringr::str_to_title(efo_name)),
+              paste(unique(stringr::str_to_title(.data$efo_name)),
                            collapse=", "),
             .groups = "drop"
           )
@@ -108,43 +111,45 @@ target_disease_associations <-
   }
 
   tmp2 <- target_assocs %>%
-    dplyr::filter(ot_association_score >= min_association_score &
-                    is.na(cancer_phenotype))
+    dplyr::filter(.data$ot_association_score >= min_association_score &
+                    is.na(.data$cancer_phenotype))
 
   if(nrow(tmp2) > 0){
 
     gene_targetset_disease_rank <- as.data.frame(
       tmp2 %>%
-        dplyr::group_by(symbol) %>%
+        dplyr::group_by(.data$symbol) %>%
         dplyr::summarise(
-          total_disease_score = sum(ot_association_score),
+          total_disease_score = sum(.data$ot_association_score),
           .groups = "drop") %>%
         dplyr::ungroup() %>%
         dplyr::mutate(
           targetset_disease_prank = round(
-            dplyr::percent_rank(total_disease_score),
+            dplyr::percent_rank(.data$total_disease_score),
             digits = 2)
         ) %>%
-        dplyr::select(symbol, targetset_disease_prank)
+        dplyr::select(.data$symbol,
+                      .data$targetset_disease_prank)
     )
 
 
     result[['assoc_pr_gene']][['other']] <- tmp2 %>%
       dplyr::left_join(gene_targetset_disease_rank,
                         by = "symbol") %>%
-      dplyr::arrange(desc(targetset_disease_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_disease_prank))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['other']] <- as.data.frame(
         result[['assoc_pr_gene']][['other']] %>%
-          dplyr::group_by(symbol) %>%
+          dplyr::group_by(.data$symbol) %>%
           dplyr::summarise(
             targetset_disease_prank =
-              as.numeric(mean(targetset_disease_prank)),
+              as.numeric(mean(.data$targetset_disease_prank)),
             ot_links =
-              paste(head(ot_link, num_top_disease_terms), collapse=", "),
+              paste(utils::head(.data$ot_link, .data$num_top_disease_terms),
+                    collapse=", "),
             ot_diseases =
-              paste(head(stringr::str_to_title(efo_name),
+              paste(utils::head(stringr::str_to_title(.data$efo_name),
                          num_top_disease_terms), collapse=", "),
             .groups = "drop"
           )
@@ -152,14 +157,14 @@ target_disease_associations <-
     }else{
       result[['assoc_pr_gene']][['other']] <- as.data.frame(
           result[['assoc_pr_gene']][['other']] %>%
-            dplyr::group_by(symbol) %>%
+            dplyr::group_by(.data$symbol) %>%
             dplyr::summarise(
               targetset_disease_prank =
-                as.numeric(mean(targetset_disease_prank)),
+                as.numeric(mean(.data$targetset_disease_prank)),
               ot_links =
-                paste(unique(ot_link), collapse=", "),
+                paste(unique(.data$ot_link), collapse=", "),
               ot_diseases =
-                paste(unique(stringr::str_to_title(efo_name)),
+                paste(unique(stringr::str_to_title(.data$efo_name)),
                       collapse=", "),
               .groups = "drop"
             )
@@ -196,35 +201,39 @@ target_disease_associations <-
     dplyr::mutate(
       targetset_cancer_prank =
         dplyr::if_else(
-          is.na(targetset_cancer_prank),
+          is.na(.data$targetset_cancer_prank),
           as.numeric(0),
-          as.numeric(targetset_cancer_prank)
+          as.numeric(.data$targetset_cancer_prank)
           )
       ) %>%
-    dplyr::arrange(desc(targetset_cancer_prank)) %>%
-    dplyr::select(symbol, genename,
-                  ensembl_gene_id,
-                  oncogene, tumor_suppressor,
-                  targetset_cancer_prank,
-                  cancergene_support,
-                  ot_cancer_diseases,
-                  ot_cancer_links,
-                  targetset_disease_prank,
-                  ot_diseases,
-                  ot_links,
-                  gene_summary) %>%
-    dplyr::rename(cancergene_evidence = cancergene_support,
-                  disease_associations = ot_diseases,
-                  disease_association_links = ot_links,
-                  cancer_associations = ot_cancer_diseases,
-                  cancer_association_links = ot_cancer_links) %>%
+    dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank)) %>%
+    dplyr::select(.data$symbol,
+                  .data$genename,
+                  .data$ensembl_gene_id,
+                  .data$oncogene,
+                  .data$tumor_suppressor,
+                  .data$targetset_cancer_prank,
+                  .data$cancergene_support,
+                  .data$ot_cancer_diseases,
+                  .data$ot_cancer_links,
+                  .data$targetset_disease_prank,
+                  .data$ot_diseases,
+                  .data$ot_links,
+                  .data$gene_summary) %>%
+    dplyr::rename(cancergene_evidence = .data$cancergene_support,
+                  disease_associations = .data$ot_diseases,
+                  disease_association_links = .data$ot_links,
+                  cancer_associations = .data$ot_cancer_diseases,
+                  cancer_association_links = .data$ot_cancer_links) %>%
     dplyr::distinct()
 
 
-  ttype_rank_df <- dplyr::select(target_genes, symbol) %>%
+  ttype_rank_df <- dplyr::select(target_genes, .data$symbol) %>%
     dplyr::left_join(
-      dplyr::select(oncoEnrichR::otdb$site_rank, primary_site,
-                    symbol, tissue_assoc_rank),
+      dplyr::select(oncoEnrichR::otdb$site_rank,
+                    .data$primary_site,
+                    .data$symbol,
+                    .data$tissue_assoc_rank),
       by = "symbol"
     )
 
@@ -232,28 +241,29 @@ target_disease_associations <-
 
     result[['ttype_matrix']] <- as.data.frame(
       ttype_rank_df %>%
-        dplyr::filter(!is.na(primary_site) & !is.na(tissue_assoc_rank))
+        dplyr::filter(!is.na(.data$primary_site) &
+                        !is.na(.data$tissue_assoc_rank))
     )
 
     if(nrow(result[['ttype_matrix']]) > 0){
 
       result[['ttype_matrix']] <- as.data.frame(
         result[['ttype_matrix']] %>%
-        dplyr::filter(!(primary_site == "Adrenal Gland" |
-                          primary_site == "Eye" |
-                          primary_site == "Vulva/Vagina" |
-                          primary_site == "Ampulla of Vater" |
-                          primary_site == "Peritoneum")) %>%
+        dplyr::filter(!(.data$primary_site == "Adrenal Gland" |
+                          .data$primary_site == "Eye" |
+                          .data$primary_site == "Vulva/Vagina" |
+                          .data$primary_site == "Ampulla of Vater" |
+                          .data$primary_site == "Peritoneum")) %>%
         dplyr::mutate(tissue_assoc_rank =
-                        tissue_assoc_rank * 100) %>%
+                        .data$tissue_assoc_rank * 100) %>%
         dplyr::mutate(
           symbol = factor(
-            symbol, levels = result$target$symbol
+            .data$symbol, levels = result$target$symbol
           )
         ) %>%
-        dplyr::arrange(symbol) %>%
-        tidyr::pivot_wider(names_from = primary_site,
-                           values_from = tissue_assoc_rank)
+        dplyr::arrange(.data$symbol) %>%
+        tidyr::pivot_wider(names_from = .data$primary_site,
+                           values_from = .data$tissue_assoc_rank)
       )
     }
 
@@ -276,7 +286,7 @@ target_drug_associations <- function(qgenes,
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(cancerdrugdb))
   stopifnot(!is.null(cancerdrugdb[['tractability']]))
-  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(genedb, dbtype = "genedb")
   #validate_db_df(genedb, dbtype = "drug_tractability")
 
   target_genes <- data.frame('symbol' = qgenes,
@@ -284,7 +294,7 @@ target_drug_associations <- function(qgenes,
     dplyr::inner_join(genedb, by = "symbol") %>%
     dplyr::distinct()
 
-  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs (cancer indications only)"))
+  log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs (cancer indications only)"))
 
   result <- list()
   result[['target_drugs']] <- data.frame()
@@ -292,29 +302,29 @@ target_drug_associations <- function(qgenes,
   result[['tractability_sm']] <- data.frame()
 
   result[['target_drugs']] <- target_genes %>%
-    dplyr::select(symbol, genename,
-                  targeted_cancer_drugs_lp,
-                  targeted_cancer_drugs_ep) %>%
-    dplyr::filter(!is.na(targeted_cancer_drugs_lp) |
-                    !is.na(targeted_cancer_drugs_ep))
+    dplyr::select(.data$symbol, .data$genename,
+                  .data$targeted_cancer_drugs_lp,
+                  .data$targeted_cancer_drugs_ep) %>%
+    dplyr::filter(!is.na(.data$targeted_cancer_drugs_lp) |
+                    !is.na(.data$targeted_cancer_drugs_ep))
 
-  oncoEnrichR:::log4r_info(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
+  log4r_info(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
 
   result[['tractability_ab']] <- target_genes %>%
-    dplyr::select(ensembl_gene_id) %>%
+    dplyr::select(.data$ensembl_gene_id) %>%
     dplyr::inner_join(cancerdrugdb[['tractability']][['ab']],
                       by = "ensembl_gene_id") %>%
-    dplyr::select(-ensembl_gene_id) %>%
-    dplyr::arrange(AB_tractability_category,
-                   desc(nchar(AB_tractability_support)))
+    dplyr::select(-.data$ensembl_gene_id) %>%
+    dplyr::arrange(.data$AB_tractability_category,
+                   dplyr::desc(nchar(.data$AB_tractability_support)))
 
   result[['tractability_sm']] <- target_genes %>%
-    dplyr::select(ensembl_gene_id) %>%
+    dplyr::select(.data$ensembl_gene_id) %>%
     dplyr::inner_join(cancerdrugdb[['tractability']][['sm']],
                       by = "ensembl_gene_id") %>%
-    dplyr::select(-ensembl_gene_id) %>%
-    dplyr::arrange(SM_tractability_category,
-                   desc(nchar(SM_tractability_support)))
+    dplyr::select(-.data$ensembl_gene_id) %>%
+    dplyr::arrange(.data$SM_tractability_category,
+                   dplyr::desc(nchar(.data$SM_tractability_support)))
 
   return(result)
 

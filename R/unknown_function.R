@@ -2,12 +2,12 @@
 get_genes_unknown_function <- function(qgenes, genedb = NULL,
                                        poorly_defined_genes = NULL){
 
-  oncoEnrichR:::log4r_info("Retrieval of genes with unknown/poorly defined function in target set")
+  log4r_info("Retrieval of genes with unknown/poorly defined function in target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(poorly_defined_genes))
-  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
-  oncoEnrichR:::validate_db_df(poorly_defined_genes, dbtype = "pdf")
+  validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(poorly_defined_genes, dbtype = "pdf")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
 
@@ -20,7 +20,7 @@ get_genes_unknown_function <- function(qgenes, genedb = NULL,
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }
 
-  oncoEnrichR:::log4r_info(paste0("Detected n = ", nrow(results),
+  log4r_info(paste0("Detected n = ", nrow(results),
                     " (", pct,"%) target genes with unknown/poorly defined function"))
   return(results)
 

@@ -2,12 +2,12 @@ get_crispr_lof_scores <- function(qgenes,
                                   qsource = "symbol",
                                   projectscoredb = NULL) {
 
-  oncoEnrichR:::log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of genes ",
+  log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of genes ",
                     "associated with loss-of-fitness in cancer cell lines"))
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(projectscoredb))
   stopifnot(!is.null(projectscoredb[['fitness_scores']]))
-  oncoEnrichR:::validate_db_df(projectscoredb[['fitness_scores']],
+  validate_db_df(projectscoredb[['fitness_scores']],
                                dbtype = "fitness_scores")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
@@ -27,26 +27,31 @@ get_crispr_lof_scores <- function(qgenes,
         dplyr::mutate(
           model_link_cmp = paste0(
             "<a href='https://cellmodelpassports.sanger.ac.uk/passports/",
-            model_id,"' target='_blank'>",
-            stringr::str_replace_all(model_name,"\\.","-"),"</a>")) %>%
+            .data$model_id,"' target='_blank'>",
+            stringr::str_replace_all(.data$model_name,"\\.","-"),"</a>")) %>%
         dplyr::mutate(
           symbol_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/gene/",
-            gene_id_project_score,"' target='_blank'>",symbol,"</a>")) %>%
-      dplyr::select(symbol, symbol_link_ps, model_name,
-                    tissue, model_link_cmp) %>%
-      dplyr::group_by(symbol, symbol_link_ps, tissue) %>%
+            .data$gene_id_project_score,"' target='_blank'>", .data$symbol,"</a>")) %>%
+      dplyr::select(.data$symbol,
+                    .data$symbol_link_ps,
+                    .data$model_name,
+                    .data$tissue,
+                    .data$model_link_cmp) %>%
+      dplyr::group_by(.data$symbol,
+                      .data$symbol_link_ps,
+                      .data$tissue) %>%
       dplyr::summarise(n_gene_tissue = dplyr::n(),
-                       cell_lines = paste(model_name, collapse = ", "),
-                       cmp_link = paste(model_link_cmp, collapse = ", ")) %>%
+                       cell_lines = paste(.data$model_name, collapse = ", "),
+                       cmp_link = paste(.data$model_link_cmp, collapse = ", ")) %>%
       dplyr::ungroup() %>%
-      dplyr::mutate(cell_lines = stringr::str_replace_all(cell_lines, "\\.", "-"))
+      dplyr::mutate(cell_lines = stringr::str_replace_all(.data$cell_lines, "\\.", "-"))
     )
 
     total <- as.data.frame(
       crispr_lof_hits %>%
-        dplyr::group_by(symbol) %>%
-        dplyr::summarise(n_gene = sum(n_gene_tissue))
+        dplyr::group_by(.data$symbol) %>%
+        dplyr::summarise(n_gene = sum(.data$n_gene_tissue))
       )
 
     crispr_lof_results[["n_targets"]] <- nrow(total)
@@ -62,13 +67,13 @@ get_target_priority_scores <-
            qsource = "symbol",
            projectscoredb = NULL){
 
-    oncoEnrichR:::log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of ",
+    log4r_info(paste0("Project Score (CRISPR/Cas9 screen): retrieval of ",
                       "prioritized targets from loss-of-fitness screens ",
                       "in cancer cell lines"))
     stopifnot(is.character(qgenes))
     stopifnot(!is.null(projectscoredb))
     stopifnot(!is.null(projectscoredb[['target_priority_scores']]))
-    oncoEnrichR:::validate_db_df(projectscoredb[['target_priority_scores']],
+    validate_db_df(projectscoredb[['target_priority_scores']],
                                  dbtype = "target_priority_scores")
 
     target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
@@ -89,10 +94,12 @@ get_target_priority_scores <-
 
       prioritized_targets[["targets"]] <- as.data.frame(
         targets_crispr_priority %>%
-        dplyr::mutate(symbol = factor(symbol, levels =
+        dplyr::mutate(symbol = factor(.data$symbol, levels =
                  levels(projectscoredb[['target_priority_scores']]$symbol))) %>%
-        dplyr::arrange(desc(priority_score)) %>%
-        dplyr::select(symbol, tumor_type, priority_score) # %>%
+        dplyr::arrange(dplyr::desc(.data$priority_score)) %>%
+        dplyr::select(.data$symbol,
+                      .data$tumor_type,
+                      .data$priority_score) # %>%
 
       )
     }

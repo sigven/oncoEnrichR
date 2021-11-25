@@ -29,6 +29,7 @@
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
 #' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
+#' @param show_drug logical indicating if report should contain targeted cancer drug information
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
@@ -41,6 +42,7 @@
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
+#'
 #' @export
 
 init_report <- function(project_title = "Project title",
@@ -452,6 +454,7 @@ init_report <- function(project_title = "Project title",
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
 #' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
+#' @param show_drug logical indicating if report should contain targeted cancer drug information
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
 #' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
 #' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
@@ -464,6 +467,8 @@ init_report <- function(project_title = "Project title",
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
+#' @param ... arguments for Galaxy/web-based processing
+#'
 #' @export
 #'
 onco_enrich <- function(query,
@@ -530,7 +535,7 @@ onco_enrich <- function(query,
                                      "fdr", "none")
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR - 'p_value_adjustment_method' must have any of the following values: ",
       "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
       " (value provided was '", p_value_adjustment_method,"')"))
@@ -542,7 +547,7 @@ onco_enrich <- function(query,
                                           "C", "D")
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR - 'min_confidence_reg_interaction' must have any of the following values: 'A', 'B', 'C', 'D'",
       " (value provided was '", min_confidence_reg_interaction,"')"))
     return()
@@ -554,7 +559,7 @@ onco_enrich <- function(query,
                         "simplex","spacelab","united","yeti")
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR - 'html_report_theme' must have any of the following values: ",
       "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
       "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
@@ -575,12 +580,12 @@ onco_enrich <- function(query,
   }
 
   if (length(query) > oncoenrichr_query_limit) {
-    oncoEnrichR:::log4r_info(
+    log4r_info(
       paste0("WARNING: oncoEnrichR is limited to the analysis of n = ",
              oncoenrichr_query_limit," entries. Query contained n = ",
              length(query), " identifiers, limiting to top ",
              oncoenrichr_query_limit," genes"))
-    query <- head(unique(query), oncoenrichr_query_limit)
+    query <- utils::head(unique(query), oncoenrichr_query_limit)
   }
 
 
@@ -614,7 +619,7 @@ onco_enrich <- function(query,
 
 
 
-  onc_rep <- oncoEnrichR:::init_report(
+  onc_rep <- init_report(
     project_title = project_title,
     project_owner = project_owner,
     html_report_theme = html_report_theme,
@@ -658,7 +663,7 @@ onco_enrich <- function(query,
 
   ## validate query gene set
   qgenes_match <-
-    oncoEnrichR:::validate_query_genes(
+    validate_query_genes(
       query,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
@@ -701,7 +706,7 @@ onco_enrich <- function(query,
 
   if(NROW(qgenes_match[["found"]]) < 5){
     onc_rep[['config']][['show']][['enrichment']] <- F
-    oncoEnrichR:::log4r_info(
+    log4r_info(
       paste0("WARNING: Function and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
              NROW(qgenes_match[["found"]])," valid entries"))
   }
@@ -712,7 +717,7 @@ onco_enrich <- function(query,
   background_genes_match <- NULL
   if (!is.null(bgset)) {
     background_genes_match <-
-      oncoEnrichR:::validate_query_genes(
+      validate_query_genes(
         bgset,
         q_id_type = bgset_id_type,
         genedb = oncoEnrichR::genedb[['all']],
@@ -723,7 +728,7 @@ onco_enrich <- function(query,
         refseq_protein_xref = oncoEnrichR::genedb[['refseq_protein_xref']],
         uniprot_xref = oncoEnrichR::genedb[['uniprot_xref']])
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
-      oncoEnrichR:::log4r_info(paste0("WARNING: Background geneset not defined properly - ",
+      log4r_info(paste0("WARNING: Background geneset not defined properly - ",
                         "using all protein-coding genes instead"))
       background_entrez <- unique(oncoEnrichR::genedb[['all']]$entrezgene)
     }else{
@@ -743,7 +748,7 @@ onco_enrich <- function(query,
 
   if (show_disease == T) {
     onc_rep[["data"]][["disease"]] <-
-      oncoEnrichR:::target_disease_associations(
+      target_disease_associations(
         query_symbol,
         show_top_diseases_only = show_top_diseases_only,
         genedb = oncoEnrichR::genedb[['all']])
@@ -751,7 +756,7 @@ onco_enrich <- function(query,
 
   if (show_drug == T) {
     onc_rep[["data"]][["drug"]] <-
-      oncoEnrichR:::target_drug_associations(
+      target_drug_associations(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         cancerdrugdb = oncoEnrichR::cancerdrugdb)
@@ -759,7 +764,7 @@ onco_enrich <- function(query,
 
   if (show_ligand_receptor == T) {
     onc_rep[["data"]][["ligand_receptor"]] <-
-      oncoEnrichR:::annotate_ligand_receptor_interactions(
+      annotate_ligand_receptor_interactions(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         ligandreceptordb = oncoEnrichR::ligandreceptordb)
@@ -769,7 +774,7 @@ onco_enrich <- function(query,
     for (c in names(oncoEnrichR::pathwaydb[["msigdb"]][["COLLECTION"]])) {
       for (subcat in names(oncoEnrichR::pathwaydb[["msigdb"]][["COLLECTION"]][[c]])) {
         if (c == "C5" & subcat != "HPO") {
-          enr <- oncoEnrichR:::get_go_enrichment(
+          enr <- get_go_enrichment(
             query_entrezgene,
             background_entrez = background_entrez,
             min_geneset_size =
@@ -793,7 +798,7 @@ onco_enrich <- function(query,
         }else{
           if(c != "C5"){
             db = paste0("MSIGdb/", c, "/",subcat)
-            enr <- oncoEnrichR:::get_universal_enrichment(
+            enr <- get_universal_enrichment(
               query_entrezgene,
               genedb = oncoEnrichR::genedb[['all']],
               background_entrez = background_entrez,
@@ -815,7 +820,7 @@ onco_enrich <- function(query,
               onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
                 dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
                 dplyr::distinct() %>%
-                dplyr::arrange(qvalue)
+                dplyr::arrange(.data$qvalue)
             }
           }
         }
@@ -831,7 +836,7 @@ onco_enrich <- function(query,
         db <- "KEGG"
       }
       onc_rep[["data"]][["enrichment"]][[pwaydb]] <-
-        oncoEnrichR:::get_universal_enrichment(
+        get_universal_enrichment(
           query_entrezgene,
           genedb = oncoEnrichR::genedb[['all']],
           background_entrez = background_entrez,
@@ -853,7 +858,7 @@ onco_enrich <- function(query,
     ## TEST TO CHECK OMNIPATHDB IS LIVE IS NOT WORKING
     # service_is_down <- unique(is.na(pingr::ping("string-db.org")))
     onc_rep[["data"]][["ppi"]] <-
-      oncoEnrichR:::get_ppi_network(
+      get_ppi_network(
         query_entrezgene,
         ppi_source = "STRING",
         genedb = oncoEnrichR::genedb[['all']],
@@ -863,7 +868,7 @@ onco_enrich <- function(query,
 
   if (show_complex == T) {
     onc_rep[["data"]][["protein_complex"]] <-
-      oncoEnrichR:::annotate_protein_complex(
+      annotate_protein_complex(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         complex_db = oncoEnrichR::genedb[['protein_complex']],
@@ -872,7 +877,7 @@ onco_enrich <- function(query,
 
   if (show_unknown_function == T) {
     onc_rep[["data"]][["unknown_function"]][["hits_df"]] <-
-      oncoEnrichR:::get_genes_unknown_function(
+      get_genes_unknown_function(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']],
         poorly_defined_genes = oncoEnrichR::genedb[['poorly_defined']]
@@ -881,7 +886,7 @@ onco_enrich <- function(query,
 
   if (show_subcell_comp == T) {
      subcellcomp_annotations <-
-      oncoEnrichR:::annotate_subcellular_compartments(
+      annotate_subcellular_compartments(
         query_symbol,
         minimum_confidence = min_subcellcomp_confidence,
         show_cytosol = subcellcomp_show_cytosol,
@@ -899,7 +904,7 @@ onco_enrich <- function(query,
 
   if (show_crispr_lof == T) {
     onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]] <-
-      oncoEnrichR:::get_crispr_lof_scores(
+      get_crispr_lof_scores(
         query_symbol,
         projectscoredb = oncoEnrichR::projectscoredb)
 
@@ -914,7 +919,7 @@ onco_enrich <- function(query,
     }
 
     onc_rep[["data"]][["crispr_ps"]][["target_priority_scores"]] <-
-      oncoEnrichR:::get_target_priority_scores(
+      get_target_priority_scores(
         query_symbol,
         projectscoredb = oncoEnrichR::projectscoredb)
   }
@@ -923,13 +928,13 @@ onco_enrich <- function(query,
   if (show_tcga_aberration == T) {
     for (v in c("cna_homdel","cna_ampl")) {
       onc_rep[["data"]][["tcga"]][["aberration"]][["matrix"]][[v]] <-
-        oncoEnrichR:::tcga_aberration_matrix(
+        tcga_aberration_matrix(
           query_entrezgene,
           qsource = "entrezgene",
           genedb = oncoEnrichR::genedb[['all']],
           vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
-        oncoEnrichR:::tcga_aberration_table(
+        tcga_aberration_table(
           query_entrezgene,
           qsource = "entrezgene",
           genedb = oncoEnrichR::genedb[['all']],
@@ -939,40 +944,40 @@ onco_enrich <- function(query,
     onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
       oncoEnrichR::tcgadb[["recurrent_variants"]] %>%
       dplyr::inner_join(
-        dplyr::select(qgenes_match$found, symbol),
+        dplyr::select(qgenes_match$found, .data$symbol),
         by = c("SYMBOL" = "symbol")) %>%
       dplyr::distinct()
 
     if(nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0){
       cosmic_variants <-
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::select(VAR_ID, COSMIC_MUTATION_ID) %>%
-        dplyr::filter(!is.na(COSMIC_MUTATION_ID)) %>%
+        dplyr::select(.data$VAR_ID, .data$COSMIC_MUTATION_ID) %>%
+        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) %>%
         dplyr::distinct()
 
       if(nrow(cosmic_variants) > 0){
 
         cosmic_variants <- as.data.frame(
           cosmic_variants %>%
-          tidyr::separate_rows(COSMIC_MUTATION_ID, sep="&") %>%
+          tidyr::separate_rows(.data$COSMIC_MUTATION_ID, sep="&") %>%
           dplyr::mutate(
             COSMIC_MUTATION_ID = paste0(
               "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
-              COSMIC_MUTATION_ID,"\" target='_blank'>",
-              COSMIC_MUTATION_ID,"</a>"
+              .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
+              .data$COSMIC_MUTATION_ID,"</a>"
             )) %>%
-          dplyr::group_by(VAR_ID) %>%
+          dplyr::group_by(.data$VAR_ID) %>%
           dplyr::summarise(
             COSMIC_MUTATION_ID =
               paste(
-                COSMIC_MUTATION_ID, collapse=", "
+                .data$COSMIC_MUTATION_ID, collapse=", "
               ),
             .groups = "drop")
         )
 
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
           onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-          dplyr::select(-COSMIC_MUTATION_ID) %>%
+          dplyr::select(-.data$COSMIC_MUTATION_ID) %>%
           dplyr::left_join(cosmic_variants,
                            by = c("VAR_ID"))
       }
@@ -982,41 +987,41 @@ onco_enrich <- function(query,
         dplyr::left_join(oncoEnrichR::pfam_domains, by = "PFAM_ID") %>%
         dplyr::mutate(
           PROTEIN_DOMAIN = dplyr::if_else(
-            !is.na(PFAM_ID),
+            !is.na(.data$PFAM_ID),
             paste0(
-            "<a href=\"http://pfam.xfam.org/family/",PFAM_ID,
+            "<a href=\"http://pfam.xfam.org/family/", .data$PFAM_ID,
             "\" target='_blank'>",
-            PFAM_DOMAIN_NAME,
+            .data$PFAM_DOMAIN_NAME,
             "</a>"),
             as.character(NA)
           )
         ) %>%
-        dplyr::select(-c(PFAM_DOMAIN_NAME,PFAM_ID)) %>%
+        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) %>%
         dplyr::left_join(dplyr::select(oncoEnrichR::genedb[['all']],
-                                       symbol, ensembl_gene_id),
+                                       .data$symbol, .data$ensembl_gene_id),
                          by = c("SYMBOL" = "symbol")) %>%
-        dplyr::rename(ENSEMBL_GENE_ID = ensembl_gene_id) %>%
+        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) %>%
         dplyr::mutate(ENSEMBL_TRANSCRIPT_ID =
                         paste0("<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
-                               ENSEMBL_GENE_ID,
+                               .data$ENSEMBL_GENE_ID,
                                ";t=",
-                               ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-                               ENSEMBL_TRANSCRIPT_ID,"</a>")) %>%
-        dplyr::select(-VAR_ID) %>%
-        dplyr::select(SYMBOL,
-                      CONSEQUENCE,
-                      PROTEIN_CHANGE,
-                      MUTATION_HOTSPOT,
-                      PROTEIN_DOMAIN,
-                      LOSS_OF_FUNCTION,
-                      ENSEMBL_GENE_ID,
-                      ENSEMBL_TRANSCRIPT_ID,
+                               .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
+                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) %>%
+        dplyr::select(-.data$VAR_ID) %>%
+        dplyr::select(.data$SYMBOL,
+                      .data$CONSEQUENCE,
+                      .data$PROTEIN_CHANGE,
+                      .data$MUTATION_HOTSPOT,
+                      .data$PROTEIN_DOMAIN,
+                      .data$LOSS_OF_FUNCTION,
+                      .data$ENSEMBL_GENE_ID,
+                      .data$ENSEMBL_TRANSCRIPT_ID,
                       dplyr::everything())
     }
 
     for(psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])){
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]][[psite]][['top_mutated_genes']] <-
-        oncoEnrichR:::tcga_oncoplot_genes(
+        tcga_oncoplot_genes(
           query_symbol,
           qsource = "symbol",
           genedb = oncoEnrichR::genedb[['all']],
@@ -1026,28 +1031,28 @@ onco_enrich <- function(query,
 
   if (show_cancer_hallmarks == T){
 
-    oncoEnrichR:::log4r_info("Retrieving genes with evidence of cancer hallmark properties")
+    log4r_info("Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
       oncoEnrichR::genedb[["cancer_hallmark"]][["short"]] %>%
       dplyr::inner_join(
-        dplyr::select(qgenes_match$found, symbol),
+        dplyr::select(qgenes_match$found, .data$symbol),
         by = c("target_symbol" = "symbol")) %>%
       dplyr::distinct() %>%
-      dplyr::select(-target_symbol)
+      dplyr::select(-.data$target_symbol)
 
     n_genes_cancerhallmarks <- 0
 
     if(nrow(onc_rep[["data"]][["cancer_hallmark"]][["target"]]) > 0){
       n_genes_cancerhallmarks <- length(unique(onc_rep[["data"]][["cancer_hallmark"]][["target"]]$symbol))
     }
-    oncoEnrichR:::log4r_info(paste0("Number of query genes attributed with cancer hallmark properties: ",
+    log4r_info(paste0("Number of query genes attributed with cancer hallmark properties: ",
                              n_genes_cancerhallmarks))
 
   }
 
   if (show_tcga_coexpression == T) {
     onc_rep[["data"]][["tcga"]][["co_expression"]] <-
-      oncoEnrichR:::tcga_co_expression(
+      tcga_co_expression(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
   }
@@ -1056,7 +1061,7 @@ onco_enrich <- function(query,
 
     for(collection in c('global','pancancer')){
       onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
-        oncoEnrichR:::annotate_tf_targets(
+        annotate_tf_targets(
           query_symbol,
           genedb = oncoEnrichR::genedb[['all']],
           tf_target_interactions = oncoEnrichR::tf_target_interactions,
@@ -1066,7 +1071,7 @@ onco_enrich <- function(query,
 
     if(NROW(onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]) > 0){
       onc_rep[["data"]][["regulatory"]][["network"]] <-
-        oncoEnrichR:::retrieve_tf_target_network(
+        retrieve_tf_target_network(
           tf_target_interactions =
             onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]
         )
@@ -1075,13 +1080,13 @@ onco_enrich <- function(query,
 
   if(show_prognostic_cancer_assoc == T){
     onc_rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <-
-      oncoEnrichR:::hpa_prognostic_genes(
+      hpa_prognostic_genes(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
 
     for(feature in c('exp', 'mut', 'cna', 'meth')){
       onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
-        oncoEnrichR:::km_cshl_survival_genes(
+        km_cshl_survival_genes(
           query_symbol,
           projectsurvivaldb = oncoEnrichR::projectsurvivaldb[[feature]],
           genetic_feature = feature)
@@ -1091,25 +1096,25 @@ onco_enrich <- function(query,
 
   if(show_cell_tissue == T){
     onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
-      oncoEnrichR:::gene_tissue_cell_spec_cat(
+      gene_tissue_cell_spec_cat(
         query_symbol,
         genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
-      oncoEnrichR:::gene_tissue_cell_enrichment(
+      gene_tissue_cell_enrichment(
         query_entrezgene,
         resolution = "tissue",
         background_entrez = background_entrez,
         genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
-      oncoEnrichR:::gene_tissue_cell_spec_cat(
+      gene_tissue_cell_spec_cat(
         query_symbol,
         resolution = "single_cell",
         genedb = oncoEnrichR::genedb[['all']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
-      oncoEnrichR:::gene_tissue_cell_enrichment(
+      gene_tissue_cell_enrichment(
         query_entrezgene,
         background_entrez = background_entrez,
         resolution = "single_cell",
@@ -1129,6 +1134,7 @@ onco_enrich <- function(query,
 #' @param overwrite logical indicating if existing output files may be overwritten
 #' @param format file format of output (html/excel)
 #' @param ... options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy
+#'
 #' @export
 
 write <- function(report,
@@ -1146,7 +1152,7 @@ write <- function(report,
 
     for(arg in names(dot_args)){
       if(!(arg == "selfcontained_html" | arg == "galaxy" | arg == "extra_files_path")){
-        oncoEnrichR:::log4r_info(paste0(
+        log4r_info(paste0(
           "ERROR: argument '",arg,"' does not exist for oncoEnrichR::write()"))
         return()
       }
@@ -1173,7 +1179,7 @@ write <- function(report,
         #   dir.exists(html_extern_path)
         # )
         # if(!is.logical(val)){
-        #   oncoEnrichR:::log4r_info(paste0("ERROR: ",val))
+        #   log4r_info(paste0("ERROR: ",val))
         #   return()
         # }
       }
@@ -1184,7 +1190,7 @@ write <- function(report,
     format %in% c("html","excel")
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR: ",val))
     return()
   }
@@ -1193,7 +1199,7 @@ write <- function(report,
     is.character(file)
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR: ",val))
     return()
   }
@@ -1202,7 +1208,7 @@ write <- function(report,
     is.logical(overwrite)
   )
   if(!is.logical(val)){
-    oncoEnrichR:::log4r_info(paste0(
+    log4r_info(paste0(
       "ERROR: ",val))
     return()
   }
@@ -1217,7 +1223,7 @@ write <- function(report,
       dir.exists(output_directory)
     )
     if(!is.logical(val)){
-      oncoEnrichR:::log4r_info(paste0("ERROR: ",val))
+      log4r_info(paste0("ERROR: ",val))
       return()
     }
   }
@@ -1227,7 +1233,7 @@ write <- function(report,
       file.exists(file)
     )
     if(is.logical(val)){
-      oncoEnrichR:::log4r_info(
+      log4r_info(
         paste0("ERROR: output file (",file, ") exists, (overwrite = F)"))
       return()
     }
@@ -1235,7 +1241,7 @@ write <- function(report,
 
   if(ignore_file_extension == F){
     if(format == "html" & tools::file_ext(file) != "html"){
-      oncoEnrichR:::log4r_info(paste0(
+      log4r_info(paste0(
         "ERROR: oncoEnrichR HTML output: File name must end with .html, not ",
         tools::file_ext(file))
       )
@@ -1243,7 +1249,7 @@ write <- function(report,
     }
 
     if(format == "excel" & tools::file_ext(file) != "xlsx"){
-      oncoEnrichR:::log4r_info(paste0(
+      log4r_info(paste0(
         "ERROR: oncoEnrichR Excel output: File name must end with .xlsx, not ",
         tools::file_ext(file))
       )
@@ -1256,7 +1262,7 @@ write <- function(report,
     assign("onc_enrich_report",
            report, envir = .GlobalEnv)
   }else{
-    oncoEnrichR:::log4r_info(
+    log4r_info(
       "ERROR: oncoEnrichR report object is NULL - cannot write report contents")
     return()
   }
@@ -1264,8 +1270,8 @@ write <- function(report,
 
   if (format == "html") {
 
-    oncoEnrichR:::log4r_info("------")
-    oncoEnrichR:::log4r_info("Writing HTML file with report contents")
+    log4r_info("------")
+    log4r_info("Writing HTML file with report contents")
 
     if(selfcontained == F){
 
@@ -1304,6 +1310,7 @@ write <- function(report,
           "      after_body: _disclaimer.md", sep="\n")
       sink()
 
+
       rmdown_html <- file.path(tmpdir,"_site", "index.html")
       rmdown_supporting1 <- file.path(tmpdir,"_site","index_files")
       rmdown_supporting2 <- file.path(tmpdir,"_site","site_libs")
@@ -1313,7 +1320,7 @@ write <- function(report,
         if(dir.exists(file.path(
           html_extern_path, "site_libs"))){
           if(overwrite == F){
-            oncoEnrichR:::log4r_info(paste0(
+            log4r_info(paste0(
               "ERROR: Cannot create HTML since 'site_libs' exist in output_directory",
               " and 'overwrite' is FALSE")
             )
@@ -1327,7 +1334,7 @@ write <- function(report,
         if(dir.exists(file.path(
           html_extern_path, "index_files"))){
           if(overwrite == F){
-            oncoEnrichR:::log4r_info(paste0(
+            log4r_info(paste0(
               "ERROR: Cannot create HTML since 'index_files' exist in output_directory",
               " and 'overwrite' is FALSE")
             )
@@ -1357,9 +1364,9 @@ write <- function(report,
           system(paste0('mv ', rmdown_supporting2," ", html_extern_path))
           system(paste0('rm -rf ',tmpdir))
 
-          oncoEnrichR:::log4r_info(paste0("Output file: ",
+          log4r_info(paste0("Output file: ",
                                           file))
-          oncoEnrichR:::log4r_info("------")
+          log4r_info("------")
         }
       }
 
@@ -1394,9 +1401,9 @@ write <- function(report,
         intermediates_dir = output_directory,
         quiet = T)
 
-      oncoEnrichR:::log4r_info(paste0("Output file (self-contained HTML): ",
+      log4r_info(paste0("Output file (self-contained HTML): ",
                                       file))
-      oncoEnrichR:::log4r_info("------")
+      log4r_info("------")
     }
 
 
@@ -1404,8 +1411,8 @@ write <- function(report,
   if (format == "excel") {
 
     wb <- openxlsx::createWorkbook()
-    oncoEnrichR:::log4r_info("------")
-    oncoEnrichR:::log4r_info("Writing Excel workbook with report contents")
+    log4r_info("------")
+    log4r_info("Writing Excel workbook with report contents")
 
     table_style_index <- 15
     for(elem in c("query",
@@ -1453,7 +1460,7 @@ write <- function(report,
         next
       }
 
-      wb <- oncoEnrichR:::add_excel_sheet(
+      wb <- add_excel_sheet(
         report = report,
         workbook = wb,
         analysis_output = elem,
@@ -1471,12 +1478,12 @@ write <- function(report,
     }
 
     openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
-    oncoEnrichR:::log4r_info(paste0("Output file: ",file))
-    oncoEnrichR:::log4r_info("------")
+    log4r_info(paste0("Output file: ",file))
+    log4r_info("------")
   }
   else{
     if(format == "json"){
-      oncoEnrichR:::log4r_info("JSON output not yet implemented")
+      log4r_info("JSON output not yet implemented")
     }
   }
 }

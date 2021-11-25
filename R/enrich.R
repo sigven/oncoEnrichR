@@ -10,12 +10,12 @@ get_go_enrichment <- function(query_entrez,
                               simplify = F,
                               pool = F){
 
-  oncoEnrichR:::log4r_info(
+  log4r_info(
     paste0("Enrichment - GO: performing gene enrichment analysis of target set (subontology ",ontology,")"))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  log4r_info(paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  log4r_info(paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  log4r_info(paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
+  log4r_info(paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
 
 
   stopifnot(is.character(query_entrez))
@@ -25,8 +25,8 @@ get_go_enrichment <- function(query_entrez,
   stopifnot("symbol" %in% colnames(genedb) &
               "entrezgene" %in% colnames(genedb))
   if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb,entrezgene) %>%
-      dplyr::filter(!is.na(entrezgene)) %>%
+    bg <- dplyr::select(genedb, .data$entrezgene) %>%
+      dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
     background_entrez <- bg$entrezgene
   }else{
@@ -49,81 +49,94 @@ get_go_enrichment <- function(query_entrez,
                                      by="p.adjust", select_fun=min)
   }
 
-  df <- as.data.frame(head(ego,5000))
+  df <- as.data.frame(utils::head(ego, 5000))
   rownames(df) <- NULL
   if(ontology == "ALL" & "ONTOLOGY" %in% colnames(df)){
-    df <- df %>% dplyr::rename(db = ONTOLOGY)
+    df <- df %>% dplyr::rename(db = .data$ONTOLOGY)
   }else{
-    df <- df %>% dplyr::mutate(db = ontology)
+    df <- df %>% dplyr::mutate(db = .data$ontology)
   }
   if(nrow(df) > 0){
     df <- suppressWarnings(df %>%
-      dplyr::mutate(db = paste0("GO_",db)) %>%
-      dplyr::rename(go_id = ID, go_description = Description, count = Count,
-                    gene_ratio = GeneRatio, background_ratio = BgRatio,
-                    gene_id = geneID) %>%
+      dplyr::mutate(db = paste0("GO_", .data$db)) %>%
+      dplyr::rename(go_id = .data$ID,
+                    go_description = .data$Description,
+                    count = .data$Count,
+                    gene_ratio = .data$GeneRatio,
+                    background_ratio = .data$BgRatio,
+                    gene_id = .data$geneID) %>%
       dplyr::mutate(
         go_description_link =
           paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',
-                 go_id,'\' target=\'_blank\'>',go_description,'</a>')) %>%
-        tidyr::separate(gene_ratio,c('num_query_hits','num_query_all'),
+                 .data$go_id,'\' target=\'_blank\'>',
+                 .data$go_description,'</a>')) %>%
+        tidyr::separate(.data$gene_ratio,
+                        c('num_query_hits','num_query_all'),
                         sep='/',remove = F, convert = T) %>%
-      dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
-      dplyr::mutate(pvalue = as.numeric(pvalue)) %>%
+      dplyr::mutate(qvalue = as.numeric(.data$qvalue)) %>%
+      dplyr::mutate(pvalue = as.numeric(.data$pvalue)) %>%
       dplyr::mutate(
         qvalue =
-          dplyr::if_else(!is.na(qvalue),
-                         as.numeric(formatC(qvalue, format = "e",
+          dplyr::if_else(!is.na(.data$qvalue),
+                         as.numeric(formatC(.data$qvalue, format = "e",
                                             digits = 1)),
                          as.numeric(NA))) %>%
         dplyr::mutate(
           pvalue =
-            dplyr::if_else(!is.na(pvalue),
-                           as.numeric(formatC(pvalue, format = "e",
+            dplyr::if_else(!is.na(.data$pvalue),
+                           as.numeric(formatC(.data$pvalue, format = "e",
                                               digits = 1)),
                            as.numeric(NA))) %>%
-        tidyr::separate(background_ratio,
+        tidyr::separate(.data$background_ratio,
                         c('num_background_hits','num_background_all'),
                         sep='/',remove = F, convert = T) %>%
       dplyr::mutate(
         enrichment_factor =
-          round(as.numeric((num_query_hits/num_query_all) /
-                             (num_background_hits/num_background_all)),
+          round(as.numeric((.data$num_query_hits / .data$num_query_all) /
+                             (.data$num_background_hits / .data$num_background_all)),
                 digits = 1)) %>%
-        dplyr::select(-c(num_query_hits,num_query_all,
-                         num_background_hits,num_background_all))
+        dplyr::select(-c(.data$num_query_hits,
+                         .data$num_query_all,
+                         .data$num_background_hits,
+                         .data$num_background_all))
     )
 
     gene2id <- NULL
     if(!is.null(genedb)){
       gene2id <- as.data.frame(
         df %>%
-          dplyr::select(go_id,gene_id) %>%
-          tidyr::separate_rows(gene_id,sep="/") %>%
+          dplyr::select(.data$go_id, .data$gene_id) %>%
+          tidyr::separate_rows(.data$gene_id, sep="/") %>%
           dplyr::mutate(
-            gene_id = as.character(gene_id)) %>%
+            gene_id = as.character(.data$gene_id)) %>%
           dplyr::left_join(
-            dplyr::select(genedb,entrezgene,symbol),
+            dplyr::select(genedb,
+                          .data$entrezgene,
+                          .data$symbol),
             by=c("gene_id" = "entrezgene")) %>%
           dplyr::mutate(
             entrez_url =
               paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
-                     gene_id,"' target=\'blank_\'>",symbol,"</a>")) %>%
-          dplyr::group_by(go_id) %>%
+                     .data$gene_id, "' target=\'blank_\'>",
+                     .data$symbol, "</a>")) %>%
+          dplyr::group_by(.data$go_id) %>%
           dplyr::summarise(
             gene_symbol_link =
-              paste(unique(entrez_url),collapse=", "),
-            gene_symbol = paste(unique(symbol),collapse=", "))
+              paste(unique(.data$entrez_url), collapse=", "),
+            gene_symbol = paste(unique(.data$symbol), collapse=", "))
       )
     }
     if(!is.null(gene2id)){
       df <- df %>%
         dplyr::left_join(
-          dplyr::select(gene2id, go_id,
-                        gene_symbol_link,gene_symbol), by="go_id") %>%
-        dplyr::rename(exact_source = go_id, description = go_description,
-                      description_link = go_description_link) %>%
-        dplyr::mutate(standard_name = exact_source)
+          dplyr::select(.data$gene2id,
+                        .data$go_id,
+                        .data$gene_symbol_link,
+                        .data$gene_symbol), by="go_id") %>%
+        dplyr::rename(exact_source = .data$go_id,
+                      description = .data$go_description,
+                      description_link = .data$go_description_link) %>%
+        dplyr::mutate(standard_name = .data$exact_source)
     }
 
     if(!is.null(df)){
@@ -155,11 +168,11 @@ get_universal_enrichment <- function(query_entrez,
                                      TERM2SOURCE = NULL,
                                      dbsource = ""){
 
-  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
-  oncoEnrichR:::log4r_info(paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+  log4r_info(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
+  log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  log4r_info(paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
+  log4r_info(paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(genedb) | !is.data.frame(genedb))
@@ -167,8 +180,8 @@ get_universal_enrichment <- function(query_entrez,
   #stopifnot("standard_name" %in% colnames(TERM2SOURCE))
   stopifnot("symbol" %in% colnames(genedb) & "entrezgene" %in% colnames(genedb))
   if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb,entrezgene) %>%
-      dplyr::filter(!is.na(entrezgene)) %>%
+    bg <- dplyr::select(genedb, .data$entrezgene) %>%
+      dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
     background_entrez <- bg$entrezgene
   }else{
@@ -186,47 +199,48 @@ get_universal_enrichment <- function(query_entrez,
                                    TERM2NAME     = TERM2NAME)
 
 
-  df <- as.data.frame(head(enr,5000))
+  df <- as.data.frame(utils::head(enr,5000))
   rownames(df) <- NULL
   if(nrow(df) > 0){
     df <- suppressWarnings(df %>%
-      dplyr::rename(standard_name = ID,
-                    description = Description,
-                    count = Count,
-                    gene_ratio = GeneRatio,
-                    background_ratio = BgRatio,
-                    gene_id = geneID)
+      dplyr::rename(standard_name = .data$ID,
+                    description = .data$Description,
+                    count = .data$Count,
+                    gene_ratio = .data$GeneRatio,
+                    background_ratio = .data$BgRatio,
+                    gene_id = .data$geneID)
     )
 
     if (dbsource == "WikiPathways"){
       df <- df %>%
         dplyr::mutate(description_link = paste0(
           "<a href=\"https://www.wikipathways.org/index.php/Pathway:",
-          standard_name,"\" target='_blank'>",
-          description,"</a>"
+          .data$standard_name,"\" target='_blank'>",
+          .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "https://wikipathways.org",
-                      db = dbsource)
+                      db = .data$dbsource)
     }
     else if(dbsource == "KEGG"){
       df <- df %>%
         dplyr::mutate(description_link = paste0(
           "<a href=\"https://www.genome.jp/kegg-bin/show_pathway?",
-          stringr::str_replace(standard_name,"hsa","map"),"\" target='_blank'>",
-          description,"</a>"
+          stringr::str_replace(.data$standard_name,"hsa","map"),
+          "\" target='_blank'>",
+          .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "https://www.genome.jp/kegg/pathway.html",
-                      db = dbsource)
+                      db = .data$dbsource)
     }
     else if(dbsource == "NetPath"){
       df <- df %>%
         dplyr::mutate(description_link = paste0(
           "<a href=\"http://netpath.org/pathways?path_id=",
-          standard_name,"\" target='_blank'>",
-          description,"</a>"
+          .data$standard_name,"\" target='_blank'>",
+          .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "http://netpath.org",
-                      db = dbsource)
+                      db = .data$dbsource)
     }
     else{
       stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
@@ -234,73 +248,77 @@ get_universal_enrichment <- function(query_entrez,
       df <- df %>%
         dplyr::left_join(TERM2SOURCE, by="standard_name") %>%
         dplyr::mutate(description_link =
-                        dplyr::if_else(!is.na(external_url),
-                                       paste0("<a href='",external_url,
+                        dplyr::if_else(!is.na(.data$external_url),
+                                       paste0("<a href='",.data$external_url,
                                               "' target='_blank'>",
-                                              description,"</a>"),
-                                       description))
+                                              .data$description,"</a>"),
+                                       .data$description))
 
 
     }
     df <- suppressWarnings(df %>%
-      dplyr::mutate(qvalue = as.numeric(qvalue)) %>%
-      dplyr::mutate(pvalue = as.numeric(pvalue)) %>%
+      dplyr::mutate(qvalue = as.numeric(.data$qvalue)) %>%
+      dplyr::mutate(pvalue = as.numeric(.data$pvalue)) %>%
       dplyr::mutate(
         qvalue =
-          dplyr::if_else(!is.na(qvalue),
-                         as.numeric(formatC(qvalue, format = "e",
+          dplyr::if_else(!is.na(.data$qvalue),
+                         as.numeric(formatC(.data$qvalue, format = "e",
                                             digits = 1)),
                          as.numeric(NA))) %>%
       dplyr::mutate(
         pvalue =
-          dplyr::if_else(!is.na(pvalue),
-                         as.numeric(formatC(pvalue, format = "e",
+          dplyr::if_else(!is.na(.data$pvalue),
+                         as.numeric(formatC(.data$pvalue, format = "e",
                                             digits = 1)),
                          as.numeric(NA))) %>%
       tidyr::separate(
-        gene_ratio,c('num_query_hits','num_query_all'),
+        .data$gene_ratio,c('num_query_hits','num_query_all'),
         sep='/',remove = F, convert = T) %>%
       tidyr::separate(
-        background_ratio,c('num_background_hits','num_background_all'),
+        .data$background_ratio,c('num_background_hits','num_background_all'),
         sep='/',remove = F, convert = T) %>%
       dplyr::mutate(
         enrichment_factor =
           round(as.numeric((
-            num_query_hits/num_query_all) /
-              (num_background_hits/num_background_all)),digits = 1)) %>%
-      dplyr::select(-c(num_query_hits,num_query_all,
-                       num_background_hits,num_background_all)) %>%
+            .data$num_query_hits / .data$num_query_all) /
+              (.data$num_background_hits / .data$num_background_all)),
+            digits = 1)) %>%
+      dplyr::select(-c(.data$num_query_hits,
+                       .data$num_query_all,
+                       .data$num_background_hits,
+                       .data$num_background_all)) %>%
       dplyr::mutate(
-        db = dplyr::if_else(is.na(db) &
-                              nchar(dbsource) > 0,
-                            dbsource,as.character(db)))
+        db = dplyr::if_else(is.na(.data$db) &
+                              nchar(.data$dbsource) > 0,
+                            .data$dbsource,
+                            as.character(.data$db)))
     )
 
     gene2id <- NULL
     if(!is.null(genedb)){
       gene2id <- as.data.frame(
         df %>%
-          dplyr::select(standard_name,gene_id) %>%
-          tidyr::separate_rows(gene_id,sep="/") %>%
-          dplyr::mutate(gene_id = as.character(gene_id)) %>%
+          dplyr::select(.data$standard_name, .data$gene_id) %>%
+          tidyr::separate_rows(.data$gene_id, sep="/") %>%
+          dplyr::mutate(gene_id = as.character(.data$gene_id)) %>%
           dplyr::left_join(
-            dplyr::select(genedb,entrezgene,symbol),
+            dplyr::select(.data$genedb, .data$entrezgene, .data$symbol),
             by=c("gene_id" = "entrezgene")) %>%
           dplyr::mutate(
             entrez_url =
               paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
-                     gene_id,"' target=\'blank_\'>",symbol,"</a>")) %>%
-          dplyr::group_by(standard_name) %>%
+                     .data$gene_id,"' target=\'blank_\'>", .data$symbol,"</a>")) %>%
+          dplyr::group_by(.data$standard_name) %>%
           dplyr::summarise(
             gene_symbol_link =
-              paste(unique(entrez_url),collapse=", "),
-            gene_symbol = paste(unique(symbol),collapse=", "))
+              paste(unique(.data$entrez_url),collapse=", "),
+            gene_symbol = paste(unique(.data$symbol),collapse=", "))
       )
     }
     if(!is.null(gene2id)){
       df <- df %>%
-        dplyr::left_join(dplyr::select(gene2id,standard_name,
-                                       gene_symbol_link,gene_symbol),
+        dplyr::left_join(dplyr::select(.data$gene2id, .data$standard_name,
+                                       .data$gene_symbol_link, .data$gene_symbol),
                          by="standard_name")
     }
     if(!is.null(df)){

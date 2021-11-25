@@ -24,18 +24,20 @@ validate_query_genes <- function(qgenes,
   stopifnot(!is.null(ensembl_mrna_xref))
   stopifnot(!is.null(refseq_protein_xref))
   stopifnot(!is.null(ensembl_protein_xref))
-  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
-  oncoEnrichR:::validate_db_df(uniprot_xref, dbtype = "uniprot_xref")
-  oncoEnrichR:::validate_db_df(refseq_mrna_xref, dbtype = "refseq_mrna_xref")
-  oncoEnrichR:::validate_db_df(ensembl_mrna_xref, dbtype = "ensembl_mrna_xref")
-  oncoEnrichR:::validate_db_df(refseq_protein_xref, dbtype = "refseq_protein_xref")
-  oncoEnrichR:::validate_db_df(ensembl_protein_xref, dbtype = "ensembl_protein_xref")
+  validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(uniprot_xref, dbtype = "uniprot_xref")
+  validate_db_df(refseq_mrna_xref, dbtype = "refseq_mrna_xref")
+  validate_db_df(ensembl_mrna_xref, dbtype = "ensembl_mrna_xref")
+  validate_db_df(refseq_protein_xref, dbtype = "refseq_protein_xref")
+  validate_db_df(ensembl_protein_xref, dbtype = "ensembl_protein_xref")
 
 
   target_genes <- data.frame('qid' = unique(qgenes), stringsAsFactors = F)
   gdb <- genedb %>%
-    dplyr::select(symbol, entrezgene,
-                  name, ensembl_gene_id) %>%
+    dplyr::select(.data$symbol,
+                  .data$entrezgene,
+                  .data$name,
+                  .data$ensembl_gene_id) %>%
     dplyr::distinct()
 
   queryset <- list()
@@ -48,14 +50,14 @@ validate_query_genes <- function(qgenes,
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
                        by = c("qid" = "entrezgene")) %>%
-      dplyr::mutate(entrezgene = qid) %>%
+      dplyr::mutate(entrezgene = .data$qid) %>%
       dplyr::distinct()
   }
   if(q_id_type == 'symbol'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
                        by = c("qid" = "symbol")) %>%
-      dplyr::mutate(symbol = qid) %>%
+      dplyr::mutate(symbol = .data$qid) %>%
       dplyr::distinct()
 
   }
@@ -63,14 +65,14 @@ validate_query_genes <- function(qgenes,
     target_genes <- as.data.frame(target_genes %>%
       dplyr::left_join(uniprot_xref,
                        by = c("qid" = "uniprot_acc")) %>%
-      dplyr::mutate(uniprot_acc = qid) %>%
+      dplyr::mutate(uniprot_acc = .data$qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
       dplyr::distinct() %>%
-      dplyr::group_by(symbol, entrezgene,
-                      ensembl_gene_id,
-                      name) %>%
-      dplyr::summarise(uniprot_acc = paste(uniprot_acc, collapse=","),
-                       qid = paste(qid, collapse=","),
+      dplyr::group_by(.data$symbol, .data$entrezgene,
+                      .data$ensembl_gene_id,
+                      .data$name) %>%
+      dplyr::summarise(uniprot_acc = paste(.data$uniprot_acc, collapse=","),
+                       qid = paste(.data$qid, collapse=","),
                        .groups = "drop")
     )
 
@@ -79,15 +81,15 @@ validate_query_genes <- function(qgenes,
     target_genes <- as.data.frame(target_genes %>%
       dplyr::left_join(refseq_mrna_xref,
                        by = c("qid" = "refseq_mrna")) %>%
-      dplyr::mutate(refseq_mrna = qid) %>%
+      dplyr::mutate(refseq_mrna = .data$qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
       dplyr::distinct() %>%
-      dplyr::group_by(symbol, entrezgene,
-                      ensembl_gene_id,
-                      name) %>%
+      dplyr::group_by(.data$symbol, .data$entrezgene,
+                      .data$ensembl_gene_id,
+                      .data$name) %>%
       dplyr::summarise(refseq_mrna =
-                         paste(refseq_mrna, collapse=","),
-                       qid = paste(qid, collapse=","),
+                         paste(.data$refseq_mrna, collapse=","),
+                       qid = paste(.data$qid, collapse=","),
                        .groups = "drop")
     )
   }
@@ -95,15 +97,15 @@ validate_query_genes <- function(qgenes,
     target_genes <- as.data.frame(target_genes %>%
       dplyr::left_join(ensembl_mrna_xref,
                        by = c("qid" = "ensembl_transcript_id")) %>%
-      dplyr::mutate(ensembl_transcript_id = qid) %>%
+      dplyr::mutate(ensembl_transcript_id = .data$qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
       dplyr::distinct() %>%
-      dplyr::group_by(symbol, entrezgene,
-                      ensembl_gene_id,
-                      name) %>%
+      dplyr::group_by(.data$symbol, .data$entrezgene,
+                      .data$ensembl_gene_id,
+                      .data$name) %>%
       dplyr::summarise(ensembl_transcript_id =
-                         paste(ensembl_transcript_id, collapse=","),
-                       qid = paste(qid, collapse=","),
+                         paste(.data$ensembl_transcript_id, collapse=","),
+                       qid = paste(.data$qid, collapse=","),
                        .groups = "drop")
     )
   }
@@ -113,15 +115,15 @@ validate_query_genes <- function(qgenes,
       target_genes %>%
         dplyr::left_join(refseq_protein_xref,
                          by = c("qid" = "refseq_peptide")) %>%
-        dplyr::mutate(refseq_peptide = qid) %>%
+        dplyr::mutate(refseq_peptide = .data$qid) %>%
         dplyr::left_join(gdb, by = c("symbol")) %>%
         dplyr::distinct() %>%
-        dplyr::group_by(symbol, entrezgene,
-                        ensembl_gene_id,
-                        name) %>%
+        dplyr::group_by(.data$symbol, .data$entrezgene,
+                        .data$ensembl_gene_id,
+                        .data$name) %>%
         dplyr::summarise(refseq_peptide =
-                           paste(refseq_peptide, collapse=","),
-                         qid = paste(qid, collapse=","),
+                           paste(.data$refseq_peptide, collapse=","),
+                         qid = paste(.data$qid, collapse=","),
                          .groups = "drop")
     )
   }
@@ -131,15 +133,15 @@ validate_query_genes <- function(qgenes,
       target_genes %>%
         dplyr::left_join(ensembl_protein_xref,
                          by = c("qid" = "ensembl_protein_id")) %>%
-        dplyr::mutate(ensembl_protein_id = qid) %>%
+        dplyr::mutate(ensembl_protein_id = .data$qid) %>%
         dplyr::left_join(gdb, by = c("symbol")) %>%
         dplyr::distinct() %>%
-        dplyr::group_by(symbol, entrezgene,
-                        ensembl_gene_id,
-                        name) %>%
+        dplyr::group_by(.data$symbol, .data$entrezgene,
+                        .data$ensembl_gene_id,
+                        .data$name) %>%
         dplyr::summarise(ensembl_protein_id =
-                           paste(ensembl_protein_id, collapse=","),
-                         qid = paste(qid, collapse=","),
+                           paste(.data$ensembl_protein_id, collapse=","),
+                         qid = paste(.data$qid, collapse=","),
                          .groups = "drop")
     )
   }
@@ -148,32 +150,32 @@ validate_query_genes <- function(qgenes,
   if(q_id_type == 'ensembl_gene'){
     target_genes <- target_genes %>%
       dplyr::left_join(gdb, by = c("qid" = "ensembl_gene_id")) %>%
-      dplyr::mutate(ensembl_gene_id = qid) %>%
+      dplyr::mutate(ensembl_gene_id = .data$qid) %>%
       dplyr::distinct()
   }
 
   queryset[['found']] <- target_genes %>%
-    dplyr::filter(!is.na(symbol) &
-                    !is.na(entrezgene) &
-                    !is.na(ensembl_gene_id)) %>%
+    dplyr::filter(!is.na(.data$symbol) &
+                    !is.na(.data$entrezgene) &
+                    !is.na(.data$ensembl_gene_id)) %>%
     dplyr::mutate(alias = F)
 
   queryset[['not_found']] <- target_genes %>%
-    dplyr::filter(is.na(symbol) |
-                    is.na(entrezgene) |
-                    is.na(ensembl_gene_id))
+    dplyr::filter(is.na(.data$symbol) |
+                    is.na(.data$entrezgene) |
+                    is.na(.data$ensembl_gene_id))
 
   if(nrow(queryset[['not_found']]) > 0){
     if(ignore_id_err == T){
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        oncoEnrichR:::log4r_info(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        oncoEnrichR:::log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
-            dplyr::select(queryset[['not_found']], qid),
+            dplyr::select(queryset[['not_found']], .data$qid),
             oncoEnrichR::genedb[['alias2primary']],
             by = c("qid" = "alias"))
 
@@ -196,7 +198,7 @@ validate_query_genes <- function(qgenes,
               dplyr::distinct() %>%
               dplyr::mutate(alias = T)
 
-            oncoEnrichR:::log4r_info(
+            log4r_info(
               paste0("Mapped query identifiers as gene aliases ",
                      paste0(queryset[['not_found']]$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
@@ -207,7 +209,7 @@ validate_query_genes <- function(qgenes,
               dplyr::anti_join(query_as_alias, by = "qid")
 
             if(nrow(queryset[['not_found']]) > 0){
-              oncoEnrichR:::log4r_warn(
+              log4r_warn(
                 paste0("Query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
@@ -216,14 +218,14 @@ validate_query_genes <- function(qgenes,
             }
           }
         }else{
-          oncoEnrichR:::log4r_warn(
+          log4r_warn(
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
         }
 
       }else{
-        oncoEnrichR:::log4r_warn(paste0("Query gene identifiers NOT found: ",
+        log4r_warn(paste0("Query gene identifiers NOT found: ",
                                  paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
@@ -232,12 +234,12 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        oncoEnrichR:::log4r_warn(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        oncoEnrichR:::log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
-            dplyr::select(queryset[['not_found']], qid),
+            dplyr::select(queryset[['not_found']], .data$qid),
             oncoEnrichR::genedb[['alias2primary']],
             by = c("qid" = "alias"))
 
@@ -249,7 +251,7 @@ validate_query_genes <- function(qgenes,
           dplyr::mutate(alias = T)
 
 
-          oncoEnrichR:::log4r_info(
+          log4r_info(
             paste0("Mapped query identifiers as gene aliases ",
                    paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$qid,collapse=", ")))
@@ -260,7 +262,7 @@ validate_query_genes <- function(qgenes,
             dplyr::anti_join(query_as_alias, by = "qid")
 
           if(nrow(queryset[['not_found']]) > 0){
-            oncoEnrichR:::log4r_info(
+            log4r_info(
               paste0("ERROR: Query gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
                      " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
@@ -269,31 +271,31 @@ validate_query_genes <- function(qgenes,
 
           }
         }else{
-          oncoEnrichR:::log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
+          log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
 
         }
       }
       else{
-        oncoEnrichR:::log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
+        log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
       }
     }
   }
   if(nrow(queryset[['found']]) == length(qgenes)){
-    oncoEnrichR:::log4r_info(paste0('SUCCESS: Identified all genes (n = ',
+    log4r_info(paste0('SUCCESS: Identified all genes (n = ',
                              nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
     if(nrow(queryset[['found']]) == 0){
-      oncoEnrichR:::log4r_info(paste0(
+      log4r_info(paste0(
         "ERROR: NO query gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?"),"\n")
       queryset[['match_status']] <- "imperfect_stop"
     }else{
-      oncoEnrichR:::log4r_info(
+      log4r_info(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ',
                'target set (n = ',
@@ -307,21 +309,21 @@ validate_query_genes <- function(qgenes,
       dplyr::mutate(status = 'found') %>%
       dplyr::mutate(
         status = dplyr::if_else(
-          status == "found" & alias == T,
+          .data$status == "found" & .data$alias == T,
           as.character("found_as_alias"),
-          as.character(status))
+          as.character(.data$status))
       ) %>%
-      dplyr::arrange(desc(status), symbol) %>%
+      dplyr::arrange(dplyr::desc(.data$status), .data$symbol) %>%
       dplyr::mutate(
         genename = paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
-                          entrezgene,"' target='_blank'>",name,"</a>")
+                          .data$entrezgene,"' target='_blank'>",.data$name,"</a>")
       )
   }
   if(nrow(queryset[['not_found']]) > 0){
     queryset[['not_found']] <- queryset[['not_found']] %>%
       dplyr::mutate(status = 'not_found') %>%
       dplyr::mutate(genename = NA) %>%
-      dplyr::arrange(qid)
+      dplyr::arrange(.data$qid)
   }
 
   if(nrow(queryset[['found']]) > 0 | nrow(queryset[['not_found']]) > 0){
@@ -329,14 +331,14 @@ validate_query_genes <- function(qgenes,
     queryset[['all']] <- as.data.frame(
       queryset[['not_found']] %>%
       dplyr::bind_rows(queryset[['found']]) %>%
-      dplyr::rename(query_id = qid) %>%
-      dplyr::select(query_id, status, symbol,
-                    genename) %>%
+      dplyr::rename(query_id = .data$qid) %>%
+      dplyr::select(.data$query_id, .data$status, .data$symbol,
+                    .data$genename) %>%
       dplyr::rowwise() %>%
         dplyr::mutate(
-          symbol = dplyr::if_else(status == "not_found",
+          symbol = dplyr::if_else(.data$status == "not_found",
                                   as.character(NA),
-                                  as.character(symbol)))
+                                  as.character(.data$symbol)))
     )
   }
 
@@ -347,6 +349,13 @@ validate_query_genes <- function(qgenes,
   return(queryset)
 
 }
+
+#' Function that validates a particular db object (data.frame) in oncoEnrichR
+#'
+#' @param df data.frame with annotation data for oncoEnrichR
+#' @param dbtype type of oncoEnrichR datasource
+#'
+#'
 
 validate_db_df <- function(df, dbtype = "genedb"){
 
@@ -374,7 +383,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
                "ppi_edges",
                "pdf")
   if(!(dbtype %in% dbtypes)){
-    rlogging::stop(
+    stop(
       paste0("dbtype '",dbtype,
              "' not recognized, possible values are: ",
              paste(sort(dbtypes), collapse=", ")))
@@ -557,7 +566,7 @@ add_excel_sheet <- function(
             genename =
               stringr::str_squish(
                 stringr::str_trim(
-                  textclean::replace_html(genename)
+                  textclean::replace_html(.data$genename)
                 )
               )
           )
@@ -572,19 +581,19 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = "GO (MsigDB 7.4)/NCBI Gene/UniProt (2021_02)",
             version = NA) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) %>%
           dplyr::mutate(
             genename =
               stringr::str_trim(
-                textclean::replace_html(genename)
+                textclean::replace_html(.data$genename)
               )
           ) %>%
           dplyr::mutate(
             gene_summary =
               stringr::str_squish(
                 stringr::str_trim(
-                  textclean::replace_html(gene_summary)
+                  textclean::replace_html(.data$gene_summary)
                 )
               )
           )
@@ -599,22 +608,22 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$opentargets$name,
             version = report$config$resources$opentargets$version) %>%
-          dplyr::select(-c(cancer_association_links,
-                           disease_association_links,
-                           cancergene_evidence)) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(-c(.data$cancer_association_links,
+                           .data$disease_association_links,
+                           .data$cancergene_evidence)) %>%
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) %>%
           dplyr::mutate(
             genename =
               stringr::str_trim(
-                textclean::replace_html(genename)
+                textclean::replace_html(.data$genename)
               )
           ) %>%
           dplyr::mutate(
             gene_summary =
               stringr::str_squish(
                 stringr::str_trim(
-                  textclean::replace_html(gene_summary)
+                  textclean::replace_html(.data$gene_summary)
                 )
               )
           )
@@ -630,11 +639,11 @@ add_excel_sheet <- function(
             symbol =
               stringr::str_squish(
                 stringr::str_trim(
-                  textclean::replace_html(symbol)
+                  textclean::replace_html(.data$symbol)
                 )
               )
           ) %>%
-          dplyr::select(-literature_support)
+          dplyr::select(-.data$literature_support)
       }
     }
   }
@@ -647,12 +656,12 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$opentargets$name,
             version = report$config$resources$opentargets$version) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) %>%
           dplyr::mutate(
             genename =
               stringr::str_trim(
-                textclean::replace_html(genename)
+                textclean::replace_html(.data$genename)
               )
           ) %>%
           dplyr::mutate(
@@ -660,7 +669,7 @@ add_excel_sheet <- function(
               stringr::str_replace_all(
                 stringr::str_squish(
                   stringr::str_trim(
-                    textclean::replace_html(targeted_cancer_drugs_lp)
+                    textclean::replace_html(.data$targeted_cancer_drugs_lp)
                   )
                 ),
                 " , ",
@@ -672,7 +681,7 @@ add_excel_sheet <- function(
               stringr::str_replace_all(
                 stringr::str_squish(
                   stringr::str_trim(
-                    textclean::replace_html(targeted_cancer_drugs_ep)
+                    textclean::replace_html(.data$targeted_cancer_drugs_ep)
                   )
                 ),
                 " , ",
@@ -696,22 +705,22 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources$opentargets$name,
               version = report$config$resources$opentargets$version) %>%
-            dplyr::rename(tractability_category = SM_tractability_category,
-                          tractability_support = SM_tractability_support) %>%
+            dplyr::rename(tractability_category = .data$SM_tractability_category,
+                          tractability_support = .data$SM_tractability_support) %>%
             dplyr::mutate(tractability_drugtype = "Small molecules/compounds") %>%
-            dplyr::select(annotation_source, version,
-                          tractability_drugtype,
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$tractability_drugtype,
                           dplyr::everything()) %>%
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
-                  textclean::replace_html(symbol)
+                  textclean::replace_html(.data$symbol)
                 )
             ) %>%
             dplyr::mutate(
               tractability_support =
                 stringr::str_trim(
-                  textclean::replace_html(tractability_support)
+                  textclean::replace_html(.data$tractability_support)
                 )
             )
 
@@ -724,22 +733,22 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources$opentargets$name,
               version = report$config$resources$opentargets$version) %>%
-            dplyr::rename(tractability_category = AB_tractability_category,
-                          tractability_support = AB_tractability_support) %>%
+            dplyr::rename(tractability_category = .data$AB_tractability_category,
+                          tractability_support = .data$AB_tractability_support) %>%
             dplyr::mutate(tractability_drugtype = "Antibody") %>%
-            dplyr::select(annotation_source, version,
-                          tractability_drugtype,
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$tractability_drugtype,
                           dplyr::everything()) %>%
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
-                  textclean::replace_html(symbol)
+                  textclean::replace_html(.data$symbol)
                 )
             ) %>%
             dplyr::mutate(
               tractability_support =
                 stringr::str_trim(
-                  textclean::replace_html(tractability_support)
+                  textclean::replace_html(.data$tractability_support)
                 )
             )
 
@@ -761,12 +770,12 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources[['cellchatdb']]$name,
               version = report$config$resources[['cellchatdb']]$version) %>%
-            dplyr::select(annotation_source, version,
+            dplyr::select(.data$annotation_source, .data$version,
                           dplyr::everything()) %>%
             dplyr::mutate(
               literature_support =
                 stringr::str_trim(
-                  textclean::replace_html(literature_support)
+                  textclean::replace_html(.data$literature_support)
                 )
             )
 
@@ -791,14 +800,14 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources[[c]]$name,
               version = report$config$resources[[c]]$version) %>%
-            dplyr::select(annotation_source, version,
+            dplyr::select(.data$annotation_source, .data$version,
                           dplyr::everything()) %>%
             dplyr::mutate(
               complex_genes =
                 stringr::str_replace_all(
                   stringr::str_squish(
                     stringr::str_trim(
-                      textclean::replace_html(complex_genes)
+                      textclean::replace_html(.data$complex_genes)
                     )
                   ),
                   " , ",
@@ -818,13 +827,13 @@ add_excel_sheet <- function(
         dplyr::mutate(
           literature =
             stringr::str_trim(
-              textclean::replace_html(literature)
+              textclean::replace_html(.data$literature)
             )
         ) %>%
         dplyr::mutate(
           complex_name =
             stringr::str_trim(
-              textclean::replace_html(complex_name)
+              textclean::replace_html(.data$complex_name)
             )
         )
     }
@@ -839,12 +848,13 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$hpa$name,
             version = report$config$resources$hpa$version) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(.data$annotation_source,
+                        .data$version,
                         dplyr::everything()) %>%
           dplyr::mutate(
             tumor_types =
               stringr::str_trim(
-                textclean::replace_html(tumor_types)
+                textclean::replace_html(.data$tumor_types)
               )
           )
       }
@@ -860,8 +870,8 @@ add_excel_sheet <- function(
               annotation_source = "Genetic determinants of survival in cancer (Smith et al., bioRxiv, 2021)",
               version = "v2") %>%
             dplyr::mutate(feature_type = t) %>%
-            dplyr::arrange(feature_type, z_score) %>%
-            dplyr::select(annotation_source, version,
+            dplyr::arrange(.data$feature_type, .data$z_score) %>%
+            dplyr::select(.data$annotation_source, .data$version,
                           dplyr::everything())
 
           target_df <- target_df %>%
@@ -881,12 +891,12 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$tcga$name,
             version = report$config$resources$tcga$version) %>%
-          dplyr::rename(tcga_cohort = tumor) %>%
-          dplyr::select(-entrezgene) %>%
-          dplyr::rename(partner_oncogene = oncogene,
-                        partner_tumor_suppressor = tumor_suppressor,
-                        partner_cancer_driver = cancer_driver) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::rename(tcga_cohort = .data$tumor) %>%
+          dplyr::select(-.data$entrezgene) %>%
+          dplyr::rename(partner_oncogene = .data$oncogene,
+                        partner_tumor_suppressor = .data$tumor_suppressor,
+                        partner_cancer_driver = .data$cancer_driver) %>%
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
     }
@@ -904,24 +914,25 @@ add_excel_sheet <- function(
               dorothea_collection = c,
               annotation_source = report$config$resources$dorothea$name,
               version = report$config$resources$dorothea$version) %>%
-            dplyr::select(annotation_source, version, dorothea_collection,
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$dorothea_collection,
                           dplyr::everything()) %>%
             dplyr::mutate(
               target_name =
                 stringr::str_trim(
-                  textclean::replace_html(target_name)
+                  textclean::replace_html(.data$target_name)
                 )
             ) %>%
             dplyr::mutate(
               regulator_name =
                 stringr::str_trim(
-                  textclean::replace_html(regulator_name)
+                  textclean::replace_html(.data$regulator_name)
                 )
             ) %>%
             dplyr::mutate(
               literature_support =
                 stringr::str_trim(
-                  textclean::replace_html(literature_support)
+                  textclean::replace_html(.data$literature_support)
                 )
             )
 
@@ -947,12 +958,12 @@ add_excel_sheet <- function(
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
-                  textclean::replace_html(gene)
+                  textclean::replace_html(.data$gene)
                 )
             ) %>%
-            dplyr::select(-gene) %>%
-            dplyr::select(annotation_source, version,
-                          symbol, dplyr::everything())
+            dplyr::select(-.data$gene) %>%
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$symbol, dplyr::everything())
 
           target_df <- target_df %>%
             dplyr::bind_rows(df)
@@ -969,19 +980,19 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$comppi$name,
             version = report$config$resources$comppi$version) %>%
-          dplyr::select(-c(ggcompartment)) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(-c(.data$ggcompartment)) %>%
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) %>%
           dplyr::mutate(
             compartment =
               stringr::str_trim(
-                textclean::replace_html(compartment)
+                textclean::replace_html(.data$compartment)
               )
           ) %>%
           dplyr::mutate(
             genename =
               stringr::str_trim(
-                textclean::replace_html(genename)
+                textclean::replace_html(.data$genename)
               )
           )
       }
@@ -998,13 +1009,13 @@ add_excel_sheet <- function(
               dplyr::mutate(
                 annotation_source = report$config$resources[[e]]$name,
                 version = report$config$resources[[e]]$version) %>%
-              dplyr::rename(category = db,
-                            entrezgene = gene_id)
+              dplyr::rename(category = .data$db,
+                            entrezgene = .data$gene_id)
           ) %>%
-          dplyr::select(-c(gene_symbol_link,
-                           description_link)) %>%
-          dplyr::select(annotation_source, version,
-                        category, description,
+          dplyr::select(-c(.data$gene_symbol_link,
+                           .data$description_link)) %>%
+          dplyr::select(.data$annotation_source, .data$version,
+                        .data$category, .data$description,
                         dplyr::everything())
       }
     }
@@ -1020,8 +1031,8 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
             version = report$config$resources$projectscore$version) %>%
-          dplyr::select(-c(symbol_link_ps, cmp_link)) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(-c(.data$symbol_link_ps, .data$cmp_link)) %>%
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
     }
@@ -1034,7 +1045,7 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
             version = report$config$resources$projectscore$version) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
     }
@@ -1046,33 +1057,33 @@ add_excel_sheet <- function(
     if(is.data.frame(report$data$ppi$complete_network$edges)){
       if(NROW(report$data$ppi$complete_network$edges) > 0){
         target_df <- report$data$ppi$complete_network$edges %>%
-          dplyr::rename(symbol_A = preferredName_A,
-                        symbol_B = preferredName_B,
-                        is_target_A = query_node_A,
-                        is_target_B = query_node_B,
-                        string_score = score,
-                        string_nscore = nscore,
-                        string_fscore = fscore,
-                        string_pscore = pscore,
-                        string_ascore = ascore,
-                        string_escore = escore,
-                        string_dscore = dscore,
-                        string_tscore = tscore
+          dplyr::rename(symbol_A = .data$preferredName_A,
+                        symbol_B = .data$preferredName_B,
+                        is_target_A = .data$query_node_A,
+                        is_target_B = .data$query_node_B,
+                        string_score = .data$score,
+                        string_nscore = .data$nscore,
+                        string_fscore = .data$fscore,
+                        string_pscore = .data$pscore,
+                        string_ascore = .data$ascore,
+                        string_escore = .data$escore,
+                        string_dscore = .data$dscore,
+                        string_tscore = .data$tscore
                         ) %>%
-          dplyr::select(symbol_A, symbol_B,
-                        is_target_A, is_target_B,
-                        string_score,
-                        string_nscore,
-                        string_fscore,
-                        string_pscore,
-                        string_ascore,
-                        string_escore,
-                        string_dscore,
-                        string_tscore) %>%
+          dplyr::select(.data$symbol_A, .data$symbol_B,
+                        .data$is_target_A, .data$is_target_B,
+                        .data$string_score,
+                        .data$string_nscore,
+                        .data$string_fscore,
+                        .data$string_pscore,
+                        .data$string_ascore,
+                        .data$string_escore,
+                        .data$string_dscore,
+                        .data$string_tscore) %>%
           dplyr::mutate(
             annotation_source = report$config$resources$string$name,
             version = report$config$resources$string$version) %>%
-          dplyr::select(annotation_source, version,
+          dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
     }
@@ -1092,9 +1103,11 @@ add_excel_sheet <- function(
                 annotation_source = report$config$resources$gtex$name,
                 version = report$config$resources$gtex$version,
                 category = stringr::str_replace(e,"_enrichment","")) %>%
-              dplyr::select(annotation_source, version,
-                            category, dplyr::everything()) %>%
-              dplyr::rename(tissue_or_celltype = tissue)
+              dplyr::select(.data$annotation_source,
+                            .data$version,
+                            .data$category,
+                            dplyr::everything()) %>%
+              dplyr::rename(tissue_or_celltype = .data$tissue)
 
           }else{
             df <-
@@ -1103,16 +1116,16 @@ add_excel_sheet <- function(
                 annotation_source = report$config$resources$hpa$name,
                 version = report$config$resources$hpa$version,
                 category = stringr::str_replace(e,"_enrichment","")) %>%
-              dplyr::select(annotation_source, version,
-                            category, dplyr::everything()) %>%
-              dplyr::rename(tissue_or_celltype = cell_type)
+              dplyr::select(.data$annotation_source, .data$version,
+                            .data$category, dplyr::everything()) %>%
+              dplyr::rename(tissue_or_celltype = .data$cell_type)
           }
           target_df <- target_df %>%
             dplyr::bind_rows(df) %>%
             dplyr::mutate(
               genename =
                 stringr::str_trim(
-                  textclean::replace_html(genename)
+                  textclean::replace_html(.data$genename)
                 )
             )
         }
@@ -1149,15 +1162,15 @@ add_excel_sheet <- function(
 
 
 
-log4r_info <- function(msg) {
+log4r_info <- function(log4r_logger, msg) {
   log4r::info(log4r_logger, msg)
 }
 
-log4r_debug <- function(msg) {
+log4r_debug <- function(log4r_logger, msg) {
   log4r::debug(log4r_logger, msg)
 }
 
-log4r_warn <- function(msg) {
+log4r_warn <- function(log4r_logger, msg) {
   log4r::warn(log4r_logger, msg)
 }
 
@@ -1167,3 +1180,32 @@ file_is_writable <- function(path) {
     file.exists(path) &&
     assertthat::is.writeable(path)
 }
+
+
+#' Pipe operator
+#'
+#' See \code{magrittr::\link[magrittr]{\%>\%}} for details.
+#'
+#' @name %>%
+#' @rdname pipe
+#' @keywords internal
+#' @importFrom magrittr %>%
+NULL
+
+#' Tidy eval helpers
+#'
+#' <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html>
+#'
+#' @name tidyeval
+#' @keywords internal
+#' @importFrom rlang .data :=
+NULL
+
+#' GSEAbase imports
+#'
+#' @name gseabase
+#' @keywords internal
+#' @importFrom GSEABase GeneSet SymbolIdentifier ENSEMBLIdentifier EntrezIdentifier
+NULL
+
+utils::globalVariables(c("."))

@@ -10,14 +10,14 @@ gene_tissue_cell_spec_cat <-
       etype <- "cell type"
       edb <- "HPA"
     }
-    oncoEnrichR:::log4r_info(
+    log4r_info(
       paste0("Retrieving ", etype,
              " specificity (", edb,
              ") category of target genes")
     )
 
   stopifnot(!is.null(genedb))
-  oncoEnrichR:::validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(genedb, dbtype = "genedb")
   stopifnot(resolution == "tissue" | resolution == "single_cell")
   stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
   stopifnot(is.character(qgenes))
@@ -55,15 +55,15 @@ gene_tissue_cell_spec_cat <-
   specificity_groups_target <- as.data.frame(
     oncoEnrichR::tissue_cell_expr[[source]][['te_df']] %>%
       dplyr::inner_join(
-        dplyr::select(query_genes_df, symbol,
-                      ensembl_gene_id, genename),
+        dplyr::select(query_genes_df, .data$symbol,
+                      .data$ensembl_gene_id, .data$genename),
         by = "ensembl_gene_id") %>%
-      dplyr::group_by(category) %>%
+      dplyr::group_by(.data$category) %>%
       dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-      dplyr::mutate(tot = sum(n)) %>%
-      dplyr::mutate(pct = round((n / tot) * 100, digits = 2)) %>%
+      dplyr::mutate(tot = sum(.data$n)) %>%
+      dplyr::mutate(pct = round((.data$n / .data$tot) * 100, digits = 2)) %>%
       dplyr::mutate(
-        group = paste0("Target set (n = ", tot,")"
+        group = paste0("Target set (n = ", .data$tot,")"
           )
       )
   )
@@ -90,13 +90,13 @@ gene_tissue_cell_spec_cat <-
 
   specificity_groups_all <- as.data.frame(
     oncoEnrichR::tissue_cell_expr[[source]][['te_df']] %>%
-      dplyr::group_by(category) %>%
+      dplyr::group_by(.data$category) %>%
       dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-      dplyr::mutate(tot = sum(n)) %>%
-      dplyr::mutate(pct = round((n / tot) * 100, digits = 2)) %>%
+      dplyr::mutate(tot = sum(.data$n)) %>%
+      dplyr::mutate(pct = round((.data$n / .data$tot) * 100, digits = 2)) %>%
       dplyr::mutate(group =
                       paste0("All HPA proteins (n = ",
-                             formatC(tot, format="f",
+                             formatC(.data$tot, format="f",
                                      big.mark = ",",
                                      digits=0),")"
                              )
@@ -112,29 +112,29 @@ gene_tissue_cell_spec_cat <-
   if(resolution == "tissue"){
     exp_dist_df <- as.data.frame(
       oncoEnrichR::tissue_cell_expr[[resolution]]$expr_df %>%
-        dplyr::mutate(ensembl_gene_id = rownames(.)) %>%
-        tidyr::pivot_longer(cols = !starts_with("ensembl"),
+        dplyr::mutate(ensembl_gene_id = rownames(.data)) %>%
+        tidyr::pivot_longer(cols = !tidyr::starts_with("ensembl"),
                      names_to = "tissue",
                      values_to = "NX") %>%
         dplyr::inner_join(
-          dplyr::select(query_genes_df, symbol,
-                        ensembl_gene_id),
+          dplyr::select(query_genes_df, .data$symbol,
+                        .data$ensembl_gene_id),
           by = "ensembl_gene_id") %>%
-        dplyr::mutate(exp = round(log2(NX), digits = 3)) %>%
+        dplyr::mutate(exp = round(log2(.data$NX), digits = 3)) %>%
         dplyr::mutate(exp_measure = "log2(NX)")
       )
   }else{
     exp_dist_df <- as.data.frame(
       oncoEnrichR::tissue_cell_expr[[resolution]]$expr_df %>%
-        dplyr::mutate(ensembl_gene_id = rownames(.)) %>%
-        tidyr::pivot_longer(cols = !starts_with("ensembl"),
+        dplyr::mutate(ensembl_gene_id = rownames(.data)) %>%
+        tidyr::pivot_longer(cols = !tidyr::starts_with("ensembl"),
                      names_to = "cell_type",
                      values_to = "TPM") %>%
         dplyr::inner_join(
-          dplyr::select(query_genes_df, symbol,
-                        ensembl_gene_id),
+          dplyr::select(query_genes_df, .data$symbol,
+                        .data$ensembl_gene_id),
           by = "ensembl_gene_id") %>%
-        dplyr::mutate(exp = round(log2(TPM), digits = 3)) %>%
+        dplyr::mutate(exp = round(log2(.data$TPM), digits = 3)) %>%
         dplyr::mutate(exp_measure = "log2(TPM)")
     )
   }
@@ -157,7 +157,7 @@ gene_tissue_cell_enrichment <-
       etype <- "cell types"
       edb <- "HPA"
     }
-    oncoEnrichR:::log4r_info(
+    log4r_info(
       paste0("Estimating enrichment of ", etype,
              " (", edb,
              ") in target set with TissueEnrich"))
@@ -174,34 +174,37 @@ gene_tissue_cell_enrichment <-
 
     df <- data.frame('entrezgene' = as.character(qgenes_entrez),
                      stringsAsFactors = F) %>%
-      dplyr::left_join(dplyr::select(genedb, entrezgene, cancer_max_rank),
+      dplyr::left_join(dplyr::select(genedb, .data$entrezgene,
+                                     .data$cancer_max_rank),
                        by = "entrezgene")
 
     bg <- oncoEnrichR::tissue_cell_expr[[resolution]][['te_df']]
 
     q <- bg %>%
-      dplyr::select(ensembl_gene_id, entrezgene) %>%
-      dplyr::filter(!is.na(entrezgene)) %>%
+      dplyr::select(.data$ensembl_gene_id, .data$entrezgene) %>%
+      dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::inner_join(df, by = "entrezgene") %>%
       dplyr::distinct()
     query_ensembl <- q$ensembl_gene_id
 
     specificities_per_gene <- bg %>%
-      dplyr::filter(!is.na(entrezgene)) %>%
+      dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::inner_join(df, by = "entrezgene")
 
     if(nrow(specificities_per_gene) > 0){
 
       if(resolution == "tissue"){
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, genename, category, tissue,
-                        cancer_max_rank) %>%
-          dplyr::arrange(category, desc(cancer_max_rank))
+          dplyr::select(.data$symbol, .data$genename,
+                        .data$category, .data$tissue,
+                        .data$cancer_max_rank) %>%
+          dplyr::arrange(.data$category, dplyr::desc(.data$cancer_max_rank))
       }else{
         specificities_per_gene <- specificities_per_gene %>%
-          dplyr::select(symbol, genename, category, cell_type,
-                        cancer_max_rank) %>%
-          dplyr::arrange(category, desc(cancer_max_rank))
+          dplyr::select(.data$symbol, .data$genename,
+                        .data$category, .data$cell_type,
+                        .data$cancer_max_rank) %>%
+          dplyr::arrange(.data$category, dplyr::desc(.data$cancer_max_rank))
       }
     }
 
@@ -253,26 +256,28 @@ gene_tissue_cell_enrichment <-
     if(!is.null(te_output)){
       if(!is.null(te_output[[1]])){
         se_enrich_output <- te_output[[1]]
-        enrichment_df <- setNames(
-          data.frame(assay(se_enrich_output),
-                     row.names = rowData(se_enrich_output)[,1]),
-          colData(se_enrich_output)[,1]) %>%
-          dplyr::mutate(Tissue = rownames(.)) %>%
+        enrichment_df <- stats::setNames(
+          data.frame(SummarizedExperiment::assay(se_enrich_output),
+                     row.names = SummarizedExperiment::rowData(se_enrich_output)[,1]),
+          SummarizedExperiment::colData(se_enrich_output)[,1]) %>%
+          dplyr::mutate(Tissue = rownames(.data)) %>%
           magrittr::set_rownames(NULL) %>%
-          dplyr::filter(Tissue != "All") %>%
-          dplyr::rename(fold_change = fold.change,
-                        tissue = Tissue,
-                        tissue_specific_genes = Tissue.Specific.Genes,
-                        log10_pvalue = Log10PValue) %>%
-          dplyr::select(tissue, tissue_specific_genes,
-                        fold_change, log10_pvalue) %>%
-          dplyr::arrange(desc(fold_change))
+          dplyr::filter(.data$Tissue != "All") %>%
+          dplyr::rename(fold_change = .data$fold.change,
+                        tissue = .data$Tissue,
+                        tissue_specific_genes = .data$Tissue.Specific.Genes,
+                        log10_pvalue = .data$Log10PValue) %>%
+          dplyr::select(.data$tissue,
+                        .data$tissue_specific_genes,
+                        .data$fold_change,
+                        .data$log10_pvalue) %>%
+          dplyr::arrange(dplyr::desc(.data$fold_change))
 
         if(resolution == "single_cell"){
           enrichment_df <- enrichment_df %>%
-            dplyr::rename(cell_type = tissue,
+            dplyr::rename(cell_type = .data$tissue,
                           celltype_specific_genes =
-                            tissue_specific_genes)
+                            .data$tissue_specific_genes)
         }
 
       }
