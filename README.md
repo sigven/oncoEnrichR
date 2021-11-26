@@ -110,7 +110,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 #### Installation
 
 1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR')`
+2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.0.6")`
 3.  `library(oncoEnrichR)`
 
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
@@ -229,4 +229,5 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
 
 ### Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/
+.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
