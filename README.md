@@ -45,6 +45,11 @@ The contents of the final report attempt to provide answers to the following que
 
 ### News
 
+-   November 30th 2021: **1.0.7 release**
+    
+    -   Data updates: Open Targets Platform, UniProt KB, WikiPathways, CancerMine, TCGA, EFO, Human Protein Atlas
+    -   Re-design of data management in the package, analysis now requires an initial *database loading step* 
+
 -   October 27th 2021: **1.0.6 release**
 
     -   Addition of new modules
@@ -94,7 +99,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 
 ### Example report
 
-<a href="https://doi.org/10.5281/zenodo.5602807"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5602807.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.5737599"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5737599.svg" alt="DOI"/></a>
 
 <br>
 
@@ -107,21 +112,18 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 ##### Latest release
 
 1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.0.6")`
+2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.0.7")`
 3.  `library(oncoEnrichR)`
-
-##### Development version
-
-1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR')`
-3.  `library(oncoEnrichR)`
-
 
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 #### Usage
 
 *oncoEnrichR* performs its operations through the following procedures/methods:
+
+**0.** `oncoEnrichR::load_db()`
+
+-   Loads (from web) all the necessary annotation datasets used in oncoEnrichR
 
 **1.** `oncoEnrichR::onco_enrich()`
 
@@ -136,6 +138,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
     ``` r
     onco_enrich(
       query,
+      oeDB,
       query_id_type = "symbol",
       ignore_id_err = TRUE,
       html_floating_toc = TRUE,
@@ -156,6 +159,8 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
       subcellcomp_show_cytosol = FALSE,
       min_confidence_reg_interaction = "D",
       simplify_go = F,
+      ppi_add_nodes = 50,
+      ppi_score_threshold = 900,
       show_ppi = T,
       show_drugs_in_ppi = T,
       show_disease = T,
@@ -165,13 +170,13 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
       show_enrichment = T,
       show_tcga_aberration = T,
       show_tcga_coexpression = T,
-      show_subcell_comp = T,
-      show_crispr_lof = T,
       show_cell_tissue = F,
       show_ligand_receptor = T,
       show_regulatory_interactions = T,
       show_unknown_function = T,
       show_prognostic_cancer_assoc = T,
+      show_subcell_comp = T,
+      show_crispr_lof = T,
       show_complex = T)
     ```
 
@@ -195,13 +200,14 @@ A target list of *n = 134* high-confidence interacting proteins with the c-MYC o
 -   `project_title = "cMYC_BioID_screen"`
 -   `project_owner = "Raught et al."`
 
-and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.5602807).
+and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.5737599).
 
 Below are R commands provided to reproduce the example output. **NOTE**: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
 -   `library(oncoEnrichR)`
 -   `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
--   `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
+-   `oeDB <- oncoEnrichR::load_db()` **NOTE**: pass a writable directory to the argument `cache_dir` in order to speed the database loading in subsequent R sessions
+-   `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, oeDB = oeDB, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
 -   `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
 -   `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 
