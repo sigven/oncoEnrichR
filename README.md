@@ -233,5 +233,4 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
 
 ### Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/
-.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
