@@ -8,14 +8,16 @@ get_go_enrichment <- function(query_entrez,
                               min_geneset_size = 10,
                               max_geneset_size = 500,
                               simplify = F,
-                              pool = F){
+                              pool = F,
+                              logger = NULL){
 
-  log4r_info(
+  stopifnot(!is.null(logger))
+  log4r_info(logger,
     paste0("Enrichment - GO: performing gene enrichment analysis of target set (subontology ",ontology,")"))
-  log4r_info(paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  log4r_info(paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  log4r_info(paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
-  log4r_info(paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  log4r_info(logger, paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  log4r_info(logger, paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  log4r_info(logger, paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
+  log4r_info(logger, paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
 
 
   stopifnot(is.character(query_entrez))
@@ -33,7 +35,7 @@ get_go_enrichment <- function(query_entrez,
     stopifnot(is.character(background_entrez))
   }
   ego <- clusterProfiler::enrichGO(gene          = query_entrez,
-                                   OrgDb         = org.Hs.eg.db,
+                                   OrgDb         = "org.Hs.eg.db",
                                    ont           = ontology,
                                    minGSSize     = min_geneset_size,
                                    maxGSSize     = max_geneset_size,
@@ -54,7 +56,7 @@ get_go_enrichment <- function(query_entrez,
   if(ontology == "ALL" & "ONTOLOGY" %in% colnames(df)){
     df <- df %>% dplyr::rename(db = .data$ONTOLOGY)
   }else{
-    df <- df %>% dplyr::mutate(db = .data$ontology)
+    df <- df %>% dplyr::mutate(db = ontology)
   }
   if(nrow(df) > 0){
     df <- suppressWarnings(df %>%
@@ -129,7 +131,7 @@ get_go_enrichment <- function(query_entrez,
     if(!is.null(gene2id)){
       df <- df %>%
         dplyr::left_join(
-          dplyr::select(.data$gene2id,
+          dplyr::select(gene2id,
                         .data$go_id,
                         .data$gene_symbol_link,
                         .data$gene_symbol), by="go_id") %>%
@@ -166,13 +168,14 @@ get_universal_enrichment <- function(query_entrez,
                                      TERM2GENE = NULL,
                                      TERM2NAME = NULL,
                                      TERM2SOURCE = NULL,
-                                     dbsource = ""){
-
-  log4r_info(paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
-  log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  log4r_info(paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  log4r_info(paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
-  log4r_info(paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+                                     dbsource = "",
+                                     logger = NULL){
+  stopifnot(!is.null(logger))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(genedb) | !is.data.frame(genedb))
@@ -219,7 +222,7 @@ get_universal_enrichment <- function(query_entrez,
           .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "https://wikipathways.org",
-                      db = .data$dbsource)
+                      db = dbsource)
     }
     else if(dbsource == "KEGG"){
       df <- df %>%
@@ -230,7 +233,7 @@ get_universal_enrichment <- function(query_entrez,
           .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "https://www.genome.jp/kegg/pathway.html",
-                      db = .data$dbsource)
+                      db = dbsource)
     }
     else if(dbsource == "NetPath"){
       df <- df %>%
@@ -240,7 +243,7 @@ get_universal_enrichment <- function(query_entrez,
           .data$description,"</a>"
         )) %>%
         dplyr::mutate(exact_source = "http://netpath.org",
-                      db = .data$dbsource)
+                      db = dbsource)
     }
     else{
       stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
@@ -289,8 +292,8 @@ get_universal_enrichment <- function(query_entrez,
                        .data$num_background_all)) %>%
       dplyr::mutate(
         db = dplyr::if_else(is.na(.data$db) &
-                              nchar(.data$dbsource) > 0,
-                            .data$dbsource,
+                              nchar(dbsource) > 0,
+                            dbsource,
                             as.character(.data$db)))
     )
 
@@ -302,7 +305,7 @@ get_universal_enrichment <- function(query_entrez,
           tidyr::separate_rows(.data$gene_id, sep="/") %>%
           dplyr::mutate(gene_id = as.character(.data$gene_id)) %>%
           dplyr::left_join(
-            dplyr::select(.data$genedb, .data$entrezgene, .data$symbol),
+            dplyr::select(genedb, .data$entrezgene, .data$symbol),
             by=c("gene_id" = "entrezgene")) %>%
           dplyr::mutate(
             entrez_url =
@@ -317,9 +320,12 @@ get_universal_enrichment <- function(query_entrez,
     }
     if(!is.null(gene2id)){
       df <- df %>%
-        dplyr::left_join(dplyr::select(.data$gene2id, .data$standard_name,
-                                       .data$gene_symbol_link, .data$gene_symbol),
-                         by="standard_name")
+        dplyr::left_join(
+          dplyr::select(gene2id,
+                        .data$standard_name,
+                        .data$gene_symbol_link,
+                        .data$gene_symbol),
+          by="standard_name")
     }
     if(!is.null(df)){
       df$setting_p_value_cutoff <- p_value_cutoff

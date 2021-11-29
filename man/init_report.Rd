@@ -5,6 +5,7 @@
 \title{Function that initiates oncoEnrichR report structure}
 \usage{
 init_report(
+  oeDB,
   project_title = "Project title",
   project_owner = "Project owner",
   html_floating_toc = T,
@@ -46,6 +47,8 @@ init_report(
 )
 }
 \arguments{
+\item{oeDB}{oncoEnrichR annotation database object}
+
 \item{project_title}{project title (title of report)}
 
 \item{project_owner}{name of project owner}
@@ -128,3 +131,4 @@ of target genes, using data from the Human Protein Atlas}
 \description{
 Function that initiates oncoEnrichR report structure
 }
+\keyword{internal}

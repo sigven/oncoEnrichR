@@ -1,0 +1,11 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^docs$
+^docker$
+^\.github$
+^_pkgdown.yml$
+^omnipathr-log$
+^db$

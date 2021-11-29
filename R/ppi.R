@@ -37,8 +37,10 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
   validate_db_df(nodes, dbtype = "ppi_nodes")
   validate_db_df(edges, dbtype = "ppi_edges")
 
-  edges <- dplyr::select(edges, .data$preferredName_A,
-                         .data$preferredName_B, .data$from,
+  edges <- dplyr::select(edges,
+                         .data$preferredName_A,
+                         .data$preferredName_B,
+                         .data$from,
                          .data$to, .data$weight)
 
   d <- igraph::graph_from_data_frame(d = edges, directed = F)
@@ -52,9 +54,9 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
     while(n <= length(cties)){
       members_community_n <- cties[[n]]
       community <- dplyr::filter(
-        edges, .data$preferredName_A %in% .data$members_community_n &
-          .data$preferredName_B %in% .data$members_community_n) %>%
-        dplyr::mutate(community = .data$n)
+        edges, .data$preferredName_A %in% members_community_n &
+          .data$preferredName_B %in% members_community_n) %>%
+        dplyr::mutate(community = n)
 
       edges_communities <- edges_communities %>%
         dplyr::bind_rows(community)
@@ -62,9 +64,10 @@ get_network_communities <- function(edges = NULL, nodes = NULL){
     }
   }
 
-  nodes_communities <- data.frame("id" = unique(c(unique(edges_communities$from),
-                                                  unique(edges_communities$to))),
-                                  stringsAsFactors = F) %>%
+  nodes_communities <- data.frame(
+    "id" = unique(c(unique(edges_communities$from),
+                    unique(edges_communities$to))),
+    stringsAsFactors = F) %>%
     dplyr::inner_join(nodes, by = c("id")) %>%
     dplyr::distinct()
 
@@ -174,8 +177,10 @@ get_ppi_network <- function(qgenes,
                             ppi_source = "STRING",
                             genedb = NULL,
                             cancerdrugdb = NULL,
-                            settings = NULL){
+                            settings = NULL,
+                            logger = NULL){
 
+  stopifnot(!is.null(logger))
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(cancerdrugdb))
@@ -214,7 +219,7 @@ get_ppi_network <- function(qgenes,
       dplyr::filter(.data$n > 1)
     )
 
-    log4r_info(paste0(
+    log4r_info(logger, paste0(
       "Resolving ambiguous Entrez gene identifiers: ",
       paste(duplicate_records$entrezgene, collapse=", ")))
 
@@ -245,8 +250,8 @@ get_ppi_network <- function(qgenes,
 
   }
 
-  log4r_info("STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
-  log4r_info(paste0("STRINGdb: Settings -  required_score = ",
+  log4r_info(logger, "STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
+  log4r_info(logger, paste0("STRINGdb: Settings -  required_score = ",
                                   settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
   all_edges <- data.frame()

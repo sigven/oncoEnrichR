@@ -1,9 +1,11 @@
 
 annotate_ligand_receptor_interactions <- function(qgenes,
                                                   genedb = NULL,
-                                                  ligandreceptordb = NULL){
+                                                  ligandreceptordb = NULL,
+                                                  logger = NULL ){
 
-  log4r_info("CellChatDB: retrieval of ligand-receptor interactions")
+  stopifnot(!is.null(logger))
+  log4r_info(logger, "CellChatDB: retrieval of ligand-receptor interactions")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(ligandreceptordb))

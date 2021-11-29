@@ -31,13 +31,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends iputils-ping gc
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
 RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.14.0.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.0.6.tar.gz /
+COPY oncoEnrichR_1.0.7.tar.gz /
 
 RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library/')"
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.0.6.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.0.7.tar.gz', lib = '/usr/lib/R/library/')"
 
 #RUN R -e "install.packages('devtools')"
 #RUN R -e "devtools::install_github('sigven/oncoEnrichR', dependencies = T, force = T, lib = '/usr/lib/R/library/')"

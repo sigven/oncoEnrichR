@@ -1,12 +1,11 @@
-#' Drug-target network in cancer
+#' Properties of oncoEnrichR annotation datasets
 #'
-#' A dataset containing connections between drugs (ChEMBL compounds) and proteins (entrez gene
-#' identifiers).
-#'
-#' @format A data frame with 53940 rows and 10 variables:
-#' \describe{
-#'   \item{price}{price, in US dollars}
-#'   \item{carat}{weight of the diamond, in carats}
-#'   ...
+#' @format A data.frame with four columns, indicating size and checksums of annotation datasets
+#' \itemize{
+#'   \item \emph{name} - Name of oncoEnrichR annotation dataset
+#'   \item \emph{size} - Size of oncoEnrichR annotation dataset (bytes)
+#'   \item \emph{checksum} - Checksum of oncoEnrichR annotation dataset (R.cache::getChecksum)
+#'   \item \emph{version} - Version of oncoEnrichR
 #' }
-#' @source \url{http://www.diamondse.info/}
+#'
+"db_props"

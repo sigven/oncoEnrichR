@@ -1,7 +1,7 @@
 ### Poorly characterized query members
 
 * The aim of this section is to highlight poorly characterized genes or genes with unknown function in the query set
-* A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r NROW(oncoEnrichR::genedb[['poorly_defined']])`__) _ have been established based on
+* A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r onc_enrich_report[['config']][['unknown_function']][['num_candidates']]`__) _ have been established based on
    1. Genes specifically designated as uncharacterized or as _open reading frames_
    2. Missing gene function summary in [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene) AND function summary in [UniProt Knowledgebase](https://uniprot.org)
    2. Missing or limited (<= 2) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) and biological process (BP)

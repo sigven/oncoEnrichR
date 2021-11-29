@@ -2,49 +2,64 @@ tcga_oncoplot_genes <-
   function(qgenes,
            qsource = "symbol",
            cstrata = "site",
-           genedb = "NULL",
-           site = "Breast"){
+           genedb = NULL,
+           oeDB = NULL,
+           site = "Breast",
+           logger = NULL){
 
-  log4r_info(paste0("TCGA: generating oncoplot, tissue =  ", site))
-  stopifnot(!is.null(genedb))
-  validate_db_df(genedb, dbtype = "genedb")
-  stopifnot(qsource == "symbol" | qsource == "entrezgene")
-  stopifnot(is.character(qgenes))
-  query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(qsource == 'entrezgene'){
-    query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
-    query_genes_df <- dplyr::inner_join(
-      genedb, query_genes_df, by = "entrezgene") %>%
-      dplyr::distinct()
-  }else{
-    query_genes_df <- dplyr::inner_join(
-      genedb, query_genes_df, by = "symbol") %>%
-      dplyr::distinct()
-  }
+    stopifnot(!is.null(logger))
+    log4r_info(logger, paste0("TCGA: generating oncoplot, tissue =  ", site))
+    stopifnot(!is.null(genedb))
+    stopifnot(!is.null(oeDB))
+    stopifnot(!is.null(oeDB$tcgadb))
+    validate_db_df(genedb, dbtype = "genedb")
+    stopifnot(qsource == "symbol" | qsource == "entrezgene")
+    stopifnot(is.character(qgenes))
+    query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+    if(qsource == 'entrezgene'){
+      query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
+      query_genes_df <- dplyr::inner_join(
+        genedb, query_genes_df, by = "entrezgene") %>%
+        dplyr::distinct()
+    }else{
+      query_genes_df <- dplyr::inner_join(
+        genedb, query_genes_df, by = "symbol") %>%
+        dplyr::distinct()
+    }
 
-  top_mutated_genes <- oncoEnrichR::tcgadb[['aberration']] %>%
-    dplyr::filter(.data$variant_type == "snv_indel" &
-                    .data$primary_site == site) %>%
-    dplyr::filter(.data$clinical_strata == cstrata) %>%
-    dplyr::inner_join(dplyr::select(query_genes_df, .data$symbol),
-                      by = c("symbol")) %>%
-    dplyr::select(.data$symbol,
-                  .data$variant_type,
-                  .data$primary_site,
-                  .data$percent_mutated,
-                  .data$samples_mutated,
-                  .data$tot_samples,
-                  .data$percentile) %>%
-    dplyr::rename(cohort_size = .data$tot_samples) %>%
-    dplyr::arrange(dplyr::desc(.data$percent_mutated)) %>%
-    dplyr::distinct() %>%
-    utils::head(50)
+    top_mutated_genes <- oeDB$tcgadb[['aberration']] %>%
 
-  #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-  log4r_info(
-    paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
+      dplyr::inner_join(dplyr::select(query_genes_df, .data$symbol),
+                        by = c("symbol")) %>%
 
-  return(top_mutated_genes)
+      dplyr::left_join(oeDB$tcgadb[['site_code']], by = "site_code") %>%
+      dplyr::left_join(oeDB$tcgadb[['diagnosis_code']], by = "diagnosis_code") %>%
+      dplyr::left_join(oeDB$tcgadb[['clinical_strata_code']],
+                       by = "clinical_strata_code") %>%
+      dplyr::select(-c(.data$site_code,
+                       .data$diagnosis_code,
+                       .data$clinical_strata_code)) %>%
+      dplyr::filter(.data$variant_type == "snv_indel" &
+                      .data$primary_site == site) %>%
+      dplyr::filter(.data$clinical_strata == cstrata) %>%
+
+      dplyr::select(.data$symbol,
+                    .data$variant_type,
+                    .data$primary_site,
+                    .data$percent_mutated,
+                    .data$samples_mutated,
+                    .data$tot_samples,
+                    .data$percentile) %>%
+      dplyr::rename(cohort_size = .data$tot_samples) %>%
+      dplyr::arrange(dplyr::desc(.data$percent_mutated)) %>%
+      dplyr::distinct() %>%
+      utils::head(50)
+
+    #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
+    log4r_info(logger,
+      paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
+
+    return(top_mutated_genes)
 
 }
 
@@ -54,11 +69,17 @@ tcga_aberration_matrix <- function(qgenes,
                                  cstrata = "site",
                                  vtype = "cna_ampl",
                                  genedb = NULL,
-                                 percentile = FALSE){
+                                 oeDB = NULL,
+                                 percentile = FALSE,
+                                 logger = NULL){
 
-  log4r_info(paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
+  stopifnot(!is.null(logger))
+  log4r_info(logger, paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(oeDB$tcgadb))
+
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
@@ -88,12 +109,21 @@ tcga_aberration_matrix <- function(qgenes,
     color <- 'firebrick'
   }
 
-  tcga_gene_stats <- oncoEnrichR::tcgadb[['aberration']] %>%
-    dplyr::filter(.data$clinical_strata == cstrata) %>%
-    dplyr::filter(.data$primary_site != "Other/Unknown") %>%
+  tcga_gene_stats <- oeDB$tcgadb[['aberration']] %>%
     dplyr::inner_join(
       dplyr::select(query_genes_df, .data$symbol),
-      by=c("symbol"))
+      by=c("symbol")) %>%
+    dplyr::left_join(oeDB$tcgadb[['site_code']], by = "site_code") %>%
+    dplyr::left_join(oeDB$tcgadb[['diagnosis_code']], by = "diagnosis_code") %>%
+    dplyr::left_join(oeDB$tcgadb[['clinical_strata_code']],
+                     by = "clinical_strata_code") %>%
+    dplyr::select(-c(.data$site_code,
+                     .data$diagnosis_code,
+                     .data$clinical_strata_code)) %>%
+    dplyr::filter(.data$clinical_strata == cstrata) %>%
+    dplyr::filter(.data$primary_site != "Other/Unknown")
+
+
 
   ## return NULL if no genes are found with copy number data from TCGA
   if(nrow(tcga_gene_stats) == 0){
@@ -110,7 +140,7 @@ tcga_aberration_matrix <- function(qgenes,
   tcga_ttypes <- sort(unique(tcga_gene_stats$primary_site))
   for(i in 1:length(sort(unique(tcga_gene_stats$symbol)))){
     init <- data.frame('primary_site' <- tcga_ttypes,
-                       'primary_diagnosis_very_simplified' = NA,
+                       'primary_diagnosis' = NA,
                        'symbol' = sort(unique(tcga_gene_stats$symbol))[i],
                        'clinical_strata' = cstrata,
                        'percent_mutated' = 0,
@@ -119,7 +149,7 @@ tcga_aberration_matrix <- function(qgenes,
                        'decile' = 0,
                        stringsAsFactors = F)
     colnames(init) <- c('primary_site',
-                        'primary_diagnosis_very_simplified',
+                        'primary_diagnosis',
                         'symbol',
                         'clinical_strata',
                         'percent_mutated',
@@ -150,16 +180,18 @@ tcga_aberration_matrix <- function(qgenes,
                     .data$primary_site == "Pancancer") %>%
     dplyr::mutate(pancancer_percent_mutated = .data$percent_mutated) %>%
     dplyr::mutate(pancancer_percentile = .data$percentile) %>%
-    dplyr::select(.data$symbol, .data$pancancer_percent_mutated,
+    dplyr::select(.data$symbol,
+                  .data$pancancer_percent_mutated,
                   .data$pancancer_percentile)
 
   zero_frequency_genes <-
-    dplyr::anti_join(gene_candidates_init, .data$gene_aberrations,
+    dplyr::anti_join(gene_candidates_init, gene_aberrations,
                      by = c("symbol", "primary_site", "variant_type")) %>%
     dplyr::left_join(site_stats_zero, by = c("primary_site"))
 
   gene_aberrations <-
-    dplyr::left_join(dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
+    dplyr::left_join(
+      dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
                      pancan_order, by = c("symbol")) %>%
     dplyr::mutate(
       pancancer_percent_mutated =
@@ -202,10 +234,15 @@ tcga_aberration_matrix <- function(qgenes,
 tcga_aberration_table <- function(qgenes,
                                   qsource = "entrezgene",
                                   genedb = NULL,
-                                  vtype = "snv_indel"){
+                                  oeDB = NULL,
+                                  vtype = "snv_indel",
+                                  logger = NULL){
 
-  log4r_info(paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
+  stopifnot(!is.null(logger))
+  log4r_info(logger, paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(oeDB$tcgadb))
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
@@ -221,24 +258,32 @@ tcga_aberration_table <- function(qgenes,
       dplyr::distinct()
   }
 
-  aberration_data <- oncoEnrichR::tcgadb[['aberration']] %>%
+  aberration_data <- oeDB$tcgadb[['aberration']] %>%
+
+    dplyr::inner_join(dplyr::select(query_genes_df, .data$symbol,
+                                    .data$entrezgene),
+                      by=c("symbol")) %>%
+    dplyr::left_join(oeDB$tcgadb[['site_code']], by = "site_code") %>%
+    dplyr::left_join(oeDB$tcgadb[['diagnosis_code']], by = "diagnosis_code") %>%
+    dplyr::left_join(oeDB$tcgadb[['clinical_strata_code']],
+                     by = "clinical_strata_code") %>%
+    dplyr::select(-c(.data$site_code,
+                     .data$diagnosis_code,
+                     .data$clinical_strata_code)) %>%
     dplyr::filter(.data$clinical_strata == "site_diagnosis" &
                     .data$variant_type == vtype &
                     .data$primary_site != "Pancancer") %>%
     dplyr::select(.data$symbol,
+                  .data$entrezgene,
                   .data$primary_site,
-                  .data$primary_diagnosis_very_simplified,
+                  .data$primary_diagnosis,
                   .data$variant_type,
                   .data$samples_mutated,
                   .data$tot_samples,
                   .data$percent_mutated,
                   .data$percentile) %>%
-    dplyr::rename(primary_diagnosis =
-                    .data$primary_diagnosis_very_simplified,
-                  cohort_size = .data$tot_samples) %>%
+    dplyr::rename(cohort_size = .data$tot_samples) %>%
     dplyr::filter(!stringr::str_detect(.data$primary_diagnosis,"^Other")) %>%
-    dplyr::left_join(dplyr::select(genedb, .data$symbol, .data$entrezgene),by=c("symbol")) %>%
-    dplyr::inner_join(dplyr::select(query_genes_df, .data$entrezgene),by=c("entrezgene")) %>%
     dplyr::distinct() %>%
     dplyr::mutate(gene = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
                                 .data$entrezgene,"' target='_blank'>",.data$symbol,"</a>")) %>%
@@ -256,10 +301,18 @@ tcga_aberration_table <- function(qgenes,
   return(aberration_data)
 }
 
-tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
+tcga_co_expression <- function(qgenes,
+                               qsource = "symbol",
+                               genedb = NULL,
+                               oeDB = NULL,
+                               logger = NULL){
 
-  log4r_info("TCGA: collecting co-expression data (strong negative and positive correlations)")
+  stopifnot(!is.null(logger))
+  log4r_info(logger, "TCGA: collecting co-expression data (strong negative and positive correlations)")
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(oeDB$tcgadb))
+
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(is.character(qgenes))
@@ -277,7 +330,7 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
       dplyr::distinct()
   }
 
-  coexp_target_1 <- oncoEnrichR::tcgadb[['co_expression']] %>%
+  coexp_target_1 <- oeDB$tcgadb[['co_expression']] %>%
     dplyr::mutate(corrtype = dplyr::if_else(
       .data$r < 0,
       "Negative",
@@ -298,7 +351,7 @@ tcga_co_expression <- function(qgenes, qsource = "symbol", genedb = NULL){
     dplyr::left_join(query_genes_df, by = c("symbol" = "symbol")) %>%
     dplyr::filter(!is.na(.data$entrezgene))
 
-  coexp_target_tcga <- oncoEnrichR::tcgadb[['co_expression']] %>%
+  coexp_target_tcga <- oeDB$tcgadb[['co_expression']] %>%
     dplyr::mutate(corrtype = dplyr::if_else(
       .data$r < 0,
       "Negative",

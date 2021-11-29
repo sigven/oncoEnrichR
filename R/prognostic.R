@@ -1,14 +1,18 @@
 hpa_prognostic_genes <- function(qgenes,
                                  q_id_type = "symbol",
-                                genedb = "NULL"){
-
-  log4r_info(
+                                genedb = NULL,
+                                oeDB = NULL,
+                                logger = NULL){
+  stopifnot(!is.null(logger))
+  log4r_info(logger,
     paste0("Human Protein Atlas: retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(oeDB$hpa))
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
   stopifnot(is.character(qgenes))
+  stopifnot(is.data.frame(oeDB$hpa))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(q_id_type == 'entrezgene'){
     query_genes_df <-
@@ -21,7 +25,7 @@ hpa_prognostic_genes <- function(qgenes,
       dplyr::distinct()
   }
 
-  prognostic_associations <- oncoEnrichR::hpa %>%
+  prognostic_associations <- oeDB$hpa %>%
     dplyr::filter(stringr::str_detect(.data$property,"pathology_prognostics")) %>%
     tidyr::separate(.data$value, c("evidence_direction","is_prognostic","p_value"),
                     sep="\\|") %>%
@@ -62,7 +66,7 @@ hpa_prognostic_genes <- function(qgenes,
       stringr::str_detect(.data$property,"cervical") ~ "Cervix",
       stringr::str_detect(.data$property,"melanom") ~ "Skin",
       stringr::str_detect(.data$property,"glioma") ~ "CNS/Brain",
-      stringr::str_detect(p.data$roperty,"urothelial") ~ "Bladder",
+      stringr::str_detect(.data$property,"urothelial") ~ "Bladder",
       TRUE ~ as.character("Other"))) %>%
     dplyr::arrange(dplyr::desc(.data$log10_p_value)) %>%
     dplyr::mutate(percentile_rank_all =
@@ -71,7 +75,8 @@ hpa_prognostic_genes <- function(qgenes,
   all_prog_assocs <- data.frame()
 
   for(tissue in unique(prognostic_associations$property)){
-    assocs <- dplyr::filter(prognostic_associations, .data$property == tissue) %>%
+    assocs <- dplyr::filter(prognostic_associations,
+                            .data$property == tissue) %>%
       dplyr::arrange(dplyr::desc(.data$log10_p_value)) %>%
       dplyr::mutate(percentile_rank_site = round(
         dplyr::percent_rank(.data$log10_p_value) * 100, digits = 1))
@@ -107,7 +112,7 @@ hpa_prognostic_genes <- function(qgenes,
   }
 
   #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-  log4r_info(paste0("Found n = ",n_query_associations,
+  log4r_info(logger, paste0("Found n = ",n_query_associations,
                            " prognostic cancer associations within the target set"))
 
   return(prognostic_query_associations)
@@ -119,10 +124,12 @@ km_cshl_survival_genes <-
   function(qgenes,
            qsource = "symbol",
            projectsurvivaldb = NULL,
+           logger = NULL,
            ...){
 
+    stopifnot(!is.null(logger))
     dot_args <- list(...)
-    log4r_info(
+    log4r_info(logger,
       paste0("Project Survival_KM_CSHL: retrieval of ",
              "genetic determinants of cancer survival - ",
             dot_args$genetic_feature
@@ -130,7 +137,7 @@ km_cshl_survival_genes <-
     stopifnot(is.character(qgenes))
     stopifnot(!is.null(projectsurvivaldb))
     validate_db_df(projectsurvivaldb,
-                                 dbtype = "survival_km_cshl")
+                   dbtype = "survival_km_cshl")
 
     target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
 
@@ -147,7 +154,9 @@ km_cshl_survival_genes <-
 
       km_survival_targets <- as.data.frame(
         targets_survival %>%
-          dplyr::select(.data$symbol, .data$tcga_cohort, .data$z_score) %>%
+          dplyr::select(.data$symbol,
+                        .data$tcga_cohort,
+                        .data$z_score) %>%
         dplyr::mutate(
           symbol = factor(.data$symbol, levels = symlevels))
       )

@@ -3,21 +3,25 @@
 target_disease_associations <-
   function(qgenes,
            genedb = NULL,
+           oeDB = NULL,
            show_top_diseases_only = FALSE,
-           min_association_score = 0.1){
+           min_association_score = 0.1,
+           logger = NULL){
 
   stopifnot(is.character(qgenes))
+  stopifnot(!is.null(oeDB))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(logger))
   validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
       dplyr::distinct()
 
-  log4r_info(paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
+  log4r_info(logger, paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
 
   target_assocs <- target_genes %>%
-    dplyr::left_join(oncoEnrichR::otdb$all, by=c("ensembl_gene_id","symbol"))
+    dplyr::left_join(oeDB$otdb$all, by=c("ensembl_gene_id","symbol"))
 
   result <- list()
   result[['target']] <- target_genes
@@ -44,10 +48,19 @@ target_disease_associations <-
                   .data$disease_efo_id,
                   .data$efo_name,
                   .data$primary_site,
-                  .data$ot_link,
+                  #.data$ot_link,
                   .data$gene_summary)
 
   if(nrow(tmp) > 0){
+
+    tmp <- tmp %>%
+      dplyr::mutate(
+        ot_link = paste0(
+          "<a href='https://platform.opentargets.org/evidence/",
+          .data$ensembl_gene_id,"/",
+          stringr::str_replace(.data$disease_efo_id,":","_"),
+          "' target=\"_blank\">",
+          stringr::str_to_title(.data$efo_name),"</a>"))
 
     gene_targetset_cancer_rank <- as.data.frame(
       tmp %>%
@@ -84,7 +97,7 @@ target_disease_associations <-
               as.numeric(mean(.data$targetset_cancer_prank)),
             ot_cancer_links =
               paste(utils::head(.data$ot_link,
-                                .data$num_top_disease_terms), collapse=", "),
+                                num_top_disease_terms), collapse=", "),
             ot_cancer_diseases =
               paste(utils::head(stringr::str_to_title(.data$efo_name),
                                 num_top_disease_terms), collapse=", "),
@@ -116,6 +129,15 @@ target_disease_associations <-
 
   if(nrow(tmp2) > 0){
 
+    tmp2 <- tmp2 %>%
+      dplyr::mutate(
+        ot_link = paste0(
+          "<a href='https://platform.opentargets.org/evidence/",
+          .data$ensembl_gene_id,"/",
+          stringr::str_replace(.data$disease_efo_id,":","_"),
+          "' target=\"_blank\">",
+          stringr::str_to_title(.data$efo_name),"</a>"))
+
     gene_targetset_disease_rank <- as.data.frame(
       tmp2 %>%
         dplyr::group_by(.data$symbol) %>%
@@ -146,7 +168,7 @@ target_disease_associations <-
             targetset_disease_prank =
               as.numeric(mean(.data$targetset_disease_prank)),
             ot_links =
-              paste(utils::head(.data$ot_link, .data$num_top_disease_terms),
+              paste(utils::head(.data$ot_link, num_top_disease_terms),
                     collapse=", "),
             ot_diseases =
               paste(utils::head(stringr::str_to_title(.data$efo_name),
@@ -230,7 +252,7 @@ target_disease_associations <-
 
   ttype_rank_df <- dplyr::select(target_genes, .data$symbol) %>%
     dplyr::left_join(
-      dplyr::select(oncoEnrichR::otdb$site_rank,
+      dplyr::select(oeDB$otdb$site_rank,
                     .data$primary_site,
                     .data$symbol,
                     .data$tissue_assoc_rank),
@@ -280,10 +302,12 @@ target_disease_associations <-
 
 target_drug_associations <- function(qgenes,
                                      cancerdrugdb = NULL,
-                                    genedb = NULL){
+                                    genedb = NULL,
+                                    logger = NULL){
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(logger))
   stopifnot(!is.null(cancerdrugdb))
   stopifnot(!is.null(cancerdrugdb[['tractability']]))
   validate_db_df(genedb, dbtype = "genedb")
@@ -294,7 +318,7 @@ target_drug_associations <- function(qgenes,
     dplyr::inner_join(genedb, by = "symbol") %>%
     dplyr::distinct()
 
-  log4r_info(paste0("Open Targets Platform: annotation of protein targets to targeted drugs (cancer indications only)"))
+  log4r_info(logger, paste0("Open Targets Platform: annotation of protein targets to targeted drugs (cancer indications only)"))
 
   result <- list()
   result[['target_drugs']] <- data.frame()
@@ -308,7 +332,7 @@ target_drug_associations <- function(qgenes,
     dplyr::filter(!is.na(.data$targeted_cancer_drugs_lp) |
                     !is.na(.data$targeted_cancer_drugs_ep))
 
-  log4r_info(paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
+  log4r_info(logger, paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
 
   result[['tractability_ab']] <- target_genes %>%
     dplyr::select(.data$ensembl_gene_id) %>%

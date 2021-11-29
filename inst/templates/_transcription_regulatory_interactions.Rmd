@@ -433,7 +433,7 @@ cat('<br><br>')
 * Visualization of known regulatory interactions (**DoRothEA - cancer-focused set**) where both **regulator** and **target** are found in the query set
 
    * Edge *length* between nodes reflects confidence level of regulatory interaction (shorter lengths - higher confidence)
-   * Edge *color* between nodes indicates mode of regulation (<span style="background-color:darkgreen; padding:2x; color:white"><b>&nbsp; Stimulation &nbsp; </b></span> vs. <span style="background-color:darkred; padding:2x; color:white"><b>&nbsp; Repression &nbsp; </b></span>)
+   * Edge *color* between nodes indicates mode of regulation (&nbsp;<span style="background-color:darkgreen; padding:2x; color:white"><b>&nbsp; Stimulation &nbsp; </b></span>&nbsp; vs. <span style="background-color:darkred; padding:2x; color:white"><b>&nbsp; Repression &nbsp; </b></span>&nbsp;)
 
 <br><br>
 

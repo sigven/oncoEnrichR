@@ -2,9 +2,11 @@
 annotate_protein_complex <- function(qgenes,
                                      genedb = NULL,
                                      complex_db = NULL,
-                                     uniprot_xref = NULL){
+                                     uniprot_xref = NULL,
+                                     logger = NULL){
 
-  log4r_info("OmniPath: retrieval of protein complex information for target set - multiple underlying sources")
+  stopifnot(!is.null(logger))
+  log4r_info(logger, "OmniPath: retrieval of protein complex information for target set - multiple underlying sources")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(complex_db))

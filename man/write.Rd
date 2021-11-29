@@ -14,7 +14,7 @@ write(
 )
 }
 \arguments{
-\item{report}{object with oncoEnrichR report data (returned by oncoEnrichR::onco_enrich)}
+\item{report}{object with oncoEnrichR report data (returned by oeDB$onco_enrich)}
 
 \item{file}{full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")}
 

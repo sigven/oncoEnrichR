@@ -5,7 +5,8 @@
 \title{Interrogate a gene list for cancer relevance}
 \usage{
 onco_enrich(
-  query,
+  query = NULL,
+  oeDB = NULL,
   query_id_type = "symbol",
   ignore_id_err = TRUE,
   html_floating_toc = T,
@@ -50,6 +51,8 @@ onco_enrich(
 }
 \arguments{
 \item{query}{character vector with gene/query identifiers}
+
+\item{oeDB}{oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()}
 
 \item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
 "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}

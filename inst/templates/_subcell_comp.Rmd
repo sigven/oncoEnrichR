@@ -98,9 +98,10 @@ plotly::ggplotly(p, width = 600, height = 600)
 ```{r gganatogram_legend, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 20}
 
 suppressPackageStartupMessages(library(gganatogram))
-ggpubr::ggarrange(plotlist = 
-                    oncoEnrichR::subcelldb$gganatogram_legend[1:24], 
-                  ncol = 4, nrow = 6)
+ggpubr::ggarrange(
+  plotlist = 
+    onc_enrich_report[['config']][['subcellcomp']][['gganatogram_legend']][1:24], 
+  ncol = 4, nrow = 6)
 
 ```
 

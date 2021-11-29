@@ -3,11 +3,13 @@ validate_query_genes <- function(qgenes,
                                qtype = "target",
                                ignore_id_err = F,
                                genedb = NULL,
+                               alias2primary = NULL,
                                ensembl_mrna_xref = NULL,
                                refseq_mrna_xref = NULL,
                                refseq_protein_xref = NULL,
                                ensembl_protein_xref = NULL,
-                               uniprot_xref = NULL){
+                               uniprot_xref = NULL,
+                               logger = NULL){
 
   stopifnot(q_id_type == "symbol" |
               q_id_type == "entrezgene" |
@@ -19,6 +21,7 @@ validate_query_genes <- function(qgenes,
               q_id_type == "ensembl_gene")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(logger))
   stopifnot(!is.null(uniprot_xref))
   stopifnot(!is.null(refseq_mrna_xref))
   stopifnot(!is.null(ensembl_mrna_xref))
@@ -84,7 +87,8 @@ validate_query_genes <- function(qgenes,
       dplyr::mutate(refseq_mrna = .data$qid) %>%
       dplyr::left_join(gdb, by = c("symbol")) %>%
       dplyr::distinct() %>%
-      dplyr::group_by(.data$symbol, .data$entrezgene,
+      dplyr::group_by(.data$symbol,
+                      .data$entrezgene,
                       .data$ensembl_gene_id,
                       .data$name) %>%
       dplyr::summarise(refseq_mrna =
@@ -170,13 +174,13 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        log4r_info(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
             dplyr::select(queryset[['not_found']], .data$qid),
-            oncoEnrichR::genedb[['alias2primary']],
+            alias2primary,
             by = c("qid" = "alias"))
 
         ## Check that alias is not an alias for existing query entries (found)
@@ -198,7 +202,7 @@ validate_query_genes <- function(qgenes,
               dplyr::distinct() %>%
               dplyr::mutate(alias = T)
 
-            log4r_info(
+            log4r_info(logger,
               paste0("Mapped query identifiers as gene aliases ",
                      paste0(queryset[['not_found']]$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
@@ -209,7 +213,7 @@ validate_query_genes <- function(qgenes,
               dplyr::anti_join(query_as_alias, by = "qid")
 
             if(nrow(queryset[['not_found']]) > 0){
-              log4r_warn(
+              log4r_warn(logger,
                 paste0("Query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
@@ -218,14 +222,14 @@ validate_query_genes <- function(qgenes,
             }
           }
         }else{
-          log4r_warn(
+          log4r_warn(logger,
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
         }
 
       }else{
-        log4r_warn(paste0("Query gene identifiers NOT found: ",
+        log4r_warn(logger, paste0("Query gene identifiers NOT found: ",
                                  paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
@@ -234,13 +238,13 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        log4r_warn(paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
             dplyr::select(queryset[['not_found']], .data$qid),
-            oncoEnrichR::genedb[['alias2primary']],
+            alias2primary,
             by = c("qid" = "alias"))
 
         if(nrow(query_as_alias) > 0){
@@ -251,7 +255,7 @@ validate_query_genes <- function(qgenes,
           dplyr::mutate(alias = T)
 
 
-          log4r_info(
+          log4r_info(logger,
             paste0("Mapped query identifiers as gene aliases ",
                    paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$qid,collapse=", ")))
@@ -262,7 +266,7 @@ validate_query_genes <- function(qgenes,
             dplyr::anti_join(query_as_alias, by = "qid")
 
           if(nrow(queryset[['not_found']]) > 0){
-            log4r_info(
+            log4r_info(logger,
               paste0("ERROR: Query gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
                      " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
@@ -271,31 +275,31 @@ validate_query_genes <- function(qgenes,
 
           }
         }else{
-          log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
+          log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
 
         }
       }
       else{
-        log4r_info(paste0("ERROR: query gene identifiers NOT found: ",
+        log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
       }
     }
   }
   if(nrow(queryset[['found']]) == length(qgenes)){
-    log4r_info(paste0('SUCCESS: Identified all genes (n = ',
+    log4r_info(logger, paste0('SUCCESS: Identified all genes (n = ',
                              nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
     if(nrow(queryset[['found']]) == 0){
-      log4r_info(paste0(
+      log4r_info(logger, paste0(
         "ERROR: NO query gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
-        " - wrong query_id_type (",q_id_type,")?"),"\n")
+        " - wrong query_id_type (",q_id_type,")?","\n"))
       queryset[['match_status']] <- "imperfect_stop"
     }else{
-      log4r_info(
+      log4r_info(logger,
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ',
                'target set (n = ',
@@ -355,6 +359,7 @@ validate_query_genes <- function(qgenes,
 #' @param df data.frame with annotation data for oncoEnrichR
 #' @param dbtype type of oncoEnrichR datasource
 #'
+#' @keywords internal
 #'
 
 validate_db_df <- function(df, dbtype = "genedb"){
@@ -404,7 +409,10 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'SM_tractability_support',
               'genename',
               'targeted_cancer_drugs_lp',
-              'targeted_cancer_drugs_ep')
+              'targeted_cancer_drugs_ep',
+              'num_go_terms',
+              'unknown_function_rank',
+              'has_gene_summary')
   }
   if(dbtype == "protein_complex"){
     cols <- c('complex_id',
@@ -1161,6 +1169,12 @@ add_excel_sheet <- function(
 }
 
 
+log4r_layout <-
+  function(level, ...) {
+    paste0(format(Sys.time()), " - ",
+           level, " - ", ..., "\n",
+           collapse = "")
+  }
 
 log4r_info <- function(log4r_logger, msg) {
   log4r::info(log4r_logger, msg)
@@ -1174,6 +1188,9 @@ log4r_warn <- function(log4r_logger, msg) {
   log4r::warn(log4r_logger, msg)
 }
 
+log4r_err <- function(log4r_logger, msg) {
+  log4r::error(log4r_logger, msg)
+}
 
 file_is_writable <- function(path) {
   assertthat::is.string(path) &&
@@ -1191,6 +1208,15 @@ file_is_writable <- function(path) {
 #' @keywords internal
 #' @importFrom magrittr %>%
 NULL
+
+#' RCurl url.exists
+#'
+#' @name url_exists
+#' @rdname url_exists
+#' @keywords internal
+#' @importFrom RCurl url.exists
+NULL
+
 
 #' Tidy eval helpers
 #'

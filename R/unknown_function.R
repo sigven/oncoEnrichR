@@ -1,15 +1,24 @@
 
-get_genes_unknown_function <- function(qgenes, genedb = NULL,
-                                       poorly_defined_genes = NULL){
+get_genes_unknown_function <- function(qgenes,
+                                       genedb = NULL,
+                                       logger = NULL){
 
-  log4r_info("Retrieval of genes with unknown/poorly defined function in target set")
+  stopifnot(!is.null(logger))
+  log4r_info(logger, "Retrieval of genes with unknown/poorly defined function in target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(poorly_defined_genes))
   validate_db_df(genedb, dbtype = "genedb")
-  validate_db_df(poorly_defined_genes, dbtype = "pdf")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
+  poorly_defined_genes <- genedb %>%
+    dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
+    dplyr::select(.data$symbol,
+                  .data$genename,
+                  .data$num_go_terms,
+                  .data$gene_summary,
+                  .data$unknown_function_rank,
+                  .data$has_gene_summary)
+
 
   results <- data.frame()
   pct <- 0
@@ -20,7 +29,7 @@ get_genes_unknown_function <- function(qgenes, genedb = NULL,
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }
 
-  log4r_info(paste0("Detected n = ", nrow(results),
+  log4r_info(logger, paste0("Detected n = ", nrow(results),
                     " (", pct,"%) target genes with unknown/poorly defined function"))
   return(results)
 

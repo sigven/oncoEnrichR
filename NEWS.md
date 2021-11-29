@@ -1,4 +1,25 @@
 
+# Version 1.0.7
+
+## Added
+
+* Data updates
+  * WikiPathways (20211110)
+  * Open Targets Platform (2021.11)
+  * EFO (v3.36.0)
+  * TCGA (v31, 2021-10-29)
+  * CancerMine (v40)
+  * Human Protein Atlas (v21)
+  * UniProt KB (2021_04)
+  * PFAM domains (release 35, November 2021)
+  
+## Changed
+
+- Management of annotation databases have been re-designed, reducing the size 
+and installation of *oncoEnrichR* significantly. The re-design results in
+the addition of an initial step in the analysis; **database loading**.
+
+
 # Version 1.0.6
 
 ## Added

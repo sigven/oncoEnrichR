@@ -3,17 +3,21 @@ annotate_tf_targets <- function(qgenes,
                                 genedb = NULL,
                                 tf_target_interactions = NULL,
                                 collection = "global",
-                                min_confidence_reg_interaction = "D"){
+                                min_confidence_reg_interaction = "D",
+                                logger = NULL){
 
   stopifnot(is.character(collection))
   stopifnot(collection == "global" | collection == "pancancer")
-  log4r_info(
-    paste0("DoRothEA: retrieval of regulatory interactions involving members of target set - ", collection))
+
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
+  stopifnot(!is.null(logger))
   stopifnot(!is.null(tf_target_interactions[[collection]]))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tf_target_interactions[[collection]], dbtype = "dorothea")
+
+  log4r_info(logger,
+    paste0("DoRothEA: retrieval of regulatory interactions involving members of target set - ", collection))
 
   exclude_level_regex <- "E"
   if(min_confidence_reg_interaction == "C"){
@@ -60,13 +64,13 @@ annotate_tf_targets <- function(qgenes,
                         .data$tf_target_literature_support) %>%
         dplyr::summarise(queryset_overlap = paste(.data$queryset_overlap, collapse=";"),
                          .groups = "drop") %>%
-        dplyr::left_join(dplyr::select(oncoEnrichR::genedb$all,
+        dplyr::left_join(dplyr::select(genedb,
                                        .data$symbol, .data$genename,
                                        .data$cancer_max_rank),
                          by = c("regulator" = "symbol")) %>%
         dplyr::rename(regulator_name = .data$genename,
                       regulator_cancer_max_rank = .data$cancer_max_rank) %>%
-        dplyr::left_join(dplyr::select(oncoEnrichR::genedb$all,
+        dplyr::left_join(dplyr::select(genedb,
                                        .data$symbol, .data$genename,
                                        .data$cancer_max_rank),
                          by = c("target" = "symbol")) %>%
@@ -130,10 +134,6 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL){
           .data$mode_of_regulation == "Stimulation" ~ "darkgreen",
           .data$mode_of_regulation == "Repression" ~ "darkred",
          )) %>%
-        # dplyr::mutate(label = dplyr::case_when(
-        #   mode_of_regulation == "Stimulation" ~ "Stimulation",
-        #   mode_of_regulation == "Repression" ~ "Repression",
-        # )) %>%
         dplyr::arrange(.data$confidence_level) %>%
         utils::head(150)
 

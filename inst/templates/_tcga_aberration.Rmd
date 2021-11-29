@@ -682,7 +682,7 @@ cat('<br><br>')
 
 * Browse recurrent, protein-coding somatic SNVs/InDels from TCGA in the query set 
   * Variants are listed as one record _per tissue/site_, in effect making the same variant occurring in multiple rows
-  * A _maximum of 5000_ site-specific variants are listed
+  * Only variants with a site-specific frequency >= 2 are shown
   * Variants can be filtered based on various properties, e.g. __Site/tissue variant recurrence__, as well as overall recurrence across all tumor sites (column __Pancancer variant recurrence__)
   * Notably, each variant have been annotated/classified with a 
     1. _loss-of-function_ status, based on the [LOFTEE plugin in VEP](https://github.com/konradjk/loftee)
