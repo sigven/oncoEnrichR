@@ -48,16 +48,11 @@ The contents of the final report attempt to provide answers to the following que
 -   October 27th 2021: **1.0.6 release**
 
     -   Addition of new modules
-
         -   Regulatory interactions - DoRothEA
         -   Ligand-receptor interactions - CellChatDB
-
     -   Data updates: Open Targets Platform, KEGG, WikiPathways, CancerMine, TCGA, EFO, DiseaseOntology
-
     -   Additional dedicated enrichment plots (GO)
-
     -   Improved target rankings (tissue- and celltype enrichment, regulatory interactions)
-
     -   See complete [CHANGELOG](https://sigven.github.io/oncoEnrichR/news/index.html)
 
 -   July 8th 2021: **1.0.4 release**
@@ -109,9 +104,18 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 
 #### Installation
 
+##### Latest release
+
 1.  `install.packages('devtools')`
 2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.0.6")`
 3.  `library(oncoEnrichR)`
+
+##### Development version
+
+1.  `install.packages('devtools')`
+2.  `devtools::install_github('sigven/oncoEnrichR')`
+3.  `library(oncoEnrichR)`
+
 
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
