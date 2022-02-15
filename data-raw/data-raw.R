@@ -59,9 +59,7 @@ msigdb <-
 ####---Gene info----####
 gene_info <-
   get_gene_info_ncbi(
-    basedir = here::here()) %>%
-  dplyr::select(-symbol) %>%
-  dplyr::rename(symbol = symbol_entrez)
+    basedir = here::here())
 
 ## gene synonyms
 alias2primary <-
@@ -78,39 +76,19 @@ cancer_hallmark_data <-
 ####---dbNSFP: gene summary descriptions---####
 uniprot_gene_summary <-
   get_dbnsfp_gene_annotations(
-    basedir = here::here()) %>%
-  dplyr::rename(
-    gene_function_description = function_description) %>%
-  dplyr::mutate(
-    gene_summary_uniprot =
-      dplyr::if_else(
-        !is.na(gene_function_description),
-        paste0("<b>UniProt:</b> ",
-               gene_function_description),
-        as.character(gene_function_description)
-      )) %>%
-  dplyr::select(symbol, gene_summary_uniprot)
+    basedir = here::here())
 
 ####----CancerMine/NCG---####
 ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     basedir = here::here(),
     gene_info = gene_info,
-    version = "39") %>%
-  dplyr::filter(symbol != "TTN") %>%
+    version = "42") %>%
   dplyr::select(
     symbol, tumor_suppressor,
     oncogene, citation_links_oncogene,
     citation_links_tsgene, cancergene_support,
-    citation_links_cdriver, cancer_driver) %>%
-  dplyr::mutate(
-    citation_links_oncogene =
-      stringr::str_replace(
-        citation_links_oncogene,"(NA, ){1,}","")) %>%
-  dplyr::mutate(
-    citation_links_tsgene =
-      stringr::str_replace(
-        citation_links_tsgene,"(NA, ){1,}",""))
+    citation_links_cdriver, cancer_driver)
 
 ####--- OTP: Target-disease associations ----####
 ####--- OTP: Target tractability ----####
@@ -521,100 +499,11 @@ if(update_omnipathdb == T){
 ####---OmniPathDB - TF interactions ----####
 
 if(update_omnipath_regulatory == T){
-  tf_target_interactions_dorothea_all <-
-    OmnipathR::import_transcriptional_interactions(
-      organism = "9606",
-      dorothea_levels = c("A","B","C","D"),
-      references_by_resource = F) %>%
-    dplyr::filter(!is.na(dorothea_level)) %>%
-    dplyr::group_by(source_genesymbol, target_genesymbol) %>%
-    dplyr::summarise(references = paste(unique(references), collapse=";"),
-                     interaction_sources = paste(unique(sources), collapse="; "),
-                     dorothea_level = paste(unique(dorothea_level), collapse=";"),
-                     .groups = "drop") %>%
-    dplyr::filter(!stringr::str_detect(source_genesymbol,"_")) %>%
-    dplyr::mutate(interaction_sources = stringr::str_squish(
-      stringr::str_replace_all(
-        interaction_sources, ";","; "))) %>%
-
-    ## Not available for non-academic use (entries provided solely with TRED)
-    dplyr::filter(!stringr::str_detect(interaction_sources,"^(RegNetwork_DoRothEA; TRED_DoRothEA)$"))
-
-  tf_target_pmids <- tf_target_interactions_dorothea_all %>%
-    dplyr::filter(!is.na(references) & nchar(references) > 0) %>%
-    dplyr::select(source_genesymbol, target_genesymbol, references) %>%
-    tidyr::separate_rows(references, sep=";") %>%
-    dplyr::filter(nchar(references) > 0) %>%
-    dplyr::distinct()
-
-  tf_target_citations <- get_citations_pubmed(
-    pmid = unique(tf_target_pmids$references))
-
-  tf_target_pmids <- as.data.frame(
-    tf_target_pmids %>%
-      dplyr::mutate(references = as.integer(references)) %>%
-      dplyr::left_join(tf_target_citations, by = c("references" = "pmid")) %>%
-      dplyr::group_by(source_genesymbol, target_genesymbol) %>%
-      dplyr::summarise(
-        tf_target_literature_support = paste(
-          link, collapse= ","),
-        tf_target_literature = paste(
-          citation, collapse="|"
-        )
-      )
-  )
-
-  tf_target_interactions_dorothea_all <- tf_target_interactions_dorothea_all %>%
-    dplyr::left_join(tf_target_pmids,
-                      by = c("source_genesymbol",
-                             "target_genesymbol")) %>%
-    dplyr::rename(regulator = source_genesymbol,
-                  target = target_genesymbol) %>%
-    dplyr::select(-references) %>%
-    dplyr::mutate(confidence_level = dplyr::case_when(
-      stringr::str_detect(dorothea_level,"A|A;B|A;B;D|A;D") ~ "A",
-      stringr::str_detect(dorothea_level,"B|B;D|B;C") ~ "B",
-      stringr::str_detect(dorothea_level,"C;D|C") ~ "C",
-      stringr::str_detect(dorothea_level,"D") ~ "D",
-      TRUE ~ as.character(dorothea_level),
-    )) %>%
-    dplyr::select(-dorothea_level) %>%
-    dplyr::mutate(mode_of_regulation = NA)
-
-
-  tf_target_interactions_dorothea_pancancer <-
-    dorothea::dorothea_hs_pancancer %>%
-    dplyr::mutate(interaction_sources = "DoRothEA_hs_pancancer") %>%
-    dplyr::rename(regulator = tf,
-                  confidence_level = confidence,
-                  mode_of_regulation = mor) %>%
-    dplyr::mutate(mode_of_regulation = dplyr::if_else(
-      mode_of_regulation == 1,"Stimulation",
-      "Repression")) %>%
-    dplyr::mutate(tf_target_literature_support = NA,
-                  tf_target_literature = NA) %>%
-    dplyr::select(regulator, target,
-                  interaction_sources,
-                  confidence_level,
-                  mode_of_regulation,
-                  tf_target_literature_support,
-                  tf_target_literature)
-
-  tf_target_interactions <- list()
-  tf_target_interactions[['global']] <-
-    tf_target_interactions_dorothea_all
-  tf_target_interactions[['pancancer']] <-
-    tf_target_interactions_dorothea_pancancer
-
+  tf_target_interactions <- get_tf_target_interactions()
 
   saveRDS(tf_target_interactions,
           file = file.path(here::here(), "data-raw",
                            "omnipathdb", "omnipath_tf_interactions.rds"))
-
-  rm(tf_target_citations)
-  rm(tf_target_interactions_dorothea_all)
-  rm(tf_target_interactions_dorothea_pancancer)
-  rm(tf_target_interactions)
 
 }else{
   tf_target_interactions <-
@@ -778,78 +667,6 @@ otdb$site_rank <- otdb_site_rank
 
 gene_xref <- gene_xref %>%
   dplyr::select(-c(ot_association))
-
-
-####---WikiPathways---####
-if(!(file.exists(paste0(here::here(), "/data-raw/wikipathways/wikipathways-",
-                        wikipathways_version,"-gmt-Homo_sapiens.gmt")))){
-  rWikiPathways::downloadPathwayArchive(
-    organism = "Homo sapiens",
-    date = wikipathways_version,
-    destpath = "data-raw/wikipathways/",
-    format = "gmt")
-}
-
-wikipathways <- clusterProfiler::read.gmt(
-  paste0(here::here(), "/data-raw/wikipathways/wikipathways-",
-         wikipathways_version,"-gmt-Homo_sapiens.gmt"))
-wp2gene <- wikipathways %>%
-  tidyr::separate(term, c("name","version","wpid","org"), "%")
-wikipathwaydb <- list()
-wikipathwaydb[['VERSION']] <- wikipathways_version
-wikipathwaydb[['TERM2GENE']] <- wp2gene %>%
-  dplyr::select(wpid, gene) %>%
-  dplyr::rename(standard_name = wpid, entrez_gene = gene)
-wikipathwaydb[['TERM2NAME']] <- wp2gene %>%
-  dplyr::select(wpid, name) %>%
-  dplyr::rename(standard_name = wpid) %>%
-  dplyr::distinct()
-
-####---NetPath signalling pathways---####
-netpath_idmapping <-
-  read.table("data-raw/netpath/id_mapping.tsv",
-             stringsAsFactors = F, header = F, sep = "\t",
-             col.names = c("name", "standard_name")) %>%
-  dplyr::mutate(standard_name = paste0("NetPath_",standard_name))
-
-netpath_pathway_data <- omnipathdb %>%
-  dplyr::filter(source == "NetPath") %>%
-  dplyr::select(genesymbol, value) %>%
-  dplyr::rename(name = value, symbol = genesymbol) %>%
-  dplyr::left_join(netpath_idmapping, by = "name") %>%
-  dplyr::mutate(name = paste0(name," signaling pathway")) %>%
-  dplyr::arrange(name, standard_name, symbol) %>%
-  dplyr::left_join(dplyr::select(gene_info, entrezgene, symbol)) %>%
-  dplyr::rename(entrez_gene = entrezgene) %>%
-  dplyr::mutate(entrez_gene = as.character(entrez_gene)) %>%
-  dplyr::select(standard_name, name, entrez_gene)
-netpathdb <- list()
-netpathdb[['VERSION']] <- netpath_version
-netpathdb[['TERM2GENE']] <- netpath_pathway_data %>%
-  dplyr::select(standard_name, entrez_gene)
-netpathdb[['TERM2NAME']] <- netpath_pathway_data %>%
-  dplyr::select(standard_name, name) %>%
-  dplyr::distinct()
-
-
-####----KEGG pathways---####
-kegg_pathway_genes <-
-  read.table(file="data-raw/kegg/kegg.pathway.gene.tsv",
-             header=T,sep="\t",stringsAsFactors = F,quote="")
-keggdb <- list()
-keggdb[['VERSION']] <- kegg_version
-keggdb[['TERM2NAME']] <- kegg_pathway_genes %>%
-  dplyr::select(name,pathway_id) %>%
-  dplyr::rename(standard_name = pathway_id) %>%
-  dplyr::select(standard_name, name) %>%
-  dplyr::distinct()
-
-keggdb[['TERM2GENE']] <- kegg_pathway_genes %>%
-  dplyr::select(pathway_id, gene_id) %>%
-  dplyr::rename(standard_name = pathway_id,
-                entrez_gene = gene_id) %>%
-  dplyr::select(standard_name,entrez_gene) %>%
-  dplyr::distinct()
 
 
 ####--- Ligand-Receptor interactions ----####

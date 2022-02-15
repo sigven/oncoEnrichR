@@ -92,8 +92,8 @@ get_gene_info_ncbi <- function(basedir = NULL,
     dplyr::rename(
       entrezgene = V2, synonyms = V5, symbol = V3, name = V9,
       gene_biotype = V10, symbol_entrez = V11) %>%
-    dplyr::mutate(ensembl_gene_id = stringr::str_replace(
-      stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) %>%
+    # dplyr::mutate(ensembl_gene_id = stringr::str_replace(
+    #   stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) %>%
     dplyr::mutate(hgnc_id = stringr::str_replace(
       stringr::str_match(V6,"HGNC:HGNC:[0-9]{1,}"), "HGNC:HGNC:", "")) %>%
     dplyr::select(-V6) %>%
@@ -104,25 +104,8 @@ get_gene_info_ncbi <- function(basedir = NULL,
       gene_biotype ==  "protin-coding",
       "protein_coding", as.character(gene_biotype))) %>%
     dplyr::filter(nchar(symbol_entrez) > 0)
-
-  ### for genes annotated with the same ensembl gene ids, ignore this annotation (set to NA)
-  ensgene_id_count <- as.data.frame(
-    dplyr::filter(gene_info, !is.na(ensembl_gene_id)) %>%
-      dplyr::group_by(ensembl_gene_id) %>%
-      dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  )
-
-  gene_info <- gene_info %>%
-    dplyr::left_join(ensgene_id_count,by=c("ensembl_gene_id")) %>%
-    dplyr::mutate(ensembl_gene_id = dplyr::if_else(
-      !is.na(n) & n > 1,
-      as.character(NA),
-      as.character(ensembl_gene_id))) %>%
-    dplyr::select(-n)
-
-  # if (update == T) {
-  #   saveRDS(gene_info, file = paste0(basedir, "/data-raw/ncbi_gene/gene_info.rds"))
-  # }
+    #dplyr::select(-symbol) %>%
+    #dplyr::rename(symbol = symbol_entrez)
 
   return(gene_info)
 
@@ -303,25 +286,27 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                     stringsAsFactors = F, sep = "\t", quote = "", comment.char = "") %>%
     janitor::clean_names() %>%
     dplyr::mutate(
-      ncg_tumor_suppressor = dplyr::if_else(stringr::str_detect(cgc_annotation,"TSG") | ncg_tsg == 1,
-                                            as.logical(TRUE),as.logical(FALSE))) %>%
+      ncg_tumor_suppressor = dplyr::if_else(
+        stringr::str_detect(cgc_annotation,"TSG") | ncg_tsg == 1,
+        as.logical(TRUE),as.logical(FALSE))) %>%
     dplyr::mutate(
-      ncg_oncogene = dplyr::if_else(stringr::str_detect(cgc_annotation,"oncogene") | ncg_oncogene == 1,
-                                    as.logical(TRUE),as.logical(FALSE))) %>%
-    dplyr::select(symbol, entrez, ncg_tumor_suppressor, ncg_oncogene) %>%
+      ncg_oncogene = dplyr::if_else(
+        stringr::str_detect(cgc_annotation,"oncogene") | ncg_oncogene == 1,
+        as.logical(TRUE),as.logical(FALSE))) %>%
+    dplyr::select(entrez, ncg_tumor_suppressor, ncg_oncogene) %>%
+    dplyr::rename(entrezgene = entrez) %>%
     dplyr::filter(!(ncg_tumor_suppressor == F & ncg_oncogene == F)) %>%
-    dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
-    dplyr::select(-entrez) %>%
+    dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
     dplyr::distinct()
 
   pmids <- as.data.frame(
     read.table(gzfile(paste0(basedir,'/data-raw/cancermine/cancermine_sentences.tsv.gz')),
                header = T, comment.char = "", quote = "", sep="\t", stringsAsFactors = F) %>%
       dplyr::filter(predictprob >= 0.9) %>%
-      dplyr::group_by(role, gene_normalized, pmid) %>%
+      dplyr::group_by(role, gene_entrez_id, pmid) %>%
       dplyr::summarise(doid = paste(unique(cancer_id), collapse=","), .groups = "drop") %>%
-      dplyr::rename(symbol = gene_normalized) %>%
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
+      dplyr::rename(entrezgene = gene_entrez_id) %>%
+      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
       dplyr::distinct()
   )
 
@@ -341,59 +326,68 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
   pmids_oncogene <- as.data.frame(
     pmids %>%
       dplyr::filter(role == "Oncogene") %>%
-      dplyr::arrange(symbol,desc(pmid)) %>%
-      dplyr::group_by(symbol) %>%
-      dplyr::summarise(pmids_oncogene = paste(pmid,collapse=", "),
-                       citations_oncogene = paste(citation,collapse="; "),
-                       citation_links_oncogene = paste(head(citation_link,50),collapse=", "),
-                       .groups = "drop") %>%
+      dplyr::arrange(entrezgene, desc(pmid)) %>%
+      dplyr::group_by(entrezgene) %>%
+      dplyr::summarise(
+        pmids_oncogene = paste(pmid,collapse=", "),
+        citations_oncogene = paste(citation,collapse="; "),
+        citation_links_oncogene = paste(head(citation_link,50),collapse=", "),
+        .groups = "drop") %>%
       dplyr::mutate(n_citations_oncogene = as.integer(stringr::str_count(pmids_oncogene,", ")) + 1) %>%
       dplyr::filter(n_citations_oncogene > 1) %>%
-      dplyr::mutate(oncogene_cancermine = dplyr::if_else(n_citations_oncogene > 4,
-                                                         "MC",
-                                                         as.character("LC"))) %>%
-      dplyr::mutate(oncogene_cancermine = dplyr::if_else(n_citations_oncogene >= 10,
-                                                         "HC",
-                                                         as.character(oncogene_cancermine)))
+      dplyr::mutate(oncogene_cancermine = dplyr::if_else(
+        n_citations_oncogene > 4,
+        "MC",
+        as.character("LC"))) %>%
+      dplyr::mutate(oncogene_cancermine = dplyr::if_else(
+        n_citations_oncogene >= 10,
+        "HC",
+        as.character(oncogene_cancermine)))
   )
 
   pmids_tsgene <- as.data.frame(
     pmids %>%
       dplyr::filter(role == "Tumor_Suppressor") %>%
-      dplyr::arrange(symbol,desc(pmid)) %>%
-      dplyr::group_by(symbol) %>%
-      dplyr::summarise(pmids_tsgene = paste(unique(pmid),collapse=", "),
-                       citations_tsgene = paste(citation,collapse="; "),
-                       citation_links_tsgene = paste(head(citation_link,50),collapse=", "),
-                       .groups = "drop") %>%
+      dplyr::arrange(entrezgene, desc(pmid)) %>%
+      dplyr::group_by(entrezgene) %>%
+      dplyr::summarise(
+        pmids_tsgene = paste(unique(pmid),collapse=", "),
+        citations_tsgene = paste(citation,collapse="; "),
+        citation_links_tsgene = paste(head(citation_link,50),collapse=", "),
+        .groups = "drop") %>%
       dplyr::ungroup() %>%
       dplyr::mutate(n_citations_tsgene = as.integer(stringr::str_count(pmids_tsgene,", ")) + 1) %>%
       dplyr::filter(n_citations_tsgene > 1) %>%
-      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(n_citations_tsgene > 4,
-                                                                 "MC",
-                                                                 as.character("LC"))) %>%
-      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(n_citations_tsgene >= 10,
-                                                                 "HC",
-                                                                 as.character(tumor_suppressor_cancermine)))
+      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
+        n_citations_tsgene > 4,
+        "MC",
+        as.character("LC"))) %>%
+      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
+        n_citations_tsgene >= 10,
+        "HC",
+        as.character(tumor_suppressor_cancermine)))
   )
 
   pmids_cdriver <- as.data.frame(
     pmids %>%
       dplyr::filter(role == "Driver") %>%
-      dplyr::arrange(symbol,desc(pmid)) %>%
-      dplyr::group_by(symbol) %>%
-      dplyr::summarise(pmids_cdriver = paste(pmid,collapse=", "),
-                       citations_cdriver = paste(citation,collapse="; "),
-                       citation_links_cdriver = paste(head(citation_link,50),collapse=", "),
-                       .groups = "drop") %>%
+      dplyr::arrange(entrezgene, desc(pmid)) %>%
+      dplyr::group_by(entrezgene) %>%
+      dplyr::summarise(
+        pmids_cdriver = paste(pmid,collapse=", "),
+        citations_cdriver = paste(citation,collapse="; "),
+        citation_links_cdriver = paste(head(citation_link,50),collapse=", "),
+        .groups = "drop") %>%
       dplyr::mutate(n_citations_cdriver = as.integer(stringr::str_count(pmids_cdriver,", ")) + 1) %>%
       dplyr::filter(n_citations_cdriver > 1) %>%
-      dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(n_citations_cdriver > 4,
-                                                              "MC",
-                                                              as.character("LC"))) %>%
-      dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(n_citations_cdriver >= 10,
-                                                              "HC",
-                                                              as.character(cancer_driver_cancermine)))
+      dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(
+        n_citations_cdriver > 4,
+        "MC",
+        as.character("LC"))) %>%
+      dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(
+        n_citations_cdriver >= 10,
+        "HC",
+        as.character(cancer_driver_cancermine)))
   )
 
 
@@ -403,11 +397,11 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Oncogene") %>%
-      dplyr::rename(symbol = gene_normalized) %>%
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
-      dplyr::group_by(symbol) %>%
+      dplyr::rename(entrezgene = gene_entrez_id) %>%
+      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
+      dplyr::group_by(entrezgene) %>%
       dplyr::summarise(doid_oncogene = paste(unique(cancer_id),collapse=","), .groups = "drop") %>%
-      dplyr::inner_join(pmids_oncogene, by = "symbol") %>%
+      dplyr::inner_join(pmids_oncogene, by = "entrezgene") %>%
       dplyr::distinct())
 
   n_hc_oncogene <- oncogene %>%
@@ -420,11 +414,11 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Tumor_Suppressor") %>%
-      dplyr::rename(symbol = gene_normalized) %>%
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
-      dplyr::group_by(symbol) %>%
+      dplyr::rename(entrezgene = gene_entrez_id) %>%
+      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
+      dplyr::group_by(entrezgene) %>%
       dplyr::summarise(doid_tsgene = paste(unique(cancer_id),collapse=","), .groups = "drop") %>%
-      dplyr::inner_join(pmids_tsgene, by = "symbol") %>%
+      dplyr::inner_join(pmids_tsgene, by = "entrezgene") %>%
       dplyr::distinct()
   )
   n_hc_tsgene <- tsgene %>%
@@ -437,20 +431,20 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Driver") %>%
-      dplyr::rename(symbol = gene_normalized) %>%
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, symbol), by = "symbol") %>%
-      dplyr::group_by(symbol) %>%
+      dplyr::rename(entrezgene = gene_entrez_id) %>%
+      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
+      dplyr::group_by(entrezgene) %>%
       dplyr::summarise(doid_cdriver = paste(unique(cancer_id),collapse=","), .groups = "drop") %>%
-      dplyr::inner_join(pmids_cdriver, by = "symbol") %>%
+      dplyr::inner_join(pmids_cdriver, by = "entrezgene") %>%
       dplyr::distinct()
   )
   n_hc_cdriver <- cdriver %>%
     dplyr::filter(cancer_driver_cancermine == "HC") %>%
     nrow()
 
-  tsgene_full <- dplyr::full_join(tsgene, oncogene, by = c("symbol")) %>%
-    dplyr::full_join(cdriver, by="symbol") %>%
-    dplyr::full_join(ncg, by = "symbol") %>%
+  tsgene_full <- dplyr::full_join(tsgene, oncogene, by = c("entrezgene")) %>%
+    dplyr::full_join(cdriver, by="entrezgene") %>%
+    dplyr::full_join(ncg, by = "entrezgene") %>%
     dplyr::mutate(ncg_oncogene = dplyr::if_else(is.na(ncg_oncogene) | ncg_oncogene == F,FALSE,TRUE)) %>%
     dplyr::mutate(ncg_tumor_suppressor = dplyr::if_else(is.na(ncg_tumor_suppressor) | ncg_tumor_suppressor == F,FALSE,TRUE)) %>%
     dplyr::mutate(n_citations_oncogene = dplyr::if_else(is.na(n_citations_oncogene),as.integer(0),as.integer(n_citations_oncogene))) %>%
@@ -467,13 +461,13 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
     dplyr::mutate(cancer_driver = dplyr::if_else(is.na(cancer_driver),FALSE,as.logical(cancer_driver))) %>%
     dplyr::filter(tumor_suppressor == T | oncogene == T | cancer_driver == T) %>%
     dplyr::mutate(ncg_links_tsgene = dplyr::if_else(ncg_tumor_suppressor == T,
-                                                    paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",symbol,"\" target=\"_blank\">Tumor Suppressor</a>"),
+                                                    paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",entrezgene,"\" target=\"_blank\">Tumor Suppressor</a>"),
                                                     as.character("NCG: Not defined"))) %>%
     dplyr::mutate(ncg_links_tsgene = dplyr::if_else(is.na(ncg_links_tsgene),
                                                     as.character("NCG: Not defined"),
                                                     as.character(ncg_links_tsgene))) %>%
     dplyr::mutate(ncg_links_oncogene = dplyr::if_else(ncg_oncogene == T,
-                                                      paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",symbol,"\" target=\"_blank\">Oncogene</a>"),
+                                                      paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",entrezgene,"\" target=\"_blank\">Oncogene</a>"),
                                                       as.character("NCG: Not defined"))) %>%
     dplyr::mutate(ncg_links_oncogene = dplyr::if_else(is.na(ncg_links_oncogene),
                                                       as.character("NCG: Not defined"),
@@ -502,7 +496,15 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
                                                     as.logical(tumor_suppressor))) %>%
     dplyr::mutate(oncogene = dplyr::if_else(!is.na(onco_ts_ratio) & oncogene == T & onco_ts_ratio <= 0.33,
                                             FALSE,
-                                            as.logical(oncogene)))
+                                            as.logical(oncogene))) %>%
+    dplyr::mutate(
+      citation_links_oncogene =
+        stringr::str_replace(
+          citation_links_oncogene,"(NA, ){1,}","")) %>%
+    dplyr::mutate(
+      citation_links_tsgene =
+        stringr::str_replace(
+          citation_links_tsgene,"(NA, ){1,}",""))
 
 
   n_onc_ts <- dplyr::filter(tsgene_full, oncogene == T & tumor_suppressor == T)
@@ -531,7 +533,8 @@ get_curated_fp_cancer_genes <- function(basedir = NULL,
   fp_cancer_drivers <- data.frame('symbol' = tmp[,2], stringsAsFactors = F) %>%
     dplyr::mutate(fp_driver_gene = TRUE) %>%
     dplyr::filter(!is.na(symbol)) %>%
-    dplyr::left_join(dplyr::select(gene_info, symbol, entrezgene), by = c("symbol"))
+    dplyr::inner_join(dplyr::select(gene_info, symbol, entrezgene), by = c("symbol")) %>%
+    dplyr::select(entrezgene, fp_driver_gene)
   return(fp_cancer_drivers)
 
 }
@@ -607,319 +610,412 @@ get_dbnsfp_gene_annotations <- function(basedir = '/Users/sigven/research/DB/var
     dplyr::mutate(function_description = stringr::str_replace_all(function_description,"( )?; $","")) %>%
     dplyr::mutate(function_description = stringr::str_replace_all(function_description,"( )?\\(PubMed:[0-9]{1,}(, PubMed:[0-9]{1,}){0,}\\)","")) %>%
     dplyr::mutate(function_description = stringr::str_replace_all(function_description,"( )?\\(PubMed:[0-9]{1,}(, PubMed:[0-9]{1,}){0,}\\)","")) %>%
-    dplyr::select(symbol, function_description)
+    dplyr::select(symbol, function_description) %>%
+    dplyr::mutate(
+      gene_summary_uniprot =
+        dplyr::if_else(
+          !is.na(function_description),
+          paste0("<b>UniProt:</b> ",
+                 function_description),
+          as.character(function_description)
+        )) %>%
+    dplyr::select(symbol, gene_summary_uniprot)
 
 
   return(dbnsfp_gene)
 }
 
-get_gencode_transcripts <- function(
-  basedir = "/Users/sigven/research/DB/var_annotation_tracks",
-  build = "grch38",
-  append_regulatory_region = FALSE,
-  gencode_version = "38",
-  gene_info = NULL){
-  gencode_ftp_url <- "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/"
+get_gencode_ensembl_transcripts <-
+  function(basedir = NULL,
+           build = "grch38",
+           gencode_version = "39",
+           appris = NULL,
+           gene_info = NULL,
+           update = F){
 
-  rlogging::message(paste0("Retrieving GENCODE transcripts - version ",
-                           gencode_version,", build ",build))
-  if(build == 'grch37'){
-    if(!file.exists(paste0(basedir,"/data-raw/gencode/",build,"/gencode.",
-                           build,".annotation.gtf.gz"))){
-      rlogging::message(paste0(gencode_ftp_url,
-                               "release_19/gencode.v19.annotation.gtf.gz"))
-      download.file(paste0(gencode_ftp_url,"release_19/gencode.v19.annotation.gtf.gz"),
-                    destfile = paste0(basedir,"/data-raw/gencode/",
-                                      build,"/gencode.",
-                                      build,
-                                      ".annotation.gtf.gz"),quiet = T)
-    }
-  }
-  if(build == 'grch38'){
-    if(!file.exists(paste0(basedir,"/data-raw/gencode/",
-                           build,"/gencode.",
-                           build,".annotation.gtf.gz"))){
+    gencode_rds <- file.path(
+      basedir, "data-raw","gencode", build,
+      paste0("gencode_transcripts_v3_", gencode_version, ".rds"))
+
+
+    if(update == F & file.exists(gencode_rds)){
       rlogging::message(
-        paste0("Downloading ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_",
-               gencode_version,
-               "/gencode.v",
-               gencode_version,".annotation.gtf.gz"))
-      download.file(paste0("ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_",
-                           gencode_version,
-                           "/gencode.v",
-                           gencode_version,".annotation.gtf.gz"),
-                    destfile = paste0(basedir,
-                                      "/data-raw/gencode/",
-                                      build,
-                                      "/gencode.",
-                                      build,".annotation.gtf.gz"),
+        paste0("Loading pre-processed GENCODE transcripts - version ",
+               gencode_version,", build ",build))
+      gencode_transcripts <-
+        readRDS(file = gencode_rds)
+      return(gencode_transcripts)
+    }
+
+    gencode_ftp_url <- "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/"
+    rlogging::message(paste0("Retrieving GENCODE transcripts - version ",
+                             gencode_version,", build ",build))
+
+    destfile_gtf <-
+      file.path(basedir, "data-raw","gencode", build,
+                paste0("gencode.", build, ".annotation.v",
+                       gencode_version, ".gtf.gz"))
+
+    remote_gtf <-
+      paste0(gencode_ftp_url,"release_", gencode_version, "/",
+             "gencode.v", gencode_version,".annotation.gtf.gz")
+
+    if(!file.exists(destfile_gtf)){
+      rlogging::message(paste0("Downloading ",remote_gtf))
+      download.file(remote_gtf,
+                    destfile = destfile_gtf,
                     quiet = T)
     }
-  }
-  gencode_gtf <- read.table(gzfile(paste0(basedir,"/data-raw/gencode/",build,
-                                          "/gencode.",build,".annotation.gtf.gz")),
-                            sep="\t", stringsAsFactors = F,na.strings=".", skip=5,
-                            comment.char = "#", quote = "") %>%
-    dplyr::filter(V3 == 'transcript')
 
-  gencode_transcript_start <- gencode_gtf$V4
-  gencode_transcript_end <- gencode_gtf$V5
-  gencode_transcript_strand <- gencode_gtf$V7
-  gencode_chrom <- gencode_gtf$V1
-  gencode_gtf_annotation <- stringr::str_replace_all(gencode_gtf$V9,'"','')
-  gencode_ensembl_gene_id <- stringr::str_match(gencode_gtf_annotation,"gene_id ENSG[0-9]{1,}")[,1]
-  gencode_ensembl_gene_id <- stringr::str_replace(gencode_ensembl_gene_id,"gene_id ","")
-  gencode_ensembl_trans_id <- stringr::str_match(gencode_gtf_annotation,"transcript_id ENST[0-9]{1,}\\.[0-9]{1,}")[,1]
-  gencode_ensembl_trans_id <- stringr::str_replace(gencode_ensembl_trans_id,"transcript_id ","")
-  gencode_ensembl_prot_id <- stringr::str_match(gencode_gtf_annotation,"protein_id ENSP[0-9]{1,}\\.[0-9]{1,}")[,1]
-  gencode_ensembl_prot_id <- stringr::str_replace(gencode_ensembl_prot_id,"protein_id ","")
-  gencode_ensembl_trans_id_original <- gencode_ensembl_trans_id
-  gencode_ensembl_trans_id <- stringr::str_replace(gencode_ensembl_trans_id,"\\.[0-9]{1,}$","")
-  gencode_gene_type <- stringr::str_match(gencode_gtf_annotation,"gene_type \\S+")[,1]
-  gencode_gene_type <- stringr::str_replace_all(gencode_gene_type,"gene_type |;$","")
-  gencode_trans_type <- stringr::str_match(gencode_gtf_annotation,"transcript_type \\S+")[,1]
-  gencode_trans_type <- stringr::str_replace_all(gencode_trans_type,"transcript_type |;$","")
-  gencode_tag <- stringr::str_match(gencode_gtf_annotation,"tag \\S+")[,1]
-  gencode_tag <- stringr::str_replace_all(gencode_tag,"tag |;$","")
-  gencode_genestatus <- stringr::str_match(gencode_gtf_annotation,"gene_status \\S+")[,1]
-  gencode_genestatus <- stringr::str_replace_all(gencode_genestatus,"gene_status |;$","")
-  gencode_symbol <- stringr::str_match(gencode_gtf_annotation,"gene_name \\S+")[,1]
-  gencode_symbol <- stringr::str_replace_all(gencode_symbol,"gene_name |;$","")
-  gencode <- data.frame('chrom' = gencode_chrom,
-                        'transcript_start' = gencode_transcript_start,
-                        'transcript_end' = gencode_transcript_end,
-                        'strand' = gencode_transcript_strand,
-                        'ensembl_gene_id' = gencode_ensembl_gene_id,
-                        'symbol' = gencode_symbol,
-                        'gencode_gene_biotype' = gencode_gene_type,
-                        'gencode_genestatus' = gencode_genestatus,
-                        'gencode_tag' = gencode_tag,
-                        'gencode_transcript_type' = gencode_trans_type,
-                        'ensembl_transcript_id' = gencode_ensembl_trans_id,
-                        'ensembl_transcript_id_full' = gencode_ensembl_trans_id_original,
-                        'ensembl_protein_id' = gencode_ensembl_prot_id,
-                        stringsAsFactors = F) %>%
-    dplyr::filter(!is.na(ensembl_gene_id) &
-                    !is.na(ensembl_transcript_id)) %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(gencode_release = gencode_version)
+    gencode_gtf <- valr::read_gtf(destfile_gtf) %>%
+      dplyr::filter(type == "transcript") %>%
+      dplyr::rename(transcript_start = start,
+                    transcript_end = end,
+                    ensembl_gene_id = gene_id,
+                    symbol = gene_name,
+                    gencode_gene_biotype = gene_type,
+                    gencode_transcript_type = transcript_type,
+                    ensembl_transcript_id = transcript_id,
+                    ensembl_protein_id = protein_id) %>%
+      dplyr::select(chrom,
+                    transcript_start,
+                    transcript_end,
+                    strand,
+                    symbol,
+                    ensembl_gene_id,
+                    ensembl_transcript_id,
+                    gencode_gene_biotype,
+                    gencode_transcript_type,
+                    ensembl_protein_id) %>%
+      dplyr::mutate(ensembl_transcript_id =
+                      stringr::str_replace(ensembl_transcript_id,
+                                           "\\.[0-9]{1,}$","")) %>%
+      dplyr::mutate(ensembl_gene_id =
+                      stringr::str_replace(ensembl_gene_id,
+                                           "\\.[0-9]{1,}$","")) %>%
+      dplyr::mutate(ensembl_protein_id =
+                      stringr::str_replace(ensembl_protein_id,
+                                           "\\.[0-9]{1,}$","")) %>%
+      dplyr::distinct()
 
-  rlogging::message(paste0("A total of ",nrow(gencode)," transcripts parsed"))
-
-  ## include regulatory region (for VEP annotation)
-  if(append_regulatory_region == T){
-    rlogging::message("Parameter 'append_regulatory_region' is TRUE: expanding transcript start/end with 5kb (for VEP consequence compliance)")
-    chromosome_lengths <- data.frame('chrom' = head(names(seqlengths(BSgenome.Hsapiens.UCSC.hg19)),25),
-                                     'chrom_length' = head(seqlengths(BSgenome.Hsapiens.UCSC.hg19),25),
-                                     stringsAsFactors = F, row.names = NULL)
-    if(build == 'grch38'){
-      chromosome_lengths <- data.frame('chrom' = head(names(seqlengths(BSgenome.Hsapiens.UCSC.hg38)),25),
-                                       'chrom_length' = head(seqlengths(BSgenome.Hsapiens.UCSC.hg38),25),
-                                       stringsAsFactors = F, row.names = NULL)
-    }
-    gencode <- as.data.frame(
-      gencode %>%
-        dplyr::left_join(chromosome_lengths, by=c("chrom")) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(start = dplyr::if_else(chrom != "chrM",
-                                             as.integer(
-                                               max(1, transcript_start - 5001)
-                                             ),
-                                             as.integer(transcript_start)),
-                      end = dplyr::if_else(chrom != "chrM",
-                                           as.integer(
-                                             min(chrom_length,transcript_end + 5001)
-                                           ),
-                                           as.integer(transcript_end))
-        ) %>%
-        dplyr::select(-chrom_length)
+    ## Temporary fix: Need additional processing to get multiple tag-value
+    ## pairs in a proper fashion
+    gencode_gtf_fix <- as.data.frame(
+      data.table::fread(destfile_gtf, skip = 5, verbose = F) %>%
+        dplyr::filter(V3 == "transcript")
     )
+    tag_cols <- stringr::str_match_all(
+      gencode_gtf_fix$V9, "tag \\\"(\\S+)\\\";")  %>%
+      purrr::map_chr(~stringr::str_c(.x[, ncol(.x)], collapse = "&"))
+
+    gencode_gtf$gencode_tag <- tag_cols
+    gencode <- gencode_gtf %>%
+      dplyr::mutate(gencode_tag = dplyr::if_else(
+        nchar(gencode_tag) == 0,
+        as.character(NA),
+        as.character(gencode_tag)
+      )) %>%
+      dplyr::filter(!is.na(ensembl_gene_id) &
+                      !is.na(ensembl_transcript_id)) %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(gencode_release = gencode_version)
+
+    #
+    rlogging::message(paste0("A total of ",nrow(gencode)," transcripts parsed"))
+
+    transcript_df <- gencode %>%
+      dplyr::select(ensembl_transcript_id,
+                    ensembl_gene_id,
+                    symbol) %>%
+      dplyr::distinct()
+
+    ## get gene and transcript cross-references (biomart + gene_info)
+    gencode_xrefs <- resolve_ensembl_transcript_xrefs(
+      transcript_df = transcript_df,
+      build = build,
+      gene_info = gene_info
+    )
+
+    gencode <- gencode %>% dplyr::left_join(
+      gencode_xrefs, by = c("ensembl_gene_id",
+                            "ensembl_transcript_id",
+                            "symbol"))
+
+    if(!is.null(appris)){
+      gencode <- dplyr::left_join(
+        gencode,
+        dplyr::select(appris, principal_isoform_flag,
+                      ensembl_transcript_id),
+        by = "ensembl_transcript_id")
+    }
+
+    gencode <- annotate_other_gencode_basic_members(gencode)
+    attr(gencode, "groups") <- NULL
+
+    if(update == T){
+      saveRDS(gencode, file=gencode_rds)
+    }
+
+    rlogging::message(paste0("A total of ",nrow(gencode)," valid transcripts remaining"))
+
+    return(gencode)
+
   }
 
-  ensembl_mart <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL")
-  if(build == 'grch37'){
-    ensembl_mart <- biomaRt::useMart(biomart = "ensembl")
-  }
-  ensembl_genes <- biomaRt::useDataset("hsapiens_gene_ensembl",
-                                       mart = ensembl_mart)
-  queryAttributes <- c('ensembl_transcript_id','refseq_mrna')
-  ensembl_genes_xref1 <- as.data.frame(
-    biomaRt::getBM(attributes = queryAttributes, mart = ensembl_genes) %>%
-      dplyr::mutate(refseq_mrna =
-                      dplyr::if_else(refseq_mrna == '',
-                                     as.character(NA),
-                                     as.character(refseq_mrna))) %>%
-      dplyr::filter(!is.na(refseq_mrna)) %>%
-      dplyr::group_by(ensembl_transcript_id) %>%
-      dplyr::summarise(refseq_mrna = paste(unique(refseq_mrna),
-                                           collapse = "&"),
+annotate_other_gencode_basic_members <- function(gencode){
+
+  ## get all genes that has an annotated basic transcript
+
+  ## perform anti_join against the set defined below
+
+  gencode_basicset <- gencode %>%
+    dplyr::select(ensembl_gene_id, gencode_tag) %>%
+    dplyr::filter(!is.na(gencode_tag) &
+                    stringr::str_detect(gencode_tag,"basic"))
+
+
+  single_transcripts_per_gene <- as.data.frame(
+    gencode %>%
+      dplyr::filter(
+        stringr::str_detect(
+          gencode_gene_biotype,"^(IG_|TR_)|scaRNA|snRNA|snoRNA|sRNA|scRNA|pseudogene")) %>%
+      dplyr::select(ensembl_gene_id, symbol, gencode_tag,
+                    ensembl_transcript_id) %>%
+      dplyr::anti_join(gencode_basicset, by = "ensembl_gene_id") %>%
+      dplyr::group_by(symbol, ensembl_gene_id) %>%
+      dplyr::summarise(n = dplyr::n(),
+                       gencode_tag = paste(gencode_tag, collapse=","),
                        .groups = "drop") %>%
-      dplyr::ungroup()
+      dplyr::filter(n == 1) %>%
+      dplyr::filter(!stringr::str_detect(gencode_tag,"basic")) %>%
+      dplyr::select(ensembl_gene_id, symbol, gencode_tag) %>%
+      dplyr::mutate(basic_expanded = T)
   )
-
-  queryAttributes <- c('ensembl_gene_id','hgnc_symbol','hgnc_id')
-  ensembl_genes_xref3 <- as.data.frame(
-    biomaRt::getBM(attributes = queryAttributes, mart=ensembl_genes) %>%
-      dplyr::mutate(hgnc_symbol = dplyr::if_else(hgnc_symbol == '',
-                                                 as.character(NA),
-                                                 as.character(hgnc_symbol))) %>%
-      dplyr::group_by(ensembl_gene_id) %>%
-      dplyr::summarise(hgnc_symbol = paste(unique(hgnc_symbol),
-                                           collapse="&"),
-                       hgnc_id = paste(unique(hgnc_id),
-                                       collapse="&"),
-                       .groups = "drop") %>%
-      dplyr::ungroup()
-  )
-
-  queryAttributes <- c('hgnc_symbol','entrezgene_id')
-  ensembl_genes_xref4 <- as.data.frame(
-    biomaRt::getBM(attributes = queryAttributes, mart=ensembl_genes) %>%
-      dplyr::mutate(entrezgene = as.integer(entrezgene_id)) %>%
-      dplyr::filter(hgnc_symbol != "") %>%
-      dplyr::select(-entrezgene_id) %>%
-      dplyr::filter(!is.na(entrezgene))
-  )
-
-  tmp1 <- as.data.frame(ensembl_genes_xref4 %>%
-                          dplyr::group_by(hgnc_symbol) %>%
-                          dplyr::summarise(n = dplyr::n(), .groups = "drop"))
-
-  b_nonduplicates <- ensembl_genes_xref4 %>%
-    dplyr::left_join(tmp1,by=c("hgnc_symbol")) %>%
-    dplyr::filter(n == 1)
-  b_duplicates <- ensembl_genes_xref4 %>%
-    dplyr::left_join(tmp1,by=c("hgnc_symbol")) %>%
-    dplyr::filter(n > 1)
-  b <- as.data.frame(mygene::queryMany(unique(b_duplicates$hgnc_symbol),
-                                       scopes="symbol",
-                                       fields="entrezgene",
-                                       species="human")) %>%
-    dplyr::rename(hgnc_symbol = query) %>%
-    dplyr::mutate(entrezgene = as.integer(entrezgene)) %>%
-    dplyr::select(hgnc_symbol, entrezgene)
-
-  b_duplicates <- b_duplicates %>% dplyr::inner_join(b,by=c("hgnc_symbol","entrezgene"))
-  ensembl_genes_xref4 <- dplyr::bind_rows(b_nonduplicates, b_duplicates) %>%
-    dplyr::select(-n)
-
-  queryAttributes <- c('entrezgene_id','entrezgene_description')
-  ensembl_genes_xref5 <- biomaRt::getBM(attributes = queryAttributes, mart=ensembl_genes) %>%
-    dplyr::mutate(entrezgene = as.integer(entrezgene_id), description = entrezgene_description) %>%
-    dplyr::mutate(description = dplyr::if_else(description == '',as.character(NA),as.character(description))) %>%
-    dplyr::select(-c(entrezgene_id, entrezgene_description)) %>%
-    dplyr::mutate(description = stringr::str_replace(description," \\[.+$","")) %>%
-    dplyr::filter(!is.na(entrezgene))
-
-  queryAttributes <- c('ensembl_transcript_id','refseq_peptide')
-  ensembl_genes_xref6 <- as.data.frame(
-    biomaRt::getBM(attributes = queryAttributes, mart = ensembl_genes) %>%
-      dplyr::mutate(refseq_peptide =
-                      dplyr::if_else(refseq_peptide == '',
-                                     as.character(NA),
-                                     as.character(refseq_peptide))) %>%
-      dplyr::filter(!is.na(refseq_peptide)) %>%
-      dplyr::group_by(ensembl_transcript_id) %>%
-      dplyr::summarise(refseq_peptide = paste(unique(refseq_peptide),
-                                              collapse = "&"),
-                       .groups = "drop") %>%
-      dplyr::ungroup()
-  )
-
-
-  ensembl_genes_xref2 <- as.data.frame(
-    ensembl_genes_xref3 %>%
-      dplyr::left_join(ensembl_genes_xref4, by=c("hgnc_symbol")) %>%
-      dplyr::left_join(ensembl_genes_xref5, by=c("entrezgene")) %>%
-      dplyr::rename(symbol = hgnc_symbol, name = description)
-  )
-  ensembl_genes_xref2$entrezgene <- as.integer(ensembl_genes_xref2$entrezgene)
 
   gencode <- gencode %>%
-    dplyr::left_join(dplyr::select(gene_info, hgnc_id,
-                                   entrezgene,name, symbol),
-                     by=c("symbol" = "symbol")) %>%
-    dplyr::left_join(ensembl_genes_xref1, by=c("ensembl_transcript_id")) %>%
-    dplyr::left_join(ensembl_genes_xref6, by=c("ensembl_transcript_id"))
-
-  gencode_not_missing <- gencode %>%
-    dplyr::filter(!is.na(symbol) & !is.na(entrezgene) & !is.na(name))
-  gencode_missing_name_entrez <- gencode %>%
-    dplyr::filter(!is.na(symbol) & is.na(entrezgene)) %>%
-    dplyr::select(-c(name,entrezgene)) %>%
-    dplyr::left_join(dplyr::select(ensembl_genes_xref2,
-                                   entrezgene,
-                                   ensembl_gene_id),by=c("ensembl_gene_id")) %>%
-    dplyr::filter(!is.na(entrezgene)) %>%
-    dplyr::left_join(dplyr::select(gene_info, entrezgene, name),
-                     by = c("entrezgene")) %>%
-    dplyr::filter(!is.na(name))
-
-  gencode_found <- dplyr::bind_rows(gencode_not_missing, gencode_missing_name_entrez)
-  gencode_remain <- dplyr::anti_join(gencode, gencode_found, by=c("ensembl_gene_id"))
-  gencode_remain <- gencode_remain %>%
-    dplyr::filter(!is.na(symbol) & is.na(entrezgene)) %>%
-    dplyr::select(-c(name,entrezgene, hgnc_id)) %>%
-    dplyr::left_join(dplyr::select(ensembl_genes_xref2,
-                                   entrezgene, name,
-                                   ensembl_gene_id,
-                                   hgnc_id),by=c("ensembl_gene_id"))
-
-
-  gencode_remain$hgnc_id <- as.character(gencode_remain$hgnc_id)
-  gencode <- dplyr::bind_rows(gencode_found, gencode_remain)
-  #gencode <- gencode %>% dplyr::mutate(symbol_entrez = symbol)
-
-  gencode <- gencode %>%
-    dplyr::filter(!is.na(ensembl_transcript_id)) %>%
-    dplyr::distinct()
-  if(nrow(gencode[!is.na(gencode$refseq_mrna) & gencode$refseq_mrna == "NA",]) > 0){
-    gencode[!is.na(gencode$refseq_mrna) & gencode$refseq_mrna == "NA",]$refseq_mrna <- NA
-  }
-
-  tmp <- gene_info %>%
-    dplyr::select(symbol, name) %>%
-    dplyr::rename(name_entrez = name)
-  gencode <- gencode %>%
-    dplyr::left_join(tmp, by=c("symbol" = "symbol")) %>%
-    dplyr::mutate(name = dplyr::if_else(
-      stringr::str_detect(name,"^(U|u)ncharacterized") &
-        name != name_entrez,name_entrez,as.character(name))) %>%
-    dplyr::select(-name_entrez) %>%
-    dplyr::distinct()
-
-
-  gencode_n <- gencode %>% dplyr::group_by(ensembl_transcript_id) %>%
-    dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  gencode <- gencode %>% dplyr::left_join(gencode_n,by=c("ensembl_transcript_id"))
-
-  gencode_1 <- dplyr::filter(gencode, n == 1) %>%
-    dplyr::select(-n)
-  gencode_2 <- dplyr::filter(gencode, n > 1) %>%
-    dplyr::filter(!is.na(hgnc_id)) %>%
-    dplyr::distinct() %>%
-    dplyr::select(-n)
-
-  gencode <- dplyr::bind_rows(gencode_1, gencode_2)
-
-  gencode_1 <- gencode %>%
-    dplyr::filter(is.na(entrezgene) & is.na(name)) %>%
-    dplyr::select(-c(entrezgene,name))
-  gene_info_name <- dplyr::select(gene_info, ensembl_gene_id,
-                                  entrezgene, name) %>%
-    dplyr::filter(!is.na(entrezgene))
-  gencode_1 <- gencode_1 %>%
-    dplyr::left_join(gene_info_name,by=c("ensembl_gene_id"))
-
-  gencode_2 <- gencode %>%
-    dplyr::anti_join(dplyr::select(gencode_1, ensembl_transcript_id),
-                     by = c("ensembl_transcript_id"))
-  gencode <- dplyr::bind_rows(gencode_1, gencode_2)
-
-
-  rlogging::message(paste0("A total of ",nrow(gencode)," valid transcripts remaining"))
+    dplyr::left_join(
+      dplyr::select(single_transcripts_per_gene,
+                    ensembl_gene_id, basic_expanded),
+      by = "ensembl_gene_id") %>%
+    dplyr::mutate(gencode_tag = dplyr::case_when(
+      is.na(gencode_tag) & basic_expanded == T ~ "basic",
+      !is.na(gencode_tag) &
+        !stringr::str_detect(gencode_tag,"basic") &
+        basic_expanded == T ~ paste0("basic&", gencode_tag),
+      TRUE ~ as.character(gencode_tag)
+    )) %>%
+    dplyr::select(-basic_expanded)
 
   return(gencode)
+
+}
+
+
+
+resolve_ensembl_transcript_xrefs <- function(
+  transcript_df = NULL,
+  build = "grch38",
+  gene_info = NULL){
+
+  invisible(assertable::assert_colnames(
+    transcript_df, colnames = c('ensembl_transcript_id',
+                                'ensembl_gene_id'),
+    quiet = T))
+
+  ensembl_mart <- NULL
+  if(build == 'grch38'){
+    ensembl_mart <- biomaRt::useEnsembl(biomart = 'genes',
+                            dataset = 'hsapiens_gene_ensembl',
+                            version = 105)
+  }
+  if(build == 'grch37'){
+    ensembl_mart <- biomaRt::useEnsembl(biomart = 'genes',
+                                        dataset = 'hsapiens_gene_ensembl',
+                                        version = "GRCh37")
+  }
+
+
+  queryAttributes1 <- c('ensembl_transcript_id',
+                        'refseq_mrna',
+                        'ensembl_gene_id',
+                        'hgnc_id',
+                        'entrezgene_id')
+  queryAttributes2 <- c('ensembl_transcript_id',
+                        'uniprotswissprot',
+                        'refseq_peptide')
+
+  xref_biomart_1 <- biomaRt::getBM(attributes = queryAttributes1,
+                                   mart = ensembl_mart) %>%
+    dplyr::rename(entrezgene = entrezgene_id)
+  xref_biomart_2 <- biomaRt::getBM(attributes = queryAttributes2,
+                                   mart = ensembl_mart) %>%
+    dplyr::rename(uniprot_acc = uniprotswissprot)
+  xref_biomart <- xref_biomart_1 %>% dplyr::left_join(
+    xref_biomart_2, by = "ensembl_transcript_id"
+  ) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(hgnc_id = as.integer(
+      stringr::str_replace(hgnc_id, "HGNC:","")
+    ))
+
+  for(n in c('refseq_peptide',
+             'uniprot_acc',
+             'refseq_mrna')){
+    xref_biomart[!is.na(xref_biomart[,n]) &
+                   (xref_biomart[,n] == "" |
+                      xref_biomart[,n] == "NA"),][,n] <- NA
+
+  }
+
+  for(xref in c('refseq_peptide',
+                'uniprot_acc',
+                'refseq_mrna')){
+
+    ensXref <- as.data.frame(
+      xref_biomart %>%
+        dplyr::select(ensembl_gene_id,
+                      ensembl_transcript_id,
+                      !!rlang::sym(xref)) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(ensembl_transcript_id,
+                        ensembl_gene_id) %>%
+        dplyr::summarise(
+          !!rlang::sym(xref) := paste(unique(!!rlang::sym(xref)),
+                                      collapse = "&"),
+          .groups = "drop") %>%
+        dplyr::mutate(!!rlang::sym(xref) := dplyr::if_else(
+          !!rlang::sym(xref) == "NA", as.character(NA),
+          as.character(!!rlang::sym(xref))
+        ))
+    )
+    transcript_df <- transcript_df %>%
+      dplyr::left_join(ensXref, by = c("ensembl_gene_id",
+                                       "ensembl_transcript_id"))
+  }
+
+  for(xref in c('entrezgene',
+                'hgnc_id')){
+
+    ensXref <- as.data.frame(
+      xref_biomart %>%
+        dplyr::select(ensembl_gene_id,
+
+                      !!rlang::sym(xref)) %>%
+        dplyr::distinct() %>%
+        dplyr::group_by(
+          ensembl_gene_id) %>%
+        dplyr::summarise(
+          !!rlang::sym(xref) := paste(unique(!!rlang::sym(xref)),
+                                      collapse = "&"),
+          .groups = "drop") %>%
+        dplyr::mutate(!!rlang::sym(xref) := dplyr::if_else(
+          !!rlang::sym(xref) == "NA", as.character(NA),
+          as.character(!!rlang::sym(xref))
+        ))
+    )
+    transcript_df <- transcript_df %>%
+      dplyr::left_join(ensXref, by = c("ensembl_gene_id"))
+  }
+
+
+  gene_xrefs_maps <- list()
+
+  ## map gene cross-references (name) by hgnc identifier
+  gene_xrefs_maps[['by_hgnc']] <- as.data.frame(
+    transcript_df %>%
+      dplyr::filter(!is.na(hgnc_id)) %>%
+      dplyr::select(-entrezgene) %>%
+      dplyr::left_join(
+        dplyr::select(gene_info,
+                      hgnc_id,
+                      entrezgene,
+                      symbol_entrez,
+                      name),
+        by = "hgnc_id")
+  )
+
+  ## map gene cross-references by Entrez gene identifier
+  ## given that hgnc id is not provided
+  gene_xrefs_maps[['by_entrezgene']] <- as.data.frame(
+    transcript_df %>%
+      dplyr::filter(is.na(hgnc_id) &
+                      !is.na(entrezgene) &
+                      !stringr::str_detect(entrezgene, "&")) %>%
+      dplyr::select(-hgnc_id) %>%
+      dplyr::mutate(entrezgene = as.integer(entrezgene)) %>%
+      dplyr::left_join(
+        dplyr::select(gene_info,
+                      hgnc_id,
+                      entrezgene,
+                      symbol_entrez,
+                      name),
+        by = "entrezgene")
+  )
+
+  ## map gene cross-references by symbol identifier
+  ## given that hgnc id and entrezgene is not provided
+  gene_xrefs_maps[['by_symbol']] <- as.data.frame(
+    transcript_df %>%
+      dplyr::filter(is.na(hgnc_id) &
+                      is.na(entrezgene)) %>%
+      dplyr::select(-c(entrezgene, hgnc_id)) %>%
+      dplyr::left_join(
+        dplyr::select(gene_info,
+                      hgnc_id,
+                      entrezgene,
+                      symbol,
+                      symbol_entrez,
+                      name),
+        by = "symbol")
+  )
+
+  gene_xrefs_maps[['remain']] <- as.data.frame(
+    transcript_df %>%
+      dplyr::filter(is.na(hgnc_id) &
+                      !is.na(entrezgene) &
+                      stringr::str_detect(entrezgene, "&")) %>%
+      dplyr::mutate(name = NA, symbol_entrez = NA)
+  )
+
+
+  gencode_transcripts_xref <-
+    do.call(rbind, gene_xrefs_maps)
+
+  ## Map remaining gene cross-refs against unambiguous gene alias
+  alias2gene <- as.data.frame(
+    gene_info %>%
+      dplyr::select(name, synonyms, entrezgene,
+                    hgnc_id, symbol_entrez) %>%
+      #dplyr::rename(symbol_entrez = symbol) %>%
+      dplyr::mutate(entrezgene = as.character(entrezgene)) %>%
+      dplyr::filter(!is.na(synonyms)) %>%
+      tidyr::separate_rows(synonyms, sep = "\\|")
+  )
+
+  UnAmbigAliases <- as.data.frame(
+    alias2gene %>%
+      dplyr::group_by(synonyms) %>%
+      dplyr::summarise(n = dplyr::n()) %>%
+      dplyr::filter(n == 1) %>%
+      dplyr::inner_join(alias2gene, by = "synonyms")) %>%
+    dplyr::select(-n) %>%
+    dplyr::rename(symbol = synonyms)
+
+  gene_xrefs_maps[['by_alias']] <- gencode_transcripts_xref %>%
+    dplyr::filter(is.na(entrezgene) & is.na(name) & !is.na(symbol))  %>%
+    dplyr::select(-c(entrezgene, name, hgnc_id, symbol_entrez)) %>%
+    dplyr::left_join(UnAmbigAliases, by = "symbol")
+
+  gencode_transcripts_xref_final <- as.data.frame(
+    dplyr::anti_join(gencode_transcripts_xref, gene_xrefs_maps[['by_alias']],
+                     by = c("ensembl_gene_id","ensembl_transcript_id","symbol")) %>%
+      dplyr::bind_rows(gene_xrefs_maps[['by_alias']])
+  )
+
+  rownames(gencode_transcripts_xref_final) <- NULL
+  attr(gencode_transcripts_xref_final, "groups") <- NULL
+
+  return(gencode_transcripts_xref_final)
 
 }
 
@@ -1218,54 +1314,53 @@ get_gencode_data <- function(
       dplyr::filter(!is.na(entrezgene)) %>%
       dplyr::mutate(entrezgene = as.character(entrezgene))
 
-    gencode <-
-      map_uniprot_accession(
-        gencode = gencode,
-        uniprot_map = uniprot_map)
-
-    ####---- Resolve ambiguious entrezgene identifiers ----####
-    ambiguous_entrezgene_ids <- as.data.frame(
-      gencode %>%
-        dplyr::select(symbol, entrezgene) %>%
-        dplyr::distinct() %>%
-        dplyr::group_by(entrezgene) %>%
-        dplyr::summarise(n = dplyr::n()) %>%
-        dplyr::filter(n > 1) %>%
-        dplyr::select(-n)
-    )
-
-    nonambiguous_entrezgene_ids <- as.data.frame(
-      gencode %>%
-        dplyr::select(symbol, entrezgene) %>%
-        dplyr::distinct() %>%
-        dplyr::group_by(entrezgene) %>%
-        dplyr::summarise(n = dplyr::n()) %>%
-        dplyr::filter(n == 1) %>%
-        dplyr::select(-n)
-    )
-
-    gencode_nonambiguous <-
-      gencode %>% dplyr::inner_join(
-        nonambiguous_entrezgene_ids, by = "entrezgene"
-      )
-
-    gencode_ambiguous_resolved <-
-      gencode %>% dplyr::inner_join(
-        ambiguous_entrezgene_ids, by = "entrezgene"
-      ) %>%
-      dplyr::filter(symbol != "Vault") %>%
-      dplyr::filter(symbol != "AC006115.7") %>%
-      dplyr::filter(symbol == "VTRNA2-1" |
-                      symbol == "ZIM2-AS1" |
-                      !stringr::str_detect(symbol,"-"))
-
-    gencode <- gencode_nonambiguous %>%
-      dplyr::bind_rows(gencode_ambiguous_resolved)
-
-    rm(gencode_ambiguous_resolved)
-    rm(gencode_nonambiguous)
-    rm(nonambiguous_entrezgene_ids)
-    rm(ambiguous_entrezgene_ids)
+    # gencode <-
+    #   map_uniprot_accession(
+    #     gencode = gencode,
+    #     uniprot_map = uniprot_map)
+    #
+    # ambiguous_entrezgene_ids <- as.data.frame(
+    #   gencode %>%
+    #     dplyr::select(symbol, entrezgene) %>%
+    #     dplyr::distinct() %>%
+    #     dplyr::group_by(entrezgene) %>%
+    #     dplyr::summarise(n = dplyr::n()) %>%
+    #     dplyr::filter(n > 1) %>%
+    #     dplyr::select(-n)
+    # )
+    #
+    # nonambiguous_entrezgene_ids <- as.data.frame(
+    #   gencode %>%
+    #     dplyr::select(symbol, entrezgene) %>%
+    #     dplyr::distinct() %>%
+    #     dplyr::group_by(entrezgene) %>%
+    #     dplyr::summarise(n = dplyr::n()) %>%
+    #     dplyr::filter(n == 1) %>%
+    #     dplyr::select(-n)
+    # )
+    #
+    # gencode_nonambiguous <-
+    #   gencode %>% dplyr::inner_join(
+    #     nonambiguous_entrezgene_ids, by = "entrezgene"
+    #   )
+    #
+    # gencode_ambiguous_resolved <-
+    #   gencode %>% dplyr::inner_join(
+    #     ambiguous_entrezgene_ids, by = "entrezgene"
+    #   ) %>%
+    #   dplyr::filter(symbol != "Vault") %>%
+    #   dplyr::filter(symbol != "AC006115.7") %>%
+    #   dplyr::filter(symbol == "VTRNA2-1" |
+    #                   symbol == "ZIM2-AS1" |
+    #                   !stringr::str_detect(symbol,"-"))
+    #
+    # gencode <- gencode_nonambiguous %>%
+    #   dplyr::bind_rows(gencode_ambiguous_resolved)
+    #
+    # rm(gencode_ambiguous_resolved)
+    # rm(gencode_nonambiguous)
+    # rm(nonambiguous_entrezgene_ids)
+    # rm(ambiguous_entrezgene_ids)
 
 
     saveRDS(gencode, file = paste0(basedir,"/data-raw/gencode/gencode_",
@@ -1281,4 +1376,194 @@ get_gencode_data <- function(
 
   }
   return(gencode)
+}
+
+get_tf_target_interactions(basedir = NULL){
+
+  tf_target_interactions_dorothea_all <-
+    OmnipathR::import_transcriptional_interactions(
+      organism = "9606",
+      dorothea_levels = c("A","B","C","D"),
+      references_by_resource = F) %>%
+    dplyr::filter(!is.na(dorothea_level)) %>%
+    dplyr::group_by(source_genesymbol, target_genesymbol) %>%
+    dplyr::summarise(
+      references = paste(unique(references), collapse=";"),
+      interaction_sources = paste(unique(sources), collapse="; "),
+      dorothea_level = paste(unique(dorothea_level), collapse=";"),
+      .groups = "drop") %>%
+    dplyr::filter(!stringr::str_detect(source_genesymbol,"_")) %>%
+    dplyr::mutate(interaction_sources = stringr::str_squish(
+      stringr::str_replace_all(
+        interaction_sources, ";","; "))) %>%
+
+    ## Not available for non-academic use (entries provided solely with TRED)
+    dplyr::filter(!stringr::str_detect(interaction_sources,"^(RegNetwork_DoRothEA; TRED_DoRothEA)$"))
+
+  tf_target_pmids <- tf_target_interactions_dorothea_all %>%
+    dplyr::filter(!is.na(references) & nchar(references) > 0) %>%
+    dplyr::select(source_genesymbol, target_genesymbol, references) %>%
+    tidyr::separate_rows(references, sep=";") %>%
+    dplyr::filter(nchar(references) > 0) %>%
+    dplyr::distinct()
+
+  tf_target_citations <- get_citations_pubmed(
+    pmid = unique(tf_target_pmids$references))
+
+  tf_target_pmids <- as.data.frame(
+    tf_target_pmids %>%
+      dplyr::mutate(references = as.integer(references)) %>%
+      dplyr::left_join(tf_target_citations, by = c("references" = "pmid")) %>%
+      dplyr::group_by(source_genesymbol, target_genesymbol) %>%
+      dplyr::summarise(
+        tf_target_literature_support = paste(
+          link, collapse= ","),
+        tf_target_literature = paste(
+          citation, collapse="|"
+        )
+      )
+  )
+
+  tf_target_interactions_dorothea_all <- tf_target_interactions_dorothea_all %>%
+    dplyr::left_join(tf_target_pmids,
+                     by = c("source_genesymbol",
+                            "target_genesymbol")) %>%
+    dplyr::rename(regulator = source_genesymbol,
+                  target = target_genesymbol) %>%
+    dplyr::select(-references) %>%
+    dplyr::mutate(confidence_level = dplyr::case_when(
+      stringr::str_detect(dorothea_level,"A|A;B|A;B;D|A;D") ~ "A",
+      stringr::str_detect(dorothea_level,"B|B;D|B;C") ~ "B",
+      stringr::str_detect(dorothea_level,"C;D|C") ~ "C",
+      stringr::str_detect(dorothea_level,"D") ~ "D",
+      TRUE ~ as.character(dorothea_level),
+    )) %>%
+    dplyr::select(-dorothea_level) %>%
+    dplyr::mutate(mode_of_regulation = NA)
+
+
+  tf_target_interactions_dorothea_pancancer <-
+    dorothea::dorothea_hs_pancancer %>%
+    dplyr::mutate(interaction_sources = "DoRothEA_hs_pancancer") %>%
+    dplyr::rename(regulator = tf,
+                  confidence_level = confidence,
+                  mode_of_regulation = mor) %>%
+    dplyr::mutate(mode_of_regulation = dplyr::if_else(
+      mode_of_regulation == 1,"Stimulation",
+      "Repression")) %>%
+    dplyr::mutate(tf_target_literature_support = NA,
+                  tf_target_literature = NA) %>%
+    dplyr::select(regulator, target,
+                  interaction_sources,
+                  confidence_level,
+                  mode_of_regulation,
+                  tf_target_literature_support,
+                  tf_target_literature)
+
+  tf_target_interactions <- list()
+  tf_target_interactions[['global']] <-
+    tf_target_interactions_dorothea_all
+  tf_target_interactions[['pancancer']] <-
+    tf_target_interactions_dorothea_pancancer
+
+  return(tf_target_interactions)
+}
+
+
+get_pathway_db <- function(
+  basedir = NULL,
+  wikipathway = T,
+  kegg = T,
+  netpath = T,
+  msigdb = T,
+  omnipathdb = NULL,
+  msigdb_version = msigdb_version,
+  wikipathways_version = wikipathways_version,
+  kegg_version = kegg_version,
+  netpath_version = netpath_version){
+
+
+  wikipathways_gmt <- file.path(
+    basedir, "data-raw", "wikipathways",
+    paste0("wikipathways-", wikipathways_version,
+           "-gmt-Homo_sapiens.gmt")
+  )
+
+  netpath_mapping_fname <- file.path(
+    basedir, "data-raw", "netpath",
+    "id_mapping.tsv")
+
+  keggdb_fname <- file.path(
+    basedir, "data-raw",
+    "kegg", "kegg.pathway.gene.tsv"
+  )
+
+
+  if(!file.exists(wikipathways_gmt)){
+    rWikiPathways::downloadPathwayArchive(
+      organism = "Homo sapiens",
+      date = wikipathways_version,
+      destpath = "data-raw/wikipathways/",
+      format = "gmt")
+  }
+
+  wikipathways <- clusterProfiler::read.gmt(
+    wikipathways_gmt)
+  wp2gene <- wikipathways %>%
+    tidyr::separate(term, c("name","version","wpid","org"), "%")
+  wikipathwaydb <- list()
+  wikipathwaydb[['VERSION']] <- wikipathways_version
+  wikipathwaydb[['TERM2GENE']] <- wp2gene %>%
+    dplyr::select(wpid, gene) %>%
+    dplyr::rename(standard_name = wpid, entrez_gene = gene)
+  wikipathwaydb[['TERM2NAME']] <- wp2gene %>%
+    dplyr::select(wpid, name) %>%
+    dplyr::rename(standard_name = wpid) %>%
+    dplyr::distinct()
+
+  ####---NetPath signalling pathways---####
+  netpath_idmapping <-
+    read.table(netpath_mapping_fname,
+               stringsAsFactors = F, header = F, sep = "\t",
+               col.names = c("name", "standard_name")) %>%
+    dplyr::mutate(standard_name = paste0("NetPath_",standard_name))
+
+  netpath_pathway_data <- omnipathdb %>%
+    dplyr::filter(source == "NetPath") %>%
+    dplyr::select(genesymbol, value) %>%
+    dplyr::rename(name = value, symbol = genesymbol) %>%
+    dplyr::left_join(netpath_idmapping, by = "name") %>%
+    dplyr::mutate(name = paste0(name," signaling pathway")) %>%
+    dplyr::arrange(name, standard_name, symbol) %>%
+    dplyr::left_join(dplyr::select(gene_info, entrezgene, symbol)) %>%
+    dplyr::rename(entrez_gene = entrezgene) %>%
+    dplyr::mutate(entrez_gene = as.character(entrez_gene)) %>%
+    dplyr::select(standard_name, name, entrez_gene)
+  netpathdb <- list()
+  netpathdb[['VERSION']] <- netpath_version
+  netpathdb[['TERM2GENE']] <- netpath_pathway_data %>%
+    dplyr::select(standard_name, entrez_gene)
+  netpathdb[['TERM2NAME']] <- netpath_pathway_data %>%
+    dplyr::select(standard_name, name) %>%
+    dplyr::distinct()
+
+
+  kegg_pathway_genes <-
+    read.table(file = keggdb_fname,
+               header=T,sep="\t",stringsAsFactors = F,quote="")
+  keggdb <- list()
+  keggdb[['VERSION']] <- kegg_version
+  keggdb[['TERM2NAME']] <- kegg_pathway_genes %>%
+    dplyr::select(name,pathway_id) %>%
+    dplyr::rename(standard_name = pathway_id) %>%
+    dplyr::select(standard_name, name) %>%
+    dplyr::distinct()
+
+  keggdb[['TERM2GENE']] <- kegg_pathway_genes %>%
+    dplyr::select(pathway_id, gene_id) %>%
+    dplyr::rename(standard_name = pathway_id,
+                  entrez_gene = gene_id) %>%
+    dplyr::select(standard_name,entrez_gene) %>%
+    dplyr::distinct()
+
 }
