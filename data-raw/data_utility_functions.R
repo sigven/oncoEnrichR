@@ -103,7 +103,16 @@ get_gene_info_ncbi <- function(basedir = NULL,
     dplyr::mutate(gene_biotype = dplyr::if_else(
       gene_biotype ==  "protin-coding",
       "protein_coding", as.character(gene_biotype))) %>%
-    dplyr::filter(nchar(symbol_entrez) > 0)
+    dplyr::filter(nchar(symbol_entrez) > 0) %>%
+    ## TEC
+    dplyr::filter(entrezgene != 100124696) %>%
+    ## HBD
+    dplyr::filter(entrezgene != 100187828) %>%
+    ## MMD2
+    dplyr::filter(entrezgene != 100505381) %>%
+    ## MEMO1
+    dplyr::filter(entrezgene != 7795) %>%
+    dplyr::distinct()
     #dplyr::select(-symbol) %>%
     #dplyr::rename(symbol = symbol_entrez)
 
@@ -546,7 +555,7 @@ get_opentarget_associations <-
   function(basedir = '/Users/sigven/research/DB/var_annotation_tracks',
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2021.09",
+           release = "2021.11",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -561,7 +570,7 @@ get_opentarget_associations <-
                       SM_tractability_support,
                       AB_tractability_category,
                       AB_tractability_support) %>%
-        dplyr::rename(ensembl_gene_id = tarrget_ensembl_gene_id)
+        dplyr::rename(ensembl_gene_id = target_ensembl_gene_id)
         # dplyr::mutate(target_tractability_symbol = paste0(
         #   "<a href='https://platform.opentargets.org/target/", target_ensembl_gene_id,"' target='_blank'>",symbol,"</a>")
         # )
@@ -631,13 +640,12 @@ get_gencode_ensembl_transcripts <-
   function(basedir = NULL,
            build = "grch38",
            gencode_version = "39",
-           appris = NULL,
            gene_info = NULL,
            update = F){
 
     gencode_rds <- file.path(
       basedir, "data-raw","gencode", build,
-      paste0("gencode_transcripts_v3_", gencode_version, ".rds"))
+      paste0("gencode_transcripts_", gencode_version, "2.rds"))
 
 
     if(update == F & file.exists(gencode_rds)){
@@ -738,20 +746,12 @@ get_gencode_ensembl_transcripts <-
       gene_info = gene_info
     )
 
-    gencode2 <- gencode %>% dplyr::left_join(
+    gencode <- gencode %>% dplyr::left_join(
       gencode_xrefs, by = c("ensembl_gene_id",
                             "ensembl_transcript_id",
                             "symbol"))
 
-    if(!is.null(appris)){
-      gencode <- dplyr::left_join(
-        gencode,
-        dplyr::select(appris, principal_isoform_flag,
-                      ensembl_transcript_id),
-        by = "ensembl_transcript_id")
-    }
-
-    gencode2 <- annotate_other_gencode_basic_members(gencode2)
+    gencode <- annotate_other_gencode_basic_members(gencode)
     attr(gencode, "groups") <- NULL
 
     if(update == T){
@@ -1291,48 +1291,60 @@ get_gencode_data <- function(
   basedir = NULL,
   gencode_version = "38",
   build = "grch38",
-  uniprot_map = NULL,
   gene_info = NULL,
   update = T){
 
-  gencode <- data.frame()
+  rds_fname <- file.path(
+    basedir, "data-raw",
+    "gencode", paste0("gencode_OE_", gencode_version, "2.rds")
+  )
 
-  if(update == T){
-    gencode <-
-      get_gencode_transcripts(
-        basedir = basedir,
-        build = build,
-        gene_info = gene_info,
-        gencode_version = gencode_version) %>%
+  if(update == F & file.exists(rds_fname)){
+    gencode <- readRDS(file = rds_fname)
+    return(gencode)
+  }
+
+  gencode <- as.data.frame(
+    get_gencode_ensembl_transcripts(
+      basedir = basedir,
+      build = build,
+      gene_info = gene_info,
+      gencode_version = gencode_version,
+      update = update) %>%
       dplyr::select(ensembl_gene_id,
                     symbol,
+                    symbol_entrez,
                     refseq_mrna,
                     refseq_peptide,
+                    uniprot_acc,
                     name,
                     ensembl_transcript_id,
                     ensembl_protein_id,
                     entrezgene,
                     gencode_gene_biotype) %>%
       dplyr::distinct() %>%
-      dplyr::filter(!is.na(entrezgene)) %>%
+      dplyr::filter(!is.na(entrezgene) & !is.na(symbol_entrez))
+  )
+
+  saveRDS(gencode, file = rds_fname)
 
 
-    saveRDS(gencode, file = paste0(basedir,"/data-raw/gencode/gencode_",
-                                   gencode_version,"_",
-                                   build,".rds"))
-
-  }
-  else{
-    gencode <-
-      readRDS(file = paste0(basedir,"/data-raw/gencode/gencode_",
-                            gencode_version,"_",
-                            build,".rds"))
-
-  }
   return(gencode)
 }
 
-get_tf_target_interactions <- function(basedir = NULL){
+get_tf_target_interactions <- function(
+  basedir = NULL,
+  update = F){
+
+
+  rds_fname = file.path(
+    basedir, "data-raw",
+    "omnipathdb", "omnipath_tf_interactions.rds")
+
+  if(update == F & file.exists(rds_fname)){
+    tf_target_interactions <- readRDS(file = rds_fname)
+  }
+
 
   tf_target_interactions_dorothea_all <-
     OmnipathR::import_transcriptional_interactions(
@@ -1419,6 +1431,8 @@ get_tf_target_interactions <- function(basedir = NULL){
     tf_target_interactions_dorothea_all
   tf_target_interactions[['pancancer']] <-
     tf_target_interactions_dorothea_pancancer
+
+  saveRDS(tf_target_interactions, file = rds_fname)
 
   return(tf_target_interactions)
 }
@@ -1521,151 +1535,6 @@ get_function_summary_ncbi <- function(
   saveRDS(ncbi_gene_summary, file = rds_fname)
   return(ncbi_gene_summary)
 
-}
-
-get_protein_complexes <- function(
-  basedir = NULL,
-  update = F){
-
-  rds_fname <- file.path(
-    basedir, "data-raw",
-    "omnipathdb", "omnipath_complexdb.rds")
-
-  humap2_complexes_tsv <-file.path(
-    basedir, "data-raw",
-    "humap2", "humap2_complexes.tsv")
-
-  corum_complexes_tsv <- file.path(
-    basedir, "data-raw",
-    "corum", "coreComplexes.txt")
-
-  humap_url <-
-    "http://humap2.proteincomplexes.org/static/downloads/humap2/humap2_complexes_20200809.txt"
-
-
-  if(update == F & file.exists(rds_fname)){
-    proteincomplexdb <- readRDS(rds_fname)
-    return(proteincomplexdb)
-  }
-
-  complexes_curated <- OmnipathR::import_omnipath_complexes() %>%
-    dplyr::filter(!is.na(references) & !is.na(name)) %>%
-    dplyr::rename(pmid = references,
-                  uniprot_acc = components,
-                  complex_name = name) %>%
-    dplyr::select(complex_name, uniprot_acc,
-                  pmid, sources) %>%
-    dplyr::filter(stringr::str_detect(uniprot_acc,"_")) %>%
-    dplyr::distinct() %>%
-    dplyr::arrange(complex_name) %>%
-    dplyr::group_by(complex_name) %>%
-    dplyr::mutate(id2 = dplyr::row_number()) %>%
-    dplyr::group_by(complex_name, uniprot_acc) %>%
-    dplyr::summarise(pmid = paste(sort(unique(pmid)), collapse=","),
-                     sources = paste(sort(unique(sources)), collapse=";"),
-                     id2 = paste(id2, collapse=";"),
-                     .groups = "drop") %>%
-    dplyr::mutate(num_sources = stringr::str_count(sources,";") + 1) %>%
-    dplyr::arrange(complex_name, desc(nchar(uniprot_acc)), desc(num_sources)) %>%
-    dplyr::mutate(id2 = dplyr::row_number()) %>%
-    #dplyr::filter(id2 == 1) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(complex_id = dplyr::row_number()) %>%
-    dplyr::mutate(complex_name = stringr::str_replace_all(
-      complex_name,"\\\\u2013","-"
-    )) %>%
-    dplyr::mutate(sources = stringr::str_replace_all(
-      sources, ";", "; ")) %>%
-    dplyr::select(complex_id, complex_name, uniprot_acc,
-                  sources, pmid)
-
-  pmid2complex <- complexes_curated %>%
-    dplyr::select(complex_id,
-                  pmid) %>%
-    tidyr::separate_rows(pmid, sep=";") %>%
-    dplyr::filter(stringr::str_detect(pmid,"^[0-9]{4,}$"))
-
-  protein_complex_citations <- get_citations_pubmed(
-    pmid = unique(pmid2complex$pmid))
-
-  pmid2complex <- pmid2complex %>%
-    dplyr::mutate(pmid = as.integer(pmid)) %>%
-    dplyr::left_join(protein_complex_citations, by = "pmid") %>%
-    dplyr::group_by(complex_id) %>%
-    dplyr::summarise(
-      complex_literature_support = paste(
-        link, collapse= ","),
-      complex_literature = paste(
-        citation, collapse="|"
-      )
-    )
-
-  complex_omnipath <- complexes_curated %>%
-    dplyr::left_join(pmid2complex,
-                     by = "complex_id")
-
-  ## CORUM annotations (complex comments, disease comments, purification methods)
-  corum_complex_annotations <- as.data.frame(
-    readr::read_tsv(
-      corum_complexes_tsv,
-      show_col_types = F) %>%
-      janitor::clean_names() %>%
-      dplyr::filter(organism == "Human") %>%
-      dplyr::group_by(complex_name) %>%
-      dplyr::summarise(
-        purification_method =
-          paste(unique(protein_complex_purification_method),
-                collapse = "; "),
-        complex_comment = paste(unique(complex_comment),
-                                collapse="; "),
-        disease_comment = paste(unique(disease_comment),
-                                collapse="; ")
-      ) %>%
-      dplyr::distinct()
-  )
-
-  complex_omnipath <- complex_omnipath %>%
-    dplyr::left_join(corum_complex_annotations, by = "complex_name") %>%
-    dplyr::select(-pmid) %>%
-    dplyr::mutate(confidence = NA) %>%
-    dplyr::mutate(complex_id = as.character(complex_id))
-
-  if(!file.exists(humap2_complexes_tsv)){
-    download.file(url = humap_url,
-                  destfile = humap2_complexes_tsv)
-  }
-
-  complex_humap <- readr::read_csv(
-    file = humap2_complexes_tsv,
-    show_col_types = F
-  ) %>%
-    janitor::clean_names() %>%
-    dplyr::rename(complex_id = hu_map2_id,
-                  uniprot_acc = uniprot_ac_cs) %>%
-    dplyr::select(-genenames) %>%
-    dplyr::mutate(uniprot_acc = stringr::str_replace_all(
-      uniprot_acc, " ","_"
-    )) %>%
-    dplyr::mutate(complex_name = complex_id) %>%
-    dplyr::mutate(sources = "hu.MAP 2.0")
-
-  complex_all <- complex_omnipath %>%
-    dplyr::bind_rows(complex_humap)
-
-  proteincomplexdb <- list()
-  proteincomplexdb[["db"]] <- complex_all %>%
-    dplyr::select(-uniprot_acc) %>%
-    dplyr::distinct()
-
-  proteincomplexdb[["up_xref"]] <- complex_all %>%
-    dplyr::select(complex_id, uniprot_acc) %>%
-    tidyr::separate_rows(uniprot_acc, sep="_") %>%
-    dplyr::distinct()
-
-
-  saveRDS(proteincomplexdb,
-          file = rds_fname)
-  return(proteincomplexdb)
 }
 
 get_cancer_drugs <- function(){
@@ -2409,7 +2278,7 @@ get_unique_transcript_xrefs <- function(
 
   rds_fname <- file.path(
     basedir, "data-raw",
-    "transcript_xref", "transcript_xref_db.rds"
+    "transcript_xref", "transcript_xref_db2.rds"
   )
 
   ## gene synonyms
@@ -2435,6 +2304,7 @@ get_unique_transcript_xrefs <- function(
                 'ensembl_gene_id',
                 'ensembl_protein_id',
                 'refseq_mrna',
+                'symbol',
                 'refseq_peptide')){
 
     tmp <- gencode_merged %>%
@@ -2624,10 +2494,13 @@ assign_unknown_function_rank <- function(
 }
 
 remove_duplicate_ensembl_genes <- function(
-  ensembl2entrez = NULL,
   gene_xref = NULL){
 
   ## Trick to remove duplicates
+  ensembl2entrez <- gene_xref %>%
+    dplyr::select(entrezgene, ensembl_gene_id) %>%
+    dplyr::filter(!is.na(ensembl_gene_id))
+
   duplicates <- ensembl2entrez %>%
     dplyr::group_by(entrezgene) %>%
     dplyr::summarise(n = dplyr::n()) %>%
@@ -2697,6 +2570,158 @@ remove_duplicate_ensembl_genes <- function(
 
   gene_xref <- gene_xref %>%
     dplyr::anti_join(to_remove, by = c("ensembl_gene_id"))
+
+  return(gene_xref)
+
+}
+
+generate_gene_xref_df <- function(
+  gene_info = NULL,
+  transcript_xref_db = NULL,
+  ts_oncogene_annotations = NULL,
+  uniprot_gene_summary = NULL,
+  ncbi_gene_summary = NULL,
+  cancerdrugdb = NULL,
+  otdb = NULL,
+  go_terms_pr_gene = NULL){
+
+  invisible(assertthat::assert_that(!is.null(gene_info)))
+  invisible(assertthat::assert_that(!is.null(transcript_xref_db)))
+  invisible(assertthat::assert_that(!is.null(ts_oncogene_annotations)))
+  invisible(assertthat::assert_that(!is.null(ncbi_gene_summary)))
+  invisible(assertthat::assert_that(!is.null(uniprot_gene_summary)))
+  invisible(assertthat::assert_that(!is.null(cancerdrugdb)))
+  invisible(assertthat::assert_that(!is.null(otdb)))
+  invisible(assertthat::assert_that(!is.null(go_terms_pr_gene)))
+
+  invisible(assertthat::assert_that(is.data.frame(gene_info)))
+  invisible(assertthat::assert_that(is.data.frame(transcript_xref_db)))
+  invisible(assertthat::assert_that(is.data.frame(ts_oncogene_annotations)))
+  invisible(assertthat::assert_that(is.data.frame(ncbi_gene_summary)))
+  invisible(assertthat::assert_that(is.data.frame(uniprot_gene_summary)))
+  invisible(assertthat::assert_that(typeof(cancerdrugdb) == "list"))
+  invisible(assertthat::assert_that(typeof(otdb) == "list"))
+  invisible(assertthat::assert_that(is.data.frame(go_terms_pr_gene)))
+
+  invisible(assertthat::assert_that("drug_per_target" %in% names(cancerdrugdb)))
+  invisible(assertthat::assert_that("early_phase" %in% names(cancerdrugdb[['drug_per_target']])))
+  invisible(assertthat::assert_that("late_phase" %in% names(cancerdrugdb[['drug_per_target']])))
+  invisible(assertthat::assert_that("max_site_rank" %in% names(otdb)))
+
+
+  assertable::assert_colnames(
+    otdb[['max_site_rank']],
+    c('ensembl_gene_id','cancer_max_rank'), only_colnames = F,
+    quiet = T)
+  assertable::assert_colnames(
+    gene_info, c('entrezgene', 'name', 'symbol_entrez',
+                  'hgnc_id', 'gene_biotype'), only_colnames = F,
+    quiet = T)
+  assertable::assert_colnames(
+    transcript_xref_db, c('entrezgene', 'property',
+                 'value'), quiet = T)
+  assertable::assert_colnames(
+    uniprot_gene_summary,
+      c('symbol','gene_summary_uniprot'), quiet = T)
+  assertable::assert_colnames(
+    ncbi_gene_summary,
+    c('entrezgene','gene_summary_ncbi'), quiet = T)
+
+  assertable::assert_colnames(
+    go_terms_pr_gene,
+    c('symbol','num_go_terms'), quiet = T)
+
+  assertable::assert_colnames(
+    ts_oncogene_annotations,
+    c('entrezgene','tumor_suppressor','oncogene', 'cancer_driver'),
+    quiet = T, only_colnames = F)
+
+  go2entrez <- transcript_xref_db %>%
+    dplyr::filter(property == "symbol") %>%
+    dplyr::rename(symbol = value) %>%
+    dplyr::left_join(go_terms_pr_gene, by = "symbol") %>%
+    dplyr::filter(!is.na(num_go_terms)) %>%
+    dplyr::select(-c(property, symbol)) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(entrezgene) %>%
+    dplyr::summarise(num_go_terms = max(num_go_terms))
+
+  upsummary2entrez <- transcript_xref_db %>%
+    dplyr::filter(property == "symbol") %>%
+    dplyr::rename(symbol = value) %>%
+    dplyr::left_join(uniprot_gene_summary, by = "symbol") %>%
+    dplyr::filter(!is.na(gene_summary_uniprot)) %>%
+    dplyr::distinct() %>%
+    dplyr::select(entrezgene, gene_summary_uniprot)
+
+  ensembl2entrez <- transcript_xref_db %>%
+    dplyr::filter(property == "ensembl_gene_id") %>%
+    dplyr::rename(ensembl_gene_id = value) %>%
+    dplyr::select(entrezgene, ensembl_gene_id) %>%
+    dplyr::distinct()
+
+  gene_xref <- gene_info %>%
+    dplyr::select(symbol_entrez, hgnc_id, entrezgene,
+                  name, gene_biotype) %>%
+    dplyr::rename(symbol = symbol_entrez) %>%
+    dplyr::left_join(ensembl2entrez, by = "entrezgene") %>%
+    dplyr::left_join(go2entrez, by = "entrezgene") %>%
+    dplyr::filter(!is.na(entrezgene) & !is.na(symbol)) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(
+      genename =
+        paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+               entrezgene,
+               "' target='_blank'>",name,"</a>")) %>%
+    dplyr::left_join(opentarget_associations,
+                     by = "ensembl_gene_id") %>%
+    dplyr::left_join(ts_oncogene_annotations,
+                     by = "entrezgene") %>%
+    dplyr::left_join(upsummary2entrez,
+                     by = "entrezgene") %>%
+    dplyr::left_join(ncbi_gene_summary,
+                     by = "entrezgene") %>%
+    dplyr::left_join(cancerdrugdb[['drug_per_target']][['early_phase']],
+                     by = "entrezgene") %>%
+    dplyr::left_join(cancerdrugdb[['drug_per_target']][['late_phase']],
+                     by = "entrezgene") %>%
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      is.na(tumor_suppressor),
+      FALSE,
+      as.logical(tumor_suppressor))) %>%
+    dplyr::mutate(oncogene = dplyr::if_else(
+      is.na(oncogene),
+      FALSE,
+      as.logical(oncogene))) %>%
+    dplyr::mutate(cancer_driver = dplyr::if_else(
+      is.na(cancer_driver),
+      FALSE,
+      as.logical(cancer_driver))) %>%
+    dplyr::mutate(gene_summary = dplyr::case_when(
+      !is.na(gene_summary_ncbi) &
+        !is.na(gene_summary_uniprot) ~
+        paste0(gene_summary_ncbi," ",
+               gene_summary_uniprot),
+      !is.na(gene_summary_ncbi) &
+        is.na(gene_summary_uniprot) ~
+        gene_summary_ncbi,
+      is.na(gene_summary_ncbi) &
+        !is.na(gene_summary_uniprot) ~
+        gene_summary_uniprot,
+      TRUE ~ as.character(NA)
+    )) %>%
+    dplyr::select(-c(gene_summary_ncbi, gene_summary_uniprot)) %>%
+
+    dplyr::mutate(has_gene_summary = dplyr::if_else(
+      !is.na(gene_summary),TRUE,FALSE
+    )) %>%
+    dplyr::left_join(otdb$max_site_rank,
+                     by = "ensembl_gene_id") %>%
+    dplyr::mutate(cancer_max_rank = dplyr::if_else(
+      is.na(cancer_max_rank), 0, as.numeric(cancer_max_rank)
+    )) %>%
+    assign_unknown_function_rank() %>%
+    remove_duplicate_ensembl_genes()
 
   return(gene_xref)
 
@@ -3206,145 +3231,154 @@ get_ligand_receptors <- function(
 }
 
 get_hpa_associations <- function(
-  gene_xref = NULL){
+  basedir = NULL,
+  gene_xref = NULL,
+  update = F){
 
-    assertable::assert_colnames(
-      gene_xref,
-      c("symbol", "ensembl_gene_id"),
-      only_colnames = F,
-      quiet = T
-    )
+  assertable::assert_colnames(
+    gene_xref,
+    c("symbol", "ensembl_gene_id"),
+    only_colnames = F,
+    quiet = T
+  )
 
+  rds_fname <- file.path(basedir, "data-raw", "hpa", "hpa.rds")
 
-    variables_json <- c('RNA tissue specificity',
-                        'RNA tissue distribution',
-                        'RNA tissue specific NX',
-                        'RNA single cell type specificity',
-                        'RNA single cell type distribution',
-                        'RNA single cell type specific NX',
-                        'RNA cancer specificity',
-                        'RNA cancer distribution',
-                        'RNA cancer specific FPKM',
-                        'RNA cell line specificity',
-                        'RNA cell line distribution',
-                        'RNA cell line specific NX',
-                        'Pathology prognostics - Breast cancer',
-                        'Pathology prognostics - Cervical cancer',
-                        'Pathology prognostics - Colorectal cancer',
-                        'Pathology prognostics - Endometrial cancer',
-                        'Pathology prognostics - Glioma',
-                        'Pathology prognostics - Head and neck cancer',
-                        'Pathology prognostics - Liver cancer',
-                        'Pathology prognostics - Lung cancer',
-                        'Pathology prognostics - Melanoma',
-                        'Pathology prognostics - Ovarian cancer',
-                        'Pathology prognostics - Pancreatic cancer',
-                        'Pathology prognostics - Prostate cancer',
-                        'Pathology prognostics - Renal cancer',
-                        'Pathology prognostics - Stomach cancer',
-                        'Pathology prognostics - Testis cancer',
-                        'Pathology prognostics - Thyroid cancer',
-                        'Pathology prognostics - Urothelial cancer',
-                        'Antibody RRID')
+  if(update == F & file.exists(rds_fname)){
+    hpa <- readRDS(file = rds_fname)
+  }
 
-    variables_df <- c('rna_tissue_specificity',
-                      'rna_tissue_distribution',
-                      'rna_tissue_specific_NX',
-                      'rna_single_cell_type_specificity',
-                      'rna_single_cell_type_distribution',
-                      'rna_single_cell_type_specificity NX',
-                      'rna_cancer_specificity',
-                      'rna_cancer_distribution',
-                      'rna_cancer_specific_FPKM',
-                      'rna_cell_line_specificity',
-                      'rna_cell_line_distribution',
-                      'rna_cell_line_specific_NX',
-                      'pathology_prognostics_breast_cancer',
-                      'pathology_prognostics_cervical_cancer',
-                      'pathology_prognostics_colorectal_cancer',
-                      'pathology_prognostics_endometrial_cancer',
-                      'pathology_prognostics_glioma',
-                      'pathology_prognostics_head_and_neck_cancer',
-                      'pathology_prognostics_liver_cancer',
-                      'pathology_prognostics_lung_cancer',
-                      'pathology_prognostics_melanoma',
-                      'pathology_prognostics_ovarian_cancer',
-                      'pathology_prognostics_pancreatic_cancer',
-                      'pathology_prognostics_prostate_cancer',
-                      'pathology_prognostics_renal_cancer',
-                      'pathology_prognostics_stomach_cancer',
-                      'pathology_prognostics_testis_cancer',
-                      'pathology_prognostics_thyroid_cancer',
-                      'pathology_prognostics_urothelial_cancer',
-                      'antibody_rrid')
+  variables_json <- c('RNA tissue specificity',
+                      'RNA tissue distribution',
+                      'RNA tissue specific NX',
+                      'RNA single cell type specificity',
+                      'RNA single cell type distribution',
+                      'RNA single cell type specific NX',
+                      'RNA cancer specificity',
+                      'RNA cancer distribution',
+                      'RNA cancer specific FPKM',
+                      'RNA cell line specificity',
+                      'RNA cell line distribution',
+                      'RNA cell line specific NX',
+                      'Pathology prognostics - Breast cancer',
+                      'Pathology prognostics - Cervical cancer',
+                      'Pathology prognostics - Colorectal cancer',
+                      'Pathology prognostics - Endometrial cancer',
+                      'Pathology prognostics - Glioma',
+                      'Pathology prognostics - Head and neck cancer',
+                      'Pathology prognostics - Liver cancer',
+                      'Pathology prognostics - Lung cancer',
+                      'Pathology prognostics - Melanoma',
+                      'Pathology prognostics - Ovarian cancer',
+                      'Pathology prognostics - Pancreatic cancer',
+                      'Pathology prognostics - Prostate cancer',
+                      'Pathology prognostics - Renal cancer',
+                      'Pathology prognostics - Stomach cancer',
+                      'Pathology prognostics - Testis cancer',
+                      'Pathology prognostics - Thyroid cancer',
+                      'Pathology prognostics - Urothelial cancer',
+                      'Antibody RRID')
 
-    for (i in 1:nrow(gene_xref)) {
-      g <- gene_xref[i,]
+  variables_df <- c('rna_tissue_specificity',
+                    'rna_tissue_distribution',
+                    'rna_tissue_specific_NX',
+                    'rna_single_cell_type_specificity',
+                    'rna_single_cell_type_distribution',
+                    'rna_single_cell_type_specificity NX',
+                    'rna_cancer_specificity',
+                    'rna_cancer_distribution',
+                    'rna_cancer_specific_FPKM',
+                    'rna_cell_line_specificity',
+                    'rna_cell_line_distribution',
+                    'rna_cell_line_specific_NX',
+                    'pathology_prognostics_breast_cancer',
+                    'pathology_prognostics_cervical_cancer',
+                    'pathology_prognostics_colorectal_cancer',
+                    'pathology_prognostics_endometrial_cancer',
+                    'pathology_prognostics_glioma',
+                    'pathology_prognostics_head_and_neck_cancer',
+                    'pathology_prognostics_liver_cancer',
+                    'pathology_prognostics_lung_cancer',
+                    'pathology_prognostics_melanoma',
+                    'pathology_prognostics_ovarian_cancer',
+                    'pathology_prognostics_pancreatic_cancer',
+                    'pathology_prognostics_prostate_cancer',
+                    'pathology_prognostics_renal_cancer',
+                    'pathology_prognostics_stomach_cancer',
+                    'pathology_prognostics_testis_cancer',
+                    'pathology_prognostics_thyroid_cancer',
+                    'pathology_prognostics_urothelial_cancer',
+                    'antibody_rrid')
 
-      local_json <-
-        file.path("data-raw", "hpa", "json",
-                  paste0(g$ensembl_gene_id,".json"))
+  for (i in 1:nrow(gene_xref)) {
+    g <- gene_xref[i,]
 
-      if(!file.exists(local_json)){
-        protein_atlas_url <-
-          paste0("https://www.proteinatlas.org/",
-                 g$ensembl_gene_id,".json")
-        if(RCurl::url.exists(protein_atlas_url)){
-          download.file(
-            protein_atlas_url,
-            destfile = local_json,
-            quiet = T)
-          Sys.sleep(1)
-        }
+    local_json <-
+      file.path("data-raw", "hpa", "json",
+                paste0(g$ensembl_gene_id,".json"))
+
+    if(!file.exists(local_json)){
+      protein_atlas_url <-
+        paste0("https://www.proteinatlas.org/",
+               g$ensembl_gene_id,".json")
+      if(RCurl::url.exists(protein_atlas_url)){
+        download.file(
+          protein_atlas_url,
+          destfile = local_json,
+          quiet = T)
+        Sys.sleep(1)
       }
+    }
 
-      if(file.exists(local_json)){
-        pa_data <- jsonlite::fromJSON(txt = local_json)
+    if(file.exists(local_json)){
+      pa_data <- jsonlite::fromJSON(txt = local_json)
 
-        for(j in 1:length(variables_json)){
-          var_name_json <- variables_json[j]
-          var_name_df <- variables_df[j]
-          if(!is.null(pa_data[[var_name_json]])){
-            if(!startsWith(var_name_df, "pathology") &
-               !stringr::str_detect(var_name_df,"(NX|FPKM|rrid)$")){
-              df <- data.frame(
-                'ensembl_gene_id' = g$ensembl_gene_id,
-                'property' = var_name_df,
-                'value' = pa_data[[var_name_json]],
-                stringsAsFactors = F)
+      for(j in 1:length(variables_json)){
+        var_name_json <- variables_json[j]
+        var_name_df <- variables_df[j]
+        if(!is.null(pa_data[[var_name_json]])){
+          if(!startsWith(var_name_df, "pathology") &
+             !stringr::str_detect(var_name_df,"(NX|FPKM|rrid)$")){
+            df <- data.frame(
+              'ensembl_gene_id' = g$ensembl_gene_id,
+              'property' = var_name_df,
+              'value' = pa_data[[var_name_json]],
+              stringsAsFactors = F)
 
-            }else{
-              if(startsWith(var_name_df, "pathology")
-                 | endsWith(var_name_df,"rrid")){
-                value <- paste(unlist(pa_data[[var_name_json]]),
-                               collapse="|")
-                if(stringr::str_detect(value,"TRUE") |
-                   var_name_df == "antibody_rrid"){
-                  df <- data.frame(
-                    'ensembl_gene_id' = g$ensembl_gene_id,
-                    'property' = var_name_df,
-                    'value' = value,
-                    stringsAsFactors = F)
-                }
-              }else{
+          }else{
+            if(startsWith(var_name_df, "pathology")
+               | endsWith(var_name_df,"rrid")){
+              value <- paste(unlist(pa_data[[var_name_json]]),
+                             collapse="|")
+              if(stringr::str_detect(value,"TRUE") |
+                 var_name_df == "antibody_rrid"){
                 df <- data.frame(
                   'ensembl_gene_id' = g$ensembl_gene_id,
                   'property' = var_name_df,
-                  'value' = paste(sort(names(pa_data[[var_name_json]])),
-                                  collapse=", "),
+                  'value' = value,
                   stringsAsFactors = F)
               }
+            }else{
+              df <- data.frame(
+                'ensembl_gene_id' = g$ensembl_gene_id,
+                'property' = var_name_df,
+                'value' = paste(sort(names(pa_data[[var_name_json]])),
+                                collapse=", "),
+                stringsAsFactors = F)
             }
-            if(NROW(df) > 0){
-              hpa <- dplyr::bind_rows(hpa, df)
-              df <- data.frame()
-            }
+          }
+          if(NROW(df) > 0){
+            hpa <- dplyr::bind_rows(hpa, df)
+            df <- data.frame()
           }
         }
       }
-
     }
-    return(hpa)
-
 
   }
+
+  saveRDS(hpa, file = rds_fname)
+  return(hpa)
+
+
+}

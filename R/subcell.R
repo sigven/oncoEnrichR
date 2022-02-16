@@ -1,13 +1,13 @@
 
 annotate_subcellular_compartments <-
-  function(qgenes,
+  function(query_entrez,
            minimum_confidence = 1,
            show_cytosol = F,
            genedb = NULL,
            oeDB = NULL,
            logger = NULL){
 
-    stopifnot(is.character(qgenes))
+    stopifnot(is.integer(query_entrez))
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(logger))
     stopifnot(!is.null(oeDB$subcelldb))
@@ -18,15 +18,28 @@ annotate_subcellular_compartments <-
 
     log4r_info(logger, "ComPPI: retrieval of subcellular compartments for target set")
 
+    uniprot_xref <- oeDB$genedb$transcript_xref %>%
+      dplyr::filter(property == "uniprot_acc") %>%
+      dplyr::rename(uniprot_acc = value) %>%
+      dplyr::select(entrezgene, uniprot_acc)
 
-    target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+
+    target_genes <- data.frame('entrezgene' = query_entrez, stringsAsFactors = F) %>%
+      dplyr::left_join(uniprot_xref, by = "entrezgene") %>%
+      dplyr::left_join(
+        dplyr::select(genedb,
+                      .data$symbol,
+                      .data$entrezgene,
+                      .data$genename),
+        by = c("entrezgene"))
 
     target_compartments <- list()
     target_compartments[["all"]] <- data.frame()
     target_compartments[["grouped"]] <- data.frame()
 
     target_compartments_all <- as.data.frame(
-      dplyr::inner_join(oeDB$subcelldb$comppidb, target_genes, by = c("symbol")) %>%
+      dplyr::inner_join(oeDB$subcelldb$comppidb, target_genes, by = c("uniprot_acc")) %>%
+        dplyr::filter(!is.na(symbol)) %>%
         dplyr::filter(.data$confidence >= minimum_confidence)
     )
 
@@ -37,12 +50,12 @@ annotate_subcellular_compartments <-
           dplyr::left_join(
             oeDB$subcelldb[['go_gganatogram_map']],
             by = "go_id") %>%
-          dplyr::left_join(
-            dplyr::select(genedb,
-                          .data$symbol,
-                          .data$entrezgene,
-                          .data$genename),
-            by = c("symbol")) %>%
+          # dplyr::left_join(
+          #   dplyr::select(genedb,
+          #                 .data$symbol,
+          #                 .data$entrezgene,
+          #                 .data$genename),
+          #   by = c("symbol")) %>%
           dplyr::mutate(
             genelink =
               paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",

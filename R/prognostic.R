@@ -11,15 +11,16 @@ hpa_prognostic_genes <- function(qgenes,
   stopifnot(!is.null(oeDB$hpa))
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
-  stopifnot(is.character(qgenes))
   stopifnot(is.data.frame(oeDB$hpa))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(q_id_type == 'entrezgene'){
+    stopifnot(is.integer(qgenes))
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F) %>%
       dplyr::inner_join(genedb, by = "entrezgene") %>%
       dplyr::distinct()
   }else{
+    stopifnot(is.character(qgenes))
     query_genes_df <- query_genes_df %>%
       dplyr::inner_join(genedb, by = "symbol") %>%
       dplyr::distinct()

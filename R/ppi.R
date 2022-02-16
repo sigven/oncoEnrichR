@@ -100,7 +100,7 @@ get_string_network_nodes_edges <-
                        by = c("preferredName_A" = "symbol")) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::rename(entrezgene_a = .data$entrezgene) %>%
-      dplyr::mutate(entrezgene_a = as.character(.data$entrezgene_a)) %>%
+      #dplyr::mutate(entrezgene_a = as.character(.data$entrezgene_a)) %>%
       dplyr::mutate(from = paste0("s", .data$entrezgene_a)) %>%
       dplyr::left_join(dplyr::select(genedb, .data$entrezgene, .data$oncogene,
                                      .data$tumor_suppressor,
@@ -112,7 +112,7 @@ get_string_network_nodes_edges <-
                        by = c("preferredName_B" = "symbol")) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::rename(entrezgene_b = .data$entrezgene) %>%
-      dplyr::mutate(entrezgene_b = as.character(.data$entrezgene_b)) %>%
+      #dplyr::mutate(entrezgene_b = as.character(.data$entrezgene_b)) %>%
       dplyr::mutate(to = paste0("s", .data$entrezgene_b)) %>%
       dplyr::left_join(dplyr::select(genedb, .data$entrezgene,
                                      .data$oncogene, .data$tumor_suppressor,
@@ -145,13 +145,12 @@ get_string_network_nodes_edges <-
         .data$cancer_driver, .data$genename,
         .data$targeted_cancer_drugs_ep,
         .data$targeted_cancer_drugs_lp),
-        by = c("symbol" = "symbol")) %>%
-      #dplyr::select(-ensembl_gene_id) %>%
+        by = "symbol") %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::left_join(dplyr::select(all_query_nodes,
                                      .data$symbol,
                                      .data$query_node),
-                       by = c("symbol")) %>%
+                       by = "symbol") %>%
       dplyr::mutate(id = paste0("s", .data$entrezgene)) %>%
       dplyr::distinct() %>%
       dplyr::bind_rows(all_query_nodes) %>%

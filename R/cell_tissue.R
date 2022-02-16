@@ -24,15 +24,16 @@ gene_tissue_cell_spec_cat <-
     validate_db_df(genedb, dbtype = "genedb")
     stopifnot(resolution == "tissue" | resolution == "single_cell")
     stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
-    stopifnot(is.character(qgenes))
     query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
     if(q_id_type == 'entrezgene'){
+      stopifnot(is.integer(qgenes))
       query_genes_df <-
         data.frame('entrezgene' = qgenes, stringsAsFactors = F) %>%
         dplyr::inner_join(genedb, by = "entrezgene") %>%
         dplyr::distinct()
 
     }else{
+      stopifnot(is.character(qgenes))
       query_genes_df <- query_genes_df %>%
         dplyr::inner_join(genedb, by = "symbol") %>%
         dplyr::distinct()
@@ -205,7 +206,7 @@ gene_tissue_cell_enrichment <-
              ") in target set with TissueEnrich"))
 
     stopifnot(!is.null(qgenes_entrez) &
-                is.character(qgenes_entrez))
+                is.integer(qgenes_entrez))
     stopifnot(!is.null(genedb) |
                 !is.data.frame(genedb))
     stopifnot(!is.null(oeDB$tissuecelldb))
@@ -217,7 +218,7 @@ gene_tissue_cell_enrichment <-
                 "cancer_max_rank"),
       only_colnames = F, quiet = T)
 
-    df <- data.frame('entrezgene' = as.character(qgenes_entrez),
+    df <- data.frame('entrezgene' = as.integer(qgenes_entrez),
                      stringsAsFactors = F) %>%
       dplyr::left_join(
         dplyr::select(genedb,
@@ -225,7 +226,6 @@ gene_tissue_cell_enrichment <-
                       .data$ensembl_gene_id,
                       .data$symbol,
                       .data$name,
-                      #.data$genename,
                       .data$cancer_max_rank),
         by = "entrezgene")
 
@@ -256,7 +256,6 @@ gene_tissue_cell_enrichment <-
 
     q <- bg %>%
       dplyr::select(.data$ensembl_gene_id) %>%
-      #dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::inner_join(df, by = "ensembl_gene_id") %>%
       dplyr::distinct()
     query_ensembl <- q$ensembl_gene_id
@@ -291,7 +290,7 @@ gene_tissue_cell_enrichment <-
     background_ensembl <- bg$ensembl_gene_id
     if(!is.null(background_entrez)){
       df <-
-        data.frame('entrezgene' = as.character(background_entrez),
+        data.frame('entrezgene' = as.integer(background_entrez),
                    stringsAsFactors = F)
       bg <- bg %>%
         dplyr::inner_join(df, by = "entrezgene") %>%

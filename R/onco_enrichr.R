@@ -391,7 +391,7 @@ init_report <- function(oeDB,
     c("#99000d","#cb181d","#ef3b2c","#fb6a4a","#fc9272","#fcbba1")
 
   rep[["config"]][["unknown_function"]][['num_candidates']] <-
-    oeDB$genedb$all %>%
+    oeDB[['genedb']]$all %>%
     dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
     nrow()
 
@@ -818,13 +818,8 @@ onco_enrich <- function(query = NULL,
       qgenes = query,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
-      genedb = oeDB$genedb[['all']],
-      alias2primary = oeDB$genedb[['alias2primary']],
-      ensembl_mrna_xref = oeDB$genedb[['ensembl_mrna_xref']],
-      refseq_mrna_xref = oeDB$genedb[['refseq_mrna_xref']],
-      ensembl_protein_xref = oeDB$genedb[['ensembl_protein_xref']],
-      refseq_protein_xref = oeDB$genedb[['refseq_protein_xref']],
-      uniprot_xref = oeDB$genedb[['uniprot_xref']],
+      genedb = oeDB[['genedb']][['all']],
+      transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
       logger = logger)
 
   ## assign validation result to report object
@@ -875,18 +870,14 @@ onco_enrich <- function(query = NULL,
       validate_query_genes(
         bgset,
         q_id_type = bgset_id_type,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
+        transcript_xref_db = oeDB[['genedb']][['transcript_xref_db']],
         qtype = "background",
-        ensembl_mrna_xref = oeDB$genedb[['ensembl_mrna_xref']],
-        ensembl_protein_xref = oeDB$genedb[['ensembl_protein_xref']],
-        refseq_mrna_xref = oeDB$genedb[['refseq_mrna_xref']],
-        refseq_protein_xref = oeDB$genedb[['refseq_protein_xref']],
-        uniprot_xref = oeDB$genedb[['uniprot_xref']],
         logger = logger)
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
       log4r_info(logger, paste0("WARNING: Background geneset not defined properly - ",
                         "using all protein-coding genes instead"))
-      background_entrez <- unique(oeDB$genedb[['all']]$entrezgene)
+      background_entrez <- unique(oeDB[['genedb']][['all']]$entrezgene)
     }else{
       background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
     }
@@ -910,7 +901,7 @@ onco_enrich <- function(query = NULL,
       target_disease_associations(
         qgenes = query_symbol,
         show_top_diseases_only = show_top_diseases_only,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
   }
@@ -920,8 +911,8 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["drug"]] <-
       target_drug_associations(
         qgenes = query_symbol,
-        genedb = oeDB$genedb[['all']],
-        cancerdrugdb = oeDB$cancerdrugdb,
+        genedb = oeDB[['genedb']][['all']],
+        cancerdrugdb = oeDB[['cancerdrugdb']],
         logger = logger)
   }
 
@@ -930,8 +921,8 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["ligand_receptor"]] <-
       annotate_ligand_receptor_interactions(
         qgenes = query_symbol,
-        genedb = oeDB$genedb[['all']],
-        ligandreceptordb = oeDB$ligandreceptordb,
+        genedb = oeDB[['genedb']][['all']],
+        ligandreceptordb = oeDB[['ligandreceptordb']],
         logger = logger)
   }
 
@@ -941,8 +932,8 @@ onco_enrich <- function(query = NULL,
       for (subcat in names(oeDB$pathwaydb[["msigdb"]][["COLLECTION"]][[c]])) {
         if (c == "C5" & subcat != "HPO") {
           enr <- get_go_enrichment(
-            query_entrez = query_entrezgene,
-            background_entrez = background_entrez,
+            query_entrez = as.character(query_entrezgene),
+            background_entrez = as.character(background_entrez),
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
             max_geneset_size =
@@ -955,7 +946,7 @@ onco_enrich <- function(query = NULL,
               onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
             simplify = onc_rep[["config"]][["enrichment"]][["simplify_go"]],
             ontology = subcat,
-            genedb = oeDB$genedb[['all']],
+            genedb = oeDB[['genedb']][['all']],
             logger = logger)
           if (!is.null(enr)) {
             onc_rep[["data"]][["enrichment"]][["go"]] <-
@@ -966,9 +957,9 @@ onco_enrich <- function(query = NULL,
           if(c != "C5"){
             db = paste0("MSIGdb/", c, "/",subcat)
             enr <- get_universal_enrichment(
-              query_entrezgene,
-              genedb = oeDB$genedb[['all']],
-              background_entrez = background_entrez,
+              query_entrez = as.character(query_entrezgene),
+              genedb = oeDB[['genedb']][['all']],
+              background_entrez = as.character(background_entrez),
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
               max_geneset_size =
@@ -1005,9 +996,9 @@ onco_enrich <- function(query = NULL,
       }
       onc_rep[["data"]][["enrichment"]][[pwaydb]] <-
         get_universal_enrichment(
-          query_entrezgene,
-          genedb = oeDB$genedb[['all']],
-          background_entrez = background_entrez,
+          as.character(query_entrezgene),
+          genedb = oeDB[['genedb']][['all']],
+          background_entrez = as.character(background_entrez),
           min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
           max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
           q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
@@ -1031,8 +1022,8 @@ onco_enrich <- function(query = NULL,
       get_ppi_network(
         qgenes = query_entrezgene,
         ppi_source = "STRING",
-        genedb = oeDB$genedb[['all']],
-        cancerdrugdb = oeDB$cancerdrugdb,
+        genedb = oeDB[['genedb']][['all']],
+        cancerdrugdb = oeDB[['cancerdrugdb']],
         settings = onc_rep[["config"]][["ppi"]][["stringdb"]],
         logger = logger)
   }
@@ -1042,9 +1033,9 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["protein_complex"]] <-
       annotate_protein_complex(
         qgenes = query_symbol,
-        genedb = oeDB$genedb[['all']],
-        complex_db = oeDB$genedb[['protein_complex']],
-        uniprot_xref = oeDB$genedb[['uniprot_xref']],
+        genedb = oeDB[['genedb']][['all']],
+        complex_db = oeDB[['genedb']][['protein_complex']],
+        transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
         logger = logger)
   }
 
@@ -1053,7 +1044,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["unknown_function"]][["hits_df"]] <-
       get_genes_unknown_function(
         qgenes = query_symbol,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         logger = logger
       )
   }
@@ -1062,10 +1053,10 @@ onco_enrich <- function(query = NULL,
   if (show_subcell_comp == T) {
      subcellcomp_annotations <-
       annotate_subcellular_compartments(
-        qgenes = query_symbol,
+        query_entrez = query_entrezgene,
         minimum_confidence = min_subcellcomp_confidence,
         show_cytosol = subcellcomp_show_cytosol,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
@@ -1083,7 +1074,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]] <-
       get_crispr_lof_scores(
         qgenes = query_symbol,
-        projectscoredb = oeDB$projectscoredb,
+        projectscoredb = oeDB[['projectscoredb']],
         logger = logger)
 
     if (onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] <= 10){
@@ -1099,7 +1090,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["crispr_ps"]][["target_priority_scores"]] <-
       get_target_priority_scores(
         qgenes = query_symbol,
-        projectscoredb = oeDB$projectscoredb,
+        projectscoredb = oeDB[['projectscoredb']],
         logger = logger)
   }
 
@@ -1110,7 +1101,7 @@ onco_enrich <- function(query = NULL,
         tcga_aberration_matrix(
           qgenes = query_entrezgene,
           qsource = "entrezgene",
-          genedb = oeDB$genedb[['all']],
+          genedb = oeDB[['genedb']][['all']],
           oeDB = oeDB,
           vtype = v,
           logger = logger)
@@ -1118,7 +1109,7 @@ onco_enrich <- function(query = NULL,
         tcga_aberration_table(
           qgenes = query_entrezgene,
           qsource = "entrezgene",
-          genedb = oeDB$genedb[['all']],
+          genedb = oeDB[['genedb']][['all']],
           oeDB = oeDB,
           vtype = v,
           logger = logger)
@@ -1180,7 +1171,7 @@ onco_enrich <- function(query = NULL,
           )
         ) %>%
         dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) %>%
-        dplyr::left_join(dplyr::select(oeDB$genedb[['all']],
+        dplyr::left_join(dplyr::select(oeDB[['genedb']][['all']],
                                        .data$symbol, .data$ensembl_gene_id),
                          by = c("SYMBOL" = "symbol")) %>%
         dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) %>%
@@ -1207,7 +1198,7 @@ onco_enrich <- function(query = NULL,
         tcga_oncoplot_genes(
           qgenes = query_symbol,
           qsource = "symbol",
-          genedb = oeDB$genedb[['all']],
+          genedb = oeDB[['genedb']][['all']],
           oeDB = oeDB,
           site = psite,
           logger = logger)
@@ -1218,12 +1209,11 @@ onco_enrich <- function(query = NULL,
 
     log4r_info(logger, "Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
-      oeDB$genedb[["cancer_hallmark"]][["short"]] %>%
+      oeDB[['genedb']][["cancer_hallmark"]][["short"]] %>%
       dplyr::inner_join(
-        dplyr::select(qgenes_match$found, .data$symbol),
-        by = c("target_symbol" = "symbol")) %>%
-      dplyr::distinct() %>%
-      dplyr::select(-.data$target_symbol)
+        dplyr::select(qgenes_match$found, .data$ensembl_gene_id, .data$symbol),
+        by = "ensembl_gene_id") %>%
+      dplyr::distinct()
 
     n_genes_cancerhallmarks <- 0
 
@@ -1239,7 +1229,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["tcga"]][["co_expression"]] <-
       tcga_co_expression(
         qgenes = query_symbol,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
   }
@@ -1250,8 +1240,8 @@ onco_enrich <- function(query = NULL,
       onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
         annotate_tf_targets(
           query_symbol,
-          genedb = oeDB$genedb[['all']],
-          tf_target_interactions = oeDB$tftargetdb,
+          genedb = oeDB[['genedb']][['all']],
+          tf_target_interactions = oeDB[['tftargetdb']],
           collection = collection,
           min_confidence_reg_interaction = min_confidence_reg_interaction,
           logger = logger)
@@ -1270,7 +1260,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <-
       hpa_prognostic_genes(
         query_symbol,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
@@ -1278,7 +1268,7 @@ onco_enrich <- function(query = NULL,
       onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
         km_cshl_survival_genes(
           query_symbol,
-          projectsurvivaldb = oeDB$projectsurvivaldb[[feature]],
+          projectsurvivaldb = oeDB[['projectsurvivaldb']][[feature]],
           logger = logger,
           genetic_feature = feature)
     }
@@ -1291,7 +1281,7 @@ onco_enrich <- function(query = NULL,
         qgenes = query_symbol,
         q_id_type = "symbol",
         resolution = "tissue",
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
@@ -1300,7 +1290,7 @@ onco_enrich <- function(query = NULL,
         qgenes_entrez = query_entrezgene,
         resolution = "tissue",
         background_entrez = background_entrez,
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
@@ -1309,7 +1299,7 @@ onco_enrich <- function(query = NULL,
         qgenes = query_symbol,
         q_id_type = "symbol",
         resolution = "single_cell",
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
@@ -1318,7 +1308,7 @@ onco_enrich <- function(query = NULL,
         qgenes_entrez = query_entrezgene,
         background_entrez = background_entrez,
         resolution = "single_cell",
-        genedb = oeDB$genedb[['all']],
+        genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
 
