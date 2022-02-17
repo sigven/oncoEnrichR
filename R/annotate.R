@@ -252,14 +252,17 @@ target_disease_associations <-
     dplyr::distinct()
 
 
-  ttype_rank_df <- dplyr::select(target_genes, .data$symbol) %>%
+  ttype_rank_df <- dplyr::select(target_genes,
+                                 .data$symbol,
+                                 .data$ensembl_gene_id) %>%
     dplyr::left_join(
       dplyr::select(oeDB$otdb$site_rank,
                     .data$primary_site,
-                    .data$symbol,
+                    .data$ensembl_gene_id,
                     .data$tissue_assoc_rank),
-      by = "symbol"
-    )
+      by = "ensembl_gene_id"
+    ) %>%
+    dplyr::select(-.data$ensembl_gene_id)
 
   if(nrow(ttype_rank_df) > 0){
 

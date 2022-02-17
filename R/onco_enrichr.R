@@ -93,6 +93,15 @@ load_db <- function(github = T,
 
     checksum_db <- R.cache::getChecksum(oedb[[db]])
 
+    ##subcelldb's checksum does not recover correctly with all
+    ##list entries involved, choose comppi only
+    if(db == 'subcelldb'){
+      if('comppi' %in% names(oedb[[db]])){
+        checksum_db <- R.cache::getChecksum(oedb[[db]][['comppi']])
+      }
+    }
+
+
     if(checksum_db ==
        oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
 
@@ -501,7 +510,7 @@ init_report <- function(oeDB,
   rep[["data"]][["ppi"]][["community_network"]] <- NULL
 
   ## functional enrichment
-  for (c in c("go","msigdb","wikipathway","kegg","netpath")) {
+  for (c in c("go","msigdb","wikipathways","kegg","netpath")) {
     rep[["data"]][["enrichment"]][[c]] <- data.frame()
   }
 
@@ -657,8 +666,9 @@ onco_enrich <- function(query = NULL,
                         ...) {
 
 
-  logger <- log4r::logger(threshold = "INFO",
-                          appenders = log4r::console_appender(log4r_layout))
+  logger <- log4r::logger(
+    threshold = "INFO",
+    appenders = log4r::console_appender(log4r_layout))
 
   dot_args <- list(...)
 
@@ -929,8 +939,8 @@ onco_enrich <- function(query = NULL,
 
   ## Include enrichment analyses in the report (pathway, GO, MSigDB)
   if(onc_rep[['config']][['show']][['enrichment']] == T){
-    for (c in names(oeDB$pathwaydb[["msigdb"]][["COLLECTION"]])) {
-      for (subcat in names(oeDB$pathwaydb[["msigdb"]][["COLLECTION"]][[c]])) {
+    for (c in names(oeDB[['pathwaydb']][["msigdb"]][["COLLECTION"]])) {
+      for (subcat in names(oeDB[['pathwaydb']][["msigdb"]][["COLLECTION"]][[c]])) {
         if (c == "C5" & subcat != "HPO") {
           enr <- get_go_enrichment(
             query_entrez = as.character(query_entrezgene),
@@ -971,9 +981,9 @@ onco_enrich <- function(query = NULL,
                 onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
               p_value_adjustment_method =
                 onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-              TERM2GENE = oeDB$pathwaydb[['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2GENE,
-              TERM2NAME = oeDB$pathwaydb[['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2NAME,
-              TERM2SOURCE = oeDB$pathwaydb[['msigdb']]$TERM2SOURCE,
+              TERM2GENE = oeDB[['pathwaydb']][['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2GENE,
+              TERM2NAME = oeDB[['pathwaydb']][['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2NAME,
+              TERM2SOURCE = oeDB[['pathwaydb']][['msigdb']]$TERM2SOURCE,
               dbsource = db,
               logger = logger)
             if (!is.null(enr)) {
@@ -987,9 +997,9 @@ onco_enrich <- function(query = NULL,
       }
     }
 
-    for(pwaydb in c('wikipathway','netpath','kegg')){
+    for(pwaydb in c('wikipathways','netpath','kegg')){
       db <- "NetPath"
-      if(pwaydb == "wikipathway"){
+      if(pwaydb == "wikipathways"){
         db <- "WikiPathways"
       }
       if(pwaydb == "kegg"){
@@ -1006,9 +1016,9 @@ onco_enrich <- function(query = NULL,
           p_value_cutoff = onc_rep[["config"]][["enrichment"]][["p_value_cutoff"]],
           p_value_adjustment_method =
             onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
-          TERM2GENE = oeDB$pathwaydb[[pwaydb]]$TERM2GENE,
-          TERM2NAME = oeDB$pathwaydb[[pwaydb]]$TERM2NAME,
-          TERM2SOURCE = oeDB$pathwaydb[[pwaydb]]$TERM2SOURCE,
+          TERM2GENE = oeDB[['pathwaydb']][[pwaydb]]$TERM2GENE,
+          TERM2NAME = oeDB[['pathwaydb']][[pwaydb]]$TERM2NAME,
+          TERM2SOURCE = oeDB[['pathwaydb']][[pwaydb]]$TERM2SOURCE,
           dbsource = db,
           logger = logger)
 
@@ -1033,9 +1043,9 @@ onco_enrich <- function(query = NULL,
   if (show_complex == T) {
     onc_rep[["data"]][["protein_complex"]] <-
       annotate_protein_complex(
-        qgenes = query_symbol,
+        query_entrez = as.integer(query_entrezgene),
         genedb = oeDB[['genedb']][['all']],
-        complex_db = oeDB[['genedb']][['protein_complex']],
+        complex_db = oeDB[['genedb']][['proteincomplexdb']],
         transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
         logger = logger)
   }
@@ -1054,7 +1064,7 @@ onco_enrich <- function(query = NULL,
   if (show_subcell_comp == T) {
      subcellcomp_annotations <-
       annotate_subcellular_compartments(
-        query_entrez = query_entrezgene,
+        query_entrez = as.integer(query_entrezgene),
         minimum_confidence = min_subcellcomp_confidence,
         show_cytosol = subcellcomp_show_cytosol,
         genedb = oeDB[['genedb']][['all']],
@@ -1100,7 +1110,7 @@ onco_enrich <- function(query = NULL,
     for (v in c("cna_homdel","cna_ampl")) {
       onc_rep[["data"]][["tcga"]][["aberration"]][["matrix"]][[v]] <-
         tcga_aberration_matrix(
-          qgenes = query_entrezgene,
+          qgenes = as.integer(query_entrezgene),
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
           oeDB = oeDB,
@@ -1108,7 +1118,7 @@ onco_enrich <- function(query = NULL,
           logger = logger)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
         tcga_aberration_table(
-          qgenes = query_entrezgene,
+          qgenes = as.integer(query_entrezgene),
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
           oeDB = oeDB,
@@ -1288,7 +1298,7 @@ onco_enrich <- function(query = NULL,
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
       gene_tissue_cell_enrichment(
-        qgenes_entrez = query_entrezgene,
+        qgenes_entrez = as.integer(query_entrezgene),
         resolution = "tissue",
         background_entrez = background_entrez,
         genedb = oeDB[['genedb']][['all']],
@@ -1297,8 +1307,8 @@ onco_enrich <- function(query = NULL,
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
       gene_tissue_cell_spec_cat(
-        qgenes = query_symbol,
-        q_id_type = "symbol",
+        qgenes = as.integer(query_entrezgene),
+        q_id_type = "entrezgene",
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
@@ -1306,8 +1316,8 @@ onco_enrich <- function(query = NULL,
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
-        qgenes_entrez = query_entrezgene,
-        background_entrez = background_entrez,
+        qgenes_entrez = as.integer(query_entrezgene),
+        background_entrez = as.integer(background_entrez),
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,

@@ -10,7 +10,6 @@ annotate_protein_complex <- function(query_entrez,
   stopifnot(is.integer(query_entrez))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(complex_db))
-  stopifnot(!is.null(uniprot_xref))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(complex_db$db, dbtype = "protein_complex")
   validate_db_df(transcript_xref_db, dbtype = "transcript_xref")
