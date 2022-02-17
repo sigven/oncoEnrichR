@@ -111,7 +111,7 @@ for(build in c('grch37','grch38')){
 
 }
 
-transcript_xref_db <- get_unique_transcript_xrefs(
+genedb[['transcript_xref']] <- get_unique_transcript_xrefs(
   basedir = here::here(),
   gene_info = gene_info,
   gencode = gencode,
@@ -178,7 +178,7 @@ go_terms_pr_gene <- get_gene_go_terms(
 genedb[['all']] <- generate_gene_xref_df(
   basedir = here::here(),
   gene_info = gene_info,
-  transcript_xref_db = transcript_xref_db,
+  transcript_xref_db = genedb[['transcript_xref']],
   ts_oncogene_annotations = ts_oncogene_annotations,
   opentarget_associations = opentarget_associations,
   go_terms_pr_gene = go_terms_pr_gene,
@@ -199,7 +199,7 @@ ligandreceptordb <- get_ligand_receptors(
 ####----ComPPI - subcellular compartments---####
 subcelldb <- get_subcellular_annotations(
   basedir = here::here(),
-  transcript_xref_db = transcript_xref_db
+  transcript_xref_db = genedb[['transcript_xref']]
 )
 
 ####---- Project Score/CRISPR ----####
@@ -296,7 +296,6 @@ for(n in c('cancerdrugdb',
 usethis::use_data(db_props, overwrite = T)
 
 rm(tcgadb)
-rm(transcript_xref_db)
 rm(gencode)
 rm(hpa)
 rm(omnipathdb)
