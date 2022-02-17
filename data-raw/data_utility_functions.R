@@ -10,7 +10,7 @@ chunk <- function(x,n) split(x, factor(sort(rank(x)%%n)))
 get_citations_pubmed <- function(pmid){
 
   ## make chunk of maximal 400 PMIDs from input array (limit by EUtils)
-  pmid_chunks <- chunk(pmid, ceiling(length(pmid)/20))
+  pmid_chunks <- chunk(pmid, ceiling(length(pmid)/100))
   j <- 0
   all_citations <- data.frame()
   cat('Retrieving PubMed citations for PMID list, total length', length(pmid))
@@ -645,7 +645,7 @@ get_gencode_ensembl_transcripts <-
 
     gencode_rds <- file.path(
       basedir, "data-raw","gencode", build,
-      paste0("gencode_transcripts_", gencode_version, "2.rds"))
+      paste0("gencode_transcripts_", gencode_version, ".rds"))
 
 
     if(update == F & file.exists(gencode_rds)){
@@ -1060,243 +1060,92 @@ resolve_duplicates <- function(gencode_df){
 
 }
 
-get_uniprot_map <- function(basedir = NULL,
-                            uniprot_release = "2020_04"){
-
-  ## corum protein-complex data
-
-  #download.file("http://mips.helmholtz-muenchen.de/corum/download/coreComplexes.txt.zip",destfile="data-raw/chorum/coreComplexes.txt.zip", quiet = T)
-  corum_complexes <-
-    read.table(file=paste0(basedir,"/data-raw/corum/coreComplexes.txt"),
-               sep="\t",header=T, quote="",comment.char="",stringsAsFactors = F) %>%
-    dplyr::select(c(Organism, ComplexID, subunits.UniProt.IDs.,
-                    ComplexName,FunCat.description)) %>%
-    dplyr::filter(Organism == 'Human') %>%
-    dplyr::mutate(n_complexes = nrow(.)) %>%
-    dplyr::rename(uniprot_acc = subunits.UniProt.IDs.,
-                  corum_id = ComplexID, corum_name = ComplexName,
-                  corum_funcat_description = FunCat.description) %>%
-    tidyr::separate_rows(uniprot_acc, sep=";") %>%
-    dplyr::select(-Organism)
-
-  n_complexes <- unique(corum_complexes$n_complexes)
-  n_protein_complex_interactions <- nrow(corum_complexes)
-  rlogging::message("Retrieving protein complex annotation from CORUM")
-  rlogging::message("A total of ", n_complexes,
-                    " protein complexes were parsed, containing ",
-                    n_protein_complex_interactions," protein-complex interactions")
-
-  uniprot_acc_to_corum_ids <- as.data.frame(
-    dplyr::group_by(corum_complexes, uniprot_acc) %>%
-      dplyr::summarise(corum_id = paste(unique(corum_id), collapse = "&"), .groups = "drop"))
-  rlogging::message("Retrieving UniProtKB annotation")
-
-  ## read uniprot ID mapping
-  idmapping_fname <- paste0(basedir,'/data-raw/uniprot/',uniprot_release,'/HUMAN_9606_idmapping.dat.gz')
-  idmapping_up_kb <- read.table(gzfile(idmapping_fname),sep="\t",header = F,quote = "", stringsAsFactors = F) %>%
-    dplyr::filter(V2 == 'Ensembl_TRS' | V2 == 'UniProtKB-ID' | V2 == 'Ensembl' | V2 == 'GeneID' | V2 == 'RefSeq_NT') %>%
-    magrittr::set_colnames(c('acc','type','name')) %>%
-    dplyr::mutate(acc = stringr::str_replace(acc,"-[0-9]{1,}",""))
-
-  reviewed_uniprot_accs <- readRDS(file=paste0(basedir,"/data-raw/uniprot/",uniprot_release,"/reviewed_uniprot_accessions.rds"))
-
-  ## UniProt accession to Ensembl transcript ID
-  ensembl_up_acc <- dplyr::filter(idmapping_up_kb, type == 'Ensembl_TRS') %>%
-    dplyr::select(acc, name) %>%
-    dplyr::rename(uniprot_acc = acc, ensembl_transcript_id = name) %>%
-    dplyr::distinct()
-  ## remove transcripts mapped to more than one UniProt acc
-  unique_ensembl_trans <- as.data.frame(dplyr::group_by(ensembl_up_acc, ensembl_transcript_id) %>%
-                                          dplyr::summarise(n_trans = dplyr::n(), .groups = "drop") %>%
-                                          dplyr::filter(n_trans == 1))
-  ensembl_up_acc <- dplyr::semi_join(ensembl_up_acc,
-                                     dplyr::select(unique_ensembl_trans, ensembl_transcript_id),
-                                     by=c("ensembl_transcript_id"))
-
-  ## UniProt accession to UniProt ID
-  up_id_acc <- as.data.frame(dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID') %>%
-                               dplyr::group_by(acc) %>%
-                               dplyr::summarise(uniprot_id = paste(unique(name), collapse="&"),
-                                                .groups = "drop") %>%
-                               dplyr::rename(uniprot_acc = acc))
-  rlogging::message("A total of ",nrow(up_id_acc)," UniProt protein accessions were parsed")
-
-
-  ## UniProt accession to UniProt ID
-  refseq_id_acc <- as.data.frame(dplyr::filter(idmapping_up_kb, type == 'RefSeq_NT') %>%
-                                   dplyr::mutate(name = stringr::str_replace(name,"\\.[0-9]{1,}$","")) %>%
-                                   dplyr::group_by(acc) %>%
-                                   dplyr::summarise(refseq_mrna = paste(unique(name), collapse="&"),
-                                                    .groups = "drop") %>%
-                                   dplyr::rename(uniprot_acc = acc))
-
-
-  uniprot_map <- dplyr::full_join(dplyr::left_join(refseq_id_acc, up_id_acc,by=c("uniprot_acc")),
-                                  dplyr::left_join(ensembl_up_acc, up_id_acc,by=c("uniprot_acc")),by=c("uniprot_acc","uniprot_id"))
-
-  ## UniProt accession and ID for Ensembl transcript IDs
-  uniprot_map <- uniprot_map %>%
-    dplyr::left_join(uniprot_acc_to_corum_ids,by=c("uniprot_acc")) %>%
-    dplyr::left_join(reviewed_uniprot_accs, by=c("uniprot_acc","uniprot_id")) %>%
-    dplyr::rename(uniprot_reviewed = reviewed)
-
-  return(list('uniprot_map' = uniprot_map, 'corum_complexes' = corum_complexes))
-
-}
-
-map_uniprot_accession <- function(gencode, uniprot_map){
-
-  gencode <- as.data.frame(
-    gencode %>%
-      dplyr::left_join(dplyr::select(dplyr::filter(uniprot_map$uniprot_map,!is.na(ensembl_transcript_id)), -refseq_mrna),
-                       by=c("ensembl_transcript_id"))
-  )
-
-  tmp0 <- dplyr::select(uniprot_map$uniprot_map, refseq_mrna, uniprot_id, uniprot_acc, uniprot_reviewed) %>%
-    tidyr::separate_rows(refseq_mrna, sep="&") %>%
-    dplyr::filter(!is.na(refseq_mrna)) %>%
-    dplyr::rename(uniprot_id2 = uniprot_id, uniprot_acc2 = uniprot_acc, uniprot_reviewed2 = uniprot_reviewed) %>%
-    dplyr::distinct()
-
-  tmp1 <- as.data.frame(
-    dplyr::select(gencode, ensembl_transcript_id, refseq_mrna,
-                  uniprot_id, uniprot_reviewed, uniprot_acc) %>%
-      tidyr::separate_rows(refseq_mrna, sep="&") %>%
-      dplyr::filter(!is.na(refseq_mrna)) %>%
-      dplyr::left_join(tmp0,by=c("refseq_mrna")) %>%
-      dplyr::mutate(uniprot_id = dplyr::if_else((is.na(uniprot_id) | uniprot_id != uniprot_id2 ) & !is.na(uniprot_id2),
-                                                uniprot_id2,
-                                                as.character(uniprot_id))) %>%
-      dplyr::mutate(uniprot_acc = dplyr::if_else((is.na(uniprot_acc) | uniprot_acc != uniprot_acc2 ) & !is.na(uniprot_acc2),
-                                                 uniprot_acc2,
-                                                 as.character(uniprot_acc))) %>%
-      dplyr::mutate(uniprot_reviewed = dplyr::if_else((is.na(uniprot_reviewed) | uniprot_reviewed != uniprot_reviewed2 ) & !is.na(uniprot_reviewed2),as.logical(uniprot_reviewed2),as.logical(uniprot_reviewed))) %>%
-      dplyr::filter(uniprot_reviewed == T) %>%
-      dplyr::group_by(ensembl_transcript_id) %>%
-      dplyr::summarise(refseq_mrna = paste(unique(refseq_mrna),collapse="&"),
-                       uniprot_id = paste(unique(uniprot_id), collapse="&"),
-                       uniprot_reviewed = paste(unique(uniprot_reviewed),collapse="&"),
-                       uniprot_acc = paste(unique(uniprot_acc),collapse="&"), .groups = "drop") %>%
-      dplyr::mutate(uniprot_reviewed = as.logical(uniprot_reviewed))
-  )
-
-  tmp2 <- dplyr::select(gencode, ensembl_transcript_id, refseq_mrna, uniprot_id, uniprot_acc, uniprot_reviewed) %>%
-    dplyr::filter(is.na(refseq_mrna))
-
-  uniprot_mapping_final <- dplyr::bind_rows(tmp1, tmp2)
-
-  gencode <- dplyr::select(gencode, -c(uniprot_id,uniprot_acc,uniprot_reviewed,refseq_mrna)) %>%
-    dplyr::left_join(uniprot_mapping_final,by=c("ensembl_transcript_id"))
-
-  rm(tmp0)
-  rm(tmp1)
-  rm(tmp2)
-
-  return(gencode)
-}
 
 get_cancer_hallmarks <- function(basedir = NULL,
                                  gene_info = NULL,
-                                 opentargets_version = "2021.09",
+                                 opentargets_version = "2021.11",
                                  update = T){
 
-  if(update == T){
-    hallmark_data_long <- as.data.frame(
-      readRDS(file=paste0(basedir,"/data-raw/opentargets/opentargets_target_",
-                          opentargets_version, ".rds")) %>%
-        dplyr::select(target_symbol, cancer_hallmark) %>%
-        dplyr::filter(!is.na(cancer_hallmark)) %>%
-        tidyr::separate_rows(cancer_hallmark, sep="@@@") %>%
-        tidyr::separate(cancer_hallmark,
-                        into = c('hallmark','promote','suppress','literature_support'),
-                        remove = F, sep = '\\|') %>%
-        dplyr::rename(promotes = promote, suppresses = suppress) %>%
-        dplyr::mutate(hallmark = stringr::str_to_title(hallmark)) %>%
-        tidyr::separate_rows(literature_support, sep="&") %>%
-        dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
-        dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
-        tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
-        dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
-    )
+  rds_fname <-
+    file.path(basedir, "data-raw", "opentargets",
+              paste0("opentargets_hallmarkdata_",
+              opentargets_version, ".rds"))
 
-    pmid_data <- get_citations_pubmed(unique(hallmark_data_long$pmid)) %>%
-      dplyr::mutate(pmid = as.character(pmid))
-
-
-    hallmark_data_long <- hallmark_data_long %>%
-      dplyr::left_join(pmid_data, by = "pmid")
-
-    hallmark_data_short <- as.data.frame(
-      hallmark_data_long %>%
-        dplyr::select(target_symbol, hallmark,
-                      promotes, suppresses, pmid_summary,
-                      link) %>%
-        dplyr::mutate(literature_support = paste0(pmid_summary," (",link,")")) %>%
-        dplyr::group_by(target_symbol, hallmark,
-                        promotes, suppresses) %>%
-        dplyr::summarise(literature_support = paste(
-          literature_support, collapse=". "),
-          .groups = "drop") %>%
-        dplyr::left_join(dplyr::select(gene_info,
-                                       symbol, entrezgene),
-                         by = c("target_symbol" = "symbol")) %>%
-        dplyr::mutate(symbol =
-          paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
-                   entrezgene,"' target='_blank'>",target_symbol,"</a>")) %>%
-        dplyr::select(-entrezgene) %>%
-        dplyr::select(target_symbol, symbol, hallmark, promotes, suppresses,
-                      literature_support)
-    )
-
-    hallmark_data <- list('long' = hallmark_data_long,
-                          'short' = hallmark_data_short)
-
-    saveRDS(hallmark_data,
-            file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
-                          opentargets_version, ".rds"))
-  }
-  else{
-    hallmark_data <- readRDS(
-      file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
-                    opentargets_version, ".rds"))
+  if(update == F & file.exists(rds_fname)){
+    hallmark_data <- readRDS(file = rds_fname)
+    return(hallmark_data)
   }
 
+  opentargets_target_rds <- file.path(
+    basedir, "data-raw", "opentargets",
+    paste0("opentargets_target_", opentargets_version, ".rds")
+  )
+
+  hallmark_data_long <- as.data.frame(
+    readRDS(file = opentargets_target_rds) %>%
+      dplyr::select(target_ensembl_gene_id, hgnc_id, cancer_hallmark) %>%
+      dplyr::rename(ensembl_gene_id = target_ensembl_gene_id) %>%
+      dplyr::filter(!is.na(cancer_hallmark)) %>%
+      tidyr::separate_rows(cancer_hallmark, sep="@@@") %>%
+      tidyr::separate(cancer_hallmark,
+                      into = c('hallmark','promote','suppress','literature_support'),
+                      remove = F, sep = '\\|') %>%
+      dplyr::rename(promotes = promote, suppresses = suppress) %>%
+      dplyr::mutate(hallmark = stringr::str_to_title(hallmark)) %>%
+      tidyr::separate_rows(literature_support, sep="&") %>%
+      dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
+      dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
+      tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
+      dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
+  )
+
+  pmid_data <- get_citations_pubmed(unique(hallmark_data_long$pmid)) %>%
+    dplyr::mutate(pmid = as.character(pmid))
+
+
+  hallmark_data_long <- hallmark_data_long %>%
+    dplyr::left_join(pmid_data, by = "pmid")
+
+  hallmark_data_short <- as.data.frame(
+    hallmark_data_long %>%
+      dplyr::select(hgnc_id, ensembl_gene_id, hallmark,
+                    promotes, suppresses, pmid_summary,
+                    link) %>%
+      dplyr::mutate(literature_support = paste0(pmid_summary," (",link,")")) %>%
+      dplyr::group_by(hgnc_id, ensembl_gene_id, hallmark,
+                      promotes, suppresses) %>%
+      dplyr::summarise(literature_support = paste(
+        literature_support, collapse=". "),
+        .groups = "drop") %>%
+      dplyr::left_join(dplyr::select(gene_info, hgnc_id,
+                                     symbol, entrezgene),
+                       by = "hgnc_id") %>%
+      dplyr::mutate(symbol =
+                      paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
+                             entrezgene,"' target='_blank'>",symbol,"</a>")) %>%
+      dplyr::select(-c(entrezgene, hgnc_id)) %>%
+      dplyr::select(symbol, ensembl_gene_id, hallmark, promotes, suppresses,
+                    literature_support)
+  )
+
+  hallmark_data <- list('long' = hallmark_data_long,
+                        'short' = hallmark_data_short)
+  saveRDS(hallmark_data, file = rds_fname)
   return(hallmark_data)
 
-}
-
-get_regulatory_interactions <- function(dorothea_levels = c("A","B","C","D")){
-
-  omnipath_interactions_regulatory <- as.data.frame(
-    OmnipathR::import_transcriptional_interactions(
-      organism = 9606,
-      dorothea_levels = c("A","B", "C", "D")
-    )
-  ) %>%
-    dplyr::mutate(
-      references = stringr::str_replace_all(
-        references, "DoRothEA:|HTRIdb:|PAZAR:|SIGNOR:|ORegAnno:",""
-      ))
-
-
-  tmp <- dplyr::select(interactions_regulatory, source, target,
-                       references) %>%
-    dplyr::filter(!is.na(references)) %>%
-    tidyr::separate_rows(references, sep=";") %>%
-    dplyr::distinct()
 }
 
 
 get_gencode_data <- function(
   basedir = NULL,
-  gencode_version = "38",
+  gencode_version = "39",
   build = "grch38",
   gene_info = NULL,
   update = T){
 
   rds_fname <- file.path(
     basedir, "data-raw",
-    "gencode", paste0("gencode_OE_", gencode_version, "2.rds")
+    "gencode", paste0("gencode_OE_", gencode_version, ".rds")
   )
 
   if(update == F & file.exists(rds_fname)){
@@ -1343,6 +1192,7 @@ get_tf_target_interactions <- function(
 
   if(update == F & file.exists(rds_fname)){
     tf_target_interactions <- readRDS(file = rds_fname)
+    return(tf_target_interactions)
   }
 
 
@@ -2108,81 +1958,6 @@ get_crispr_scores <- function(
 
 }
 
-get_cancer_hallmarks <- function(basedir = NULL,
-         gene_info = NULL,
-         opentargets_version = "2021.11",
-         update = T){
-
-  if(update == T){
-    hallmark_data_long <- as.data.frame(
-      readRDS(file=paste0(basedir,"/data-raw/opentargets/opentargets_target_",
-                          opentargets_version, ".rds")) %>%
-        dplyr::select(target_ensembl_gene_id, cancer_hallmark) %>%
-        dplyr::rename(ensembl_gene_id = target_ensembl_gene_id) %>%
-        dplyr::filter(!is.na(cancer_hallmark)) %>%
-        tidyr::separate_rows(cancer_hallmark, sep="@@@") %>%
-        tidyr::separate(cancer_hallmark,
-                        into = c('hallmark','promote','suppress','literature_support'),
-                        remove = F, sep = '\\|') %>%
-        dplyr::rename(promotes = promote, suppresses = suppress) %>%
-        dplyr::mutate(hallmark = stringr::str_to_title(hallmark)) %>%
-        tidyr::separate_rows(literature_support, sep="&") %>%
-        dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
-        dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
-        tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
-        dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
-    )
-
-    pmid_data <- get_citations_pubmed(unique(hallmark_data_long$pmid)) %>%
-      dplyr::mutate(pmid = as.character(pmid))
-
-
-    hallmark_data_long <- hallmark_data_long %>%
-      dplyr::left_join(pmid_data, by = "pmid")
-
-    hallmark_data_short <- as.data.frame(
-      hallmark_data_long %>%
-        dplyr::select(ensembl_gene_id, hallmark,
-                      promotes, suppresses, pmid_summary,
-                      link) %>%
-        dplyr::mutate(literature_support = paste0(pmid_summary," (",link,")")) %>%
-        dplyr::group_by(ensembl_gene_id, hallmark,
-                        promotes, suppresses) %>%
-        dplyr::summarise(literature_support = paste(
-          literature_support, collapse=". "),
-          .groups = "drop") %>%
-        # dplyr::left_join(dplyr::select(gene_info,
-        #                                symbol, entrezgene),
-        #                  by = c("target_symbol" = "symbol")) %>%
-        # dplyr::mutate(symbol =
-        #   paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
-        #            entrezgene,"' target='_blank'>",target_symbol,"</a>")) %>%
-        # dplyr::select(-entrezgene) %>%
-        # dplyr::select(target_symbol, symbol, hallmark,
-        #               promotes, suppresses,
-        #               literature_support)
-        dplyr::select(
-          ensembl_gene_id, hallmark,
-          promotes, suppresses,
-          literature_support)
-    )
-
-    hallmark_data <- list('long' = hallmark_data_long,
-                          'short' = hallmark_data_short)
-
-    saveRDS(hallmark_data,
-            file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
-                          opentargets_version, ".rds"))
-  }
-  else{
-    hallmark_data <- readRDS(
-      file = paste0(basedir,"/data-raw/opentargets/opentargets_hallmarkdata_",
-                    opentargets_version, ".rds"))
-  }
-
-  return(hallmark_data)
-
-}
 
 get_survival_associations <- function(
   gene_info = NULL,
@@ -2278,7 +2053,7 @@ get_unique_transcript_xrefs <- function(
 
   rds_fname <- file.path(
     basedir, "data-raw",
-    "transcript_xref", "transcript_xref_db2.rds"
+    "transcript_xref", "transcript_xref_db.rds"
   )
 
   ## gene synonyms
@@ -2576,14 +2351,26 @@ remove_duplicate_ensembl_genes <- function(
 }
 
 generate_gene_xref_df <- function(
+  basedir = NULL,
   gene_info = NULL,
   transcript_xref_db = NULL,
   ts_oncogene_annotations = NULL,
+  opentarget_associations = NULL,
   uniprot_gene_summary = NULL,
   ncbi_gene_summary = NULL,
   cancerdrugdb = NULL,
   otdb = NULL,
-  go_terms_pr_gene = NULL){
+  go_terms_pr_gene = NULL,
+  update = T){
+
+  rds_fname <- file.path(
+    basedir, "data-raw", "gene_xref", "gene_xref.rds"
+  )
+
+  if(update == F & file.exists(rds_fname)){
+    gene_xref <- readRDS(file = rds_fname)
+  }
+
 
   invisible(assertthat::assert_that(!is.null(gene_info)))
   invisible(assertthat::assert_that(!is.null(transcript_xref_db)))
@@ -2593,6 +2380,7 @@ generate_gene_xref_df <- function(
   invisible(assertthat::assert_that(!is.null(cancerdrugdb)))
   invisible(assertthat::assert_that(!is.null(otdb)))
   invisible(assertthat::assert_that(!is.null(go_terms_pr_gene)))
+  invisible(assertthat::assert_that(!is.null(opentarget_associations)))
 
   invisible(assertthat::assert_that(is.data.frame(gene_info)))
   invisible(assertthat::assert_that(is.data.frame(transcript_xref_db)))
@@ -2602,6 +2390,7 @@ generate_gene_xref_df <- function(
   invisible(assertthat::assert_that(typeof(cancerdrugdb) == "list"))
   invisible(assertthat::assert_that(typeof(otdb) == "list"))
   invisible(assertthat::assert_that(is.data.frame(go_terms_pr_gene)))
+  invisible(assertthat::assert_that(is.data.frame(opentarget_associations)))
 
   invisible(assertthat::assert_that("drug_per_target" %in% names(cancerdrugdb)))
   invisible(assertthat::assert_that("early_phase" %in% names(cancerdrugdb[['drug_per_target']])))
@@ -2634,6 +2423,12 @@ generate_gene_xref_df <- function(
   assertable::assert_colnames(
     ts_oncogene_annotations,
     c('entrezgene','tumor_suppressor','oncogene', 'cancer_driver'),
+    quiet = T, only_colnames = F)
+
+  assertable::assert_colnames(
+    opentarget_associations,
+    c('ensembl_gene_id','SM_tractability_category','SM_tractability_support',
+      'AB_tractability_category','AB_tractability_support'),
     quiet = T, only_colnames = F)
 
   go2entrez <- transcript_xref_db %>%
@@ -2723,6 +2518,7 @@ generate_gene_xref_df <- function(
     assign_unknown_function_rank() %>%
     remove_duplicate_ensembl_genes()
 
+  saveRDS(gene_xref, file = rds_fname)
   return(gene_xref)
 
 }
@@ -3246,6 +3042,7 @@ get_hpa_associations <- function(
 
   if(update == F & file.exists(rds_fname)){
     hpa <- readRDS(file = rds_fname)
+    return(hpa)
   }
 
   variables_json <- c('RNA tissue specificity',
@@ -3380,5 +3177,337 @@ get_hpa_associations <- function(
   saveRDS(hpa, file = rds_fname)
   return(hpa)
 
+
+}
+
+
+get_tcga_db <- function(
+  basedir = NULL,
+  gene_xref = NULL,
+  update = F){
+
+  rds_fname <- file.path(
+    basedir, "data-raw", "tcga", "tcgadb.rds")
+
+  co_expression_tsv <- file.path(
+    basedir, "data-raw", "tcga",
+    "co_expression_strong_moderate.release31_20211029.tsv.gz")
+
+  tcga_clinical_rds <- file.path(
+    basedir, "data-raw", "tcga",
+    "tcga_clinical.rds"
+  )
+
+  tcga_aberration_rds <- file.path(
+    basedir, "data-raw", "tcga",
+    "tcga_gene_aberration_stats.rds"
+  )
+
+  maf_codes_tsv <- file.path(
+    basedir, "data-raw", "maf_codes.tsv"
+  )
+  maf_path <- file.path(basedir, "data-raw", "tcga")
+
+
+  recurrent_variants_rds <- file.path(
+    basedir, "data-raw", "tcga",
+    "tcga_recurrent_coding_gvanno_grch38.tsv.gz"
+  )
+
+  pfam_domains_tsv <- file.path(
+    basedir, "data-raw", "pfam",
+    "pfam.domains.tsv.gz"
+  )
+
+  if(update == F & file.exists(rds_fname)){
+    tcgadb <- readRDS(file = rds_fname)
+    return(tcgadb)
+  }
+
+
+  tcga_clinical <-
+    readRDS(file = tcga_clinical_rds)
+  tcga_aberration_stats <-
+    readRDS(file = tcga_aberration_rds) %>%
+    dplyr::filter(
+      clinical_strata == "site" |
+        (clinical_strata == "site_diagnosis" &
+           percent_mutated >= 1))
+
+  tcga_aberration_stats$genomic_strata <- NULL
+  tcga_aberration_stats$entrezgene <- NULL
+  tcga_aberration_stats$consensus_calls <- NULL
+  tcga_aberration_stats$fp_driver_gene <- NULL
+
+  maf_codes <- read.table(file = maf_codes_tsv,
+                          header = T, sep = "\t", quote ="")
+  i <- 1
+  while(i <= nrow(maf_codes)){
+    primary_site <- maf_codes[i,]$primary_site
+    maf_code <- maf_codes[i,]$code
+    maf_file <- paste0(maf_path,"/tcga_mutation_grch38_release31_20211029.",maf_code,"_0.maf.gz")
+    if(file.exists(maf_file)){
+      tmp <- read.table(gzfile(maf_file), quote="", header = T, stringsAsFactors = F, sep="\t", comment.char="#")
+      tmp$primary_site <- NULL
+      tmp$site_diagnosis_code <- NULL
+      tmp$Tumor_Sample_Barcode <- stringr::str_replace(tmp$Tumor_Sample_Barcode,"-[0-9][0-9][A-Z]$","")
+
+      clinical <- tcga_clinical %>% dplyr::filter(primary_site == primary_site) %>%
+        dplyr::select(bcr_patient_barcode, primary_diagnosis_very_simplified,
+                      MSI_status, Gleason_score, ER_status,
+                      PR_status, HER2_status,
+                      pancan_subtype_selected) %>%
+        dplyr::rename(Diagnosis = primary_diagnosis_very_simplified,
+                      Tumor_Sample_Barcode = bcr_patient_barcode,
+                      PanCancer_subtype = pancan_subtype_selected) %>%
+        dplyr::semi_join(tmp, by = "Tumor_Sample_Barcode")
+
+      write.table(tmp, file="tmp.maf", quote=F, row.names = F,
+                  col.names = T, sep ="\t")
+      system('gzip -f tmp.maf', intern = T)
+      maf <- maftools::read.maf("tmp.maf.gz", verbose = F, clinicalData = clinical)
+      saveRDS(maf, file = file.path(basedir, "data-raw", "maf", paste0(maf_code,".maf.rds")))
+    }
+    i <- i + 1
+    cat(primary_site,'\n')
+
+  }
+  system('rm -f tmp.maf.gz')
+
+
+  pfam_domains <- as.data.frame(
+    readr::read_tsv(
+      pfam_domains_tsv,
+
+      show_col_types = F
+    )) %>%
+    dplyr::rename(PFAM_ID = pfam_id, PROTEIN_DOMAIN = url) %>%
+    dplyr::rename(PFAM_DOMAIN_NAME = name) %>%
+    dplyr::select(PFAM_ID, PFAM_DOMAIN_NAME) %>%
+    dplyr::mutate(PFAM_ID = stringr::str_replace(
+      PFAM_ID,"\\.[0-9]{1,}$","")
+    )
+
+  ##TCGA recurrent SNVs/InDels
+  recurrent_tcga_variants <- as.data.frame(readr::read_tsv(
+    file = recurrent_variants_rds,
+    skip = 1, na = c("."), show_col_types = F) %>%
+      dplyr::select(TCGA_SITE_RECURRENCE,
+                    CHROM, POS, REF, ALT,
+                    TCGA_TOTAL_RECURRENCE,
+                    PFAM_DOMAIN, LoF,
+                    MUTATION_HOTSPOT,
+                    HGVSp_short,
+                    ENSEMBL_TRANSCRIPT_ID,
+                    SYMBOL,
+                    COSMIC_MUTATION_ID,
+                    Consequence) %>%
+      dplyr::mutate(VAR_ID = paste(
+        CHROM, POS, REF, ALT, sep = "_")
+      ) %>%
+      dplyr::rename(PFAM_ID = PFAM_DOMAIN) %>%
+      dplyr::mutate(LOSS_OF_FUNCTION = FALSE) %>%
+      dplyr::mutate(LOSS_OF_FUNCTION = dplyr::if_else(
+        !is.na(LoF) & LoF == "HC",
+        as.logical(TRUE),
+        as.logical(LOSS_OF_FUNCTION),
+      )) %>%
+      dplyr::rename(CONSEQUENCE = Consequence,
+                    TOTAL_RECURRENCE = TCGA_TOTAL_RECURRENCE,
+                    PROTEIN_CHANGE = HGVSp_short) %>%
+      dplyr::select(SYMBOL,
+                    VAR_ID,
+                    CONSEQUENCE,
+                    PROTEIN_CHANGE,
+                    PFAM_ID,
+                    MUTATION_HOTSPOT,
+                    LOSS_OF_FUNCTION,
+                    ENSEMBL_TRANSCRIPT_ID,
+                    COSMIC_MUTATION_ID,
+                    TCGA_SITE_RECURRENCE,
+                    TOTAL_RECURRENCE) %>%
+      tidyr::separate_rows(TCGA_SITE_RECURRENCE, sep=",") %>%
+      tidyr::separate(TCGA_SITE_RECURRENCE, into =
+                        c("PRIMARY_SITE","SITE_RECURRENCE", "TCGA_SAMPLES"),
+                      sep = ":",
+                      remove = T) %>%
+      dplyr::select(-TCGA_SAMPLES) %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(PRIMARY_SITE = dplyr::case_when(
+        PRIMARY_SITE == "CNS_Brain" ~ "CNS/Brain",
+        PRIMARY_SITE == "Colon_Rectum" ~ "Colon/Rectum",
+        PRIMARY_SITE == "Head_and_Neck" ~ "Head and Neck",
+        PRIMARY_SITE == "Esophagus_Stomach" ~ "Esophagus/Stomach",
+        PRIMARY_SITE == "Bladder_Urinary_Tract" ~ "Bladder/Urinary Tract",
+        PRIMARY_SITE == "Adrenal_Gland" ~ "Adrenal Gland",
+        PRIMARY_SITE == "Biliary_Tract" ~ "Biliary Tract",
+        PRIMARY_SITE == "Ovary_Fallopian_Tube" ~ "Ovary/Fallopian Tube",
+        PRIMARY_SITE == "Soft_Tissue" ~ "Soft Tissue",
+        TRUE ~ as.character(PRIMARY_SITE))
+      ) %>%
+      dplyr::filter(!stringr::str_detect(
+        CONSEQUENCE,"^(intron|intergenic|mature|non_coding|synonymous|upstream|downstream|3_prime|5_prime)"))
+  )
+
+  ##TCGA co-expression data
+  raw_coexpression <-
+    readr::read_tsv(co_expression_tsv,
+                    col_names = c("symbol_A","symbol_B",
+                                  "r","p_value","tumor"),
+                    show_col_types = F)
+  co_expression_genes1 <- raw_coexpression %>%
+    dplyr::rename(symbol = symbol_A, symbol_partner = symbol_B) %>%
+    dplyr::left_join(
+      dplyr::select(gene_xref, symbol, tumor_suppressor,
+                    oncogene, cancer_driver), by = "symbol") %>%
+    dplyr::filter(tumor_suppressor == T |
+                    oncogene == T |
+                    cancer_driver == T)
+
+  co_expression_genes2 <- raw_coexpression %>%
+    dplyr::rename(symbol = symbol_B, symbol_partner = symbol_A) %>%
+    dplyr::left_join(
+      dplyr::select(gene_xref, symbol, tumor_suppressor,
+                    oncogene, cancer_driver), by = "symbol") %>%
+    dplyr::filter(tumor_suppressor == T |
+                    oncogene == T |
+                    cancer_driver == T)
+
+  tcga_coexp_db <- dplyr::bind_rows(co_expression_genes1,
+                                    co_expression_genes2) %>%
+    dplyr::arrange(desc(r)) %>%
+    dplyr::mutate(p_value = signif(p_value, digits = 4)) %>%
+    dplyr::filter(p_value < 1e-6) %>%
+    dplyr::mutate(r = signif(r, digits = 3)) %>%
+    dplyr::filter((r <= -0.7 & r < 0) | (r >= 0.7))
+
+
+  tcgadb <- list()
+  tcgadb[['co_expression']] <- tcga_coexp_db
+  tcgadb[['aberration']] <- tcga_aberration_stats
+  tcgadb[['recurrent_variants']] <- recurrent_tcga_variants
+  tcgadb[['pfam']] <- pfam_domains
+  tcgadb[['maf_codes']] <- maf_codes
+
+  saveRDS(tcgadb, file = rds_fname)
+
+  return(tcgadb)
+
+}
+
+get_subcellular_annotations <- function(
+  basedir = NULL,
+  transcript_xref_db = NULL){
+
+
+  uniprot_xref <- transcript_xref_db %>%
+    dplyr::filter(property == "uniprot_acc") %>%
+    dplyr::select(entrezgene, value) %>%
+    dplyr::rename(uniprot_acc = value)
+
+  go_terms <- data.frame()
+  go_structure <- as.list(GO.db::GOTERM)
+  for(n in names(go_structure)){
+    term_df <-
+      data.frame(
+        'go_id' = as.character(n),
+        'go_term' =
+          as.character(AnnotationDbi::Term(go_structure[[n]])),
+        'go_ontology' =
+          AnnotationDbi::Ontology(go_structure[[n]]),
+        stringsAsFactors = F)
+    go_terms <- dplyr::bind_rows(go_terms, term_df)
+  }
+
+  comppi_fname <- file.path(
+    basedir, "data-raw", "compppi", "comppi_proteins.txt")
+
+  gganatogram_map_xlsx <- file.path(
+    basedir, "data-raw", "compartment_mapping_jw.xlsx")
+
+  go_gganatogram_map <-
+    openxlsx::read.xlsx(gganatogram_map_xlsx,
+                        sheet = 2) %>%
+    janitor::clean_names() %>%
+    dplyr::select(organ, go_id) %>%
+    dplyr::mutate(organ = stringr::str_trim(organ)) %>%
+    dplyr::left_join(gganatogram::cell_key$cell, by = "organ") %>%
+    dplyr::select(-c(type,value,colour)) %>%
+    dplyr::rename(ggcompartment = organ)
+
+  comppidb <- as.data.frame(
+    read.table(
+      file = comppi_fname,
+      sep = "\t", header = T, quote = "",
+      stringsAsFactors = F,comment.char = "") %>%
+      janitor::clean_names() %>%
+      dplyr::filter(naming_convention == "UniProtKB/Swiss-Prot/P") %>%
+      dplyr::select(
+        major_loc_with_loc_score,
+        protein_name,
+        minor_loc,
+        experimental_system_type,
+        localization_source_database,
+        pubmed_id) %>%
+      tidyr::separate_rows(
+        minor_loc, pubmed_id,
+        localization_source_database,
+        experimental_system_type, sep="\\|") %>%
+      dplyr::rename(
+        go_id = minor_loc,
+        uniprot_acc = protein_name,
+        annotation_source = localization_source_database) %>%
+      dplyr::left_join(go_terms,by=c("go_id")) %>%
+      dplyr::filter(!is.na(go_term)) %>%
+      dplyr::mutate(
+        annotation_type = dplyr::if_else(
+          stringr::str_detect(experimental_system_type,
+                              "Experimental"),
+          "Experimental","Predicted/Unknown")) %>%
+      dplyr::select(-experimental_system_type) %>%
+      dplyr::distinct() %>%
+      dplyr::left_join(uniprot_xref,by=c("uniprot_acc")) %>%
+      dplyr::filter(!is.na(uniprot_acc)) %>%
+      dplyr::group_by(uniprot_acc,
+                      go_id,
+                      go_term) %>%
+      dplyr::summarise(
+        annotation_source =
+          paste(sort(unique(annotation_source)), collapse="|"),
+        annotation_type =
+          paste(sort(unique(annotation_type)), collapse="|"),
+        .groups = "drop") %>%
+      dplyr::mutate(
+        confidence =
+          stringr::str_count(annotation_source,
+                             pattern = "\\|") + 1)
+  )
+
+
+  subcell_figure_legend <- list()
+  cell_key[['cell']]$colour <- "#ffd700"
+  for (i in 1:nrow(cell_key[['cell']])) {
+    subcell_figure_legend[[i]] <-
+      gganatogram::gganatogram(
+        data=cell_key[['cell']][i,],
+        outline = T,
+        fillOutline='#a6bddb',
+        organism="cell",
+        fill="colour")  +
+      ggplot2::theme_void() +
+      ggplot2::ggtitle(cell_key[['cell']][i,]$organ) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          hjust=0.5, size=10)
+      ) +
+      ggplot2::coord_fixed()
+  }
+
+  subcelldb <- list()
+  subcelldb[['comppidb']] <- comppidb
+  subcelldb[['go_gganatogram_map']] <- go_gganatogram_map
+  subcelldb[['gganatogram_legend']] <- subcell_figure_legend
+
+  return(subcelldb)
 
 }

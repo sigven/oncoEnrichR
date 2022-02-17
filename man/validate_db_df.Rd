@@ -14,7 +14,4 @@ validate_db_df(df, dbtype = "genedb")
 \description{
 Function that validates a particular db object (data.frame) in oncoEnrichR
 }
-\keyword{SM_tractability_category',}
-\keyword{gencode_gene_biotype',}
 \keyword{internal}
-\keyword{name',}

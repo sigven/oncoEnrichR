@@ -50,12 +50,6 @@ annotate_subcellular_compartments <-
           dplyr::left_join(
             oeDB$subcelldb[['go_gganatogram_map']],
             by = "go_id") %>%
-          # dplyr::left_join(
-          #   dplyr::select(genedb,
-          #                 .data$symbol,
-          #                 .data$entrezgene,
-          #                 .data$genename),
-          #   by = c("symbol")) %>%
           dplyr::mutate(
             genelink =
               paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",

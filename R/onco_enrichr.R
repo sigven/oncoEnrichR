@@ -28,8 +28,10 @@ load_db <- function(github = T,
   db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
                      oe_version, "/db/")
   if(!RCurl::url.exists(db_url)){
-    log4r_warn(logger, paste0("Database for version '", oe_version,
+    if(is.null(cache_dir)){
+      log4r_warn(logger, paste0("Database for version '", oe_version,
                               "' is not tagged on GitHub - using master branch"))
+    }
 
     db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
                      "master/db/")
@@ -51,12 +53,12 @@ load_db <- function(github = T,
               "cancerdrugdb",
               "otdb",
               "hpa",
-              "pfamdomaindb",
               "ligandreceptordb",
               "release_notes")){
 
 
-    cache_used <- 0
+    cache_found <- 0
+
     if(!is.null(cache_dir)){
       db_cache_path <- file.path(
         cache_dir,
@@ -72,12 +74,12 @@ load_db <- function(github = T,
                                     file.path(cache_dir, oe_version)))
           cache_in_use_log_printed <- 1
         }
-        cache_used <- 1
+        cache_found <- 1
 
       }
     }
 
-    if(cache_used == 0){
+    if(cache_found == 0){
 
       subdb_url <- paste0(db_url,
                     db,".rds")
@@ -108,7 +110,7 @@ load_db <- function(github = T,
     }
 
 
-    if(!is.null(cache_dir)){
+    if (cache_found == 0 & !is.null(cache_dir)){
 
       if(!dir.exists(file.path(cache_dir, oe_version))){
         system(paste0('mkdir ', file.path(cache_dir, oe_version)),
@@ -121,7 +123,6 @@ load_db <- function(github = T,
 
     }
   }
-
 
 
   return(oedb)
@@ -1158,7 +1159,7 @@ onco_enrich <- function(query = NULL,
 
       onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::left_join(oeDB$pfamdomaindb, by = "PFAM_ID") %>%
+        dplyr::left_join(oeDB[['tcgadb']][['pfam']], by = "PFAM_ID") %>%
         dplyr::mutate(
           PROTEIN_DOMAIN = dplyr::if_else(
             !is.na(.data$PFAM_ID),
@@ -1211,7 +1212,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
       oeDB[['genedb']][["cancer_hallmark"]][["short"]] %>%
       dplyr::inner_join(
-        dplyr::select(qgenes_match$found, .data$ensembl_gene_id, .data$symbol),
+        dplyr::select(qgenes_match$found, .data$ensembl_gene_id),
         by = "ensembl_gene_id") %>%
       dplyr::distinct()
 
