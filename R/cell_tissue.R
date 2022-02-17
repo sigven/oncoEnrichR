@@ -214,7 +214,7 @@ gene_tissue_cell_enrichment <-
     assertable::assert_colnames(
       genedb, c("ensembl_gene_id",
                 "entrezgene",
-                "gencode_gene_biotype",
+                "gene_biotype",
                 "cancer_max_rank"),
       only_colnames = F, quiet = T)
 

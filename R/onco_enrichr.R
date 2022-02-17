@@ -944,7 +944,7 @@ onco_enrich <- function(query = NULL,
         if (c == "C5" & subcat != "HPO") {
           enr <- get_go_enrichment(
             query_entrez = as.character(query_entrezgene),
-            background_entrez = as.character(background_entrez),
+            background_entrez = background_entrez,
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
             max_geneset_size =
@@ -970,7 +970,7 @@ onco_enrich <- function(query = NULL,
             enr <- get_universal_enrichment(
               query_entrez = as.character(query_entrezgene),
               genedb = oeDB[['genedb']][['all']],
-              background_entrez = as.character(background_entrez),
+              background_entrez = background_entrez,
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
               max_geneset_size =
@@ -1009,7 +1009,7 @@ onco_enrich <- function(query = NULL,
         get_universal_enrichment(
           as.character(query_entrezgene),
           genedb = oeDB[['genedb']][['all']],
-          background_entrez = as.character(background_entrez),
+          background_entrez = background_entrez,
           min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
           max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
           q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
@@ -1317,7 +1317,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(query_entrezgene),
-        background_entrez = as.integer(background_entrez),
+        background_entrez = background_entrez,
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,

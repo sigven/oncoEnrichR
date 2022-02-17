@@ -3239,6 +3239,36 @@ get_tcga_db <- function(
   tcga_aberration_stats$consensus_calls <- NULL
   tcga_aberration_stats$fp_driver_gene <- NULL
 
+  site_code <- tcga_aberration_stats %>%
+    dplyr::select(primary_site) %>%
+    dplyr::distinct() %>%
+    dplyr::arrange(primary_site) %>%
+    dplyr::mutate(site_code = dplyr::row_number())
+
+  diagnosis_code <- tcga_aberration_stats %>%
+    dplyr::select(primary_diagnosis_very_simplified) %>%
+    dplyr::distinct() %>%
+    dplyr::rename(
+      primary_diagnosis = primary_diagnosis_very_simplified) %>%
+    dplyr::arrange(primary_diagnosis) %>%
+    dplyr::mutate(
+      diagnosis_code = dplyr::row_number())
+
+  clinical_strata_code <- tcga_aberration_stats %>%
+    dplyr::select(clinical_strata) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(
+      clinical_strata_code = dplyr::row_number())
+
+
+  tcga_aberration_stats <- tcga_aberration_stats %>%
+    dplyr::rename(primary_diagnosis = primary_diagnosis_very_simplified) %>%
+    dplyr::left_join(clinical_strata_code, by = "clinical_strata") %>%
+    dplyr::left_join(diagnosis_code, by = "primary_diagnosis") %>%
+    dplyr::left_join(site_code, by = "primary_site") %>%
+    dplyr::select(-c(primary_site, primary_diagnosis,
+                     clinical_strata))
+
   maf_codes <- read.table(file = maf_codes_tsv,
                           header = T, sep = "\t", quote ="")
   i <- 1
@@ -3388,6 +3418,9 @@ get_tcga_db <- function(
   tcgadb[['recurrent_variants']] <- recurrent_tcga_variants
   tcgadb[['pfam']] <- pfam_domains
   tcgadb[['maf_codes']] <- maf_codes
+  tcgadb[['site_code']] <- site_code
+  tcgadb[['diagnosis_code']] <- diagnosis_code
+  tcgadb[['clinical_strata_code']] <- clinical_strata_code
 
   saveRDS(tcgadb, file = rds_fname)
 

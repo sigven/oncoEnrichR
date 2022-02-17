@@ -30,7 +30,7 @@ get_go_enrichment <- function(query_entrez,
     bg <- dplyr::select(genedb, .data$entrezgene) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
-    background_entrez <- bg$entrezgene
+    background_entrez <- as.character(bg$entrezgene)
   }else{
     stopifnot(is.character(background_entrez))
   }
@@ -186,7 +186,7 @@ get_universal_enrichment <- function(query_entrez,
     bg <- dplyr::select(genedb, .data$entrezgene) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
-    background_entrez <- bg$entrezgene
+    background_entrez <- as.character(bg$entrezgene)
   }else{
     stopifnot(is.character(background_entrez))
 
