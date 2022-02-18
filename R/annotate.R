@@ -344,7 +344,7 @@ target_drug_associations <- function(qgenes,
                   .data$AB_tractability_support) %>%
     dplyr::mutate(symbol = paste0(
       "<a href='https://platform.opentargets.org/target/",
-      ensembl_gene_id,"' target='_blank'>", symbol, "</a>"
+      .data$ensembl_gene_id,"' target='_blank'>", .data$symbol, "</a>"
     )) %>%
     dplyr::select(-.data$ensembl_gene_id) %>%
     dplyr::arrange(.data$AB_tractability_category,
@@ -357,7 +357,7 @@ target_drug_associations <- function(qgenes,
                   .data$SM_tractability_support) %>%
     dplyr::mutate(symbol = paste0(
       "<a href='https://platform.opentargets.org/target/",
-      ensembl_gene_id,"' target='_blank'>", symbol, "</a>"
+      .data$ensembl_gene_id,"' target='_blank'>", .data$symbol, "</a>"
     )) %>%
     dplyr::select(-.data$ensembl_gene_id) %>%
     dplyr::arrange(.data$SM_tractability_category,

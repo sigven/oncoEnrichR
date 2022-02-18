@@ -19,9 +19,9 @@ annotate_subcellular_compartments <-
     log4r_info(logger, "ComPPI: retrieval of subcellular compartments for target set")
 
     uniprot_xref <- oeDB$genedb$transcript_xref %>%
-      dplyr::filter(property == "uniprot_acc") %>%
-      dplyr::rename(uniprot_acc = value) %>%
-      dplyr::select(entrezgene, uniprot_acc)
+      dplyr::filter(.data$property == "uniprot_acc") %>%
+      dplyr::rename(uniprot_acc = .data$value) %>%
+      dplyr::select(.data$entrezgene, .data$uniprot_acc)
 
 
     target_genes <- data.frame('entrezgene' = query_entrez, stringsAsFactors = F) %>%
@@ -39,7 +39,7 @@ annotate_subcellular_compartments <-
 
     target_compartments_all <- as.data.frame(
       dplyr::inner_join(oeDB$subcelldb$comppidb, target_genes, by = c("uniprot_acc")) %>%
-        dplyr::filter(!is.na(symbol)) %>%
+        dplyr::filter(!is.na(.data$symbol)) %>%
         dplyr::filter(.data$confidence >= minimum_confidence)
     )
 

@@ -15,9 +15,9 @@ annotate_protein_complex <- function(query_entrez,
   validate_db_df(transcript_xref_db, dbtype = "transcript_xref")
 
   uniprot_xref <- transcript_xref_db %>%
-    dplyr::filter(property == "uniprot_acc") %>%
-    dplyr::rename(uniprot_acc = value) %>%
-    dplyr::select(entrezgene, uniprot_acc)
+    dplyr::filter(.data$property == "uniprot_acc") %>%
+    dplyr::rename(uniprot_acc = .data$value) %>%
+    dplyr::select(.data$entrezgene, .data$uniprot_acc)
 
   all_protein_complexes <- as.data.frame(
     complex_db$up_xref %>%
@@ -66,8 +66,9 @@ annotate_protein_complex <- function(query_entrez,
       if(nrow(target_complex_overlap[[class]]) > 0){
 
         target_complex_overlap[[class]] <- target_complex_overlap[[class]] %>%
-          dplyr::left_join(dplyr::select(genedb, entrezgene, symbol),
-                           by = "entrezgene")
+          dplyr::left_join(
+            dplyr::select(genedb, .data$entrezgene, .data$symbol),
+            by = "entrezgene")
 
         if(class == "humap2"){
           target_complex_overlap[[class]] <- target_complex_overlap[[class]] %>%

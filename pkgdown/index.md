@@ -16,7 +16,9 @@ Web-based access to **oncoEnrichR** is available at [https://oncotools.elixir.no
 
 <br><br>
 
-The contents of the final report attempt to provide answers to the following questions:
+## Questions adressed by oncoEnrichR
+
+The contents of the final report attempt to provide answers to the following questions for a given gene list:
 
 -   Which diseases/tumor types are known to be associated with genes in the query set, and to what extent?
 -   Which genes in the query set are attributed with cancer hallmark evidence?
@@ -35,21 +37,9 @@ The contents of the final report attempt to provide answers to the following que
 
 ## News
 
--   November 30th 2021: **1.0.7 release**
-    
-    -   Data updates: Open Targets Platform, UniProt KB, WikiPathways, CancerMine, TCGA, EFO, Human Protein Atlas
-    -   Re-design of data management in the package, analysis now requires an initial *database loading step* 
-
--   October 27th 2021: **1.0.6 release**
-
-    -   Addition of new modules
-        -   Regulatory interactions - DoRothEA
-        -   Ligand-receptor interactions - CellChatDB
-    -   Data updates: Open Targets Platform, KEGG, WikiPathways, CancerMine, TCGA, EFO, DiseaseOntology
-    -   Additional dedicated enrichment plots (GO)
-    -   Improved target rankings (tissue- and celltype enrichment, regulatory interactions)
-    -   See complete [CHANGELOG](https://sigven.github.io/oncoEnrichR/news/index.html)
-
+-   November 30th 2021: [**1.0.7 release**](articles/CHANGELOG.html#version-1-0-7)
+-   October 27th 2021: [**1.0.6 release**](articles/CHANGELOG.html#version-1-0-6)
+-   July 8th 2021: [**1.0.4 release**](articles/CHANGELOG.html#version-1-0-4)
 
 ## Example report
 
@@ -64,12 +54,6 @@ The contents of the final report attempt to provide answers to the following que
 * [Installation instructions](articles/installation.html)
 * [How to run oncoEnrichR](articles/running.html)
 * [Annotation resources available in oncoEnrichR](articles/annotation_resources.html)
-
-## Citation
-
-If you use oncoEnrichR, please cite the following preprint:
-
-<https://arxiv.org/abs/2107.13247>
 
 ## Contact
 
@@ -91,6 +75,3 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
   </a>
 </p>
 
-## Code of Conduct
-
-Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoEnrichR/blob/master/.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.

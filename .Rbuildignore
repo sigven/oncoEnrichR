@@ -9,3 +9,7 @@
 ^_pkgdown.yml$
 ^omnipathr-log$
 ^db$
+^_pkgdown\.yml$
+^pkgdown$
+.bumpversion.cfg
+rlogging.log

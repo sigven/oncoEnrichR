@@ -672,9 +672,19 @@ onco_enrich <- function(query = NULL,
 
   dot_args <- list(...)
 
+  if(is.null(oeDB)){
+    log4r_info(logger, paste0(
+      "ERROR: mandatory argument 'oeDB' cannot be NULL"))
+    return()
+  }
+  oedb_val <- validate_db(oeDB)
+  if(oedb_val != 0){
+    return()
+  }
+
   if(is.null(query)){
     log4r_info(logger, paste0(
-      "ERROR: mandatory argument 'query' is NULL"))
+      "ERROR: mandatory argument 'query' cannot be NULL"))
     return()
   }
   if(!is.character(query)){
@@ -683,9 +693,22 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  #stopifnot(!is.null(query))
-  #stopifnot(is.character(query))
-  stopifnot(length(query) >= 1)
+  if(!is.null(bgset)){
+    val <- assertthat::validate_that(
+      is.character(bgset))
+    if(!is.logical(val)){
+      log4r_info(logger, paste0(
+        "ERROR: ", val))
+      return()
+    }
+  }
+
+  val <- assertthat::validate_that(length(query) >= 2)
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR: query set must contain at least two entries - length of query is: ", length(query)))
+    return()
+  }
 
   val <- assertthat::validate_that(
     p_value_adjustment_method %in% c("holm", "hochberg",
@@ -695,7 +718,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'p_value_adjustment_method' must have any of the following values: ",
+      "ERROR - 'p_value_adjustment_method' must take on any of the following values: ",
       "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
       " (value provided was '", p_value_adjustment_method,"')"))
     return()
@@ -707,7 +730,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'min_confidence_reg_interaction' must have any of the following values: 'A', 'B', 'C', 'D'",
+      "ERROR - 'min_confidence_reg_interaction' must take on any of the following values: 'A', 'B', 'C', 'D'",
       " (value provided was '", min_confidence_reg_interaction,"')"))
     return()
   }
@@ -719,7 +742,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'html_report_theme' must have any of the following values: ",
+      "ERROR - 'html_report_theme' must take on any of the following values: ",
       "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
       "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
       " (value provided was '", p_value_adjustment_method,"')"))
@@ -748,33 +771,100 @@ onco_enrich <- function(query = NULL,
                          oncoenrichr_query_limit)
   }
 
+  val <- assertthat::validate_that(
+    query_id_type %in% c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
+                         "refseq_protein", "ensembl_protein", "uniprot_acc",
+                         "ensembl_gene")
+  )
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR - 'query_id_type' must take on of the following values: ",
+      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', 'flatly'",
+      "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
+      " (value provided was '", query_id_type,"')"))
+    return()
+  }
 
-  stopifnot(query_id_type == "symbol" |
-              query_id_type == "entrezgene" |
-              query_id_type == "refseq_mrna" |
-              query_id_type == "ensembl_mrna" |
-              query_id_type == "refseq_protein" |
-              query_id_type == "ensembl_protein" |
-              query_id_type == "uniprot_acc" |
-              query_id_type == "ensembl_gene")
-  stopifnot(bgset_id_type == "symbol" |
-              query_id_type == "entrezgene" |
-              query_id_type == "refseq_mrna" |
-              query_id_type == "ensembl_mrna" |
-              query_id_type == "refseq_protein" |
-              query_id_type == "ensembl_protein" |
-              query_id_type == "uniprot_acc" |
-              query_id_type == "ensembl_gene")
-  stopifnot(ppi_score_threshold > 0 &
-              ppi_score_threshold <= 1000)
-  stopifnot(num_terms_enrichment_plot >= 10 &
-              num_terms_enrichment_plot <= 30)
-  stopifnot(p_value_cutoff_enrichment > 0 &
-              p_value_cutoff_enrichment < 1)
-  stopifnot(q_value_cutoff_enrichment > 0 &
-              q_value_cutoff_enrichment < 1)
-  stopifnot(min_subcellcomp_confidence >= 1 &
-              min_subcellcomp_confidence <= 6)
+  val <- assertthat::validate_that(
+    bgset_id_type %in% c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
+                         "refseq_protein", "ensembl_protein", "uniprot_acc",
+                         "ensembl_gene")
+  )
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR - 'bgset_id_type' must take on any of the following values: ",
+      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', 'flatly'",
+      "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
+      " (value provided was '", bgset_id_type,"')"))
+    return()
+  }
+
+  val <-
+    (ppi_score_threshold %% 1 == 0) & ## check that number is whole integer
+      (ppi_score_threshold > 0) &
+      (ppi_score_threshold <= 1000)
+
+  if(val == F){
+    log4r_info(logger, paste0(
+      "ERROR - 'ppi_score_threshold' must be an integer/whole number and take a value from 1 to 1000 ",
+      "(current type and value: '",typeof(ppi_score_threshold),"' - ",
+      ppi_score_threshold,")")
+    )
+    return()
+  }
+  val <-
+    num_terms_enrichment_plot %% 1 == 0 &
+      num_terms_enrichment_plot >= 10 &
+      num_terms_enrichment_plot <= 30
+
+  if(val == F){
+    log4r_info(logger, paste0(
+      "ERROR - 'num_terms_enrichment_plot' must be an integer/whole number and take a value from 10 to 30 ",
+      "(current type and value: '",typeof(num_terms_enrichment_plot),"' - ",
+      num_terms_enrichment_plot,")")
+    )
+    return()
+  }
+
+  val <-
+    min_subcellcomp_confidence %% 1 == 0 &
+      min_subcellcomp_confidence >= 1 &
+      min_subcellcomp_confidence <= 6
+
+  if(val == F){
+    log4r_info(logger, paste0(
+      "ERROR - 'min_subcellcomp_confidence' must be an integer/whole number and take a value from 1 to 6 ",
+      "(current type and value: '",typeof(min_subcellcomp_confidence),"' - ",
+      min_subcellcomp_confidence,")")
+    )
+    return()
+  }
+
+  val <- assertthat::validate_that(
+    is.numeric(p_value_cutoff_enrichment) &
+      p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
+
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR - 'p_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
+      "(current type and value: '",typeof(p_value_cutoff_enrichment),"' - ",
+      p_value_cutoff_enrichment,")")
+    )
+  }
+
+  val <- assertthat::validate_that(
+    is.numeric(q_value_cutoff_enrichment) &
+      q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
+
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR - 'q_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
+      "(current type and value: '",typeof(q_value_cutoff_enrichment),"' - ",
+      q_value_cutoff_enrichment,")")
+    )
+  }
+
+
   stopifnot(ppi_add_nodes <= 50)
 
 
@@ -1224,6 +1314,7 @@ onco_enrich <- function(query = NULL,
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, .data$ensembl_gene_id),
         by = "ensembl_gene_id") %>%
+      dplyr::select(-.data$ensembl_gene_id) %>%
       dplyr::distinct()
 
     n_genes_cancerhallmarks <- 0
