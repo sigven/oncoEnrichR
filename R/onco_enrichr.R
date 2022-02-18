@@ -1,11 +1,11 @@
 #' Load oncoEnrichR annotation database
 #'
-#' @param github If TRUE (default), load database from GitHub repository
+#' @param remote If TRUE (default), load database from tagged GitHub repository
 #' @param cache_dir path to local cache for more efficient subsequent loads
 #'
 #' @export
 #'
-load_db <- function(github = T,
+load_db <- function(remote = T,
                     cache_dir = NULL){
 
   logger <- log4r::logger(threshold = "INFO",
@@ -13,32 +13,88 @@ load_db <- function(github = T,
 
   log4r_info(logger, paste0("Loading oncoEnrichR annotation databases"))
 
+  ## check that either remote is TRUE or cache_dir is provided
+  val <- remote == T | !is.null(cache_dir)
+  if(val == F){
+    log4r_info(
+      "ERROR: Pull database either remotely ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
+  }
+
   if(!is.null(cache_dir)){
     val <- assertthat::validate_that(
       dir.exists(cache_dir)
     )
     if(!is.logical(val)){
-      log4r_info(paste0("ERROR: ",val))
+      log4r_info(logger, paste0("ERROR: Cache directory '",cache_dir, "' does not exist"))
       return()
     }
 
   }
 
+
+  ## if remote is TRUE
+  ## load from github (tagged)
+
+  read_dest <- NULL
+  write_dest <- NULL
   oe_version <- paste0("v", utils::packageVersion("oncoEnrichR"))
-  db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-                     oe_version, "/db/")
-  if(!RCurl::url.exists(db_url)){
-    if(is.null(cache_dir)){
-      log4r_warn(logger, paste0("Database for version '", oe_version,
-                              "' is not tagged on GitHub - using master branch"))
+  write_to_cache <- T
+
+  if(remote == T){
+
+    remote_db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
+                       oe_version, "/db/")
+    if(!RCurl::url.exists(remote_db_url)){
+      if(is.null(cache_dir)){
+        log4r_info(logger, paste0("ERROR: OncoEnrichR annotation datasets for version '", oe_version,
+                                "' is not tagged on GitHub - exiting"))
+        return()
+      }
+    }else{
+      read_dest <- remote_db_url
+      log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets remotely from: ", read_dest))
     }
 
-    db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-                     "master/db/")
+    if(!is.null(cache_dir)){
+
+      cache_version_dir <- file.path(cache_dir, oe_version)
+      write_dest <- cache_version_dir
+
+      if(!dir.exists(cache_version_dir)){
+        system(paste0('mkdir ', cache_version_dir),
+               intern = F)
+        log4r_info(logger, paste0("Data will be cached in ", cached_dir))
+
+      }else{
+        log4r_warn(logger, paste0("An existing cache for '",oe_version, "' was found in ",
+                   cache_dir, " - will be overwritten (set 'remote' = FALSE to read from cache only)"))
+
+      }
+    }else{
+      write_to_cache <- F
+    }
+
+  }else{
+
+    write_to_cache <- F
+
+    if(!is.null(cache_dir)){
+
+      cache_version_dir <- file.path(cache_dir, oe_version)
+
+      if(!dir.exists(cache_version_dir)){
+        log4r_info(logger, paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
+        log4r_info(logger, paste0("Set 'remote' = TRUE to reload data from web and write to ", cache_dir))
+        return()
+      }else{
+        read_dest <- cache_version_dir
+        log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets locally (cached) from: ",read_dest))
+      }
+
+    }
   }
 
   oedb <- list()
-
   cache_in_use_log_printed <- 0
 
   for(db in c("cancerdrugdb",
@@ -57,78 +113,72 @@ load_db <- function(github = T,
               "release_notes")){
 
 
-    cache_found <- 0
-
-    if(!is.null(cache_dir)){
-      db_cache_path <- file.path(
-        cache_dir,
-        oe_version,
-        paste0(db,".rds"))
-
-      if(file.exists(db_cache_path)){
-        oedb[[db]] <- readRDS(file = db_cache_path)
-
-
-        if(cache_in_use_log_printed == 0){
-          log4r_info(logger, paste0("Reading from local cache - ",
-                                    file.path(cache_dir, oe_version)))
-          cache_in_use_log_printed <- 1
-        }
-        cache_found <- 1
-
-      }
-    }
-
-    if(cache_found == 0){
-
-      subdb_url <- paste0(db_url,
-                    db,".rds")
-      if(RCurl::url.exists(subdb_url)){
-        oedb[[db]] <- readRDS(url(subdb_url,"rb"))
+    db_dest <- file.path(read_dest, paste0(db,".rds"))
+    if(remote == T){
+      if(RCurl::url.exists(db_dest)){
+        oedb[[db]] <- readRDS(url(db_dest,"rb"))
       }else{
-        log4r_err(logger, paste0("Could not retrieve data from ", subdb_url))
+        log4r_err(logger, paste0("Could not retrieve data from ", db_dest))
+        return()
       }
-    }
-
-
-    checksum_db <- R.cache::getChecksum(oedb[[db]])
-
-    ##subcelldb's checksum does not recover correctly with all
-    ##list entries involved, choose comppi only
-    if(db == 'subcelldb'){
-      if('comppidb' %in% names(oedb[[db]])){
-        checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+      checksum_db <- R.cache::getChecksum(oedb[[db]])
+      if(db == 'subcelldb'){
+        if('comppidb' %in% names(oedb[[db]])){
+          checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+        }
       }
-    }
-
-
-    if(checksum_db ==
-       oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
-
-      log4r_info(logger, paste0("'",
-                                db, "' - ",
-                                oe_version, " - ",
-                                checksum_db,
-                                " - verifies correctly"))
+      if(checksum_db ==
+         oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
+        log4r_info(logger, paste0("'",
+                                  db, "' - ",
+                                  oe_version, " - ",
+                                  checksum_db,
+                                  " - verifies correctly"))
+      }else{
+        log4r_err(logger, paste0("'",
+                                 db, "' - ",
+                                 oe_version, " - ",
+                                 checksum_db,
+                                 " - does not verify correctly"))
+      }
+      if(write_to_cache == T){
+        cache_db_dest = file.path(write_dest, paste0(db,".rds"))
+        saveRDS(oedb[[db]], file = cache_db_dest)
+      }
     }else{
-      log4r_err(logger, paste0("'",
-                                db, "' - ",
-                                oe_version, " - ",
-                                checksum_db,
-                                " - does not verify correctly"))
-    }
-
-
-    if (cache_found == 0 & !is.null(cache_dir)){
-
-      if(!dir.exists(file.path(cache_dir, oe_version))){
-        system(paste0('mkdir ', file.path(cache_dir, oe_version)),
-               intern = F)
+      if(file.exists(db_dest)){
+        oedb[[db]] <- readRDS(file = db_dest)
+      }else{
+        log4r_err(logger, paste0("Could not retrieve data from ", db_dest))
+        return()
       }
 
-      saveRDS(oedb[[db]], file =
-                file.path(cache_dir, oe_version,
-                          paste0(db, ".rds")))
+
+      checksum_db <- R.cache::getChecksum(oedb[[db]])
+
+      ##subcelldb's checksum does not recover correctly with all
+      ##list entries involved, choose comppi only
+      if(db == 'subcelldb'){
+        if('comppidb' %in% names(oedb[[db]])){
+          checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+        }
+      }
+
+
+      if(checksum_db ==
+         oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
+        log4r_info(logger, paste0("'",
+                                  db, "' - ",
+                                  oe_version, " - ",
+                                  checksum_db,
+                                  " - verifies correctly"))
+      }else{
+        log4r_err(logger, paste0("'",
+                                 db, "' - ",
+                                 oe_version, " - ",
+                                 checksum_db,
+                                 " - does not verify correctly"))
+      }
 
     }
   }

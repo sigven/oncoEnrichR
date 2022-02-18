@@ -10,7 +10,7 @@ kegg_version <- "20211223"
 gencode_version <- "39"
 update_omnipathdb <- F
 update_hpa <- F
-update_ncbi_gene_summary <- F
+update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
 update_tcga <- T
@@ -46,7 +46,7 @@ while(i <= nrow(software_db_version)){
   i <- i + 1
 }
 rm(software_db_version)
-usethis::use_data(release_notes, overwrite = T)
+#usethis::use_data(release_notes, overwrite = T)
 genedb <- list()
 
 source('data-raw/data_utility_functions.R')
@@ -293,6 +293,8 @@ for(n in c('cancerdrugdb',
 
 }
 
+save(oedb, file="inst/internal_db/oeDB.rda")
+
 usethis::use_data(db_props, overwrite = T)
 
 rm(tcgadb)
@@ -316,6 +318,7 @@ rm(tf_target_interactions)
 rm(ligandreceptordb)
 rm(tissuecelldb)
 rm(go_terms_pr_gene)
+rm(oedb)
 
 
 

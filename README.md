@@ -8,15 +8,14 @@ Web-based access to **oncoEnrichR** is available at <b><https://oncotools.elixir
 
 <br>
 
-<img src="man/figures/oncoenrichr_overview.png" align="center" border="1,"/>
+<img src="man/figures/oncoenrichr_overview.png" align="center" border="1"/>
 
-<br><br>
 
 ## Getting started
 
 * [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-adressed-by-oncoenrichr)
 * [Installation instructions](https://sigven.github.io/oncoEnrichR/articles/installation.html)
-* [How to run oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/running.html)
+* [Running instructions](https://sigven.github.io/oncoEnrichR/articles/running.html)
 * [Annotation resources available in oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html)
 
 ## News

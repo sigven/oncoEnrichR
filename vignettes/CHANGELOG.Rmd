@@ -3,11 +3,25 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
-## Version x.x.x - February 2022
+## Version 1.0.8
+
+* Date: 2022-02-18
 
 ### Added 
 
 * Data updates: 
+  * WikiPathways (20220210)
+  * CancerMine (v42)
+  * MSigDB (v7.5.1)
+  * GENCODE (v39)
+  * Gene summary (NCBI)
+  * Reactome/GO (MSigDB v7.5.1)
+  * KEGG (20211223)
+
+### Changed
+
+* Refactoring of code and data for mapping gene identifiers
+* Refactoring of code for database loading
 
 ## Version 1.0.7
 
