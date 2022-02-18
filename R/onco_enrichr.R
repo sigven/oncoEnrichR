@@ -96,8 +96,8 @@ load_db <- function(github = T,
     ##subcelldb's checksum does not recover correctly with all
     ##list entries involved, choose comppi only
     if(db == 'subcelldb'){
-      if('comppi' %in% names(oedb[[db]])){
-        checksum_db <- R.cache::getChecksum(oedb[[db]][['comppi']])
+      if('comppidb' %in% names(oedb[[db]])){
+        checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
       }
     }
 
