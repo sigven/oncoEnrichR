@@ -16,7 +16,7 @@ load_db <- function(remote = T,
   ## check that either remote is TRUE or cache_dir is provided
   val <- remote == T | !is.null(cache_dir)
   if(val == F){
-    log4r_info(
+    log4r_info(logger,
       "ERROR: Pull database either remotely ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
   }
 
