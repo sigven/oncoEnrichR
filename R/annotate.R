@@ -18,10 +18,12 @@ target_disease_associations <-
     dplyr::inner_join(genedb, by = "symbol") %>%
       dplyr::distinct()
 
-  log4r_info(logger, paste0("Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",min_association_score,")"))
+  log4r_info(logger, paste0(
+    "Open Targets Platform: annotation of protein targets to disease phenotypes (minimum association score =  ",
+    min_association_score,")"))
 
   target_assocs <- target_genes %>%
-    dplyr::left_join(oeDB$otdb$all, by=c("ensembl_gene_id","symbol"))
+    dplyr::left_join(oeDB$otdb$all, by=c("ensembl_gene_id"))
 
   result <- list()
   result[['target']] <- target_genes
@@ -250,14 +252,17 @@ target_disease_associations <-
     dplyr::distinct()
 
 
-  ttype_rank_df <- dplyr::select(target_genes, .data$symbol) %>%
+  ttype_rank_df <- dplyr::select(target_genes,
+                                 .data$symbol,
+                                 .data$ensembl_gene_id) %>%
     dplyr::left_join(
       dplyr::select(oeDB$otdb$site_rank,
                     .data$primary_site,
-                    .data$symbol,
+                    .data$ensembl_gene_id,
                     .data$tissue_assoc_rank),
-      by = "symbol"
-    )
+      by = "ensembl_gene_id"
+    ) %>%
+    dplyr::select(-.data$ensembl_gene_id)
 
   if(nrow(ttype_rank_df) > 0){
 
@@ -309,9 +314,7 @@ target_drug_associations <- function(qgenes,
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
   stopifnot(!is.null(cancerdrugdb))
-  stopifnot(!is.null(cancerdrugdb[['tractability']]))
   validate_db_df(genedb, dbtype = "genedb")
-  #validate_db_df(genedb, dbtype = "drug_tractability")
 
   target_genes <- data.frame('symbol' = qgenes,
                              stringsAsFactors = F) %>%
@@ -335,17 +338,27 @@ target_drug_associations <- function(qgenes,
   log4r_info(logger, paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
 
   result[['tractability_ab']] <- target_genes %>%
-    dplyr::select(.data$ensembl_gene_id) %>%
-    dplyr::inner_join(cancerdrugdb[['tractability']][['ab']],
-                      by = "ensembl_gene_id") %>%
+    dplyr::select(.data$ensembl_gene_id,
+                  .data$symbol,
+                  .data$AB_tractability_category,
+                  .data$AB_tractability_support) %>%
+    dplyr::mutate(symbol = paste0(
+      "<a href='https://platform.opentargets.org/target/",
+      .data$ensembl_gene_id,"' target='_blank'>", .data$symbol, "</a>"
+    )) %>%
     dplyr::select(-.data$ensembl_gene_id) %>%
     dplyr::arrange(.data$AB_tractability_category,
                    dplyr::desc(nchar(.data$AB_tractability_support)))
 
   result[['tractability_sm']] <- target_genes %>%
-    dplyr::select(.data$ensembl_gene_id) %>%
-    dplyr::inner_join(cancerdrugdb[['tractability']][['sm']],
-                      by = "ensembl_gene_id") %>%
+    dplyr::select(.data$ensembl_gene_id,
+                  .data$symbol,
+                  .data$SM_tractability_category,
+                  .data$SM_tractability_support) %>%
+    dplyr::mutate(symbol = paste0(
+      "<a href='https://platform.opentargets.org/target/",
+      .data$ensembl_gene_id,"' target='_blank'>", .data$symbol, "</a>"
+    )) %>%
     dplyr::select(-.data$ensembl_gene_id) %>%
     dplyr::arrange(.data$SM_tractability_category,
                    dplyr::desc(nchar(.data$SM_tractability_support)))

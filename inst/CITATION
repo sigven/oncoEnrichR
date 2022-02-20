@@ -1,0 +1,25 @@
+citHeader("To cite oncoEnrichR in publications use:")
+
+citEntry(
+  entry = "Misc",
+  title = "oncoEnrichR: cancer-dedicated gene set interpretation",
+  author = personList(
+    as.person("Sigve Nakken"),
+    as.person("Sveinung Gundersen"),
+    as.person("Fabian L. M. Bernal"),
+    as.person("Eivind Hovig"),
+    as.person("Jørgen Wesche")
+  ),
+  year = "2021",
+  eprint = "2107.13247v2",
+  archivePrefix = "arXiv",
+  primaryClass = "q-bio.GN",
+  url = "https://arxiv.org/abs/2107.13247v2",
+  textVersion  = paste0(
+    "Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, ",
+    "Eivind Hovig, and Jørgen Wesche. ",
+    "OncoEnrichR: cancer-dedicated ",
+    "gene set interpretation (2021). arXiv:2107.13247v2. ",
+    "https://arxiv.org/abs/2107.13247v2"
+  )
+)

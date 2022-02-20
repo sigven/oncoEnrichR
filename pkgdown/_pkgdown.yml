@@ -1,0 +1,49 @@
+url: https://sigven.github.io/oncoEnrichR/
+title: oncoEnrichR
+toc:
+  depth: 3
+template:
+  bootstrap: 5
+authors:
+  Sigve Nakken:
+    href: "https://github.com/sigven"
+navbar:
+  structure:
+    left:  [home, installation, running, articles, changelog]
+    right: [reference, search, github]
+  components:
+    home:
+      text: Intro
+      href: index.html
+    installation:
+      text: Installation
+      href: articles/installation.html
+    running:
+      text: Running
+      href: articles/running.html
+    articles:
+      text: Articles
+      menu:
+      - text: Input & Output
+        href: articles/input_output.html
+      # - text: Variant classification
+      #   href: articles/variant_classification.html
+      - text: Annotation resources
+        href: articles/annotation_resources.html
+      # - text: Developer notes
+      #   href: articles/developers.html
+    # faq:
+    #   text: FAQ
+    #   href: articles/faq.html
+    changelog:
+      text: CHANGELOG
+      href: articles/CHANGELOG.html
+home:
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+    components:
+      citation:
+          title: Citation
+          text: "[Citing oncoEnrichR](authors.html#citation)"
+news:
+  one_page: true

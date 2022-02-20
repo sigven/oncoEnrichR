@@ -1,0 +1,8 @@
+---
+title: "Installation"
+output: rmarkdown::html_document
+---
+
+1.  `install.packages('devtools')`
+2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.0.8")`
+3.  `library(oncoEnrichR)`

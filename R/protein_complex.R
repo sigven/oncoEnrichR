@@ -1,29 +1,32 @@
 
-annotate_protein_complex <- function(qgenes,
+annotate_protein_complex <- function(query_entrez,
                                      genedb = NULL,
                                      complex_db = NULL,
-                                     uniprot_xref = NULL,
+                                     transcript_xref_db = NULL,
                                      logger = NULL){
 
   stopifnot(!is.null(logger))
   log4r_info(logger, "OmniPath: retrieval of protein complex information for target set - multiple underlying sources")
-  stopifnot(is.character(qgenes))
+  stopifnot(is.integer(query_entrez))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(complex_db))
-  stopifnot(!is.null(uniprot_xref))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(complex_db$db, dbtype = "protein_complex")
-  validate_db_df(uniprot_xref, dbtype = "uniprot_xref")
+  validate_db_df(transcript_xref_db, dbtype = "transcript_xref")
+
+  uniprot_xref <- transcript_xref_db %>%
+    dplyr::filter(.data$property == "uniprot_acc") %>%
+    dplyr::rename(uniprot_acc = .data$value) %>%
+    dplyr::select(.data$entrezgene, .data$uniprot_acc)
 
   all_protein_complexes <- as.data.frame(
     complex_db$up_xref %>%
-      dplyr::left_join(
-        dplyr::select(uniprot_xref, .data$symbol, .data$uniprot_acc),
-        by=c("uniprot_acc" = "uniprot_acc")) %>%
-      dplyr::left_join(
-        dplyr::filter(dplyr::select(genedb, .data$entrezgene, .data$symbol),
-                      !is.na(.data$symbol)),
-        by=c("symbol")) %>%
+      dplyr::inner_join(
+        uniprot_xref,
+        by = "uniprot_acc") %>%
+      dplyr::inner_join(
+        dplyr::select(genedb, .data$entrezgene, .data$symbol),
+        by = "entrezgene") %>%
       dplyr::arrange(.data$complex_id, .data$symbol) %>%
       dplyr::mutate(
         genelink = paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
@@ -36,13 +39,12 @@ annotate_protein_complex <- function(qgenes,
     dplyr::left_join(complex_db$db, by = "complex_id") %>%
     dplyr::rename(annotation_source = .data$sources)
 
-
   target_complex_genes <- list()
 
 
   target_complex_genes[['omnipath']] <-
-    data.frame("symbol" = qgenes, stringsAsFactors = F) %>%
-    dplyr::left_join(uniprot_xref, by = "symbol") %>%
+    data.frame("entrezgene" = query_entrez, stringsAsFactors = F) %>%
+    dplyr::left_join(uniprot_xref, by = "entrezgene") %>%
     dplyr::distinct() %>%
     dplyr::filter(!is.na(.data$uniprot_acc))
 
@@ -62,6 +64,12 @@ annotate_protein_complex <- function(qgenes,
       )
 
       if(nrow(target_complex_overlap[[class]]) > 0){
+
+        target_complex_overlap[[class]] <- target_complex_overlap[[class]] %>%
+          dplyr::left_join(
+            dplyr::select(genedb, .data$entrezgene, .data$symbol),
+            by = "entrezgene")
+
         if(class == "humap2"){
           target_complex_overlap[[class]] <- target_complex_overlap[[class]] %>%
             dplyr::filter(stringr::str_detect(.data$complex_id,"HuMAP2"))

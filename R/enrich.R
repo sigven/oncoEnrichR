@@ -30,7 +30,7 @@ get_go_enrichment <- function(query_entrez,
     bg <- dplyr::select(genedb, .data$entrezgene) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
-    background_entrez <- bg$entrezgene
+    background_entrez <- as.character(bg$entrezgene)
   }else{
     stopifnot(is.character(background_entrez))
   }
@@ -110,7 +110,7 @@ get_go_enrichment <- function(query_entrez,
           dplyr::select(.data$go_id, .data$gene_id) %>%
           tidyr::separate_rows(.data$gene_id, sep="/") %>%
           dplyr::mutate(
-            gene_id = as.character(.data$gene_id)) %>%
+            gene_id = as.integer(.data$gene_id)) %>%
           dplyr::left_join(
             dplyr::select(genedb,
                           .data$entrezgene,
@@ -186,7 +186,7 @@ get_universal_enrichment <- function(query_entrez,
     bg <- dplyr::select(genedb, .data$entrezgene) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
       dplyr::distinct()
-    background_entrez <- bg$entrezgene
+    background_entrez <- as.character(bg$entrezgene)
   }else{
     stopifnot(is.character(background_entrez))
 
@@ -303,7 +303,7 @@ get_universal_enrichment <- function(query_entrez,
         df %>%
           dplyr::select(.data$standard_name, .data$gene_id) %>%
           tidyr::separate_rows(.data$gene_id, sep="/") %>%
-          dplyr::mutate(gene_id = as.character(.data$gene_id)) %>%
+          dplyr::mutate(gene_id = as.integer(.data$gene_id)) %>%
           dplyr::left_join(
             dplyr::select(genedb, .data$entrezgene, .data$symbol),
             by=c("gene_id" = "entrezgene")) %>%

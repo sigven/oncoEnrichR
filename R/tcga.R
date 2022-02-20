@@ -14,14 +14,15 @@ tcga_oncoplot_genes <-
     stopifnot(!is.null(oeDB$tcgadb))
     validate_db_df(genedb, dbtype = "genedb")
     stopifnot(qsource == "symbol" | qsource == "entrezgene")
-    stopifnot(is.character(qgenes))
     query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
     if(qsource == 'entrezgene'){
+      stopifnot(is.integer(qgenes))
       query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
       query_genes_df <- dplyr::inner_join(
         genedb, query_genes_df, by = "entrezgene") %>%
         dplyr::distinct()
     }else{
+      stopifnot(is.character(qgenes))
       query_genes_df <- dplyr::inner_join(
         genedb, query_genes_df, by = "symbol") %>%
         dplyr::distinct()
@@ -79,17 +80,17 @@ tcga_aberration_matrix <- function(qgenes,
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(!is.null(oeDB))
   stopifnot(!is.null(oeDB$tcgadb))
-
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
-  stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(qsource == 'entrezgene'){
+    stopifnot(is.integer(qgenes))
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F)
     query_genes_df <-
       dplyr::inner_join(genedb, query_genes_df, by = "entrezgene") %>%
       dplyr::distinct()
   }else{
+    stopifnot(is.character(qgenes))
     query_genes_df <-
       dplyr::inner_join(genedb, query_genes_df, by = "symbol") %>%
       dplyr::distinct()
@@ -245,16 +246,19 @@ tcga_aberration_table <- function(qgenes,
   stopifnot(!is.null(oeDB$tcgadb))
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
-  stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(qsource == "entrezgene"){
+    stopifnot(is.integer(qgenes))
     query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
-    query_genes_df <- dplyr::inner_join(genedb, query_genes_df,
-                                        by = "entrezgene") %>%
+    query_genes_df <- dplyr::inner_join(
+      genedb, query_genes_df,
+      by = "entrezgene") %>%
       dplyr::distinct()
   }else{
-    query_genes_df <- dplyr::inner_join(genedb, query_genes_df,
-                                        by = "symbol") %>%
+    stopifnot(is.character(qgenes))
+    query_genes_df <- dplyr::inner_join(
+      genedb, query_genes_df,
+      by = "symbol") %>%
       dplyr::distinct()
   }
 
@@ -315,15 +319,16 @@ tcga_co_expression <- function(qgenes,
 
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
-  stopifnot(is.character(qgenes))
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(qsource == "entrezgene"){
+    stopifnot(is.integer(qgenes))
     query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
     query_genes_df <- dplyr::inner_join(
       dplyr::select(genedb, .data$entrezgene, .data$symbol),
       query_genes_df, by = "entrezgene") %>%
       dplyr::distinct()
   }else{
+    stopifnot(is.character(qgenes))
     query_genes_df <- dplyr::inner_join(
       dplyr::select(genedb, .data$entrezgene, .data$symbol),
       query_genes_df, by = "symbol") %>%

@@ -1,0 +1,16 @@
+---
+title: "Input & Output"
+output: rmarkdown::html_document
+---
+
+## Input data
+
+TODO
+
+## Output files
+
+### HTML report
+
+TODO
+
+### Excel workbook
