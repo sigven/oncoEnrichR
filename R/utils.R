@@ -53,8 +53,8 @@ validate_query_genes <- function(qgenes,
 
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
-                       by = c("qid" = q_id_type)) %>%
-      dplyr::mutate(!!rlang::sym(q_id_type) := .data$qid) %>%
+                       by = c("qid" = qtype_id)) %>%
+      dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) %>%
       dplyr::distinct()
 
   }else{
@@ -125,8 +125,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        log4r_info(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -166,9 +166,9 @@ validate_query_genes <- function(qgenes,
 
             if(nrow(queryset[['not_found']]) > 0){
               log4r_warn(logger,
-                paste0("Query gene identifiers NOT found: ",
+                paste0(Hmisc::capitalize(qtype)," gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
-                       " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                       " (make sure that unambiguous primary identifiers/symbols are used)"))
             }else{
               queryset[['match_status']] <- "perfect_go"
             }
@@ -177,12 +177,13 @@ validate_query_genes <- function(qgenes,
           log4r_warn(logger,
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
-                   " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                   " (make sure that unambiguous primary identifiers/symbols are used)"))
         }
 
       }else{
-        log4r_warn(logger, paste0("Query gene identifiers NOT found: ",
-                                 paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(logger, paste0(
+          Hmisc::capitalize(qtype), " gene identifiers NOT found: ",
+          paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
       ## Indicate that processing should stop when encountering invalid query identifiers
@@ -190,8 +191,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        log4r_warn(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -209,7 +210,7 @@ validate_query_genes <- function(qgenes,
 
 
           log4r_info(logger,
-            paste0("Mapped query identifiers as gene aliases ",
+            paste0("Mapped ", qtype, " gene identifiers as gene aliases ",
                    paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$qid,collapse=", ")))
 
@@ -220,24 +221,24 @@ validate_query_genes <- function(qgenes,
 
           if(nrow(queryset[['not_found']]) > 0){
             log4r_info(logger,
-              paste0("ERROR: Query gene identifiers NOT found: ",
+              paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
-                     " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                     " (make sure that unambiguous primary identifiers/symbols are used)"))
           }else{
             queryset[['match_status']] <- "perfect_go"
 
           }
         }else{
-          log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
+          log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
-                         " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                         " (make sure that unambiguous primary identifiers/symbols are used)"))
 
         }
       }
       else{
-        log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
+        log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
-                       " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                       " (make sure that unambiguous primary identifiers/symbols are used)"))
       }
     }
   }
@@ -247,15 +248,15 @@ validate_query_genes <- function(qgenes,
   }else{
     if(nrow(queryset[['found']]) == 0){
       log4r_info(logger, paste0(
-        "ERROR: NO query gene identifiers found: ",
+        "ERROR: NO ", qtype, " gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?","\n"))
       queryset[['match_status']] <- "imperfect_stop"
     }else{
       log4r_info(logger,
         paste0('Identified n = ',
-               nrow(queryset[['found']]),' entries in ',
-               'target set (n = ',
+               nrow(queryset[['found']]),' entries in ', qtype,
+               ' set (n = ',
                nrow(queryset[['not_found']]),' invalid entries)'))
     }
 
@@ -293,11 +294,12 @@ validate_query_genes <- function(qgenes,
                     .data$status,
                     .data$symbol,
                     .data$genename) %>%
-      dplyr::rowwise() %>%
+        dplyr::rowwise() %>%
         dplyr::mutate(
-          symbol = dplyr::if_else(.data$status == "not_found",
-                                  as.character(NA),
-                                  as.character(.data$symbol)))
+          symbol = dplyr::if_else(
+            .data$status == "not_found",
+            as.character(NA),
+            as.character(.data$symbol)))
     )
   }
 

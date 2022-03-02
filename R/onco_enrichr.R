@@ -718,7 +718,7 @@ onco_enrich <- function(query = NULL,
 
   logger <- log4r::logger(
     threshold = "INFO",
-    appenders = log4r::console_appender(log4r_layout))
+    appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
   dot_args <- list(...)
 
@@ -1014,23 +1014,28 @@ onco_enrich <- function(query = NULL,
 
 
   ## validate background gene set (if provided)
-  background_entrez <- NULL
+  background_entrezgene <- NULL
   background_genes_match <- NULL
   if (!is.null(bgset)) {
     background_genes_match <-
       validate_query_genes(
         bgset,
         q_id_type = bgset_id_type,
+        ignore_id_err = ignore_id_err,
         genedb = oeDB[['genedb']][['all']],
-        transcript_xref_db = oeDB[['genedb']][['transcript_xref_db']],
+        transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
         qtype = "background",
         logger = logger)
     if (background_genes_match[["match_status"]] == "imperfect_stop") {
       log4r_info(logger, paste0("WARNING: Background geneset not defined properly - ",
                         "using all protein-coding genes instead"))
-      background_entrez <- unique(oeDB[['genedb']][['all']]$entrezgene)
+      background_entrezgene <- as.character(
+        unique(oeDB[['genedb']][['all']]$entrezgene)
+      )
     }else{
-      background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
+      background_entrezgene <- as.character(
+        unique(background_genes_match[["found"]]$entrezgene)
+      )
     }
   }
 
@@ -1084,7 +1089,7 @@ onco_enrich <- function(query = NULL,
         if (c == "C5" & subcat != "HPO") {
           enr <- get_go_enrichment(
             query_entrez = as.character(query_entrezgene),
-            background_entrez = background_entrez,
+            background_entrez = background_entrezgene,
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
             max_geneset_size =
@@ -1110,7 +1115,7 @@ onco_enrich <- function(query = NULL,
             enr <- get_universal_enrichment(
               query_entrez = as.character(query_entrezgene),
               genedb = oeDB[['genedb']][['all']],
-              background_entrez = background_entrez,
+              background_entrez = background_entrezgene,
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
               max_geneset_size =
@@ -1149,7 +1154,7 @@ onco_enrich <- function(query = NULL,
         get_universal_enrichment(
           as.character(query_entrezgene),
           genedb = oeDB[['genedb']][['all']],
-          background_entrez = background_entrez,
+          background_entrez = background_entrezgene,
           min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
           max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
           q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
@@ -1441,7 +1446,7 @@ onco_enrich <- function(query = NULL,
       gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(query_entrezgene),
         resolution = "tissue",
-        background_entrez = background_entrez,
+        background_entrez = as.integer(background_entrezgene),
         genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,
         logger = logger)
@@ -1458,7 +1463,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(query_entrezgene),
-        background_entrez = background_entrez,
+        background_entrez = as.integer(background_entrezgene),
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         oeDB = oeDB,

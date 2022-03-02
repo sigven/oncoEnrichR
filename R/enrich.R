@@ -34,17 +34,20 @@ get_go_enrichment <- function(query_entrez,
   }else{
     stopifnot(is.character(background_entrez))
   }
-  ego <- clusterProfiler::enrichGO(gene          = query_entrez,
-                                   OrgDb         = "org.Hs.eg.db",
-                                   ont           = ontology,
-                                   minGSSize     = min_geneset_size,
-                                   maxGSSize     = max_geneset_size,
-                                   pAdjustMethod = p_value_adjustment_method,
-                                   pvalueCutoff  = p_value_cutoff,
-                                   qvalueCutoff  = q_value_cutoff,
-                                   universe      = background_entrez,
-                                   readable      = F,
-                                   pool = pool)
+  ego <-
+    suppressMessages(
+      clusterProfiler::enrichGO(gene          = query_entrez,
+                                OrgDb         = "org.Hs.eg.db",
+                                ont           = ontology,
+                                minGSSize     = min_geneset_size,
+                                maxGSSize     = max_geneset_size,
+                                pAdjustMethod = p_value_adjustment_method,
+                                pvalueCutoff  = p_value_cutoff,
+                                qvalueCutoff  = q_value_cutoff,
+                                universe      = background_entrez,
+                                readable      = F,
+                                pool = pool)
+    )
 
   if(simplify == T){
     ego <- clusterProfiler::simplify(ego, cutoff=0.8,
@@ -181,7 +184,8 @@ get_universal_enrichment <- function(query_entrez,
   stopifnot(!is.null(genedb) | !is.data.frame(genedb))
   #stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
   #stopifnot("standard_name" %in% colnames(TERM2SOURCE))
-  stopifnot("symbol" %in% colnames(genedb) & "entrezgene" %in% colnames(genedb))
+  stopifnot("symbol" %in% colnames(genedb) &
+              "entrezgene" %in% colnames(genedb))
   if(is.null(background_entrez)){
     bg <- dplyr::select(genedb, .data$entrezgene) %>%
       dplyr::filter(!is.na(.data$entrezgene)) %>%
@@ -191,15 +195,18 @@ get_universal_enrichment <- function(query_entrez,
     stopifnot(is.character(background_entrez))
 
   }
-  enr <- clusterProfiler::enricher(gene          = query_entrez,
-                                   universe      = background_entrez,
-                                   pAdjustMethod = p_value_adjustment_method,
-                                   minGSSize     = min_geneset_size,
-                                   maxGSSize     = max_geneset_size,
-                                   pvalueCutoff  = p_value_cutoff,
-                                   qvalueCutoff  = q_value_cutoff,
-                                   TERM2GENE     = TERM2GENE,
-                                   TERM2NAME     = TERM2NAME)
+  enr <-
+    suppressMessages(
+      clusterProfiler::enricher(gene          = query_entrez,
+                                universe      = background_entrez,
+                                pAdjustMethod = p_value_adjustment_method,
+                                minGSSize     = min_geneset_size,
+                                maxGSSize     = max_geneset_size,
+                                pvalueCutoff  = p_value_cutoff,
+                                qvalueCutoff  = q_value_cutoff,
+                                TERM2GENE     = TERM2GENE,
+                                TERM2NAME     = TERM2NAME)
+    )
 
 
   df <- as.data.frame(utils::head(enr,5000))

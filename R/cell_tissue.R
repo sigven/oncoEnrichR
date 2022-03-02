@@ -291,9 +291,13 @@ gene_tissue_cell_enrichment <-
     if(!is.null(background_entrez)){
       df <-
         data.frame('entrezgene' = as.integer(background_entrez),
-                   stringsAsFactors = F)
+                   stringsAsFactors = F) %>%
+        dplyr::inner_join(
+          dplyr::select(genedb, ensembl_gene_id, entrezgene),
+          by = "entrezgene"
+        )
       bg <- bg %>%
-        dplyr::inner_join(df, by = "entrezgene") %>%
+        dplyr::inner_join(df, by = "ensembl_gene_id") %>%
         dplyr::distinct()
       background_ensembl <- bg$ensembl_gene_id
 

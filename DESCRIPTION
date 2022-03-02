@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.0.8
-Date: 2022-02-20
+Date: 2022-03-02
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
