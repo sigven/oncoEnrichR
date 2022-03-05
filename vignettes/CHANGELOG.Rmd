@@ -3,6 +3,20 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.0.9
+
+* Date: 2022-03-04
+
+### Added 
+
+* Data updates: 
+  * CancerMine (v43)
+  * Open Targets Platform (2022.02)
+
+### Fixed
+
+* Bug in query identification for background set
+
 ## Version 1.0.8
 
 * Date: 2022-02-18

@@ -5,7 +5,7 @@ library(gganatogram)
 msigdb_version <- 'v7.5.1 (Jan 2022)'
 wikipathways_version <- "20220210"
 netpath_version <- "2010"
-opentargets_version <- "2021.11"
+opentargets_version <- "2022.02"
 kegg_version <- "20211223"
 gencode_version <- "39"
 update_omnipathdb <- F
@@ -13,8 +13,8 @@ update_hpa <- F
 update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
-update_tcga <- T
-update_cancer_hallmarks <- F
+update_tcga <- F
+update_cancer_hallmarks <- T
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
 update_gencode <- F
@@ -74,7 +74,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     basedir = here::here(),
     gene_info = gene_info,
-    version = "42") %>%
+    version = "43") %>%
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,
@@ -282,7 +282,7 @@ for(n in c('cancerdrugdb',
                           'size' = as.character(size),
                           'hsize' = as.character(hsize),
                           'checksum' = checksum_db,
-                          'version' = '1.0.8',
+                          'version' = '1.0.9',
                           'date' = Sys.Date(),
                          stringsAsFactors = F
                         )

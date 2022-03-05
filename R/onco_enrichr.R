@@ -63,7 +63,7 @@ load_db <- function(remote = T,
       if(!dir.exists(cache_version_dir)){
         system(paste0('mkdir ', cache_version_dir),
                intern = F)
-        log4r_info(logger, paste0("Data will be cached in ", cached_dir))
+        log4r_info(logger, paste0("Data will be cached in ", cache_dir))
 
       }else{
         log4r_warn(logger, paste0("An existing cache for '",oe_version, "' was found in ",
