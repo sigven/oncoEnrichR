@@ -1522,14 +1522,14 @@ get_cancer_drugs <- function(){
   cancerdrugdb[['drug_per_target']][['late_phase']] <-
     drugs_per_gene[['late_phase']]
 
-  cancerdrugdb[['ppi']] <- list()
-  cancerdrugdb[['ppi']][['edges']] <-
+  cancerdrugdb[['network']] <- list()
+  cancerdrugdb[['network']][['edges']] <-
     dplyr::bind_rows(target_drug_edges[['early_phase']],
                      target_drug_edges[['late_phase']]) %>%
     dplyr::select(from, to, width) %>%
     dplyr::distinct()
 
-  cancerdrugdb[['ppi']][['nodes']] <-
+  cancerdrugdb[['network']][['nodes']] <-
     dplyr::bind_rows(target_drug_nodes[['early_phase']],
                      target_drug_nodes[['late_phase']]) %>%
     dplyr::distinct()
@@ -1652,6 +1652,9 @@ get_pathway_annotations <- function(
       dplyr::rename(standard_name = pathway_id,
                     entrez_gene = gene_id) %>%
       dplyr::select(standard_name,entrez_gene) %>%
+      dplyr::mutate(entrez_gene = as.character(
+        entrez_gene
+      )) %>%
       dplyr::distinct()
 
     pathwaydb[['kegg']] <- keggdb
@@ -3189,7 +3192,7 @@ get_tcga_db <- function(
   rds_fname <- file.path(
     basedir, "data-raw", "tcga", "tcgadb.rds")
 
-  co_expression_tsv <- file.path(
+  coexpression_tsv <- file.path(
     basedir, "data-raw", "tcga",
     "co_expression_strong_moderate.release31_20211029.tsv.gz")
 
@@ -3381,11 +3384,11 @@ get_tcga_db <- function(
 
   ##TCGA co-expression data
   raw_coexpression <-
-    readr::read_tsv(co_expression_tsv,
+    readr::read_tsv(coexpression_tsv,
                     col_names = c("symbol_A","symbol_B",
                                   "r","p_value","tumor"),
                     show_col_types = F)
-  co_expression_genes1 <- raw_coexpression %>%
+  coexpression_genes1 <- raw_coexpression %>%
     dplyr::rename(symbol = symbol_A, symbol_partner = symbol_B) %>%
     dplyr::left_join(
       dplyr::select(gene_xref, symbol, tumor_suppressor,
@@ -3394,7 +3397,7 @@ get_tcga_db <- function(
                     oncogene == T |
                     cancer_driver == T)
 
-  co_expression_genes2 <- raw_coexpression %>%
+  coexpression_genes2 <- raw_coexpression %>%
     dplyr::rename(symbol = symbol_B, symbol_partner = symbol_A) %>%
     dplyr::left_join(
       dplyr::select(gene_xref, symbol, tumor_suppressor,
@@ -3403,8 +3406,8 @@ get_tcga_db <- function(
                     oncogene == T |
                     cancer_driver == T)
 
-  tcga_coexp_db <- dplyr::bind_rows(co_expression_genes1,
-                                    co_expression_genes2) %>%
+  tcga_coexp_db <- dplyr::bind_rows(coexpression_genes1,
+                                    coexpression_genes2) %>%
     dplyr::arrange(desc(r)) %>%
     dplyr::mutate(p_value = signif(p_value, digits = 4)) %>%
     dplyr::filter(p_value < 1e-6) %>%
@@ -3413,7 +3416,7 @@ get_tcga_db <- function(
 
 
   tcgadb <- list()
-  tcgadb[['co_expression']] <- tcga_coexp_db
+  tcgadb[['coexpression']] <- tcga_coexp_db
   tcgadb[['aberration']] <- tcga_aberration_stats
   tcgadb[['recurrent_variants']] <- recurrent_tcga_variants
   tcgadb[['pfam']] <- pfam_domains
@@ -3425,6 +3428,72 @@ get_tcga_db <- function(
   saveRDS(tcgadb, file = rds_fname)
 
   return(tcgadb)
+
+}
+
+get_synthetic_lethality_pairs <- function(
+  basedir = NULL){
+
+  sl_pairs_csv <- file.path(
+    basedir,
+    "data-raw",
+    "synlethdb",
+    "Human_SL.csv"
+  )
+
+  sl_pairs_data_raw <- as.data.frame(
+    readr::read_csv(
+      sl_pairs_csv, show_col_types = F
+    ) %>%
+      janitor::clean_names() %>%
+      dplyr::mutate(entrezgene_a = as.integer(gene_a_identifier)) %>%
+      dplyr::mutate(entrezgene_b = as.integer(gene_b_identifier)) %>%
+      dplyr::rename(pmid = sl_pubmed_id) %>%
+      dplyr::select(entrezgene_a, entrezgene_b,
+                    pmid, sl_source, sl_cell_line, sl_statistic_score) %>%
+      dplyr::mutate(sl_id = dplyr::row_number()) %>%
+      tidyr::separate_rows(pmid, sep=";") %>%
+      tidyr::separate_rows(pmid, sep="/") %>%
+      dplyr::filter(!stringr::str_detect(pmid, ","))
+  )
+
+  pmid_data <-
+    get_citations_pubmed(unique(sl_pairs_data_raw$pmid)) %>%
+    dplyr::mutate(pmid = as.character(pmid)) %>%
+    dplyr::rename(sl_citation = citation,
+                  sl_citation_link = link)
+
+  sl_pairs_data <- as.data.frame(
+    sl_pairs_data_raw %>%
+    dplyr::left_join(pmid_data, by = "pmid") %>%
+      dplyr::group_by(
+        sl_id, entrezgene_a, entrezgene_b,
+        sl_source, sl_cell_line, sl_statistic_score) %>%
+      dplyr::summarise(
+        sl_pmid = paste(pmid, collapse=";"),
+        sl_citation = paste(sl_citation, collapse="; "),
+        sl_citation_link = paste(sl_citation_link, collapse= ", "),
+        .groups = "drop") %>%
+      dplyr::mutate(
+        sl_cell_line = dplyr::if_else(
+          sl_cell_line == "null",
+          as.character(NA),
+          as.character(sl_cell_line)
+        )
+      ) %>%
+      dplyr::mutate(
+        sl_statistic_score = dplyr::if_else(
+          sl_statistic_score == "null",
+          as.numeric(NA),
+          as.numeric(sl_statistic_score)
+        )
+      ) %>%
+      dplyr::mutate(sl_statistic_score = round(
+        sl_statistic_score, digits = 5
+      ))
+  )
+
+  return(sl_pairs_data)
 
 }
 

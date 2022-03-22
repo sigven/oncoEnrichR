@@ -3,10 +3,10 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220210"
+wikipathways_version <- "20220310"
 netpath_version <- "2010"
 opentargets_version <- "2022.02"
-kegg_version <- "20211223"
+kegg_version <- "20220308"
 gencode_version <- "39"
 update_omnipathdb <- F
 update_hpa <- F
@@ -14,7 +14,7 @@ update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
 update_tcga <- F
-update_cancer_hallmarks <- T
+update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
 update_gencode <- F
@@ -24,7 +24,7 @@ update_ligand_receptor_db <- F
 uniprot_release <- "2021_04"
 
 software_db_version <-
-  read.table(file="data-raw/RELEASE_NOTES",
+  read.table(file="data-raw/RELEASE_NOTES.txt",
              skip = 2, sep = "\t", stringsAsFactors = F,
              comment.char = "#",quote="")
 colnames(software_db_version) <-
@@ -214,6 +214,12 @@ projectsurvivaldb <- get_survival_associations(
   basedir = here::here()
 )
 
+# ####--- Synthetic Lethality DB ----####
+# synlethdb <- get_synthetic_lethality_pairs(
+#   basedir = here::here()
+# )
+
+
 ####--- Human Protein Atlas ---####
 hpa <- get_hpa_associations(
   basedir = here::here(),
@@ -248,6 +254,7 @@ oedb[['projectsurvivaldb']] <- projectsurvivaldb
 oedb[['projectscoredb']] <- projectscoredb
 oedb[['tcgadb']] <- tcgadb
 oedb[['pathwaydb']] <- pathwaydb
+#oedb[['synlethdb']] <- synlethdb
 
 
 for(n in c('cancerdrugdb',
@@ -259,6 +266,7 @@ for(n in c('cancerdrugdb',
            'projectscoredb',
            'projectsurvivaldb',
            'subcelldb',
+           #'synlethdb',
            'tcgadb',
            'tftargetdb',
            'tissuecelldb',
@@ -293,7 +301,7 @@ for(n in c('cancerdrugdb',
 
 }
 
-save(oedb, file="inst/internal_db/oeDB.rda")
+save(oedb, file="inst/internal_db/oedb.rda")
 
 usethis::use_data(db_props, overwrite = T)
 
@@ -319,6 +327,6 @@ rm(ligandreceptordb)
 rm(tissuecelldb)
 rm(go_terms_pr_gene)
 rm(oedb)
-
+rm(synlethdb)
 
 

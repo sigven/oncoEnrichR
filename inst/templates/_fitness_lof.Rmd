@@ -1,0 +1,162 @@
+### Gene fitness scores {.tabset}
+
+* In [Project Score](https://score.depmap.sanger.ac.uk/), systematic genome-scale CRISPR/Cas9 drop-out screens are performed in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
+* Here, we are showing, across the main human tissue types:
+   * Genes in the query set that are annotated with a [statistically significant effect on cell fitness](https://score.depmap.sanger.ac.uk/documentation) in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
+
+<br><br>
+
+#### Loss-of-fitness distribution
+
+```{r fitness_lof_plot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']]) > 0, fig.width = 11, fig.height = onc_enrich_report[['config']][['fitness']][['plot_height_fitness']]}
+
+  fitness_lof_oe_plot <- onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] %>%
+      dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) %>%
+      ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::coord_flip() +
+      ggplot2::ylab("Number of cell lines with loss-of-fitness in CRISPR/Cas9 drop-out screen") +
+      ggplot2::xlab("") +
+      ggplot2::scale_fill_manual(values = pals::stepped(15)) +
+      ggplot2::theme(
+        panel.grid.minor = ggplot2::element_blank(),
+        axis.text = ggplot2::element_text(family = "Helvetica", size = 11),
+        legend.text = ggplot2::element_text(family = "Helvetica", size = 11),
+        axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+        legend.title = ggplot2::element_blank(),
+        #set thickness of axis ticks
+        axis.ticks = ggplot2::element_line(size = 0.2),
+        #remove plot background
+        plot.background = ggplot2::element_blank()
+      )
+
+plotly::ggplotly(fitness_lof_oe_plot)
+rm(fitness_lof_oe_plot)
+
+```
+
+
+```{r fitness_missing_plot, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_targets']] == 0}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br><br>
+
+#### Loss-of-fitness table
+
+```{r fitness_lof_table, echo=F, results = "asis", eval = onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_targets']] > 0}
+
+htmltools::br()
+
+fitness_lof_oe_df <- onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] %>%
+  dplyr::select(symbol_link_ps, tissue, cmp_link) %>%
+  dplyr::rename(cell_lines = cmp_link, symbol = symbol_link_ps) %>%
+  dplyr::mutate(loss_of_fitness = T)
+
+fitness_lof_oe_table <- 
+  crosstalk::SharedData$new(fitness_lof_oe_df)
+rm(fitness_lof_oe_df)
+
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("tissue", "Tissue", 
+                             fitness_lof_oe_table, ~tissue)
+  )
+)
+
+DT::datatable(
+  fitness_lof_oe_table, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'),
+               dom = 'Bfrtip', 
+               pagelength = 20)
+  )
+
+
+
+```
+
+```{r fitness_lof_missing_data, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_targets']] == 0}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+### {-}
+
+#### Target priority scores
+
+* Promising candidate therapeutic targets are indicated through __[target priority scores](https://score.depmap.sanger.ac.uk/documentation#scores)__. Target priority scores are based on integration of CRISPR knockout gene fitness effects with genomic biomarker and patient data ([Behan et al., Nature, 2019](https://pubmed.ncbi.nlm.nih.gov/30971826/)). All genes are assigned a target priority score between 0 – 100 from lowest to highest priority. In the heatmap shown below, genes in the query set are ranked according to their respective priority scores across all cancers (i.e. _Pancancer_), limited to the top 100 candidates.
+
+
+<br>
+
+```{r target_priority_heatmap, echo = F, eval = onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['n_pri_targets']] > 4}
+
+oe_priority_matrix <- as.data.frame(
+  onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['targets']] %>%
+  dplyr::arrange(symbol) %>%
+  tidyr::pivot_wider(names_from = tumor_type,
+                     values_from = priority_score)
+)
+rownames(oe_priority_matrix) <-
+  oe_priority_matrix$symbol
+oe_priority_matrix$symbol <- NULL
+oe_priority_matrix <- as.matrix(oe_priority_matrix)
+
+if(NROW(oe_priority_matrix) > 100){
+  oe_priority_matrix <- oe_priority_matrix[1:100,]
+}
+
+oe_priority_matrix <- 
+  oe_priority_matrix[nrow(oe_priority_matrix):1, ]
+
+oe_target_priority_fig <- plotly::plot_ly(
+  colors = "YlGn",
+  width = 800,
+  height = 400 + (14.67 * NROW(oe_priority_matrix))) %>%
+  plotly::add_heatmap(
+    y = rownames(oe_priority_matrix),
+    x = colnames(oe_priority_matrix),
+    z = oe_priority_matrix,
+    hovertext = "Priority score",
+    yaxis = "y") %>%
+  plotly::layout(
+    title = 'Target priority scores',
+    xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                 tickangle = -50),
+    yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+    margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+  ) %>%
+  plotly::colorbar(
+    nticks = 10, 
+    title = list(text = "Priority score",side = "bottom"),
+    limits = c(0, plyr::round_any(max(oe_priority_matrix), 10, ceiling)))
+
+rm(oe_priority_matrix)
+oe_target_priority_fig
+
+
+```
+
+
+```{r fitness_missing_priority, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['n_pri_targets']] < 5}
+
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO/LIMITED GENES</b> in the query set nominated as prioritized targets in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+
+```
+
+
+<br><br><br>

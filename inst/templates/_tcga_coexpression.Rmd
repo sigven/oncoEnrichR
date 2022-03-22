@@ -20,7 +20,8 @@ for(n in c('Positive','Negative')){
     missing_tcga_coexp[[n]] <- FALSE
     coexp_data[[n]] <- data.frame()
   
-    coexp_data[[n]] <- onc_enrich_report[['data']][['tcga']][['co_expression']] %>% 
+    coexp_data[[n]] <- 
+      onc_enrich_report[['data']][['tcga']][['coexpression']] %>% 
       dplyr::filter(corrtype == n) %>%
       dplyr::select(-corrtype) %>%
       head(2500)

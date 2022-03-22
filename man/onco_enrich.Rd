@@ -44,7 +44,7 @@ onco_enrich(
   show_unknown_function = TRUE,
   show_prognostic_cancer_assoc = TRUE,
   show_subcell_comp = TRUE,
-  show_crispr_lof = TRUE,
+  show_fitness = TRUE,
   show_complex = TRUE,
   ...
 )
@@ -130,7 +130,7 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
-\item{show_crispr_lof}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
+\item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 

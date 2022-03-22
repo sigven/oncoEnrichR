@@ -37,7 +37,7 @@ init_report(
   show_tcga_aberration = T,
   show_tcga_coexpression = T,
   show_subcell_comp = T,
-  show_crispr_lof = T,
+  show_fitness = T,
   show_cell_tissue = F,
   show_ligand_receptor = T,
   show_regulatory_interactions = T,
@@ -113,7 +113,7 @@ init_report(
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
-\item{show_crispr_lof}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
+\item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
 \item{show_cell_tissue}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 of target genes, using data from the Human Protein Atlas}
@@ -127,6 +127,8 @@ of target genes, using data from the Human Protein Atlas}
 \item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
 
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
+
+\item{show_syn_leth_pairs}{logical indicating if report should list overlap with known synthetic lethality gene pairs (SynLethDB)}
 }
 \description{
 Function that initiates oncoEnrichR report structure

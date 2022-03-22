@@ -3,16 +3,24 @@
 target_disease_associations <-
   function(qgenes,
            genedb = NULL,
-           oeDB = NULL,
+           otdb_all = NULL,
+           otdb_site_rank = NULL,
            show_top_diseases_only = FALSE,
            min_association_score = 0.1,
            logger = NULL){
 
   stopifnot(is.character(qgenes))
-  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(otdb_all))
+  stopifnot(!is.null(otdb_site_rank))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
+  stopifnot(is.numeric(min_association_score))
+  stopifnot(min_association_score <= 1 && min_association_score > 0)
+
   validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(otdb_all, dbtype = "opentarget_disease_assoc")
+  validate_db_df(otdb_site_rank, dbtype = "opentarget_disease_site_rank")
+
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
@@ -23,11 +31,11 @@ target_disease_associations <-
     min_association_score,")"))
 
   target_assocs <- target_genes %>%
-    dplyr::left_join(oeDB$otdb$all, by=c("ensembl_gene_id"))
+    dplyr::left_join(otdb_all, by=c("ensembl_gene_id"))
 
   result <- list()
   result[['target']] <- target_genes
-  result[['target_assoc']] <- target_assocs
+  #result[['target_assoc']] <- target_assocs
   result[['assoc_pr_gene']] <- list()
   result[['assoc_pr_gene']][['other']] <- data.frame()
   result[['assoc_pr_gene']][['cancer']] <- data.frame()
@@ -256,7 +264,7 @@ target_disease_associations <-
                                  .data$symbol,
                                  .data$ensembl_gene_id) %>%
     dplyr::left_join(
-      dplyr::select(oeDB$otdb$site_rank,
+      dplyr::select(otdb_site_rank,
                     .data$primary_site,
                     .data$ensembl_gene_id,
                     .data$tissue_assoc_rank),
@@ -306,14 +314,12 @@ target_disease_associations <-
 }
 
 target_drug_associations <- function(qgenes,
-                                     cancerdrugdb = NULL,
                                     genedb = NULL,
                                     logger = NULL){
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
-  stopifnot(!is.null(cancerdrugdb))
   validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame('symbol' = qgenes,

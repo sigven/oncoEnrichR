@@ -37,6 +37,7 @@ The contents of the final report attempt to provide answers to the following que
 
 ## News
 
+-   February 20th 2022: [**1.0.8 release**](articles/CHANGELOG.html#version-1-0-8)
 -   November 30th 2021: [**1.0.7 release**](articles/CHANGELOG.html#version-1-0-7)
 -   October 27th 2021: [**1.0.6 release**](articles/CHANGELOG.html#version-1-0-6)
 -   July 8th 2021: [**1.0.4 release**](articles/CHANGELOG.html#version-1-0-4)

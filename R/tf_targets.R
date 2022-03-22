@@ -12,22 +12,24 @@ annotate_tf_targets <- function(qgenes,
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
+  stopifnot(typeof(tf_target_interactions) == "list")
   stopifnot(!is.null(tf_target_interactions[[collection]]))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tf_target_interactions[[collection]], dbtype = "dorothea")
+  stopifnot(min_confidence_reg_interaction %in% c("A","B","C","D"))
 
   log4r_info(logger,
     paste0("DoRothEA: retrieval of regulatory interactions involving members of target set - ", collection))
 
   exclude_level_regex <- "E"
   if(min_confidence_reg_interaction == "C"){
-    exclude_level_regex <- "D|E"
+    exclude_level_regex <- "(D|E)"
   }
   if(min_confidence_reg_interaction == "B"){
-    exclude_level_regex <- "C|D|E"
+    exclude_level_regex <- "(C|D|E)"
   }
   if(min_confidence_reg_interaction == "A"){
-    exclude_level_regex <- "B|C|D|E"
+    exclude_level_regex <- "(B|C|D|E)"
   }
 
   target_genes <- data.frame("target" = qgenes, stringsAsFactors = F) %>%
@@ -35,18 +37,22 @@ annotate_tf_targets <- function(qgenes,
                      by = c("target")) %>%
     dplyr::distinct() %>%
     dplyr::filter(!is.na(.data$confidence_level)) %>%
-    dplyr::filter(!stringr::str_detect(.data$confidence_level, exclude_level_regex))
+    dplyr::filter(!stringr::str_detect(
+      .data$confidence_level, exclude_level_regex))
 
   if(nrow(target_genes) > 0){
     target_genes <- target_genes %>%
-      dplyr::mutate(queryset_overlap = paste("TARGET", .data$confidence_level, sep = "_"))
+      dplyr::mutate(
+        queryset_overlap = paste("TARGET",
+                                 .data$confidence_level, sep = "_"))
   }
 
   tf_genes <- data.frame("regulator" = qgenes, stringsAsFactors = F) %>%
     dplyr::left_join(tf_target_interactions[[collection]],
                      by = c("regulator")) %>%
     dplyr::distinct() %>%
-    dplyr::filter(!stringr::str_detect(.data$confidence_level, exclude_level_regex))
+    dplyr::filter(!stringr::str_detect(
+      .data$confidence_level, exclude_level_regex))
 
   if(nrow(tf_genes) > 0){
     tf_genes <- tf_genes %>%
@@ -102,6 +108,9 @@ annotate_tf_targets <- function(qgenes,
 
 retrieve_tf_target_network <- function(tf_target_interactions = NULL){
 
+
+  stopifnot(!is.null(tf_target_interactions))
+  validate_db_df(tf_target_interactions, dbtype = "tf_target_interactions")
 
   tf_target_network <- list()
   tf_target_network[['nodes']] <- data.frame()

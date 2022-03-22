@@ -6,6 +6,7 @@ get_network_hubs <- function(edges = NULL,
   stopifnot(!is.null(edges) & !is.null(nodes))
   validate_db_df(nodes, dbtype = "ppi_nodes")
   validate_db_df(edges, dbtype = "ppi_edges")
+  validate_db_df(genedb, dbtype = "genedb")
 
   edges <- dplyr::select(edges, .data$preferredName_A,
                          .data$preferredName_B,
@@ -183,10 +184,21 @@ get_ppi_network <- function(qgenes,
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(cancerdrugdb))
-  stopifnot(!is.null(cancerdrugdb[['ppi']]))
-  stopifnot(settings$query_type == "interaction_partners" | settings$query_type == "network")
-  validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(!is.null(cancerdrugdb[['network']]))
+  stopifnot("query_type" %in% names(settings))
+  stopifnot(identical(names(settings),
+                      c("minimum_score",
+                        "visnetwork_shape",
+                        "visnetwork_shadow",
+                        "show_drugs",
+                        "add_nodes",
+                        "query_type"))
+  )
 
+  stopifnot(settings$query_type == "interaction_partners" |
+              settings$query_type == "network")
+  validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(is.integer(qgenes))
 
   query_nodes <- data.frame("entrezgene" = qgenes, stringsAsFactors = F) %>%
     dplyr::distinct() %>%
@@ -196,10 +208,7 @@ get_ppi_network <- function(qgenes,
       .data$cancer_driver, .data$oncogene, .data$genename,
       .data$targeted_cancer_drugs_ep, .data$targeted_cancer_drugs_lp),
       by = c("entrezgene" = "entrezgene")) %>%
-
-    #dplyr::left_join(genedb, by = c("entrezgene" = "entrezgene")) %>%
     dplyr::mutate(id = paste0("s", .data$entrezgene)) %>%
-    #dplyr::select(-ensembl_gene_id) %>%
     dplyr::mutate(query_node = T) %>%
     dplyr::distinct()
 
@@ -249,7 +258,7 @@ get_ppi_network <- function(qgenes,
 
   }
 
-  log4r_info(logger, "STRINGdb: retrieving protein-protein interaction network from (v11.0b)")
+  log4r_info(logger, "STRINGdb: retrieving protein-protein interaction network from (v11.5)")
   log4r_info(logger, paste0("STRINGdb: Settings -  required_score = ",
                                   settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
@@ -300,7 +309,9 @@ get_ppi_network <- function(qgenes,
 
     all_nodes <- all_nodes %>%
       dplyr::mutate(shape = dplyr::if_else(
-        .data$query_node == T, settings$visnetwork_shape, as.character("box")))
+        .data$query_node == T,
+        settings$visnetwork_shape,
+        as.character("box")))
     all_nodes$shadow <- settings$visnetwork_shadow
 
     all_nodes$title <- unlist(
@@ -343,17 +354,17 @@ get_ppi_network <- function(qgenes,
     if(settings$show_drugs == T){
       drug_target_ids <-
         dplyr::inner_join(dplyr::select(all_nodes, .data$id),
-                          dplyr::select(cancerdrugdb[['ppi']]$edges, .data$from),
+                          dplyr::select(cancerdrugdb[['network']]$edges, .data$from),
                           by = c("id" = "from")) %>%
         dplyr::distinct()
 
       if(nrow(drug_target_ids) > 0){
         drug_edges <- dplyr::inner_join(
-          cancerdrugdb[['ppi']]$edges,
+          cancerdrugdb[['network']]$edges,
           drug_target_ids, by = c("from" = "id"))
         drug_nodes <- drug_edges %>%
           dplyr::select(-.data$from) %>%
-          dplyr::inner_join(cancerdrugdb[['ppi']]$nodes,
+          dplyr::inner_join(cancerdrugdb[['network']]$nodes,
                             by = c("to" = "id")) %>%
           dplyr::rename(id = .data$to) %>%
           dplyr::distinct()
@@ -375,11 +386,11 @@ get_ppi_network <- function(qgenes,
     }
     network[["community_network"]] <-
       get_network_communities(edges = all_edges,
-                                            nodes = all_nodes)
+                              nodes = all_nodes)
     network[["hubscores"]] <-
       get_network_hubs(edges = all_edges,
-                                     nodes = all_nodes,
-                                     genedb = genedb)
+                       nodes = all_nodes,
+                       genedb = genedb)
   }else{
     network <- list()
     network[["source"]] <- ppi_source
