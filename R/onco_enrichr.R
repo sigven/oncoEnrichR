@@ -635,15 +635,17 @@ init_report <- function(oeDB,
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
-#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
-#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
+#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
+#' "flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
 #' @param project_description project background information
 #' @param bgset character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-#' @param bgset_id_type character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")
+#' @param bgset_id_type character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
+#' "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param p_value_cutoff_enrichment cutoff p-value for enrichment/over-representation analysis
 #' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
