@@ -36,10 +36,17 @@ test_that("Gene fitness scores (Project Score) - testing ", {
         logger = log4r_logger
       )$targets
     ),
-    c("symbol", "symbol_link_ps",
-      "tissue", "n_gene_tissue",
-      "cell_lines",
-      "cmp_link", "n_gene")
+    c("symbol",
+      "symbol_link_ps",
+      "model_name",
+      "scaled_BF",
+      "tissue",
+      "model_link_ps",
+      "cancer_type",
+      "sample_site",
+      "tissue_status",
+      "n_gene_tissue",
+      "n_gene")
   )
 
   expect_gt(

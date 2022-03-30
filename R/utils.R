@@ -325,6 +325,7 @@ validate_db <- function(oe_db){
     c("cancerdrugdb", "release_notes", "subcelldb",
     "ligandreceptordb", "genedb", "otdb", "tftargetdb",
     "tissuecelldb", "hpa", "projectsurvivaldb",
+    "slparalogdb",
     "projectscoredb", "tcgadb", "pathwaydb")
 
   for(db in db_entries){
@@ -393,6 +394,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
                "enrichment_db_hpa_singlecell",
                "enrichment_db_hpa_tissue",
                "ppi_nodes",
+               "slparalog",
                "fitness_scores",
                "target_priority_scores",
                "survival_km_cshl",
@@ -452,6 +454,19 @@ validate_db_df <- function(df, dbtype = "genedb"){
               "clinical_strata_code",
               "diagnosis_code",
               "site_code")
+  }
+
+  if(dbtype == "slparalog"){
+    cols <- c("entrezgene_A1",
+              "symbol_A1",
+              "entrezgene_A2",
+              "symbol_A2",
+              "prediction_score",
+              "prediction_percentile",
+              "sequence_identity_pct",
+              "family_size",
+              "conservation_score",
+              "ppi_overlap")
   }
 
   if(dbtype == "tcga_coexpression"){
@@ -587,10 +602,12 @@ validate_db_df <- function(df, dbtype = "genedb"){
   if(dbtype == "fitness_scores"){
     cols <- c('symbol',
               'model_name',
-              'loss_of_fitness',
               'model_id',
-              'model_type',
+              'loss_of_fitness',
+              'scaled_BF',
               'tissue',
+              'cancer_type',
+              'tissue_status',
               'entrezgene',
               'sample_site',
               'gene_id_project_score')
@@ -994,6 +1011,42 @@ add_excel_sheet <- function(
     }
   }
 
+  if(analysis_output == "synthetic_lethality"){
+    for(t in c('single_pair_member','both_in_pair')){
+
+      if(is.data.frame(report$data$synleth[[t]])){
+        if(NROW(report$data$synleth[[t]]) > 0){
+          df <- report$data$synleth[[t]] %>%
+            dplyr::mutate(
+              annotation_source = "Prediction of synthetic lethality pairs (De Kegel et al., Cell Systems, 2021)",
+              version = "v1") %>%
+            dplyr::mutate(feature_type = t) %>%
+            dplyr::mutate(
+              genename_A =
+                stringr::str_trim(
+                  textclean::replace_html(.data$genename_A)
+                )
+            ) %>%
+            dplyr::mutate(
+              genename_B =
+                stringr::str_trim(
+                  textclean::replace_html(.data$genename_B)
+                )
+            ) %>%
+            dplyr::arrange(.data$feature_type,
+                           dplyr::desc(.data$prediction_score)) %>%
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$feature_type, dplyr::everything())
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+
+        }
+      }
+    }
+  }
+
+
   if(analysis_output == "survival_association"){
     for(t in c('cna','mut','exp')){
       if(is.data.frame(report$data$cancer_prognosis$km_cshl$assocs[[t]])){
@@ -1164,7 +1217,8 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
             version = report$config$resources$projectscore$version) %>%
-          dplyr::select(-c(.data$symbol_link_ps, .data$cmp_link)) %>%
+          dplyr::select(-c(.data$symbol_link_ps, .data$model_link_ps,
+                           .data$n_gene)) %>%
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }

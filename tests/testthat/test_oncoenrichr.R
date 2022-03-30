@@ -250,38 +250,25 @@ test_that("oncoEnrichR - generate report", {
     "list"
   )
 
-  expect_identical(
-    typeof(
-      oncoEnrichR::onco_enrich(
-        query = myc_data[['symbol']],
-        bgset = background_sample_set$ensembl_gene_id,
-        bgset_id_type = "ensembl_gene",
-        oeDB = oedb,
-        html_floating_toc = T,
-        html_report_theme = "default",
-        query_id_type = "symbol",
-        show_tcga_aberration = F,
-        show_tcga_coexpression = F,
-        show_enrichment = F,
-        project_title = "cMYC_BioID_screen",
-        project_owner = "Raught et al.")
-    ),
-    "list"
-  )
-
-  u <- oncoEnrichR::onco_enrich(
-    query = myc_data[['symbol']],
-    bgset = background_sample_set$ensembl_gene_id,
-    bgset_id_type = "ensembl_gene",
-    oeDB = oedb,
-    html_floating_toc = T,
-    html_report_theme = "default",
-    query_id_type = "symbol",
-    show_tcga_aberration = F,
-    show_tcga_coexpression = F,
-    show_enrichment = F,
-    project_title = "cMYC_BioID_screen",
-    project_owner = "Raught et al.")
+  # expect_identical(
+  #   typeof(
+  #     oncoEnrichR::onco_enrich(
+  #       query = myc_data[['symbol']],
+  #       bgset = background_sample_entrez,
+  #       bgset_id_type = "entrezgene",
+  #       bgset_description = "Sample background set",
+  #       oeDB = oedb,
+  #       html_floating_toc = T,
+  #       html_report_theme = "default",
+  #       query_id_type = "symbol",
+  #       show_tcga_aberration = F,
+  #       show_tcga_coexpression = F,
+  #       show_enrichment = F,
+  #       project_title = "cMYC_BioID_screen",
+  #       project_owner = "Raught et al.")
+  #   ),
+  #   "list"
+  # )
 
 })
 

@@ -293,8 +293,7 @@ test_that("Tissue/celltype gene enrichment ", {
       oncoEnrichR:::gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(c(1956, 673)),
         background_entrez = as.integer(
-          dplyr::sample_n(oedb$genedb$all, 250)$entrezgene
-        ),
+          background_sample_entrez),
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,

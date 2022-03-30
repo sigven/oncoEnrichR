@@ -1,4 +1,4 @@
-### TCGA prognostic associations 
+### Prognostic associations 
 
 #### Gene expression associations - Human Protein Atlas {.tabset}
 

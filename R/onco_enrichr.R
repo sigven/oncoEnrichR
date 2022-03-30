@@ -108,6 +108,7 @@ load_db <- function(remote = T,
               "projectsurvivaldb",
               "release_notes",
               "subcelldb",
+              "slparalogdb",
               #"synlethdb",
               "tcgadb",
               "tissuecelldb",
@@ -232,7 +233,7 @@ load_db <- function(remote = T,
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
-#' @param show_syn_leth_pairs logical indicating if report should list overlap with known synthetic lethality gene pairs (SynLethDB)
+#' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #'
@@ -261,6 +262,7 @@ init_report <- function(oeDB,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = F,
                         min_confidence_reg_interaction = "D",
+                        max_fitness_score = -2,
                         simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
@@ -278,7 +280,7 @@ init_report <- function(oeDB,
                         show_regulatory_interactions = T,
                         show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
-                        #show_syn_leth_pairs = T,
+                        show_synleth = T,
                         show_complex = T) {
 
   ## report object
@@ -317,7 +319,7 @@ init_report <- function(oeDB,
   rep[["config"]][["show"]][["ligand_receptor"]] <- show_ligand_receptor
   rep[["config"]][["show"]][["cancer_hallmark"]] <- show_cancer_hallmarks
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
-  #rep[["config"]][["show"]][["synleth"]] <- show_syn_leth_pairs
+  rep[["config"]][["show"]][["synleth"]] <- show_synleth
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
     show_prognostic_cancer_assoc
 
@@ -355,6 +357,14 @@ init_report <- function(oeDB,
   rep[["config"]][["regulatory"]][["min_confidence"]] <-
     min_confidence_reg_interaction
 
+  ## config - color codes and thresholds for
+  ## synthetic lethality prediction percentiles
+  rep[["config"]][["synleth"]] <- list()
+  rep[["config"]][["synleth"]][["breaks"]] <-
+    c(2, 5, 10)
+  rep[["config"]][["synleth"]][["colors"]] <-
+    c("#08306b","#08519c","#2171b5","#b8b8ba")
+
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
@@ -385,6 +395,7 @@ init_report <- function(oeDB,
   ## config - fitness/loss_of_function - plot height for hits in CRISPR screens
   rep[["config"]][["fitness"]] <- list()
   rep[["config"]][["fitness"]][["plot_height_fitness"]] <- 10
+  rep[['config']][["fitness"]][["max_BF_score"]] <- max_fitness_score
 
   ## config/ppi - protein-protein interaction settings
   rep[["config"]][["ppi"]] <- list()
@@ -412,6 +423,7 @@ init_report <- function(oeDB,
     simplify_go
   rep[["config"]][["enrichment"]][["bgset_description"]] <-
     bgset_description
+  rep[["config"]][["enrichment"]][["bgset_size"]] <- 0
   rep[["config"]][["enrichment"]][["num_terms_enrichment_plot"]] <-
     num_terms_enrichment_plot
 
@@ -485,6 +497,7 @@ init_report <- function(oeDB,
                      "ligand_receptor",
                      "subcellcomp",
                      "fitness",
+                     "synleth",
                      "cell_tissue",
                      "cancer_prognosis",
                      "unknown_function")) {
@@ -498,6 +511,10 @@ init_report <- function(oeDB,
   ## prognosis/survival - gene expression (HPA)
   rep[["data"]][["cancer_prognosis"]][['hpa']] <- list()
   rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <- data.frame()
+
+  ## synthetic lethality
+  rep[["data"]][["synleth"]][['both_in_pair']] <- data.frame()
+  rep[["data"]][["synleth"]][['single_pair_member']] <- data.frame()
 
   ## regulatory interactions (DoRothEA)
   rep[["data"]][["regulatory"]][["interactions"]] <- list()
@@ -656,6 +673,7 @@ init_report <- function(oeDB,
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
+#' @param max_fitness_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -675,7 +693,7 @@ init_report <- function(oeDB,
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
-## @param show_syn_leth_pairs logical indicating if report should list overlap with known synthetic lethality gene pairs (SynLethDB)
+#' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #' @param ... arguments for Galaxy/web-based processing
@@ -703,6 +721,7 @@ onco_enrich <- function(query = NULL,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = FALSE,
                         min_confidence_reg_interaction = "D",
+                        max_fitness_score = -2,
                         simplify_go = TRUE,
                         ppi_add_nodes = 50,
                         ppi_score_threshold = 900,
@@ -721,7 +740,7 @@ onco_enrich <- function(query = NULL,
                         show_unknown_function = TRUE,
                         show_prognostic_cancer_assoc = TRUE,
                         show_subcell_comp = TRUE,
-                        #show_syn_leth_pairs = TRUE,
+                        show_synleth = TRUE,
                         show_fitness = TRUE,
                         show_complex = TRUE,
                         ...) {
@@ -862,6 +881,18 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
+  val <- max_fitness_score < 0
+
+  if(val == F){
+    log4r_info(logger, paste0(
+      "ERROR: 'max_fitness_score' must be a value (scaled Bayes factor from BAGEL) less than zero ",
+      "(current type and value: '",typeof(max_fitness_score),"' - ",
+      max_fitness_score,")")
+    )
+    return()
+  }
+
+
   val <-
     (ppi_score_threshold %% 1 == 0) & ## check that number is whole integer
       (ppi_score_threshold > 0) &
@@ -973,7 +1004,7 @@ onco_enrich <- function(query = NULL,
     show_ligand_receptor = show_ligand_receptor,
     show_regulatory_interactions = show_regulatory_interactions,
     show_unknown_function = show_unknown_function,
-    #show_syn_leth_pairs = show_syn_leth_pairs,
+    show_synleth = show_synleth,
     show_prognostic_cancer_assoc =
       show_prognostic_cancer_assoc,
     show_complex = show_complex)
@@ -1018,6 +1049,7 @@ onco_enrich <- function(query = NULL,
                "regulatory_interactions",
                "ligand_receptor",
                "subcellcomp",
+               "synleth",
                "unknown_function",
                "cancer_prognosis")){
       onc_rep[['config']][['show']][[e]] <- F
@@ -1059,9 +1091,25 @@ onco_enrich <- function(query = NULL,
       background_entrezgene <- as.character(
         unique(background_genes_match[["found"]]$entrezgene)
       )
-    }
-  }
+      if(onc_rep[['config']][['enrichment']][['bgset_description']] ==
+         "All protein-coding genes"){
+        log4r_info(logger, paste0("WARNING: Description of background set is not set"))
+        onc_rep[['config']][['enrichment']][['bgset_description']] <-
+          "Undefined"
 
+      }
+    }
+  }else{
+    bg <- dplyr::select(oeDB[['genedb']][['all']],
+                        .data$entrezgene,
+                        .data$gene_biotype) %>%
+      dplyr::filter(!is.na(.data$entrezgene) &
+                      .data$gene_biotype == "protein-coding") %>%
+      dplyr::distinct()
+    background_entrezgene <- as.character(bg$entrezgene)
+  }
+  onc_rep[['config']][['enrichment']][['bgset_size']] <-
+    length(background_entrezgene)
 
 
   query_entrezgene <- unique(qgenes_match[["found"]]$entrezgene)
@@ -1085,6 +1133,15 @@ onco_enrich <- function(query = NULL,
         otdb_site_rank = oeDB[['otdb']][['site_rank']],
         min_association_score = 0.1,
         logger = logger)
+  }
+
+  ## Include synthetic lethality interactions
+  if (show_synleth == T){
+    onc_rep[["data"]][["synleth"]] <- annotate_synleth_paralog_pairs(
+      qgenes = query_symbol,
+      genedb = oeDB[['genedb']][['all']],
+      slparalogdb = oeDB[['slparalogdb']],
+      logger = logger)
   }
 
   ## Include gene-drug annotations in the report (targeted cancer drugs)
@@ -1115,6 +1172,8 @@ onco_enrich <- function(query = NULL,
           enr <- get_go_enrichment(
             query_entrez = as.character(query_entrezgene),
             background_entrez = background_entrezgene,
+            bgset_description =
+              onc_rep[["config"]][["enrichment"]][["bgset_description"]],
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
             max_geneset_size =
@@ -1141,6 +1200,8 @@ onco_enrich <- function(query = NULL,
               query_entrez = as.character(query_entrezgene),
               genedb = oeDB[['genedb']][['all']],
               background_entrez = background_entrezgene,
+              bgset_description =
+                onc_rep[["config"]][["enrichment"]][["bgset_description"]],
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
               max_geneset_size =
@@ -1180,6 +1241,8 @@ onco_enrich <- function(query = NULL,
           as.character(query_entrezgene),
           genedb = oeDB[['genedb']][['all']],
           background_entrez = background_entrezgene,
+          bgset_description =
+            onc_rep[["config"]][["enrichment"]][["bgset_description"]],
           min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
           max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
           q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
@@ -1730,9 +1793,11 @@ write <- function(report,
           }
         }
 
-        rmarkdown::render_site(
-          input = tmpdir,
-          quiet = T
+        suppressWarnings(
+          rmarkdown::render_site(
+            input = tmpdir,
+            quiet = T
+          )
         )
 
         # target_html <- file.path(output_directory, paste0(
@@ -1765,24 +1830,26 @@ write <- function(report,
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")
 
-      rmarkdown::render(
-        markdown_input,
-        output_format = rmarkdown::html_document(
-          theme = report_theme,
-          toc = T,
-          fig_width = 5,
-          highlight = NULL,
-          mathjax = NULL,
-          fig_height = 4,
-          toc_depth = 3,
-          toc_float = toc_float,
-          number_sections = F,
-          includes = rmarkdown::includes(after_body = disclaimer)),
-        output_file = file_basename,
-        output_dir = output_directory,
-        clean = T,
-        intermediates_dir = output_directory,
-        quiet = T)
+      suppressWarnings(
+        rmarkdown::render(
+          markdown_input,
+          output_format = rmarkdown::html_document(
+            theme = report_theme,
+            toc = T,
+            fig_width = 5,
+            highlight = NULL,
+            mathjax = NULL,
+            fig_height = 4,
+            toc_depth = 3,
+            toc_float = toc_float,
+            number_sections = F,
+            includes = rmarkdown::includes(after_body = disclaimer)),
+          output_file = file_basename,
+          output_dir = output_directory,
+          clean = T,
+          intermediates_dir = output_directory,
+          quiet = T)
+      )
 
       log4r_info(logger, paste0("Output file (self-contained HTML): ",
                                       file))
@@ -1815,6 +1882,7 @@ write <- function(report,
                   "coexpression",
                   "prognostic_association",
                   "survival_association",
+                  "synthetic_lethality",
                   "fitness_scores",
                   "fitness_prioritized"
                   )){
@@ -1837,6 +1905,9 @@ write <- function(report,
       }
       if(elem == "coexpression"){
         show_elem <- "tcga_coexpression"
+      }
+      if(elem == "synthetic_lethality"){
+        show_elem <- "synleth"
       }
       if(elem == "fitness_scores" | elem == "fitness_prioritized"){
         show_elem <- "fitness"

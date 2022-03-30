@@ -1,6 +1,7 @@
 get_fitness_lof_scores <- function(qgenes,
                                   qsource = "symbol",
                                   projectscoredb = NULL,
+                                  max_fitness_score = -2,
                                   logger = NULL) {
 
   stopifnot(!is.null(logger))
@@ -21,45 +22,59 @@ get_fitness_lof_scores <- function(qgenes,
 
   fitness_lof_hits <- as.data.frame(
     target_genes %>%
-    dplyr::inner_join(projectscoredb[['fitness_scores']], by = c("symbol"))
+    dplyr::inner_join(projectscoredb[['fitness_scores']], by = c("symbol")) %>%
+    dplyr::arrange(.data$scaled_BF)
   )
   if (nrow(fitness_lof_hits) > 0) {
 
-    fitness_lof_hits <- as.data.frame(
+    fitness_lof_results[["targets"]] <- as.data.frame(
       fitness_lof_hits %>%
         dplyr::mutate(
-          model_link_cmp = paste0(
-            "<a href='https://cellmodelpassports.sanger.ac.uk/passports/",
-            .data$model_id,"' target='_blank'>",
+          model_link_ps = paste0(
+            "<a href='https://score.depmap.sanger.ac.uk/model/",
+            .data$model_id,"?&scoreMax=0' target='_blank'>",
             stringr::str_replace_all(.data$model_name,"\\.","-"),"</a>")) %>%
         dplyr::mutate(
           symbol_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/gene/",
             .data$gene_id_project_score,"' target='_blank'>", .data$symbol,"</a>")) %>%
-      dplyr::select(.data$symbol,
-                    .data$symbol_link_ps,
-                    .data$model_name,
-                    .data$tissue,
-                    .data$model_link_cmp) %>%
-      dplyr::group_by(.data$symbol,
+        dplyr::select(.data$symbol,
                       .data$symbol_link_ps,
-                      .data$tissue) %>%
-      dplyr::summarise(n_gene_tissue = dplyr::n(),
-                       cell_lines = paste(.data$model_name, collapse = ", "),
-                       cmp_link = paste(.data$model_link_cmp, collapse = ", ")) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(cell_lines = stringr::str_replace_all(.data$cell_lines, "\\.", "-"))
+                      .data$model_name,
+                      .data$tissue,
+                      .data$model_link_ps,
+                      .data$cancer_type,
+                      .data$sample_site,
+                      .data$tissue_status,
+                      .data$scaled_BF) %>%
+        dplyr::filter(.data$scaled_BF <= max_fitness_score)
     )
 
-    total <- as.data.frame(
-      fitness_lof_hits %>%
-        dplyr::group_by(.data$symbol) %>%
-        dplyr::summarise(n_gene = sum(.data$n_gene_tissue))
-      )
+    gene_pr_tissue_stats <- as.data.frame(
+      fitness_lof_results[["targets"]] %>%
+        dplyr::group_by(.data$symbol, .data$tissue) %>%
+        dplyr::summarise(n_gene_tissue = dplyr::n(),
+                         .groups = "drop")
+    )
 
-    fitness_lof_results[["n_targets"]] <- nrow(total)
-    fitness_lof_results[["targets"]] <- fitness_lof_hits %>%
-      dplyr::left_join(total, by = c("symbol"))
+    gene_stats <- as.data.frame(
+      gene_pr_tissue_stats %>%
+        dplyr::group_by(.data$symbol) %>%
+        dplyr::summarise(n_gene = sum(.data$n_gene_tissue),
+                         .groups = "drop")
+    )
+
+    fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] %>%
+      dplyr::left_join(gene_pr_tissue_stats, by = c("symbol","tissue")) %>%
+      dplyr::left_join(gene_stats, by = "symbol") %>%
+      dplyr::select(.data$symbol, .data$symbol_link_ps,
+                    .data$model_name,
+                    .data$scaled_BF, .data$tissue,
+                    .data$model_link_ps, .data$cancer_type,
+                    .data$sample_site, .data$tissue_status,
+                    .data$n_gene_tissue, .data$n_gene)
+
+    fitness_lof_results[["n_targets"]] <- nrow(gene_stats)
   }
 
   return(fitness_lof_results)

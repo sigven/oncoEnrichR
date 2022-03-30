@@ -46,29 +46,29 @@ output: rmarkdown::html_document
       min_subcellcomp_confidence = 1,
       subcellcomp_show_cytosol = FALSE,
       min_confidence_reg_interaction = "D",
-      simplify_go = F,
+      simplify_go = TRUE,
       ppi_add_nodes = 50,
       ppi_score_threshold = 900,
-      show_ppi = T,
-      show_drugs_in_ppi = T,
-      show_disease = T,
-      show_top_diseases_only = T,
-      show_cancer_hallmarks = T,
-      show_drug = T,
-      show_enrichment = T,
-      show_tcga_aberration = T,
-      show_tcga_coexpression = T,
-      show_cell_tissue = F,
-      show_ligand_receptor = T,
-      show_regulatory_interactions = T,
-      show_unknown_function = T,
-      show_prognostic_cancer_assoc = T,
-      show_subcell_comp = T,
-      show_crispr_lof = T,
-      show_complex = T)
+      show_ppi = TRUE,
+      show_drugs_in_ppi = TRUE,
+      show_disease = TRUE,
+      show_top_diseases_only = TRUE,
+      show_cancer_hallmarks = TRUE,
+      show_drug = TRUE,
+      show_enrichment = TRUE,
+      show_tcga_aberration = TRUE,
+      show_tcga_coexpression = TRUE,
+      show_cell_tissue = FALSE,
+      show_ligand_receptor = TRUE,
+      show_regulatory_interactions = TRUE,
+      show_unknown_function = TRUE,
+      show_prognostic_cancer_assoc = TRUE,
+      show_subcell_comp = TRUE,
+      show_fitness = TRUE,
+      show_complex = TRUE)
     ```
 
-    See [detailed descriptions of all options here](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html)
+    See [detailed descriptions of all options here](reference/onco_enrich.html)
 
 <br>
 
@@ -78,9 +78,9 @@ output: rmarkdown::html_document
 
     1\) Transformation of the raw analysis results returned by *oncoEnrichR::onco_enrich()* into various visualizations and interactive tables
 
-    2\) Assembly and generation of the final analysis report through either
+    2\) Assembly and generation of the final analysis report through
 
-    -   A\) a structured and interactive *oncoEnrichR* HTML report, OR
+    -   A\) a structured and interactive *oncoEnrichR* HTML report
     -   B\) a multisheet Excel workbook
 
 <br>

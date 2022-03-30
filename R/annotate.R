@@ -59,7 +59,8 @@ target_disease_associations <-
                   .data$efo_name,
                   .data$primary_site,
                   #.data$ot_link,
-                  .data$gene_summary)
+                  .data$gene_summary) %>%
+    dplyr::arrange(.data$symbol, .data$ot_association_score)
 
   if(nrow(tmp) > 0){
 
@@ -96,11 +97,14 @@ target_disease_associations <-
     result[['assoc_pr_gene']][['cancer']] <- tmp %>%
       dplyr::left_join(gene_targetset_cancer_rank,
                         by = "symbol") %>%
-      dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank),
+                     dplyr::desc(.data$ot_association_score))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
         result[['assoc_pr_gene']][['cancer']] %>%
+          dplyr::select(-.data$primary_site) %>%
+          dplyr::distinct() %>%
           dplyr::group_by(.data$symbol) %>%
           dplyr::summarise(
             targetset_cancer_prank =
@@ -112,7 +116,9 @@ target_disease_associations <-
               paste(utils::head(stringr::str_to_title(.data$efo_name),
                                 num_top_disease_terms), collapse=", "),
             .groups = "drop"
-          )
+          ) %>%
+          dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
+
       )
     }else{
 
@@ -128,14 +134,17 @@ target_disease_associations <-
               paste(unique(stringr::str_to_title(.data$efo_name)),
                            collapse=", "),
             .groups = "drop"
-          )
+          ) %>%
+          dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
       )
     }
   }
 
   tmp2 <- target_assocs %>%
     dplyr::filter(.data$ot_association_score >= min_association_score &
-                    is.na(.data$cancer_phenotype))
+                    is.na(.data$cancer_phenotype)) %>%
+    ## ignore "genetic disorder"
+    dplyr::filter(.data$disease_efo_id != "EFO:0000508")
 
   if(nrow(tmp2) > 0){
 
@@ -168,7 +177,8 @@ target_disease_associations <-
     result[['assoc_pr_gene']][['other']] <- tmp2 %>%
       dplyr::left_join(gene_targetset_disease_rank,
                         by = "symbol") %>%
-      dplyr::arrange(dplyr::desc(.data$targetset_disease_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_disease_prank),
+                     dplyr::desc(.data$ot_association_score))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['other']] <- as.data.frame(

@@ -14,9 +14,16 @@ myc_data <- read.csv(system.file("extdata","myc_data.csv",
   dplyr::inner_join(oedb$genedb$all, by = "symbol") %>%
   dplyr::filter(!is.na(entrezgene))
 
-background_sample_set <-
-  oedb$genedb$all %>%
-  dplyr::filter(gene_biotype == "protein-coding") %>%
-  dplyr::sample_n(150)
+bg_set <-
+  oedb[['genedb']][['all']] %>%
+  dplyr::filter(.data$gene_biotype == "protein-coding") %>%
+  dplyr::filter(!is.na(.data$entrezgene)) %>%
+  dplyr::distinct()
+
+background_sample <- bg_set %>%
+  dplyr::sample_n(250)
+
+background_sample_entrez <- as.character(background_sample$entrezgene)
+background_full_entrez <- as.character(bg_set$entrezgene)
 
 testthat::test_check("oncoEnrichR")

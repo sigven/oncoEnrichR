@@ -205,16 +205,16 @@ test_that("Query gene validation routine - testing ", {
     ), regexp = "ERROR: target gene identifiers NOT found: UNKNOWN"
   )
 
-  expect_output(
-    oncoEnrichR:::validate_query_genes(
-      qgenes = c("NISBD2","UNKNOWN"),
-      ignore_id_err = T,
-      transcript_xref = oedb$genedb$transcript_xref,
-      genedb = oedb$genedb$all,
-      logger = log4r_logger,
-      q_id_type = "symbol"
-    ), regexp = "Target gene identifiers NOT found: UNKNOWN"
-  )
+  # expect_output(
+  #   oncoEnrichR:::validate_query_genes(
+  #     qgenes = c("NISBD2","UNKNOWN"),
+  #     ignore_id_err = T,
+  #     transcript_xref = oedb$genedb$transcript_xref,
+  #     genedb = oedb$genedb$all,
+  #     logger = log4r_logger,
+  #     q_id_type = "symbol"
+  #   ), regexp = "Target gene identifiers NOT found: UNKNOWN"
+  # )
 
   expect_output(
     oncoEnrichR:::validate_query_genes(

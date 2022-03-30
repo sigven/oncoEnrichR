@@ -26,6 +26,7 @@ init_report(
   min_subcellcomp_confidence = 1,
   subcellcomp_show_cytosol = F,
   min_confidence_reg_interaction = "D",
+  max_fitness_score = -2,
   simplify_go = F,
   show_ppi = T,
   show_drugs_in_ppi = T,
@@ -43,6 +44,7 @@ init_report(
   show_regulatory_interactions = T,
   show_unknown_function = T,
   show_prognostic_cancer_assoc = T,
+  show_synleth = T,
   show_complex = T
 )
 }
@@ -126,9 +128,9 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
 
-\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
+\item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
 
-\item{show_syn_leth_pairs}{logical indicating if report should list overlap with known synthetic lethality gene pairs (SynLethDB)}
+\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 }
 \description{
 Function that initiates oncoEnrichR report structure

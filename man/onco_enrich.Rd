@@ -26,6 +26,7 @@ onco_enrich(
   min_subcellcomp_confidence = 1,
   subcellcomp_show_cytosol = FALSE,
   min_confidence_reg_interaction = "D",
+  max_fitness_score = -2,
   simplify_go = TRUE,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
@@ -44,6 +45,7 @@ onco_enrich(
   show_unknown_function = TRUE,
   show_prognostic_cancer_assoc = TRUE,
   show_subcell_comp = TRUE,
+  show_synleth = TRUE,
   show_fitness = TRUE,
   show_complex = TRUE,
   ...
@@ -95,6 +97,8 @@ onco_enrich(
 
 \item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
 
+\item{max_fitness_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
+
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
 \item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
@@ -131,6 +135,8 @@ of target genes, using data from the Human Protein Atlas}
 \item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
+
+\item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
 
 \item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 

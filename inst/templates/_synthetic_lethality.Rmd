@@ -1,0 +1,167 @@
+### Synthetic lethality
+
+<br>
+
+* Using recently published predictions on synthetic lethal interactions in human cancer cell lines ([De Kegel et al., Cell Syst., 2021](https://pubmed.ncbi.nlm.nih.gov/34529928/)), we here show whether members of the query set are found among these interactions.
+* Note that predictions in the study by *Kegel et al.* are provided for human gene paralogs only
+* In the tables below, predictions below the 50% percentile are ignored (the complete set can be found in the Excel output of oncoEnrichR). Additional properties of each predicted pair of interactors are included for filtering, including:
+  * Prediction score and percentile
+  * Percent sequence identity between the genes
+  * Size of gene paralog family 
+
+
+<br><br>
+
+```{r synleth_prep, echo = F, results = 'asis', eval = T}
+
+sl_interactions <- list()
+sl_interactions[['a_b']] <- data.frame()
+sl_interactions[['a_only']] <- data.frame()
+
+if(NROW(onc_enrich_report[['data']][['synleth']][['both_in_pair']]) > 0){
+  sl_interactions[['a_b']] <- onc_enrich_report[['data']][['synleth']][['both_in_pair']] %>%
+    dplyr::filter(.data$prediction_percentile < 50) %>%
+    head(2500)
+}
+
+if(NROW(onc_enrich_report[['data']][['synleth']][['single_pair_member']]) > 0){
+  sl_interactions[['a_only']] <- onc_enrich_report[['data']][['synleth']][['single_pair_member']] %>%
+    dplyr::filter(.data$prediction_percentile < 50) %>%
+    head(2500)
+  
+}
+
+
+```
+
+
+#### Predicted synthetic lethality interactions {.tabset}
+
+<br>
+
+##### Both pair members in query set
+
+```{r synleth_interactions_1, echo = F, results = 'asis', eval = nrow(sl_interactions[['a_b']]) > 0}
+
+sl_ab <- 
+  crosstalk::SharedData$new(sl_interactions[['a_b']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("symbol_A", "Interactor A", sl_ab, ~symbol_A),
+    crosstalk::filter_select("symbol_B", "Interactor B", sl_ab, ~symbol_B),
+    crosstalk::filter_slider("prediction_score", "Prediction score", sl_ab, ~prediction_score,
+                             step = 0.025, min = 0.0, max = 0.45),
+    crosstalk::filter_slider("prediction_percentile", "Prediction percentile", sl_ab, ~prediction_percentile,
+                             min = 0.0, step = 2, max = 50)
+  ),
+  list(
+    crosstalk::filter_slider("sequence_identity_pct", "Sequence identity (percent)", sl_ab, ~sequence_identity_pct,
+                             min = 0, max = 100),
+    crosstalk::filter_slider("family_size", "Gene family size", sl_ab, ~family_size)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  sl_ab, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) %>%
+   DT::formatStyle("symbol_A",
+                  "prediction_percentile", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['synleth']][['breaks']],
+                    onc_enrich_report[['config']][['synleth']][['colors']])
+  ) %>%
+  DT::formatStyle("symbol_B",
+                  "prediction_percentile", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['synleth']][['breaks']],
+                    onc_enrich_report[['config']][['synleth']][['colors']])
+  )
+
+
+```
+<br><br>
+
+
+```{r sl_interactions_missing_1, echo=F, results = 'asis', eval = nrow(sl_interactions[['a_b']]) == 0}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in synthetic lethality interactions for which <b>BOTH</b> member pairs are part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>
+
+##### Single pair member in query set
+
+```{r sl_interactions_2, echo = F, results = 'asis', eval = nrow(sl_interactions[['a_only']]) > 0}
+
+sl_a <- 
+  crosstalk::SharedData$new(sl_interactions[['a_only']])
+
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("symbol_A", "Interactor A", sl_a, ~symbol_A),
+    crosstalk::filter_select("symbol_B", "Interactor B", sl_a, ~symbol_B),
+    crosstalk::filter_slider("prediction_score", "Prediction score", sl_a, ~prediction_score,
+                             step = 0.025, min = 0.0, max = 0.45),
+    crosstalk::filter_slider("prediction_percentile", "Prediction percentile", sl_a, ~prediction_percentile,
+                             min = 0.0, step = 2, max = 50)
+  ),
+  list(
+    crosstalk::filter_slider("sequence_identity_pct", "Sequence identity (percent)", sl_a, ~sequence_identity_pct,
+                             min = 0, max = 100),
+    crosstalk::filter_slider("family_size", "Gene family size", sl_a, ~family_size)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  sl_a, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) %>%
+   DT::formatStyle("symbol_A",
+                  "prediction_percentile", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['synleth']][['breaks']],
+                    onc_enrich_report[['config']][['synleth']][['colors']])
+  )
+
+
+```
+<br><br>
+
+
+```{r sl_interactions_missing_2, echo=F, results = 'asis', eval = nrow(sl_interactions[['a_only']]) == 0}
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in prediced synthetic lethal interactions for which <b>ONLY</b> a single member pair is part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>

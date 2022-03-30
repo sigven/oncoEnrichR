@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.0.8
-Date: 2022-03-22
+Date: 2022-03-25
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -17,7 +17,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     queries a number of high-quality resources, including Project Score 
     (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
     (comprehensive target-drug associations, cancer hallmark evidence and 
-    target-disease associations), TCGA (genetic aberrations and gene expression 
+    target-disease associations), TCGA (genetic aberrations and gene co-expression 
     patterns in human tumor samples), STRING (protein-protein interaction networks), 
     CORUM (curated protein complexes), COMPPI (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 

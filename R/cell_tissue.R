@@ -154,7 +154,6 @@ gene_tissue_cell_spec_cat <-
     )
 
     exp_dist_df <- data.frame()
-    #exp_dist_df <- oeDB$tissuecelldb[[resolution]]$expr_df
     exp_dist_df <- hpa_expr_db_df
     exp_dist_df$ensembl_gene_id <-
       rownames(exp_dist_df)
@@ -213,6 +212,10 @@ gene_tissue_cell_enrichment <-
     stopifnot(resolution == "tissue" | resolution == "single_cell")
     validate_db_df(genedb, dbtype = "genedb")
 
+    if(!("GSEABase" %in% (.packages(all.available = T)))){
+      suppressPackageStartupMessages(library(GSEABase))
+    }
+
     etype <- "tissues"
     edb <- "GTex"
     if(resolution != "tissue"){
@@ -261,10 +264,7 @@ gene_tissue_cell_enrichment <-
         )
     }
 
-
-
     bg <- hpa_enrichment_db_df
-    #bg <- oeDB$tissuecelldb[[resolution]][['te_df']]
 
     q <- bg %>%
       dplyr::select(.data$ensembl_gene_id) %>%

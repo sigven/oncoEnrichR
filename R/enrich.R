@@ -1,5 +1,6 @@
 get_go_enrichment <- function(query_entrez,
                               background_entrez = NULL,
+                              bgset_description = "All protein-coding genes",
                               ontology = "MF",
                               genedb = NULL,
                               p_value_cutoff = 0.05,
@@ -18,6 +19,9 @@ get_go_enrichment <- function(query_entrez,
   log4r_info(logger, paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
   log4r_info(logger, paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
   log4r_info(logger, paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  log4r_info(logger, paste0("Enrichment - GO: settings: remove redundancy of enriched GO terms = ",simplify))
+  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset: '",bgset_description,"'"))
+  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset size = ",length(background_entrez)))
 
 
   stopifnot(p_value_adjustment_method %in%
@@ -30,15 +34,9 @@ get_go_enrichment <- function(query_entrez,
   validate_db_df(genedb, dbtype = "genedb")
   stopifnot(p_value_cutoff > 0 & p_value_cutoff < 1)
   stopifnot(q_value_cutoff > 0 & q_value_cutoff < 1)
+  stopifnot(!is.null(background_entrez))
+  stopifnot(is.character(background_entrez))
 
-  if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb, .data$entrezgene) %>%
-      dplyr::filter(!is.na(.data$entrezgene)) %>%
-      dplyr::distinct()
-    background_entrez <- as.character(bg$entrezgene)
-  }else{
-    stopifnot(is.character(background_entrez))
-  }
   ego <-
     suppressMessages(
       clusterProfiler::enrichGO(gene          = query_entrez,
@@ -167,6 +165,7 @@ get_go_enrichment <- function(query_entrez,
 
 get_universal_enrichment <- function(query_entrez,
                                      background_entrez = NULL,
+                                     bgset_description = "All protein-coding genes",
                                      genedb = NULL,
                                      p_value_cutoff = 0.05,
                                      p_value_adjustment_method = "BH",
@@ -184,8 +183,12 @@ get_universal_enrichment <- function(query_entrez,
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset: '",bgset_description,"'"))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset size = ",length(background_entrez)))
 
   stopifnot(is.character(query_entrez))
+  stopifnot(!is.null(background_entrez))
+  stopifnot(is.character(background_entrez))
   stopifnot(p_value_adjustment_method %in%
               c("BH","BY","fdr","none","holm",
                 "hochberg","hommel","bonferroni"))
@@ -204,18 +207,7 @@ get_universal_enrichment <- function(query_entrez,
   stopifnot(NROW(
     dplyr::inner_join(TERM2NAME, TERM2GENE, by = "standard_name")
   ) > 0)
-  #stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
-  #stopifnot("standard_name" %in% colnames(TERM2SOURCE))
 
-  if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb, .data$entrezgene) %>%
-      dplyr::filter(!is.na(.data$entrezgene)) %>%
-      dplyr::distinct()
-    background_entrez <- as.character(bg$entrezgene)
-  }else{
-    stopifnot(is.character(background_entrez))
-
-  }
   enr <-
     suppressMessages(
       clusterProfiler::enricher(gene          = query_entrez,

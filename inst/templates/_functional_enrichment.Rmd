@@ -10,12 +10,14 @@
 <br>
 
 * Enrichment/overrepresentation test settings (clusterProfiler)
-   * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
-   * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
-   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
-   * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
-   * Maximal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`
-   * Background gene set: `r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`
+   * P-value cutoff: __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
+   * Q-value cutoff: __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
+   * Correction for multiple testing: __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
+   * Minimal size of genes annotated by term for testing: __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
+   * Maximal size of genes annotated by term for testing: __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
+   * Background gene set description: __`r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`__
+   * Background gene set size: __`r onc_enrich_report[['config']][['enrichment']][['bgset_size']]`__
+   * Remove redundancy of enriched GO terms: __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
    
 
 <br><br>
@@ -62,6 +64,9 @@ if(show_enrichment_filters[['go']] == T){
   
 }else{
   subontology_plots[['ALL']] <- F
+  subontology_plots[['MF']] <- F
+  subontology_plots[['BP']] <- F
+  subontology_plots[['CC']] <- F
 }
 
 
@@ -437,6 +442,16 @@ rm(plot_data)
 
 ```
 
+
+```{r go_plot_missing_all, echo=F, results = 'asis', eval = !subontology_plots[['ALL']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
 <br><br>
 
 ##### Molecular function
@@ -447,7 +462,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::select(description, enrichment_factor, qvalue, db) %>%
   dplyr::filter(db == 'GO_MF') %>%
   dplyr::arrange(qvalue) %>%
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
   dplyr::arrange(desc(qvalue)) %>%
   dplyr::rename(Subontology = db) %>%
   dplyr::mutate(
@@ -500,6 +515,15 @@ rm(height_plot)
 rm(plot_data)
 
 ```
+
+```{r go_plot_missing_mf, echo=F, results = 'asis', eval = !subontology_plots[['MF']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
 
 <br><br>
 
@@ -565,6 +589,14 @@ rm(plot_data)
 
 ```
 
+```{r go_plot_missing_bp, echo=F, results = 'asis', eval = !subontology_plots[['BP']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
 <br><br>
 
 
@@ -627,6 +659,14 @@ enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
 enrichment_barplot
 rm(height_plot)
 rm(plot_data)
+
+```
+
+```{r go_plot_missing_cc, echo=F, results = 'asis', eval = !subontology_plots[['CC']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
 
 ```
 

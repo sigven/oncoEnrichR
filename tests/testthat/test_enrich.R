@@ -1,13 +1,35 @@
 
 test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
-   expect_error(oncoEnrichR:::get_go_enrichment(query_entrez = NULL))
-   expect_error(oncoEnrichR:::get_go_enrichment(genedb = NULL))
-   expect_error(oncoEnrichR:::get_go_enrichment(ontology = "UNKNOWN"))
-   expect_error(oncoEnrichR:::get_go_enrichment(logger = NULL))
-   expect_error(oncoEnrichR:::get_go_enrichment(p_value_adjustment_method = "UNKNOWN"))
-   expect_error(oncoEnrichR:::get_go_enrichment(p_value_cutoff = 2))
-   expect_error(oncoEnrichR:::get_go_enrichment(q_value_cutoff = 2))
-
+  expect_error(oncoEnrichR:::get_go_enrichment(logger = NULL))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    logger = log4r_logger))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    query_entrez = "200",
+    logger = log4r_logger))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    query_entrez = "200",
+    genedb = oedb$genedb$all,
+    background_entrez = background_full_entrez,
+    logger = log4r_logger,
+    p_value_adjustment_method = "UNKNOWN"))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    query_entrez = "200",
+    genedb = oedb$genedb$all,
+    background_entrez = background_full_entrez,
+    logger = log4r_logger,
+    p_value_cutoff = 2))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    query_entrez = "200",
+    genedb = oedb$genedb$all,
+    background_entrez = background_full_entrez,
+    logger = log4r_logger,
+    q_value_cutoff = 2))
+  expect_error(oncoEnrichR:::get_go_enrichment(
+    query_entrez = "200",
+    genedb = oedb$genedb$all,
+    background_entrez = background_full_entrez,
+    logger = log4r_logger,
+    ontology = "UNKNOWN"))
 
    expect_error(
      oncoEnrichR:::get_go_enrichment(
@@ -15,7 +37,7 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
          c(3845, 4609)),
        genedb = oedb$genedb$all,
        logger = log4r_logger,
-       ontology = "MF"
+       background_entrez = background_full_entrez,
      )
    )
 
@@ -25,7 +47,8 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
          query_entrez = c("3845", "4609"),
          genedb = oedb$genedb$all,
          logger = log4r_logger,
-         ontology = "MF"
+         background_entrez = background_full_entrez,
+
        )
      )
    )
@@ -36,7 +59,8 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
          query_entrez = c("3845", "4609"),
          genedb = oedb$genedb$all,
          logger = log4r_logger,
-         ontology = "MF"
+         background_entrez = background_full_entrez,
+
        )
      ),
      as.integer(0)
@@ -49,7 +73,7 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
          query_entrez = c("3845", "4609"),
          genedb = oedb$genedb$all,
          logger = log4r_logger,
-         ontology = "MF"
+         background_entrez = background_full_entrez,
        )
      ),
      c("exact_source", "description",
@@ -68,24 +92,13 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
        "setting_max_geneset_size")
    )
 
-   expect_error(
-     oncoEnrichR:::get_go_enrichment(
-       query_entrez = c("3845", "4609"),
-       background_entrez = background_sample_set$entrezgene,
-       genedb = oedb$genedb$all,
-       logger = log4r_logger,
-       ontology = "MF"
-     )
-   )
-
    expect_identical(
      oncoEnrichR:::get_go_enrichment(
        query_entrez = c("3845", "4609"),
-       background_entrez = as.character(
-         head(background_sample_set, 20)),
+       background_entrez = utils::head(
+         background_sample_entrez, 20),
        genedb = oedb$genedb$all,
        logger = log4r_logger,
-       ontology = "MF"
      ),
      NULL
    )
@@ -95,22 +108,34 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
 test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ", {
   expect_error(oncoEnrichR:::get_universal_enrichment(logger = NULL))
   expect_error(oncoEnrichR:::get_universal_enrichment(
+    logger = log4r_logger))
+  expect_error(oncoEnrichR:::get_universal_enrichment(
+    query_entrez = "200",
+    logger = log4r_logger))
+  expect_error(oncoEnrichR:::get_universal_enrichment(
+    query_entrez = "200",
+    background_entrez = background_full_entrez,
+    logger = log4r_logger))
+
+  expect_error(oncoEnrichR:::get_universal_enrichment(
+    query_entrez = "200",
     p_value_adjustment_method = "UNKNOWN",
-    query_entrez = "200",
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::get_universal_enrichment(
-    query_entrez = "200",
-    genedb = NULL,
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::get_universal_enrichment(
-    query_entrez = "200",
     genedb = oedb$genedb$all,
-    p_value_cutoff = 2,
+    background_entrez = background_full_entrez,
     logger = log4r_logger))
+
   expect_error(oncoEnrichR:::get_universal_enrichment(
     query_entrez = "200",
+    p_value_cutoff =  2,
     genedb = oedb$genedb$all,
-    q_value_cutoff = 2,
+    background_entrez = background_full_entrez,
+    logger = log4r_logger))
+
+  expect_error(oncoEnrichR:::get_universal_enrichment(
+    query_entrez = "200",
+    q_value_cutoff =  2,
+    genedb = oedb$genedb$all,
+    background_entrez = background_full_entrez,
     logger = log4r_logger))
 
   for(c in c("WikiPathways","NetPath","KEGG")){
@@ -122,6 +147,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
         oncoEnrichR:::get_universal_enrichment(
           query_entrez = as.character(
             myc_data$entrezgene),
+          background_entrez = background_full_entrez,
           genedb = oedb$genedb$all,
           logger = log4r_logger,
           dbsource = c,
@@ -137,6 +163,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
           query_entrez = as.character(
             myc_data$entrezgene),
           genedb = oedb$genedb$all,
+          background_entrez = background_full_entrez,
           logger = log4r_logger,
           dbsource = c,
           TERM2GENE = oedb$pathwaydb[[pway_db]]$TERM2GENE,
@@ -158,6 +185,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
       oncoEnrichR:::get_universal_enrichment(
         query_entrez = as.character(
           myc_data$entrezgene),
+        background_entrez = background_full_entrez,
         genedb = oedb$genedb$all,
         logger = log4r_logger,
         dbsource = "MSIGDB/HALLMARK",
@@ -174,6 +202,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
         query_entrez = as.character(
           myc_data$entrezgene),
         genedb = oedb$genedb$all,
+        background_entrez = background_full_entrez,
         logger = log4r_logger,
         dbsource = "MSIGDB/HALLMARK",
         TERM2GENE = oedb$pathwaydb$msigdb$COLLECTION$H$ALL$TERM2GENE,
@@ -193,7 +222,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
       query_entrez = as.character(
         myc_data$entrezgene),
       genedb = oedb$genedb$all,
-      background_entrez = as.character(background_sample_set$entrezgene),
+      background_entrez = background_sample_entrez,
       logger = log4r_logger,
       dbsource = "NetPath",
       TERM2GENE = oedb$pathwaydb$netpath$TERM2GENE,
