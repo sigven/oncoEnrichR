@@ -2,7 +2,7 @@
 
 **oncoEnrichR** is an R package for functional interrogation of human genesets in the context of cancer. The package leverages an extensive amount of prior molecular knowledge for geneset interpretation along multiple dimensions.
 
-Web-based access to **oncoEnrichR** is available at <b><https://oncotools.elixir.no></b>
+Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.9)
 
 **oncoEnrichR** is primarily intended for exploratory analysis and prioritization of a gene list (referred to here as **query set**) from high-throughput cancer biology experiments, e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a number of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report.
 
@@ -10,16 +10,16 @@ Web-based access to **oncoEnrichR** is available at <b><https://oncotools.elixir
 
 <img src="man/figures/oncoenrichr_overview.png" align="center" border="1"/>
 
-
 ## Getting started
 
-* [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-adressed-by-oncoenrichr)
-* [Installation instructions](https://sigven.github.io/oncoEnrichR/articles/installation.html)
-* [Running instructions](https://sigven.github.io/oncoEnrichR/articles/running.html)
-* [Annotation resources available in oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html)
+-   [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-adressed-by-oncoenrichr)
+-   [Installation instructions](https://sigven.github.io/oncoEnrichR/articles/installation.html)
+-   [Running instructions](https://sigven.github.io/oncoEnrichR/articles/running.html)
+-   [Annotation resources available in oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html)
 
 ## News
 
+-   March 31st 2022: [**1.0.9 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-9)
 -   February 20th 2022: [**1.0.8 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-8)
 -   November 30th 2021: [**1.0.7 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-7)
 -   October 27th 2021: [**1.0.6 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-6)
@@ -27,7 +27,7 @@ Web-based access to **oncoEnrichR** is available at <b><https://oncotools.elixir
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.5737599"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5737599.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6402572"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6402572.svg" alt="DOI"/></a>
 
 ### Contact
 
@@ -48,4 +48,3 @@ OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://w
      <img src="man/figures/elixir_norway.png" width="200" />
   </a>
 </p>
-

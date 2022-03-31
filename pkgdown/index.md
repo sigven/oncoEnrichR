@@ -8,7 +8,7 @@
 
 **oncoEnrichR** can be used to interrogate results from e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a variety of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
 
-Web-based access to **oncoEnrichR** is available at <font size="4"> **[https://oncotools.elixir.no](https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.7)**</font>
+Web-based access to **oncoEnrichR** is available at <font size="4"> **[https://oncotools.elixir.no](https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.8)**</font>
 
 <br>
 
@@ -38,6 +38,7 @@ The contents of the analysis report provided by oncoEnrichR address the followin
 
 ## News
 
+-   March 31st 2022: [**1.0.9 release**](articles/CHANGELOG.html#version-1-0-9)
 -   February 20th 2022: [**1.0.8 release**](articles/CHANGELOG.html#version-1-0-8)
 -   November 30th 2021: [**1.0.7 release**](articles/CHANGELOG.html#version-1-0-7)
 -   October 27th 2021: [**1.0.6 release**](articles/CHANGELOG.html#version-1-0-6)
@@ -45,7 +46,7 @@ The contents of the analysis report provided by oncoEnrichR address the followin
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.5737599"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5737599.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6402572"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6402572.svg" alt="DOI"/></a>
 
 <br>
 

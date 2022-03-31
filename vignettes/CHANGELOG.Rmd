@@ -15,7 +15,8 @@ output: rmarkdown::html_document
   * WikiPathways (20220310)
   * Project Score (July 2021 release)
 
-* New section: *Synthetic lethality* - shows how members of the queryset overlaps with predicted synthetic lethality interactions (as published by De Kegel et al., Cell Systems, 2021)
+* New analysis section: *Synthetic lethality* - shows how members of the queryset overlaps with predicted synthetic lethality interactions (as published by De Kegel et al., Cell Systems, 2021)
+  * add this section in the output with option `--show_synleth`
 
 ### Fixed
 
@@ -31,7 +32,7 @@ output: rmarkdown::html_document
   - `TCGA aberration frequency` ---> `Tumor aberration frequencies`
   - `TCGA prognostic associations` ---> `Prognostic associations`
 
-* Sections that include *tabsets* are now organized so that the active tab
+* Sections that include *tabsets* are now organized so that the initial active tab
 always contains data (with the exception of all tabs being empty)
 
 ## Version 1.0.8

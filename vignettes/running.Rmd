@@ -46,6 +46,7 @@ output: rmarkdown::html_document
       min_subcellcomp_confidence = 1,
       subcellcomp_show_cytosol = FALSE,
       min_confidence_reg_interaction = "D",
+      max_fitness_score = -2,
       simplify_go = TRUE,
       ppi_add_nodes = 50,
       ppi_score_threshold = 900,
@@ -64,11 +65,12 @@ output: rmarkdown::html_document
       show_unknown_function = TRUE,
       show_prognostic_cancer_assoc = TRUE,
       show_subcell_comp = TRUE,
+      show_synleth = TRUE,
       show_fitness = TRUE,
       show_complex = TRUE)
     ```
 
-    See [detailed descriptions of all options here](reference/onco_enrich.html)
+    See [detailed descriptions of all options here](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html)
 
 <br>
 
@@ -92,7 +94,7 @@ A target list of *n = 134* high-confidence interacting proteins with the c-MYC o
 -   `project_title = "cMYC_BioID_screen"`
 -   `project_owner = "Raught et al."`
 
-and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.5737599).
+and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.6402572).
 
 Below are R commands provided to reproduce the example output. **NOTE**: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
