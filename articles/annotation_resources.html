@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,6 +126,8 @@
 <a href="https://score.depmap.sanger.ac.uk" class="external-link">Project Score</a> - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation</li>
 <li>
 <a href="http://survival.cshl.edu/" class="external-link">Genetic determinants of survival in cancer</a> - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers</li>
+<li>
+<a href="https://pubmed.ncbi.nlm.nih.gov/34529928/" class="external-link">Predicted synthetic lethality interactions</a> - Resource on predicted synthetic lethality interactions between human gene paralogs (using human cancer cell lines)</li>
 </ul>
 </div>
 <div class="section level2">
@@ -247,6 +249,13 @@
 </h3>
 <ul>
 <li>Ligand-receptor interactions have been collected from the <a href="http://www.cellchat.org" class="external-link">CellChatDB</a> resource. In the <em>oncoEnrichR</em> module for these interactions, only interactions where <strong>both ligand and receptor are found in the queryset</strong> are shown.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="synthetic-lethality-interactions">Synthetic lethality interactions<a class="anchor" aria-label="anchor" href="#synthetic-lethality-interactions"></a>
+</h3>
+<ul>
+<li>Predicted synthetic lethality interactions between human gene paralogs have been collected from <a href="https://pubmed.ncbi.nlm.nih.gov/34529928/" class="external-link">De Kegel et al., Cell Systems, 2021</a>. Interactions are shown for which both members are part of the queryset, and interactions where only a single member of the query set is present.</li>
 </ul>
 </div>
 </div>

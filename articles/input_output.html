@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,15 +92,36 @@
 <div class="section level2">
 <h2 id="input-data">Input data<a class="anchor" aria-label="anchor" href="#input-data"></a>
 </h2>
-<p>TODO</p>
+<p>The main input to oncoEnrichR is a list of human genes, typically the top ranked hits from a high-throughput screen. The gene list can be provided by using any of the following identifiers:</p>
+<ul>
+<li>Primary gene symbols (e.g. <strong><code>KRAS</code></strong>)</li>
+<li>Entrez gene IDs (e.g. <strong><code>3845</code></strong>)</li>
+<li>Uniprot accessions (e.g. <strong><code>P01116</code></strong>)</li>
+<li>Ensembl gene identifiers (e.g. <strong><code>ENSG00000133703</code></strong>)</li>
+<li>Ensembl transcript identifiers (e.g. <strong><code>ENST00000311936</code></strong>)</li>
+<li>Ensembl protein identifiers (e.g. <strong><code>ENSP00000308495</code></strong>)</li>
+<li>RefSeq transcript identifiers (e.g. <strong><code>NM_004985</code></strong>)</li>
+<li>RefSeq peptide identifiers (e.g. <strong><code>NP_004976</code></strong>)</li>
+</ul>
+<p>The type of identifier used should be specified using the <code>--query_id_type</code> argument. Similarly, if a background gene set is specified (through the <code>--bgset</code> argument, for use in enrichment analysis), the identifier type should be set with the <code>--bgset_id_type</code> argument.</p>
+<p>If the user submits gene symbols which are no longer considered as primary gene symbols, oncoEnrichR attempts to map such cases as synonyms/aliases for the primary gene symbols.</p>
+<div class="section level3">
+<h3 id="number-of-input-genes">Number of input genes<a class="anchor" aria-label="anchor" href="#number-of-input-genes"></a>
+</h3>
+<p>In order to keep the size of the HTML output report at a managable level, there is currently an upper limit of</p>
+<ul>
+<li><strong><code>n = 600</code></strong></li>
+</ul>
+<p>genes that can be used as input to the tool. If you run oncoEnrichR through the Galaxy interface, the upper limit is set at <code>n = 500</code>. Please also note that the tool requires <code>n = 2</code> input genes at the bare minimum, although some analyses will not be run with such few genes in the input.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="output-files">Output files<a class="anchor" aria-label="anchor" href="#output-files"></a>
 </h2>
+<p>The output of the analyses performed with oncoEnrichR can be presented both in an interactive HTML report, and within a multi-sheet Excel workbook.</p>
 <div class="section level3">
 <h3 id="html-report">HTML report<a class="anchor" aria-label="anchor" href="#html-report"></a>
 </h3>
-<p>TODO</p>
 </div>
 <div class="section level3">
 <h3 id="excel-workbook">Excel workbook<a class="anchor" aria-label="anchor" href="#excel-workbook"></a>

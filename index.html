@@ -10,7 +10,7 @@
     queries a number of high-quality resources, including Project Score 
     (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
     (comprehensive target-drug associations, cancer hallmark evidence and 
-    target-disease associations), TCGA (genetic aberrations and gene expression 
+    target-disease associations), TCGA (genetic aberrations and gene co-expression 
     patterns in human tumor samples), STRING (protein-protein interaction networks), 
     CORUM (curated protein complexes), COMPPI (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
@@ -31,7 +31,7 @@
     queries a number of high-quality resources, including Project Score 
     (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
     (comprehensive target-drug associations, cancer hallmark evidence and 
-    target-disease associations), TCGA (genetic aberrations and gene expression 
+    target-disease associations), TCGA (genetic aberrations and gene co-expression 
     patterns in human tumor samples), STRING (protein-protein interaction networks), 
     CORUM (curated protein complexes), COMPPI (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
@@ -54,7 +54,7 @@
     
     <a class="navbar-brand me-2" href="index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -110,14 +110,14 @@
 </h1></div>
 <p><strong>oncoEnrichR</strong> is an R package for functional interrogation of human genesets in the context of cancer. It is primarily intended for exploratory analysis, interpretation, and prioritization of long gene lists, which represent a common output from many types of high-throughput cancer biology screens.</p>
 <p><strong>oncoEnrichR</strong> can be used to interrogate results from e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a variety of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).</p>
-<p>Web-based access to <strong>oncoEnrichR</strong> is available at <a href="https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.7" class="external-link">https://oncotools.elixir.no</a></p>
+<p>Web-based access to <strong>oncoEnrichR</strong> is available at <font size="4"> <strong><a href="https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.9" class="external-link">https://oncotools.elixir.no</a></strong></font></p>
 <p><br></p>
 <p><img src="img/oncoenrichr_overview.png" align="center" border="1,"></p>
 <p><br><br></p>
 <div class="section level2">
 <h2 id="questions-adressed-by-oncoenrichr">Questions adressed by oncoEnrichR<a class="anchor" aria-label="anchor" href="#questions-adressed-by-oncoenrichr"></a>
 </h2>
-<p>The contents of the final report attempt to provide answers to the following questions for a given gene list:</p>
+<p>The contents of the analysis report provided by oncoEnrichR address the following scientific questions for a given gene list:</p>
 <ul>
 <li>Which diseases/tumor types are known to be associated with genes in the query set, and to what extent?</li>
 <li>Which genes in the query set are attributed with cancer hallmark evidence?</li>
@@ -132,6 +132,7 @@
 <li>Which members of the query set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?</li>
 <li>Which members of the query set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?</li>
 <li>Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels, mutation, or copy number status in tumors?</li>
+<li>Which members of the query set are predicted as partners of synthetic lethality interactions?</li>
 <li>Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?</li>
 </ul>
 </div>
@@ -139,6 +140,10 @@
 <h2 id="news">News<a class="anchor" aria-label="anchor" href="#news"></a>
 </h2>
 <ul>
+<li>March 31st 2022: <a href="articles/CHANGELOG.html#version-1-0-9"><strong>1.0.9 release</strong></a>
+</li>
+<li>February 20th 2022: <a href="articles/CHANGELOG.html#version-1-0-8"><strong>1.0.8 release</strong></a>
+</li>
 <li>November 30th 2021: <a href="articles/CHANGELOG.html#version-1-0-7"><strong>1.0.7 release</strong></a>
 </li>
 <li>October 27th 2021: <a href="articles/CHANGELOG.html#version-1-0-6"><strong>1.0.6 release</strong></a>
@@ -150,7 +155,7 @@
 <div class="section level2">
 <h2 id="example-report">Example report<a class="anchor" aria-label="anchor" href="#example-report"></a>
 </h2>
-<p><a href="https://doi.org/10.5281/zenodo.5737599" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5737599.svg" alt="DOI"></a></p>
+<p><a href="https://doi.org/10.5281/zenodo.6402572" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6402572.svg" alt="DOI"></a></p>
 <p><br></p>
 <p><img src="img/oncoenrichr_slideshow2.gif" align="center" width="560" height="750" border="2,"></p>
 </div>

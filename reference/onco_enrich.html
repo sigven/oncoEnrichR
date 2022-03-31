@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,6 +89,7 @@
   min_subcellcomp_confidence <span class="op">=</span> <span class="fl">1</span>,
   subcellcomp_show_cytosol <span class="op">=</span> <span class="cn">FALSE</span>,
   min_confidence_reg_interaction <span class="op">=</span> <span class="st">"D"</span>,
+  max_fitness_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,
   simplify_go <span class="op">=</span> <span class="cn">TRUE</span>,
   ppi_add_nodes <span class="op">=</span> <span class="fl">50</span>,
   ppi_score_threshold <span class="op">=</span> <span class="fl">900</span>,
@@ -107,7 +108,8 @@
   show_unknown_function <span class="op">=</span> <span class="cn">TRUE</span>,
   show_prognostic_cancer_assoc <span class="op">=</span> <span class="cn">TRUE</span>,
   show_subcell_comp <span class="op">=</span> <span class="cn">TRUE</span>,
-  show_crispr_lof <span class="op">=</span> <span class="cn">TRUE</span>,
+  show_synleth <span class="op">=</span> <span class="cn">TRUE</span>,
+  show_fitness <span class="op">=</span> <span class="cn">TRUE</span>,
   show_complex <span class="op">=</span> <span class="cn">TRUE</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -121,13 +123,14 @@
 <dd><p>oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()</p></dd>
 <dt>query_id_type</dt>
 <dd><p>character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")</p></dd>
+"entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")</p></dd>
 <dt>ignore_id_err</dt>
 <dd><p>logical indicating if analysis should continue when uknown query identifiers are encountered</p></dd>
 <dt>html_floating_toc</dt>
 <dd><p>logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled</p></dd>
 <dt>html_report_theme</dt>
-<dd><p>Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")</p></dd>
+<dd><p>Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
+"flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")</p></dd>
 <dt>project_title</dt>
 <dd><p>project title (title of report)</p></dd>
 <dt>project_owner</dt>
@@ -137,7 +140,8 @@
 <dt>bgset</dt>
 <dd><p>character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis</p></dd>
 <dt>bgset_id_type</dt>
-<dd><p>character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")</p></dd>
+<dd><p>character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
+"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")</p></dd>
 <dt>bgset_description</dt>
 <dd><p>character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")</p></dd>
 <dt>p_value_cutoff_enrichment</dt>
@@ -158,6 +162,8 @@
 <dd><p>logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not</p></dd>
 <dt>min_confidence_reg_interaction</dt>
 <dd><p>minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')</p></dd>
+<dt>max_fitness_score</dt>
+<dd><p>maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score</p></dd>
 <dt>simplify_go</dt>
 <dd><p>remove highly similar GO terms in results from GO enrichment/over-representation analysis</p></dd>
 <dt>ppi_add_nodes</dt>
@@ -195,7 +201,9 @@ of target genes, using data from the Human Protein Atlas</p></dd>
 <dd><p>logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)</p></dd>
 <dt>show_subcell_comp</dt>
 <dd><p>logical indicating if report should provide subcellular compartment annotations (ComPPI)</p></dd>
-<dt>show_crispr_lof</dt>
+<dt>show_synleth</dt>
+<dd><p>logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)</p></dd>
+<dt>show_fitness</dt>
 <dd><p>logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)</p></dd>
 <dt>show_complex</dt>
 <dd><p>logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)</p></dd>

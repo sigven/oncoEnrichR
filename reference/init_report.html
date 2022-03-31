@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,6 +89,7 @@
   min_subcellcomp_confidence <span class="op">=</span> <span class="fl">1</span>,
   subcellcomp_show_cytosol <span class="op">=</span> <span class="cn">F</span>,
   min_confidence_reg_interaction <span class="op">=</span> <span class="st">"D"</span>,
+  max_fitness_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,
   simplify_go <span class="op">=</span> <span class="cn">F</span>,
   show_ppi <span class="op">=</span> <span class="cn">T</span>,
   show_drugs_in_ppi <span class="op">=</span> <span class="cn">T</span>,
@@ -100,12 +101,13 @@
   show_tcga_aberration <span class="op">=</span> <span class="cn">T</span>,
   show_tcga_coexpression <span class="op">=</span> <span class="cn">T</span>,
   show_subcell_comp <span class="op">=</span> <span class="cn">T</span>,
-  show_crispr_lof <span class="op">=</span> <span class="cn">T</span>,
+  show_fitness <span class="op">=</span> <span class="cn">T</span>,
   show_cell_tissue <span class="op">=</span> <span class="cn">F</span>,
   show_ligand_receptor <span class="op">=</span> <span class="cn">T</span>,
   show_regulatory_interactions <span class="op">=</span> <span class="cn">T</span>,
   show_unknown_function <span class="op">=</span> <span class="cn">T</span>,
   show_prognostic_cancer_assoc <span class="op">=</span> <span class="cn">T</span>,
+  show_synleth <span class="op">=</span> <span class="cn">T</span>,
   show_complex <span class="op">=</span> <span class="cn">T</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -156,6 +158,8 @@
 <dd><p>logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not</p></dd>
 <dt>min_confidence_reg_interaction</dt>
 <dd><p>minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')</p></dd>
+<dt>max_fitness_score</dt>
+<dd><p>maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score</p></dd>
 <dt>simplify_go</dt>
 <dd><p>remove highly similar GO terms in results from GO enrichment/over-representation analysis</p></dd>
 <dt>show_ppi</dt>
@@ -178,7 +182,7 @@
 <dd><p>logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes</p></dd>
 <dt>show_subcell_comp</dt>
 <dd><p>logical indicating if report should provide subcellular compartment annotations (ComPPI)</p></dd>
-<dt>show_crispr_lof</dt>
+<dt>show_fitness</dt>
 <dd><p>logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)</p></dd>
 <dt>show_cell_tissue</dt>
 <dd><p>logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
@@ -191,6 +195,8 @@ of target genes, using data from the Human Protein Atlas</p></dd>
 <dd><p>logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)</p></dd>
 <dt>show_prognostic_cancer_assoc</dt>
 <dd><p>logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)</p></dd>
+<dt>show_synleth</dt>
+<dd><p>logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)</p></dd>
 <dt>show_complex</dt>
 <dd><p>logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)</p></dd>
 </dl></div>
