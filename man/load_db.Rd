@@ -4,10 +4,10 @@
 \alias{load_db}
 \title{Load oncoEnrichR annotation database}
 \usage{
-load_db(github = T, cache_dir = NULL)
+load_db(remote = T, cache_dir = NULL)
 }
 \arguments{
-\item{github}{If TRUE (default), load database from GitHub repository}
+\item{remote}{If TRUE (default), load database from tagged GitHub repository}
 
 \item{cache_dir}{path to local cache for more efficient subsequent loads}
 }

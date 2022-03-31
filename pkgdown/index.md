@@ -8,7 +8,7 @@
 
 **oncoEnrichR** can be used to interrogate results from e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a variety of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).
 
-Web-based access to **oncoEnrichR** is available at [https://oncotools.elixir.no](https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.7)
+Web-based access to **oncoEnrichR** is available at <font size="4"> **[https://oncotools.elixir.no](https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.0.8)**</font>
 
 <br>
 
@@ -18,7 +18,7 @@ Web-based access to **oncoEnrichR** is available at [https://oncotools.elixir.no
 
 ## Questions adressed by oncoEnrichR
 
-The contents of the final report attempt to provide answers to the following questions for a given gene list:
+The contents of the analysis report provided by oncoEnrichR address the following scientific questions for a given gene list:
 
 -   Which diseases/tumor types are known to be associated with genes in the query set, and to what extent?
 -   Which genes in the query set are attributed with cancer hallmark evidence?
@@ -33,17 +33,20 @@ The contents of the final report attempt to provide answers to the following que
 -   Which members of the query set are frequently mutated in tumor sample cohorts (TCGA, SNVs/InDels, homozygous deletions, copy number amplifications)?
 -   Which members of the query set are co-expressed (strong negative or positive correlations) with cancer-relevant genes (i.e. proto-oncogenes or tumor suppressors) in tumor sample cohorts (TCGA)?
 -   Which members of the query set are associated with better/worse survival in different cancers, considering high or low gene expression levels, mutation, or copy number status in tumors?
+-   Which members of the query set are predicted as partners of synthetic lethality interactions?
 -   Which members of the query set are associated with cellular loss-of-fitness in CRISPR/Cas9 whole-genome drop out screens of cancer cell lines (i.e. reduction of cell viability elicited by a gene inactivation)? Which targets are prioritized therapeutic targets, considering fitness effects and genomic biomarkers in combination?
 
 ## News
 
+-   March 31st 2022: [**1.0.9 release**](articles/CHANGELOG.html#version-1-0-9)
+-   February 20th 2022: [**1.0.8 release**](articles/CHANGELOG.html#version-1-0-8)
 -   November 30th 2021: [**1.0.7 release**](articles/CHANGELOG.html#version-1-0-7)
 -   October 27th 2021: [**1.0.6 release**](articles/CHANGELOG.html#version-1-0-6)
 -   July 8th 2021: [**1.0.4 release**](articles/CHANGELOG.html#version-1-0-4)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.5737599"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5737599.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6402572"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6402572.svg" alt="DOI"/></a>
 
 <br>
 

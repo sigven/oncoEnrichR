@@ -11,7 +11,38 @@
    
 <br><br>
 
-#### OmniPath
+```{r complex_prep, echo = F, results = 'asis', eval = T}
+
+active_tab <- list()
+
+for(cl in c('omnipath','humap2')){
+  active_tab[[cl]] <- F
+}
+
+if(NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0){
+  active_tab[['omnipath']] <- T
+}else{
+  if(NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) > 0){
+    active_tab[['humap2']] <- T
+  }else{
+    active_tab[['omnipath']] <- T
+  }
+}
+
+  
+```
+
+```{r active_tab_omnipath, echo = F, results = "asis"}
+if(active_tab[['omnipath']] == T){
+  cat("")
+  cat("#### OmniPath {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### OmniPath")
+  cat("")
+}
+```
 
 ```{r table_browse_complex_omnipath, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0}
 
@@ -40,11 +71,19 @@ cat('<br><br>')
 
 ```
 
+<br>
 
-<br><br>
-
-
-#### hu.MAP v2.0
+```{r active_tab_humap2, echo = F, results = "asis"}
+if(active_tab[['humap2']] == T){
+  cat("")
+  cat("#### hu.MAP v2.0 {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### hu.MAP v2.0")
+  cat("")
+}
+```
 
 ```{r table_browse_complex_humap2, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) > 0}
 
@@ -74,4 +113,4 @@ cat('<br><br>')
 ```
 
 
-<br><br>
+<br>

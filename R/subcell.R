@@ -4,27 +4,34 @@ annotate_subcellular_compartments <-
            minimum_confidence = 1,
            show_cytosol = F,
            genedb = NULL,
-           oeDB = NULL,
+           comppidb = NULL,
+           go_gganatogram_map = NULL,
+           transcript_xref = NULL,
+           #oeDB = NULL,
            logger = NULL){
 
+    stopifnot(!is.null(query_entrez))
     stopifnot(is.integer(query_entrez))
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(logger))
-    stopifnot(!is.null(oeDB$subcelldb))
-    stopifnot(!is.null(oeDB$subcelldb$comppidb))
+    stopifnot(!is.null(transcript_xref))
+    stopifnot(!is.null(comppidb))
+    stopifnot(!is.null(go_gganatogram_map))
     stopifnot(is.numeric(minimum_confidence))
     validate_db_df(genedb, dbtype = "genedb")
-    validate_db_df(oeDB$subcelldb$comppidb, dbtype = "comppidb")
+    validate_db_df(comppidb, dbtype = "comppidb")
+    validate_db_df(transcript_xref, dbtype = "transcript_xref")
+    validate_db_df(go_gganatogram_map, dbtype = "go_gganatogram")
 
     log4r_info(logger, "ComPPI: retrieval of subcellular compartments for target set")
 
-    uniprot_xref <- oeDB$genedb$transcript_xref %>%
+    uniprot_xref <- transcript_xref %>%
       dplyr::filter(.data$property == "uniprot_acc") %>%
       dplyr::rename(uniprot_acc = .data$value) %>%
       dplyr::select(.data$entrezgene, .data$uniprot_acc)
 
-
-    target_genes <- data.frame('entrezgene' = query_entrez, stringsAsFactors = F) %>%
+    target_genes <- data.frame(
+      'entrezgene' = query_entrez, stringsAsFactors = F) %>%
       dplyr::left_join(uniprot_xref, by = "entrezgene") %>%
       dplyr::left_join(
         dplyr::select(genedb,
@@ -38,7 +45,8 @@ annotate_subcellular_compartments <-
     target_compartments[["grouped"]] <- data.frame()
 
     target_compartments_all <- as.data.frame(
-      dplyr::inner_join(oeDB$subcelldb$comppidb, target_genes, by = c("uniprot_acc")) %>%
+      dplyr::inner_join(
+        comppidb, target_genes, by = c("uniprot_acc")) %>%
         dplyr::filter(!is.na(.data$symbol)) %>%
         dplyr::filter(.data$confidence >= minimum_confidence)
     )
@@ -48,7 +56,7 @@ annotate_subcellular_compartments <-
         target_compartments_all %>%
           #dplyr::select(-c(go_ontology,uniprot_acc)) %>%
           dplyr::left_join(
-            oeDB$subcelldb[['go_gganatogram_map']],
+            go_gganatogram_map,
             by = "go_id") %>%
           dplyr::mutate(
             genelink =
@@ -63,11 +71,12 @@ annotate_subcellular_compartments <-
       target_compartments[["grouped"]] <- as.data.frame(
         target_compartments_all %>%
           dplyr::group_by(.data$go_id, .data$go_term, .data$compartment) %>%
-          dplyr::summarise(targets = paste(unique(.data$symbol),
-                                           collapse = ", "),
-                           targetlinks = paste(unique(.data$genelink),
-                                               collapse = ", "),
-                           n = dplyr::n()) %>%
+          dplyr::summarise(
+            targets = paste(unique(.data$symbol),
+                            collapse = ", "),
+            targetlinks = paste(unique(.data$genelink),
+                                collapse = ", "),
+            n = dplyr::n()) %>%
           dplyr::arrange(dplyr::desc(.data$n)) %>%
           dplyr::ungroup() %>%
           dplyr::select(-c(.data$go_id, .data$go_term))

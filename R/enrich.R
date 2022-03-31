@@ -1,5 +1,6 @@
 get_go_enrichment <- function(query_entrez,
                               background_entrez = NULL,
+                              bgset_description = "All protein-coding genes",
                               ontology = "MF",
                               genedb = NULL,
                               p_value_cutoff = 0.05,
@@ -18,33 +19,38 @@ get_go_enrichment <- function(query_entrez,
   log4r_info(logger, paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
   log4r_info(logger, paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
   log4r_info(logger, paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  log4r_info(logger, paste0("Enrichment - GO: settings: remove redundancy of enriched GO terms = ",simplify))
+  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset: '",bgset_description,"'"))
+  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset size = ",length(background_entrez)))
 
 
+  stopifnot(p_value_adjustment_method %in%
+              c("BH","BY","fdr","none","holm",
+                "hochberg","hommel","bonferroni"))
   stopifnot(is.character(query_entrez))
   stopifnot(ontology == "MF" | ontology == "BP" |
               ontology == "CC" | ontology == "ALL")
   stopifnot(!is.null(genedb))
-  stopifnot("symbol" %in% colnames(genedb) &
-              "entrezgene" %in% colnames(genedb))
-  if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb, .data$entrezgene) %>%
-      dplyr::filter(!is.na(.data$entrezgene)) %>%
-      dplyr::distinct()
-    background_entrez <- as.character(bg$entrezgene)
-  }else{
-    stopifnot(is.character(background_entrez))
-  }
-  ego <- clusterProfiler::enrichGO(gene          = query_entrez,
-                                   OrgDb         = "org.Hs.eg.db",
-                                   ont           = ontology,
-                                   minGSSize     = min_geneset_size,
-                                   maxGSSize     = max_geneset_size,
-                                   pAdjustMethod = p_value_adjustment_method,
-                                   pvalueCutoff  = p_value_cutoff,
-                                   qvalueCutoff  = q_value_cutoff,
-                                   universe      = background_entrez,
-                                   readable      = F,
-                                   pool = pool)
+  validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(p_value_cutoff > 0 & p_value_cutoff < 1)
+  stopifnot(q_value_cutoff > 0 & q_value_cutoff < 1)
+  stopifnot(!is.null(background_entrez))
+  stopifnot(is.character(background_entrez))
+
+  ego <-
+    suppressMessages(
+      clusterProfiler::enrichGO(gene          = query_entrez,
+                                OrgDb         = "org.Hs.eg.db",
+                                ont           = ontology,
+                                minGSSize     = min_geneset_size,
+                                maxGSSize     = max_geneset_size,
+                                pAdjustMethod = p_value_adjustment_method,
+                                pvalueCutoff  = p_value_cutoff,
+                                qvalueCutoff  = q_value_cutoff,
+                                universe      = background_entrez,
+                                readable      = F,
+                                pool = pool)
+    )
 
   if(simplify == T){
     ego <- clusterProfiler::simplify(ego, cutoff=0.8,
@@ -159,6 +165,7 @@ get_go_enrichment <- function(query_entrez,
 
 get_universal_enrichment <- function(query_entrez,
                                      background_entrez = NULL,
+                                     bgset_description = "All protein-coding genes",
                                      genedb = NULL,
                                      p_value_cutoff = 0.05,
                                      p_value_adjustment_method = "BH",
@@ -176,125 +183,156 @@ get_universal_enrichment <- function(query_entrez,
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
   log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset: '",bgset_description,"'"))
+  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset size = ",length(background_entrez)))
 
   stopifnot(is.character(query_entrez))
-  stopifnot(!is.null(genedb) | !is.data.frame(genedb))
-  #stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
-  #stopifnot("standard_name" %in% colnames(TERM2SOURCE))
-  stopifnot("symbol" %in% colnames(genedb) & "entrezgene" %in% colnames(genedb))
-  if(is.null(background_entrez)){
-    bg <- dplyr::select(genedb, .data$entrezgene) %>%
-      dplyr::filter(!is.na(.data$entrezgene)) %>%
-      dplyr::distinct()
-    background_entrez <- as.character(bg$entrezgene)
-  }else{
-    stopifnot(is.character(background_entrez))
+  stopifnot(!is.null(background_entrez))
+  stopifnot(is.character(background_entrez))
+  stopifnot(p_value_adjustment_method %in%
+              c("BH","BY","fdr","none","holm",
+                "hochberg","hommel","bonferroni"))
+  stopifnot(!is.null(genedb))
+  validate_db_df(genedb, dbtype = "genedb")
+  stopifnot(p_value_cutoff > 0 & p_value_cutoff < 1)
+  stopifnot(q_value_cutoff > 0 & q_value_cutoff < 1)
+  stopifnot(!is.null(TERM2GENE))
+  stopifnot(!is.null(TERM2NAME))
+  stopifnot(is.data.frame(TERM2GENE))
+  stopifnot(is.data.frame(TERM2NAME))
+  stopifnot(identical(colnames(TERM2NAME), c("standard_name","name")))
+  stopifnot(identical(colnames(TERM2GENE), c("standard_name","entrez_gene")))
+  stopifnot(is.character(TERM2GENE$entrez_gene))
 
-  }
-  enr <- clusterProfiler::enricher(gene          = query_entrez,
-                                   universe      = background_entrez,
-                                   pAdjustMethod = p_value_adjustment_method,
-                                   minGSSize     = min_geneset_size,
-                                   maxGSSize     = max_geneset_size,
-                                   pvalueCutoff  = p_value_cutoff,
-                                   qvalueCutoff  = q_value_cutoff,
-                                   TERM2GENE     = TERM2GENE,
-                                   TERM2NAME     = TERM2NAME)
+  stopifnot(NROW(
+    dplyr::inner_join(TERM2NAME, TERM2GENE, by = "standard_name")
+  ) > 0)
+
+  enr <-
+    suppressMessages(
+      clusterProfiler::enricher(gene          = query_entrez,
+                                universe      = background_entrez,
+                                pAdjustMethod = p_value_adjustment_method,
+                                minGSSize     = min_geneset_size,
+                                maxGSSize     = max_geneset_size,
+                                pvalueCutoff  = p_value_cutoff,
+                                qvalueCutoff  = q_value_cutoff,
+                                TERM2GENE     = TERM2GENE,
+                                TERM2NAME     = TERM2NAME)
+    )
 
 
   df <- as.data.frame(utils::head(enr,5000))
   rownames(df) <- NULL
   if(nrow(df) > 0){
-    df <- suppressWarnings(df %>%
-      dplyr::rename(standard_name = .data$ID,
-                    description = .data$Description,
-                    count = .data$Count,
-                    gene_ratio = .data$GeneRatio,
-                    background_ratio = .data$BgRatio,
-                    gene_id = .data$geneID)
+    df <- suppressWarnings(
+      df %>%
+        dplyr::rename(
+          standard_name = .data$ID,
+          description = .data$Description,
+          count = .data$Count,
+          gene_ratio = .data$GeneRatio,
+          background_ratio = .data$BgRatio,
+          gene_id = .data$geneID)
     )
 
     if (dbsource == "WikiPathways"){
       df <- df %>%
-        dplyr::mutate(description_link = paste0(
-          "<a href=\"https://www.wikipathways.org/index.php/Pathway:",
-          .data$standard_name,"\" target='_blank'>",
-          .data$description,"</a>"
-        )) %>%
-        dplyr::mutate(exact_source = "https://wikipathways.org",
-                      db = dbsource)
+        dplyr::mutate(
+          description_link = paste0(
+            "<a href=\"https://www.wikipathways.org/index.php/Pathway:",
+            .data$standard_name,"\" target='_blank'>",
+            .data$description,"</a>"
+          )) %>%
+        dplyr::mutate(
+          exact_source = "https://wikipathways.org",
+          external_url = "https://wikipathways.org",
+          db = dbsource)
     }
     else if(dbsource == "KEGG"){
       df <- df %>%
-        dplyr::mutate(description_link = paste0(
-          "<a href=\"https://www.genome.jp/kegg-bin/show_pathway?",
-          stringr::str_replace(.data$standard_name,"hsa","map"),
-          "\" target='_blank'>",
-          .data$description,"</a>"
-        )) %>%
-        dplyr::mutate(exact_source = "https://www.genome.jp/kegg/pathway.html",
-                      db = dbsource)
+        dplyr::mutate(
+          description_link = paste0(
+            "<a href=\"https://www.genome.jp/kegg-bin/show_pathway?",
+            stringr::str_replace(.data$standard_name,"hsa","map"),
+            "\" target='_blank'>",
+            .data$description,"</a>"
+          )) %>%
+        dplyr::mutate(
+          exact_source = "https://www.genome.jp/kegg/pathway.html",
+          external_url = "https://www.genome.jp/kegg/pathway.html",
+          db = dbsource)
     }
     else if(dbsource == "NetPath"){
       df <- df %>%
-        dplyr::mutate(description_link = paste0(
-          "<a href=\"http://netpath.org/pathways?path_id=",
-          .data$standard_name,"\" target='_blank'>",
-          .data$description,"</a>"
-        )) %>%
-        dplyr::mutate(exact_source = "http://netpath.org",
-                      db = dbsource)
+        dplyr::mutate(
+          description_link = paste0(
+            "<a href=\"http://netpath.org/pathways?path_id=",
+            .data$standard_name,"\" target='_blank'>",
+            .data$description,"</a>"
+          )) %>%
+        dplyr::mutate(
+          exact_source = "http://netpath.org",
+          external_url = "http://netpath.org",
+          db = dbsource)
     }
     else{
       stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
       stopifnot("standard_name" %in% colnames(TERM2SOURCE))
       df <- df %>%
         dplyr::left_join(TERM2SOURCE, by="standard_name") %>%
-        dplyr::mutate(description_link =
-                        dplyr::if_else(!is.na(.data$external_url),
-                                       paste0("<a href='",.data$external_url,
-                                              "' target='_blank'>",
-                                              .data$description,"</a>"),
-                                       .data$description))
+        dplyr::mutate(
+          description_link =
+            dplyr::if_else(
+              !is.na(.data$external_url),
+              paste0("<a href='",.data$external_url,
+                     "' target='_blank'>",
+                     .data$description,"</a>"),
+              .data$description))
 
 
     }
-    df <- suppressWarnings(df %>%
-      dplyr::mutate(qvalue = as.numeric(.data$qvalue)) %>%
-      dplyr::mutate(pvalue = as.numeric(.data$pvalue)) %>%
-      dplyr::mutate(
-        qvalue =
-          dplyr::if_else(!is.na(.data$qvalue),
-                         as.numeric(formatC(.data$qvalue, format = "e",
-                                            digits = 1)),
-                         as.numeric(NA))) %>%
-      dplyr::mutate(
-        pvalue =
-          dplyr::if_else(!is.na(.data$pvalue),
-                         as.numeric(formatC(.data$pvalue, format = "e",
-                                            digits = 1)),
-                         as.numeric(NA))) %>%
-      tidyr::separate(
-        .data$gene_ratio,c('num_query_hits','num_query_all'),
-        sep='/',remove = F, convert = T) %>%
-      tidyr::separate(
-        .data$background_ratio,c('num_background_hits','num_background_all'),
-        sep='/',remove = F, convert = T) %>%
-      dplyr::mutate(
-        enrichment_factor =
-          round(as.numeric((
-            .data$num_query_hits / .data$num_query_all) /
-              (.data$num_background_hits / .data$num_background_all)),
-            digits = 1)) %>%
-      dplyr::select(-c(.data$num_query_hits,
-                       .data$num_query_all,
-                       .data$num_background_hits,
-                       .data$num_background_all)) %>%
-      dplyr::mutate(
-        db = dplyr::if_else(is.na(.data$db) &
-                              nchar(dbsource) > 0,
-                            dbsource,
-                            as.character(.data$db)))
+    df <- suppressWarnings(
+      df %>%
+        dplyr::mutate(qvalue = as.numeric(.data$qvalue)) %>%
+        dplyr::mutate(pvalue = as.numeric(.data$pvalue)) %>%
+        dplyr::mutate(
+          qvalue =
+            dplyr::if_else(
+              !is.na(.data$qvalue),
+              as.numeric(formatC(.data$qvalue, format = "e",
+                                 digits = 1)),
+              as.numeric(NA))) %>%
+        dplyr::mutate(
+          pvalue =
+            dplyr::if_else(
+              !is.na(.data$pvalue),
+              as.numeric(formatC(.data$pvalue, format = "e",
+                                 digits = 1)),
+              as.numeric(NA))) %>%
+        tidyr::separate(
+          .data$gene_ratio,
+          c('num_query_hits','num_query_all'),
+          sep='/',remove = F, convert = T) %>%
+        tidyr::separate(
+          .data$background_ratio,
+          c('num_background_hits','num_background_all'),
+          sep='/',remove = F, convert = T) %>%
+        dplyr::mutate(
+          enrichment_factor =
+            round(as.numeric((
+              .data$num_query_hits / .data$num_query_all) /
+                (.data$num_background_hits / .data$num_background_all)),
+              digits = 1)) %>%
+        dplyr::select(-c(.data$num_query_hits,
+                         .data$num_query_all,
+                         .data$num_background_hits,
+                         .data$num_background_all)) %>%
+        dplyr::mutate(
+          db = dplyr::if_else(is.na(.data$db) &
+                                nchar(dbsource) > 0,
+                              dbsource,
+                              as.character(.data$db)))
     )
 
     gene2id <- NULL

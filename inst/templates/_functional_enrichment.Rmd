@@ -10,12 +10,14 @@
 <br>
 
 * Enrichment/overrepresentation test settings (clusterProfiler)
-   * P-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`
-   * Q-value cutoff: `r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`
-   * Correction for multiple testing: `r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`
-   * Minimal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`
-   * Maximal size of genes annotated by term for testing: `r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`
-   * Background gene set: `r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`
+   * P-value cutoff: __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
+   * Q-value cutoff: __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
+   * Correction for multiple testing: __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
+   * Minimal size of genes annotated by term for testing: __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
+   * Maximal size of genes annotated by term for testing: __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
+   * Background gene set description: __`r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`__
+   * Background gene set size: __`r onc_enrich_report[['config']][['enrichment']][['bgset_size']]`__
+   * Remove redundancy of enriched GO terms: __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
    
 
 <br><br>
@@ -24,14 +26,13 @@
 ```{r prepare_enrichment_data, echo=F, results='asis'}
 
 show_enrichment_filters <- list()
-missing_enrichment_items <- list()
 eitems <- list()
-for(type in c('go','msigdb','wikipathway','kegg','netpath')){
+active_tab <- list()
+for(type in c('go','msigdb','kegg','wikipathway','netpath')){
   show_enrichment_filters[[type]] <- F
-  missing_enrichment_items[[type]] <- T
+  active_tab[[type]] <- F
   if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
     show_enrichment_filters[[type]] <- T
-    missing_enrichment_items[[type]] <- F
   }
 }
 
@@ -62,6 +63,41 @@ if(show_enrichment_filters[['go']] == T){
   
 }else{
   subontology_plots[['ALL']] <- F
+  subontology_plots[['MF']] <- F
+  subontology_plots[['BP']] <- F
+  subontology_plots[['CC']] <- F
+}
+
+
+## Set active tabs
+if(show_enrichment_filters[['go']] == T){
+  active_tab[['go']] <- T
+}else{
+  if(show_enrichment_filters[['msigdb']] == T){
+      active_tab[['msigdb']] <- T
+  }
+  else{
+    if(show_enrichment_filters[['kegg']] == T){
+      active_tab[['kegg']] <- T
+    }
+    else{
+      if(show_enrichment_filters[['wikipathway']] == T){
+        active_tab[['wikipathway']] <- T
+      }
+      else{
+        if(show_enrichment_filters[['netpath']] == T){
+          active_tab[['netpath']] <- T
+        }
+      }
+    }
+  }
+}
+
+## If no content in enrichment tables, set GO to active tab
+if(active_tab[['go']] == F & active_tab[['msigdb']] == F &
+   active_tab[['kegg']] == F & active_tab[['wikipathway']] == F &
+   active_tab[['netpath']] == F){
+  active_tab[['go']] <- T
 }
 
 
@@ -72,13 +108,21 @@ if(show_enrichment_filters[['go']] == T){
 
 #### Enrichment tables {.tabset}
 
-<br><br>
+<br>
 
-##### Gene Ontology
+```{r active_tab_go, echo = F, results = "asis"}
+if(active_tab[['go']] == T){
+  cat("")
+  cat("##### Gene Ontology {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Gene Ontology")
+  cat("")
+}
+```
 
-<br><br>
-
-
+<br>
 
 ```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
 library(crosstalk)
@@ -123,11 +167,10 @@ rm(enrichment_go_display)
 
 ```
 
-<br><br>
+<br>
 
 
-
-```{r go_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['go']]}
+```{r go_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['go']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -136,11 +179,21 @@ cat('<br><br>')
 ```
 
 
-<br><br><br>
-
-##### Molecular Signatures Database (MSigDB)
-
 <br><br>
+
+```{r active_tab_msigdb, echo = F, results = "asis"}
+if(active_tab[['msigdb']] == T){
+  cat("")
+  cat("##### Molecular Signatures Database (MSigDB) {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Molecular Signatures Database (MSigDB)")
+  cat("")
+}
+```
+
+<br>
 
 ```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
 library(crosstalk)
@@ -182,8 +235,9 @@ rm(terms_msigdb)
 rm(enrichment_msigdb_display)
 ```
 
+<br>
 
-```{r msigdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['msigdb']]}
+```{r msigdb_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['msigdb']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -192,11 +246,22 @@ cat('<br><br>')
 ```
 
 
-<br><br><br>
-
-##### KEGG
-
 <br><br>
+
+```{r active_tab_kegg, echo = F, results = "asis"}
+if(active_tab[['kegg']] == T){
+  cat("")
+  cat("##### KEGG pathways {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### KEGG pathways")
+  cat("")
+}
+```
+
+
+<br>
 
 ```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['kegg']]}
 library(crosstalk)
@@ -239,8 +304,9 @@ rm(enrichment_keggdb_display)
 
 ```
 
+<br>
 
-```{r keggdb_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['kegg']]}
+```{r keggdb_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['kegg']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -249,13 +315,21 @@ cat('<br><br>')
 ```
 
 
-<br><br><br>
-
-
-##### WikiPathways
-
 <br><br>
 
+```{r active_tab_wikipathways, echo = F, results = "asis"}
+if(active_tab[['wikipathway']] == T){
+  cat("")
+  cat("##### WikiPathways {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### WikiPathways")
+  cat("")
+}
+```
+
+<br>
 
 ```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathway']]}
 library(crosstalk)
@@ -301,8 +375,9 @@ rm(enrichment_wikidb_display)
 
 ```
 
+<br>
 
-```{r wiki_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['wikipathway']]}
+```{r wiki_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['wikipathway']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -312,11 +387,22 @@ cat('<br><br>')
 ```
 
 
-<br><br><br>
-
-##### NetPath
-
 <br><br>
+
+```{r active_tab_netpath, echo = F, results = "asis"}
+if(active_tab[['netpath']] == T){
+  cat("")
+  cat("##### NetPath {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### NetPath")
+  cat("")
+}
+```
+
+
+<br>
 
 ```{r table_browse_netpathdb, echo=F, results = "asis", eval = show_enrichment_filters[['netpath']]}
 library(crosstalk)
@@ -359,8 +445,9 @@ rm(enrichment_netpath_display)
 
 ```
 
+<br>
 
-```{r netpath_missing, echo=F, results = 'asis', eval = missing_enrichment_items[['netpath']]}
+```{r netpath_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['netpath']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -370,11 +457,11 @@ cat('<br><br>')
 ```
 
 
-<br><br><br>
+<br><br>
 
 #### GO enrichment plots {.tabset}
 
-<br><br>
+<br>
 
 ##### All subontologies
 
@@ -437,6 +524,16 @@ rm(plot_data)
 
 ```
 
+
+```{r go_plot_missing_all, echo=F, results = 'asis', eval = !subontology_plots[['ALL']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
 <br><br>
 
 ##### Molecular function
@@ -447,7 +544,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::select(description, enrichment_factor, qvalue, db) %>%
   dplyr::filter(db == 'GO_MF') %>%
   dplyr::arrange(qvalue) %>%
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
   dplyr::arrange(desc(qvalue)) %>%
   dplyr::rename(Subontology = db) %>%
   dplyr::mutate(
@@ -500,6 +597,15 @@ rm(height_plot)
 rm(plot_data)
 
 ```
+
+```{r go_plot_missing_mf, echo=F, results = 'asis', eval = !subontology_plots[['MF']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
 
 <br><br>
 
@@ -565,6 +671,14 @@ rm(plot_data)
 
 ```
 
+```{r go_plot_missing_bp, echo=F, results = 'asis', eval = !subontology_plots[['BP']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
 <br><br>
 
 
@@ -627,6 +741,14 @@ enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
 enrichment_barplot
 rm(height_plot)
 rm(plot_data)
+
+```
+
+```{r go_plot_missing_cc, echo=F, results = 'asis', eval = !subontology_plots[['CC']]}
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
 
 ```
 

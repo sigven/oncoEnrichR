@@ -18,6 +18,7 @@ load_db <- function(remote = T,
   if(val == F){
     log4r_info(logger,
       "ERROR: Pull database either remotely ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
+      return(-1)
   }
 
   if(!is.null(cache_dir)){
@@ -26,7 +27,7 @@ load_db <- function(remote = T,
     )
     if(!is.logical(val)){
       log4r_info(logger, paste0("ERROR: Cache directory '",cache_dir, "' does not exist"))
-      return()
+      return(-1)
     }
 
   }
@@ -45,11 +46,11 @@ load_db <- function(remote = T,
     remote_db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
                        oe_version, "/db/")
     if(!RCurl::url.exists(remote_db_url)){
-      if(is.null(cache_dir)){
+      #if(is.null(cache_dir)){
         log4r_info(logger, paste0("ERROR: OncoEnrichR annotation datasets for version '", oe_version,
                                 "' is not tagged on GitHub - exiting"))
-        return()
-      }
+        return(-1)
+      #}
     }else{
       read_dest <- remote_db_url
       log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets remotely from: ", read_dest))
@@ -63,7 +64,7 @@ load_db <- function(remote = T,
       if(!dir.exists(cache_version_dir)){
         system(paste0('mkdir ', cache_version_dir),
                intern = F)
-        log4r_info(logger, paste0("Data will be cached in ", cached_dir))
+        log4r_info(logger, paste0("Data will be cached in ", cache_dir))
 
       }else{
         log4r_warn(logger, paste0("An existing cache for '",oe_version, "' was found in ",
@@ -85,7 +86,7 @@ load_db <- function(remote = T,
       if(!dir.exists(cache_version_dir)){
         log4r_info(logger, paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
         log4r_info(logger, paste0("Set 'remote' = TRUE to reload data from web and write to ", cache_dir))
-        return()
+        return(-1)
       }else{
         read_dest <- cache_version_dir
         log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets locally (cached) from: ",read_dest))
@@ -98,19 +99,20 @@ load_db <- function(remote = T,
   cache_in_use_log_printed <- 0
 
   for(db in c("cancerdrugdb",
-              "tcgadb",
-              "projectsurvivaldb",
-              "pathwaydb",
               "genedb",
-              "subcelldb",
-              "tissuecelldb",
-              "projectscoredb",
-              "tftargetdb",
-              "cancerdrugdb",
-              "otdb",
               "hpa",
               "ligandreceptordb",
-              "release_notes")){
+              "otdb",
+              "pathwaydb",
+              "projectscoredb",
+              "projectsurvivaldb",
+              "release_notes",
+              "subcelldb",
+              "slparalogdb",
+              #"synlethdb",
+              "tcgadb",
+              "tissuecelldb",
+              "tftargetdb")){
 
 
     db_dest <- file.path(read_dest, paste0(db,".rds"))
@@ -119,7 +121,7 @@ load_db <- function(remote = T,
         oedb[[db]] <- readRDS(url(db_dest,"rb"))
       }else{
         log4r_err(logger, paste0("Could not retrieve data from ", db_dest))
-        return()
+        return(-1)
       }
       checksum_db <- R.cache::getChecksum(oedb[[db]])
       if(db == 'subcelldb'){
@@ -214,6 +216,7 @@ load_db <- function(remote = T,
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
+#' @param max_fitness_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
@@ -231,7 +234,8 @@ load_db <- function(remote = T,
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
-#' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+#' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
+#' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #'
 #' @keywords internal
@@ -259,6 +263,7 @@ init_report <- function(oeDB,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = F,
                         min_confidence_reg_interaction = "D",
+                        max_fitness_score = -2,
                         simplify_go = F,
                         show_ppi = T,
                         show_drugs_in_ppi = T,
@@ -270,16 +275,22 @@ init_report <- function(oeDB,
                         show_tcga_aberration = T,
                         show_tcga_coexpression = T,
                         show_subcell_comp = T,
-                        show_crispr_lof = T,
+                        show_fitness = T,
                         show_cell_tissue = F,
                         show_ligand_receptor = T,
                         show_regulatory_interactions = T,
                         show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
+                        show_synleth = T,
                         show_complex = T) {
 
   ## report object
   rep <- list()
+
+  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(oeDB$release_notes))
+  stopifnot(!is.null(oeDB$tcgadb))
+  stopifnot(!is.null(oeDB$subcelldb$gganatogram_legend))
 
   ## two main elements of report object
   # 1. data - contains all annotations and enrichment results
@@ -303,14 +314,13 @@ init_report <- function(oeDB,
   rep[["config"]][["show"]][["tcga_aberration"]] <- show_tcga_aberration
   rep[["config"]][["show"]][["tcga_coexpression"]] <- show_tcga_coexpression
   rep[["config"]][["show"]][["subcellcomp"]] <- show_subcell_comp
-  rep[["config"]][["show"]][["crispr_ps"]] <- show_crispr_lof
-  rep[["config"]][["show"]][["crispr_ps_fitness"]] <- show_crispr_lof
-  rep[["config"]][["show"]][["crispr_ps_prioritized"]] <- show_crispr_lof
+  rep[["config"]][["show"]][["fitness"]] <- show_fitness
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
   rep[["config"]][["show"]][["regulatory"]] <- show_regulatory_interactions
   rep[["config"]][["show"]][["ligand_receptor"]] <- show_ligand_receptor
   rep[["config"]][["show"]][["cancer_hallmark"]] <- show_cancer_hallmarks
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
+  rep[["config"]][["show"]][["synleth"]] <- show_synleth
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
     show_prognostic_cancer_assoc
 
@@ -348,6 +358,14 @@ init_report <- function(oeDB,
   rep[["config"]][["regulatory"]][["min_confidence"]] <-
     min_confidence_reg_interaction
 
+  ## config - color codes and thresholds for
+  ## synthetic lethality prediction percentiles
+  rep[["config"]][["synleth"]] <- list()
+  rep[["config"]][["synleth"]][["breaks"]] <-
+    c(2, 5, 10)
+  rep[["config"]][["synleth"]][["colors"]] <-
+    c("#08306b","#08519c","#2171b5","#b8b8ba")
+
   ## config - disease - color codes and
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
@@ -375,9 +393,10 @@ init_report <- function(oeDB,
     c("Unknown", "Predicted_Tractable",
       "Discovery_Precedence","Clinical_Precedence")
 
-  ## config/loss_of_fitness - plot height for hits in CRISPR screens
-  rep[["config"]][["crispr_ps"]] <- list()
-  rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] <- 10
+  ## config - fitness/loss_of_function - plot height for hits in CRISPR screens
+  rep[["config"]][["fitness"]] <- list()
+  rep[["config"]][["fitness"]][["plot_height_fitness"]] <- 10
+  rep[['config']][["fitness"]][["max_BF_score"]] <- max_fitness_score
 
   ## config/ppi - protein-protein interaction settings
   rep[["config"]][["ppi"]] <- list()
@@ -405,6 +424,7 @@ init_report <- function(oeDB,
     simplify_go
   rep[["config"]][["enrichment"]][["bgset_description"]] <-
     bgset_description
+  rep[["config"]][["enrichment"]][["bgset_size"]] <- 0
   rep[["config"]][["enrichment"]][["num_terms_enrichment_plot"]] <-
     num_terms_enrichment_plot
 
@@ -477,7 +497,8 @@ init_report <- function(oeDB,
                      "protein_complex",
                      "ligand_receptor",
                      "subcellcomp",
-                     "crispr_ps",
+                     "fitness",
+                     "synleth",
                      "cell_tissue",
                      "cancer_prognosis",
                      "unknown_function")) {
@@ -491,6 +512,10 @@ init_report <- function(oeDB,
   ## prognosis/survival - gene expression (HPA)
   rep[["data"]][["cancer_prognosis"]][['hpa']] <- list()
   rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <- data.frame()
+
+  ## synthetic lethality
+  rep[["data"]][["synleth"]][['both_in_pair']] <- data.frame()
+  rep[["data"]][["synleth"]][['single_pair_member']] <- data.frame()
 
   ## regulatory interactions (DoRothEA)
   rep[["data"]][["regulatory"]][["interactions"]] <- list()
@@ -569,18 +594,18 @@ init_report <- function(oeDB,
 
   ## Fitness scores and target priority scores from CRISPR/Cas9 screens
   ## (Project Score (ps))
-  rep[["data"]][["crispr_ps"]][['fitness_scores']] <- list()
-  rep[["data"]][["crispr_ps"]][['fitness_scores']][["targets"]] <- data.frame()
-  rep[["data"]][["crispr_ps"]][['fitness_scores']][["n_targets"]] <- 0
-  rep[["data"]][["crispr_ps"]][['target_priority_scores']] <- list()
-  rep[["data"]][["crispr_ps"]][['target_priority_scores']][['targets']] <-
+  rep[["data"]][["fitness"]][['fitness_scores']] <- list()
+  rep[["data"]][["fitness"]][['fitness_scores']][["targets"]] <- data.frame()
+  rep[["data"]][["fitness"]][['fitness_scores']][["n_targets"]] <- 0
+  rep[["data"]][["fitness"]][['target_priority_scores']] <- list()
+  rep[["data"]][["fitness"]][['target_priority_scores']][['targets']] <-
     data.frame()
-  rep[["data"]][["crispr_ps"]][['target_priority_scores']][['n_pri_targets']] <-
+  rep[["data"]][["fitness"]][['target_priority_scores']][['n_pri_targets']] <-
     0
 
 
   ## TCGA co-expression
-  rep[["data"]][["tcga"]][["co_expression"]] <- data.frame()
+  rep[["data"]][["tcga"]][["coexpression"]] <- data.frame()
 
   ## Protein complexes
   rep[["data"]][["protein_complex"]][["humap2"]] <- data.frame()
@@ -628,15 +653,17 @@ init_report <- function(oeDB,
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
-#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
-#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
+#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
+#' "flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
 #' @param project_description project background information
 #' @param bgset character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-#' @param bgset_id_type character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")
+#' @param bgset_id_type character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
+#' "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param p_value_cutoff_enrichment cutoff p-value for enrichment/over-representation analysis
 #' @param p_value_adjustment_method one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
@@ -647,6 +674,7 @@ init_report <- function(oeDB,
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
+#' @param max_fitness_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
@@ -666,7 +694,8 @@ init_report <- function(oeDB,
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
 #' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
-#' @param show_crispr_lof logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
+#' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
+#' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
 #' @param ... arguments for Galaxy/web-based processing
 #'
@@ -693,6 +722,7 @@ onco_enrich <- function(query = NULL,
                         min_subcellcomp_confidence = 1,
                         subcellcomp_show_cytosol = FALSE,
                         min_confidence_reg_interaction = "D",
+                        max_fitness_score = -2,
                         simplify_go = TRUE,
                         ppi_add_nodes = 50,
                         ppi_score_threshold = 900,
@@ -711,14 +741,15 @@ onco_enrich <- function(query = NULL,
                         show_unknown_function = TRUE,
                         show_prognostic_cancer_assoc = TRUE,
                         show_subcell_comp = TRUE,
-                        show_crispr_lof = TRUE,
+                        show_synleth = TRUE,
+                        show_fitness = TRUE,
                         show_complex = TRUE,
                         ...) {
 
 
   logger <- log4r::logger(
     threshold = "INFO",
-    appenders = log4r::console_appender(log4r_layout))
+    appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
   dot_args <- list(...)
 
@@ -768,7 +799,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'p_value_adjustment_method' must take on any of the following values: ",
+      "ERROR: 'p_value_adjustment_method' must take on any of the following values: ",
       "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
       " (value provided was '", p_value_adjustment_method,"')"))
     return()
@@ -780,7 +811,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'min_confidence_reg_interaction' must take on any of the following values: 'A', 'B', 'C', 'D'",
+      "ERROR: 'min_confidence_reg_interaction' must take on any of the following values: 'A', 'B', 'C', 'D'",
       " (value provided was '", min_confidence_reg_interaction,"')"))
     return()
   }
@@ -792,7 +823,7 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'html_report_theme' must take on any of the following values: ",
+      "ERROR: 'html_report_theme' must take on any of the following values: ",
       "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
       "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
       " (value provided was '", p_value_adjustment_method,"')"))
@@ -804,6 +835,8 @@ onco_enrich <- function(query = NULL,
 
   if(length(names(dot_args)) > 0){
     if("galaxy" %in% names(dot_args))
+      log4r_info(logger,
+                 "NOTE: Running oncoEnrichR workflow in Galaxy mode")
       if(is.logical(dot_args$galaxy)){
         if(dot_args$galaxy == T){
           oncoenrichr_query_limit <- 500
@@ -828,8 +861,8 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'query_id_type' must take on of the following values: ",
-      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', 'flatly'",
+      "ERROR: 'query_id_type' must take on of the following values: ",
+      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
       " (value provided was '", query_id_type,"')"))
     return()
@@ -842,12 +875,24 @@ onco_enrich <- function(query = NULL,
   )
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'bgset_id_type' must take on any of the following values: ",
-      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', 'flatly'",
+      "ERROR: 'bgset_id_type' must take on any of the following values: ",
+      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
       " (value provided was '", bgset_id_type,"')"))
     return()
   }
+
+  val <- max_fitness_score <= 0 & is.numeric(max_fitness_score)
+
+  if(val == F){
+    log4r_info(logger, paste0(
+      "ERROR: 'max_fitness_score' must be a value (scaled Bayes factor from BAGEL) less than zero ",
+      "(current type and value: '",typeof(max_fitness_score),"' - ",
+      max_fitness_score,")")
+    )
+    return()
+  }
+
 
   val <-
     (ppi_score_threshold %% 1 == 0) & ## check that number is whole integer
@@ -856,7 +901,7 @@ onco_enrich <- function(query = NULL,
 
   if(val == F){
     log4r_info(logger, paste0(
-      "ERROR - 'ppi_score_threshold' must be an integer/whole number and take a value from 1 to 1000 ",
+      "ERROR: 'ppi_score_threshold' must be an integer/whole number and take a value from 1 to 1000 ",
       "(current type and value: '",typeof(ppi_score_threshold),"' - ",
       ppi_score_threshold,")")
     )
@@ -869,7 +914,7 @@ onco_enrich <- function(query = NULL,
 
   if(val == F){
     log4r_info(logger, paste0(
-      "ERROR - 'num_terms_enrichment_plot' must be an integer/whole number and take a value from 10 to 30 ",
+      "ERROR: 'num_terms_enrichment_plot' must be an integer/whole number and take a value from 10 to 30 ",
       "(current type and value: '",typeof(num_terms_enrichment_plot),"' - ",
       num_terms_enrichment_plot,")")
     )
@@ -883,7 +928,7 @@ onco_enrich <- function(query = NULL,
 
   if(val == F){
     log4r_info(logger, paste0(
-      "ERROR - 'min_subcellcomp_confidence' must be an integer/whole number and take a value from 1 to 6 ",
+      "ERROR: 'min_subcellcomp_confidence' must be an integer/whole number and take a value from 1 to 6 ",
       "(current type and value: '",typeof(min_subcellcomp_confidence),"' - ",
       min_subcellcomp_confidence,")")
     )
@@ -896,10 +941,11 @@ onco_enrich <- function(query = NULL,
 
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'p_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
+      "ERROR: 'p_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
       "(current type and value: '",typeof(p_value_cutoff_enrichment),"' - ",
       p_value_cutoff_enrichment,")")
     )
+    return()
   }
 
   val <- assertthat::validate_that(
@@ -908,16 +954,16 @@ onco_enrich <- function(query = NULL,
 
   if(!is.logical(val)){
     log4r_info(logger, paste0(
-      "ERROR - 'q_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
+      "ERROR: 'q_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
       "(current type and value: '",typeof(q_value_cutoff_enrichment),"' - ",
       q_value_cutoff_enrichment,")")
+
     )
+    return()
   }
 
 
   stopifnot(ppi_add_nodes <= 50)
-
-
 
   ## Initialize the oncoEnrichR report structure
   onc_rep <- init_report(
@@ -943,6 +989,7 @@ onco_enrich <- function(query = NULL,
     min_subcellcomp_confidence = min_subcellcomp_confidence,
     subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     min_confidence_reg_interaction = min_confidence_reg_interaction,
+    max_fitness_score = max_fitness_score,
     simplify_go = simplify_go,
     show_ppi = show_ppi,
     show_drugs_in_ppi = show_drugs_in_ppi,
@@ -954,11 +1001,12 @@ onco_enrich <- function(query = NULL,
     show_tcga_aberration = show_tcga_aberration,
     show_tcga_coexpression = show_tcga_coexpression,
     show_subcell_comp = show_subcell_comp,
-    show_crispr_lof = show_crispr_lof,
+    show_fitness = show_fitness,
     show_cell_tissue = show_cell_tissue,
     show_ligand_receptor = show_ligand_receptor,
     show_regulatory_interactions = show_regulatory_interactions,
     show_unknown_function = show_unknown_function,
+    show_synleth = show_synleth,
     show_prognostic_cancer_assoc =
       show_prognostic_cancer_assoc,
     show_complex = show_complex)
@@ -970,8 +1018,15 @@ onco_enrich <- function(query = NULL,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
       genedb = oeDB[['genedb']][['all']],
-      transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
+      transcript_xref = oeDB[['genedb']][['transcript_xref']],
       logger = logger)
+
+  val <- assertthat::validate_that(NROW(qgenes_match$found) >= 2)
+  if(!is.logical(val)){
+    log4r_info(logger, paste0(
+      "ERROR: query set must contain at least two valid entries - number of validated entries: ", NROW(qgenes_match$found)))
+    return()
+  }
 
   ## assign validation result to report object
   onc_rep[['data']][['query']][['target']] <-
@@ -992,10 +1047,11 @@ onco_enrich <- function(query = NULL,
                "tcga_coexpression",
                "cell_tissue",
                "cancer_hallmark",
-               "crispr_ps",
+               "fitness",
                "regulatory_interactions",
                "ligand_receptor",
                "subcellcomp",
+               "synleth",
                "unknown_function",
                "cancer_prognosis")){
       onc_rep[['config']][['show']][[e]] <- F
@@ -1014,26 +1070,48 @@ onco_enrich <- function(query = NULL,
 
 
   ## validate background gene set (if provided)
-  background_entrez <- NULL
+  background_entrezgene <- NULL
   background_genes_match <- NULL
   if (!is.null(bgset)) {
     background_genes_match <-
       validate_query_genes(
         bgset,
         q_id_type = bgset_id_type,
+        ignore_id_err = ignore_id_err,
         genedb = oeDB[['genedb']][['all']],
-        transcript_xref_db = oeDB[['genedb']][['transcript_xref_db']],
+        transcript_xref = oeDB[['genedb']][['transcript_xref']],
         qtype = "background",
         logger = logger)
-    if (background_genes_match[["match_status"]] == "imperfect_stop") {
+    if (background_genes_match[["match_status"]] == "imperfect_stop" |
+        NROW(background_genes_match[['found']]) <= 1) {
       log4r_info(logger, paste0("WARNING: Background geneset not defined properly - ",
                         "using all protein-coding genes instead"))
-      background_entrez <- unique(oeDB[['genedb']][['all']]$entrezgene)
+      background_entrezgene <- as.character(
+        unique(oeDB[['genedb']][['all']]$entrezgene)
+      )
     }else{
-      background_entrez <- unique(background_genes_match[["found"]]$entrezgene)
-    }
-  }
+      background_entrezgene <- as.character(
+        unique(background_genes_match[["found"]]$entrezgene)
+      )
+      if(onc_rep[['config']][['enrichment']][['bgset_description']] ==
+         "All protein-coding genes"){
+        log4r_info(logger, paste0("WARNING: Description of background set is not set"))
+        onc_rep[['config']][['enrichment']][['bgset_description']] <-
+          "Undefined"
 
+      }
+    }
+  }else{
+    bg <- dplyr::select(oeDB[['genedb']][['all']],
+                        .data$entrezgene,
+                        .data$gene_biotype) %>%
+      dplyr::filter(!is.na(.data$entrezgene) &
+                      .data$gene_biotype == "protein-coding") %>%
+      dplyr::distinct()
+    background_entrezgene <- as.character(bg$entrezgene)
+  }
+  onc_rep[['config']][['enrichment']][['bgset_size']] <-
+    length(background_entrezgene)
 
 
   query_entrezgene <- unique(qgenes_match[["found"]]$entrezgene)
@@ -1053,8 +1131,19 @@ onco_enrich <- function(query = NULL,
         qgenes = query_symbol,
         show_top_diseases_only = show_top_diseases_only,
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        otdb_all = oeDB[['otdb']][['all']],
+        otdb_site_rank = oeDB[['otdb']][['site_rank']],
+        min_association_score = 0.1,
         logger = logger)
+  }
+
+  ## Include synthetic lethality interactions
+  if (show_synleth == T){
+    onc_rep[["data"]][["synleth"]] <- annotate_synleth_paralog_pairs(
+      qgenes = query_symbol,
+      genedb = oeDB[['genedb']][['all']],
+      slparalogdb = oeDB[['slparalogdb']],
+      logger = logger)
   }
 
   ## Include gene-drug annotations in the report (targeted cancer drugs)
@@ -1063,7 +1152,6 @@ onco_enrich <- function(query = NULL,
       target_drug_associations(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        cancerdrugdb = oeDB[['cancerdrugdb']],
         logger = logger)
   }
 
@@ -1073,7 +1161,8 @@ onco_enrich <- function(query = NULL,
       annotate_ligand_receptor_interactions(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        ligandreceptordb = oeDB[['ligandreceptordb']],
+        ligand_receptor_db = oeDB[['ligandreceptordb']][['db']],
+        ligand_receptor_xref = oeDB[['ligandreceptordb']][['xref']],
         logger = logger)
   }
 
@@ -1084,7 +1173,9 @@ onco_enrich <- function(query = NULL,
         if (c == "C5" & subcat != "HPO") {
           enr <- get_go_enrichment(
             query_entrez = as.character(query_entrezgene),
-            background_entrez = background_entrez,
+            background_entrez = background_entrezgene,
+            bgset_description =
+              onc_rep[["config"]][["enrichment"]][["bgset_description"]],
             min_geneset_size =
               onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
             max_geneset_size =
@@ -1110,7 +1201,9 @@ onco_enrich <- function(query = NULL,
             enr <- get_universal_enrichment(
               query_entrez = as.character(query_entrezgene),
               genedb = oeDB[['genedb']][['all']],
-              background_entrez = background_entrez,
+              background_entrez = background_entrezgene,
+              bgset_description =
+                onc_rep[["config"]][["enrichment"]][["bgset_description"]],
               min_geneset_size =
                 onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
               max_geneset_size =
@@ -1149,7 +1242,9 @@ onco_enrich <- function(query = NULL,
         get_universal_enrichment(
           as.character(query_entrezgene),
           genedb = oeDB[['genedb']][['all']],
-          background_entrez = background_entrez,
+          background_entrez = background_entrezgene,
+          bgset_description =
+            onc_rep[["config"]][["enrichment"]][["bgset_description"]],
           min_geneset_size = onc_rep[["config"]][["enrichment"]][["min_gs_size"]],
           max_geneset_size = onc_rep[["config"]][["enrichment"]][["max_gs_size"]],
           q_value_cutoff = onc_rep[["config"]][["enrichment"]][["q_value_cutoff"]],
@@ -1158,7 +1253,7 @@ onco_enrich <- function(query = NULL,
             onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
           TERM2GENE = oeDB[['pathwaydb']][[pwaydb]]$TERM2GENE,
           TERM2NAME = oeDB[['pathwaydb']][[pwaydb]]$TERM2NAME,
-          TERM2SOURCE = oeDB[['pathwaydb']][[pwaydb]]$TERM2SOURCE,
+          #TERM2SOURCE = oeDB[['pathwaydb']][[pwaydb]]$TERM2SOURCE,
           dbsource = db,
           logger = logger)
 
@@ -1171,7 +1266,7 @@ onco_enrich <- function(query = NULL,
     # service_is_down <- unique(is.na(pingr::ping("string-db.org")))
     onc_rep[["data"]][["ppi"]] <-
       get_ppi_network(
-        qgenes = query_entrezgene,
+        qgenes = as.integer(query_entrezgene),
         ppi_source = "STRING",
         genedb = oeDB[['genedb']][['all']],
         cancerdrugdb = oeDB[['cancerdrugdb']],
@@ -1185,8 +1280,9 @@ onco_enrich <- function(query = NULL,
       annotate_protein_complex(
         query_entrez = as.integer(query_entrezgene),
         genedb = oeDB[['genedb']][['all']],
-        complex_db = oeDB[['genedb']][['proteincomplexdb']],
-        transcript_xref_db = oeDB[['genedb']][['transcript_xref']],
+        complex_db = oeDB[['genedb']][['proteincomplexdb']][['db']],
+        complex_up_xref = oeDB[['genedb']][['proteincomplexdb']][['up_xref']],
+        transcript_xref = oeDB[['genedb']][['transcript_xref']],
         logger = logger)
   }
 
@@ -1208,7 +1304,9 @@ onco_enrich <- function(query = NULL,
         minimum_confidence = min_subcellcomp_confidence,
         show_cytosol = subcellcomp_show_cytosol,
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        comppidb = oeDB[['subcelldb']][['comppidb']],
+        go_gganatogram_map = oeDB[['subcelldb']][['go_gganatogram_map']],
+        transcript_xref = oeDB[['genedb']][['transcript_xref']],
         logger = logger)
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
@@ -1221,24 +1319,24 @@ onco_enrich <- function(query = NULL,
   }
 
   ##
-  if (show_crispr_lof == T) {
-    onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]] <-
-      get_crispr_lof_scores(
+  if (show_fitness == T) {
+    onc_rep[["data"]][["fitness"]][["fitness_scores"]] <-
+      get_fitness_lof_scores(
         qgenes = query_symbol,
         projectscoredb = oeDB[['projectscoredb']],
         logger = logger)
 
-    if (onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] <= 10){
-      onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] <- 5
+    if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] <= 10){
+      onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] <- 5
     }
 
-    if (onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] >= 20) {
-      onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]]  <-
-        onc_rep[["config"]][["crispr_ps"]][["plot_height_fitness"]] +
-        as.integer((onc_rep[["data"]][["crispr_ps"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
+    if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] >= 20) {
+      onc_rep[["config"]][["fitness"]][["plot_height_fitness"]]  <-
+        onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] +
+        as.integer((onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
     }
 
-    onc_rep[["data"]][["crispr_ps"]][["target_priority_scores"]] <-
+    onc_rep[["data"]][["fitness"]][["target_priority_scores"]] <-
       get_target_priority_scores(
         qgenes = query_symbol,
         projectscoredb = oeDB[['projectscoredb']],
@@ -1253,7 +1351,7 @@ onco_enrich <- function(query = NULL,
           qgenes = as.integer(query_entrezgene),
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
-          oeDB = oeDB,
+          tcgadb = oeDB[['tcgadb']],
           vtype = v,
           logger = logger)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
@@ -1261,7 +1359,7 @@ onco_enrich <- function(query = NULL,
           qgenes = as.integer(query_entrezgene),
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
-          oeDB = oeDB,
+          tcgadb = oeDB[['tcgadb']],
           vtype = v,
           logger = logger)
     }
@@ -1350,7 +1448,7 @@ onco_enrich <- function(query = NULL,
           qgenes = query_symbol,
           qsource = "symbol",
           genedb = oeDB[['genedb']][['all']],
-          oeDB = oeDB,
+          tcgadb = oeDB[['tcgadb']],
           site = psite,
           logger = logger)
     }
@@ -1378,11 +1476,11 @@ onco_enrich <- function(query = NULL,
   }
 
   if (show_tcga_coexpression == T) {
-    onc_rep[["data"]][["tcga"]][["co_expression"]] <-
-      tcga_co_expression(
+    onc_rep[["data"]][["tcga"]][["coexpression"]] <-
+      tcga_coexpression(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        tcgadb = oeDB[['tcgadb']],
         logger = logger)
   }
 
@@ -1413,7 +1511,7 @@ onco_enrich <- function(query = NULL,
       hpa_prognostic_genes(
         query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        hpadb = oeDB[['hpa']],
         logger = logger)
 
     for(feature in c('exp', 'mut', 'cna', 'meth')){
@@ -1434,16 +1532,18 @@ onco_enrich <- function(query = NULL,
         q_id_type = "symbol",
         resolution = "tissue",
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
+        hpa_expr_db_df = oeDB[['tissuecelldb']][['tissue']][['expr_df']],
         logger = logger)
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
       gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(query_entrezgene),
         resolution = "tissue",
-        background_entrez = background_entrez,
+        background_entrez = as.integer(background_entrezgene),
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
+        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['tissue']][['te_SE']],
         logger = logger)
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
@@ -1452,16 +1552,18 @@ onco_enrich <- function(query = NULL,
         q_id_type = "entrezgene",
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+        hpa_expr_db_df = oeDB[['tissuecelldb']][['single_cell']][['expr_df']],
         logger = logger)
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
         qgenes_entrez = as.integer(query_entrezgene),
-        background_entrez = background_entrez,
+        background_entrez = as.integer(background_entrezgene),
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
-        oeDB = oeDB,
+        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['single_cell']][['te_SE']],
         logger = logger)
 
   }
@@ -1693,9 +1795,11 @@ write <- function(report,
           }
         }
 
-        rmarkdown::render_site(
-          input = tmpdir,
-          quiet = T
+        suppressWarnings(
+          rmarkdown::render_site(
+            input = tmpdir,
+            quiet = T
+          )
         )
 
         # target_html <- file.path(output_directory, paste0(
@@ -1728,24 +1832,26 @@ write <- function(report,
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")
 
-      rmarkdown::render(
-        markdown_input,
-        output_format = rmarkdown::html_document(
-          theme = report_theme,
-          toc = T,
-          fig_width = 5,
-          highlight = NULL,
-          mathjax = NULL,
-          fig_height = 4,
-          toc_depth = 3,
-          toc_float = toc_float,
-          number_sections = F,
-          includes = rmarkdown::includes(after_body = disclaimer)),
-        output_file = file_basename,
-        output_dir = output_directory,
-        clean = T,
-        intermediates_dir = output_directory,
-        quiet = T)
+      suppressWarnings(
+        rmarkdown::render(
+          markdown_input,
+          output_format = rmarkdown::html_document(
+            theme = report_theme,
+            toc = T,
+            fig_width = 5,
+            highlight = NULL,
+            mathjax = NULL,
+            fig_height = 4,
+            toc_depth = 3,
+            toc_float = toc_float,
+            number_sections = F,
+            includes = rmarkdown::includes(after_body = disclaimer)),
+          output_file = file_basename,
+          output_dir = output_directory,
+          clean = T,
+          intermediates_dir = output_directory,
+          quiet = T)
+      )
 
       log4r_info(logger, paste0("Output file (self-contained HTML): ",
                                       file))
@@ -1778,8 +1884,9 @@ write <- function(report,
                   "coexpression",
                   "prognostic_association",
                   "survival_association",
-                  "crispr_ps_fitness",
-                  "crispr_ps_prioritized"
+                  "synthetic_lethality",
+                  "fitness_scores",
+                  "fitness_prioritized"
                   )){
 
       show_elem <- elem
@@ -1800,6 +1907,12 @@ write <- function(report,
       }
       if(elem == "coexpression"){
         show_elem <- "tcga_coexpression"
+      }
+      if(elem == "synthetic_lethality"){
+        show_elem <- "synleth"
+      }
+      if(elem == "fitness_scores" | elem == "fitness_prioritized"){
+        show_elem <- "fitness"
       }
 
       if(report[['config']][['show']][[show_elem]] == FALSE){

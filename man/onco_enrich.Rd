@@ -26,6 +26,7 @@ onco_enrich(
   min_subcellcomp_confidence = 1,
   subcellcomp_show_cytosol = FALSE,
   min_confidence_reg_interaction = "D",
+  max_fitness_score = -2,
   simplify_go = TRUE,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
@@ -44,7 +45,8 @@ onco_enrich(
   show_unknown_function = TRUE,
   show_prognostic_cancer_assoc = TRUE,
   show_subcell_comp = TRUE,
-  show_crispr_lof = TRUE,
+  show_synleth = TRUE,
+  show_fitness = TRUE,
   show_complex = TRUE,
   ...
 )
@@ -55,13 +57,14 @@ onco_enrich(
 \item{oeDB}{oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()}
 
 \item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
+"entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
 
 \item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
 \item{html_floating_toc}{logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled}
 
-\item{html_report_theme}{Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")}
+\item{html_report_theme}{Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
+"flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")}
 
 \item{project_title}{project title (title of report)}
 
@@ -71,7 +74,8 @@ onco_enrich(
 
 \item{bgset}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
 
-\item{bgset_id_type}{character indicating source of background ("uniprot_acc","symbol","entrezgene","ensembl_gene_id")}
+\item{bgset_id_type}{character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
+"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
 
 \item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
@@ -92,6 +96,8 @@ onco_enrich(
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
 
 \item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
+
+\item{max_fitness_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
 
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
@@ -130,7 +136,9 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
-\item{show_crispr_lof}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
+\item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
+
+\item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 

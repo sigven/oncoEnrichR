@@ -3,16 +3,24 @@
 target_disease_associations <-
   function(qgenes,
            genedb = NULL,
-           oeDB = NULL,
+           otdb_all = NULL,
+           otdb_site_rank = NULL,
            show_top_diseases_only = FALSE,
            min_association_score = 0.1,
            logger = NULL){
 
   stopifnot(is.character(qgenes))
-  stopifnot(!is.null(oeDB))
+  stopifnot(!is.null(otdb_all))
+  stopifnot(!is.null(otdb_site_rank))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
+  stopifnot(is.numeric(min_association_score))
+  stopifnot(min_association_score <= 1 && min_association_score > 0)
+
   validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(otdb_all, dbtype = "opentarget_disease_assoc")
+  validate_db_df(otdb_site_rank, dbtype = "opentarget_disease_site_rank")
+
 
   target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) %>%
     dplyr::inner_join(genedb, by = "symbol") %>%
@@ -23,11 +31,11 @@ target_disease_associations <-
     min_association_score,")"))
 
   target_assocs <- target_genes %>%
-    dplyr::left_join(oeDB$otdb$all, by=c("ensembl_gene_id"))
+    dplyr::left_join(otdb_all, by=c("ensembl_gene_id"))
 
   result <- list()
   result[['target']] <- target_genes
-  result[['target_assoc']] <- target_assocs
+  #result[['target_assoc']] <- target_assocs
   result[['assoc_pr_gene']] <- list()
   result[['assoc_pr_gene']][['other']] <- data.frame()
   result[['assoc_pr_gene']][['cancer']] <- data.frame()
@@ -51,7 +59,8 @@ target_disease_associations <-
                   .data$efo_name,
                   .data$primary_site,
                   #.data$ot_link,
-                  .data$gene_summary)
+                  .data$gene_summary) %>%
+    dplyr::arrange(.data$symbol, .data$ot_association_score)
 
   if(nrow(tmp) > 0){
 
@@ -88,11 +97,14 @@ target_disease_associations <-
     result[['assoc_pr_gene']][['cancer']] <- tmp %>%
       dplyr::left_join(gene_targetset_cancer_rank,
                         by = "symbol") %>%
-      dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank),
+                     dplyr::desc(.data$ot_association_score))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
         result[['assoc_pr_gene']][['cancer']] %>%
+          dplyr::select(-.data$primary_site) %>%
+          dplyr::distinct() %>%
           dplyr::group_by(.data$symbol) %>%
           dplyr::summarise(
             targetset_cancer_prank =
@@ -104,7 +116,9 @@ target_disease_associations <-
               paste(utils::head(stringr::str_to_title(.data$efo_name),
                                 num_top_disease_terms), collapse=", "),
             .groups = "drop"
-          )
+          ) %>%
+          dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
+
       )
     }else{
 
@@ -120,14 +134,17 @@ target_disease_associations <-
               paste(unique(stringr::str_to_title(.data$efo_name)),
                            collapse=", "),
             .groups = "drop"
-          )
+          ) %>%
+          dplyr::arrange(dplyr::desc(.data$targetset_cancer_prank))
       )
     }
   }
 
   tmp2 <- target_assocs %>%
     dplyr::filter(.data$ot_association_score >= min_association_score &
-                    is.na(.data$cancer_phenotype))
+                    is.na(.data$cancer_phenotype)) %>%
+    ## ignore "genetic disorder"
+    dplyr::filter(.data$disease_efo_id != "EFO:0000508")
 
   if(nrow(tmp2) > 0){
 
@@ -160,7 +177,8 @@ target_disease_associations <-
     result[['assoc_pr_gene']][['other']] <- tmp2 %>%
       dplyr::left_join(gene_targetset_disease_rank,
                         by = "symbol") %>%
-      dplyr::arrange(dplyr::desc(.data$targetset_disease_prank))
+      dplyr::arrange(dplyr::desc(.data$targetset_disease_prank),
+                     dplyr::desc(.data$ot_association_score))
 
     if(show_top_diseases_only){
       result[['assoc_pr_gene']][['other']] <- as.data.frame(
@@ -256,7 +274,7 @@ target_disease_associations <-
                                  .data$symbol,
                                  .data$ensembl_gene_id) %>%
     dplyr::left_join(
-      dplyr::select(oeDB$otdb$site_rank,
+      dplyr::select(otdb_site_rank,
                     .data$primary_site,
                     .data$ensembl_gene_id,
                     .data$tissue_assoc_rank),
@@ -306,14 +324,12 @@ target_disease_associations <-
 }
 
 target_drug_associations <- function(qgenes,
-                                     cancerdrugdb = NULL,
                                     genedb = NULL,
                                     logger = NULL){
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
-  stopifnot(!is.null(cancerdrugdb))
   validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame('symbol' = qgenes,

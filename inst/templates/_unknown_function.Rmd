@@ -1,4 +1,4 @@
-### Poorly characterized query members
+### Poorly characterized genes
 
 * The aim of this section is to highlight poorly characterized genes or genes with unknown function in the query set
 * A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r onc_enrich_report[['config']][['unknown_function']][['num_candidates']]`__) _ have been established based on

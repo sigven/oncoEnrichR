@@ -1,21 +1,25 @@
 
 annotate_ligand_receptor_interactions <- function(qgenes,
                                                   genedb = NULL,
-                                                  ligandreceptordb = NULL,
+                                                  ligand_receptor_db = NULL,
+                                                  ligand_receptor_xref = NULL,
                                                   logger = NULL ){
 
   stopifnot(!is.null(logger))
   log4r_info(logger, "CellChatDB: retrieval of ligand-receptor interactions")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(ligandreceptordb))
+  stopifnot(!is.null(ligand_receptor_db))
+  stopifnot(!is.null(ligand_receptor_xref))
   validate_db_df(genedb, dbtype = "genedb")
-  validate_db_df(ligandreceptordb$db, dbtype = "ligand_receptor")
+  validate_db_df(ligand_receptor_db, dbtype = "ligand_receptor_db")
+  validate_db_df(ligand_receptor_xref, dbtype = "ligand_receptor_xref")
+
 
   query_df <- data.frame("symbol" = qgenes, stringsAsFactors = F)
 
   all_query_ligand_receptors <- as.data.frame(
-    ligandreceptordb$xref %>%
+    ligand_receptor_xref %>%
       dplyr::left_join(
         dplyr::filter(dplyr::select(genedb,
                                     .data$entrezgene,
@@ -50,7 +54,7 @@ annotate_ligand_receptor_interactions <- function(qgenes,
   if(NROW(valid_query_hits) > 0){
     ligand_receptor_results[['cell_cell_contact']] <-
       as.data.frame(
-        ligandreceptordb$db %>%
+        ligand_receptor_db %>%
           dplyr::filter(.data$annotation == "Cell-Cell Contact") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%
@@ -61,7 +65,7 @@ annotate_ligand_receptor_interactions <- function(qgenes,
 
     ligand_receptor_results[['secreted_signaling']] <-
       as.data.frame(
-        ligandreceptordb$db %>%
+        ligand_receptor_db %>%
           dplyr::filter(.data$annotation == "Secreted Signaling") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%
@@ -73,7 +77,7 @@ annotate_ligand_receptor_interactions <- function(qgenes,
 
     ligand_receptor_results[['ecm_receptor']] <-
       as.data.frame(
-        ligandreceptordb$db %>%
+        ligand_receptor_db %>%
           dplyr::filter(.data$annotation == "ECM-Receptor") %>%
           dplyr::inner_join(valid_query_hits, by = "interaction_id")
       ) %>%

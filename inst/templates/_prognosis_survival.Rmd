@@ -1,4 +1,4 @@
-### TCGA prognostic associations 
+### Prognostic associations 
 
 #### Gene expression associations - Human Protein Atlas {.tabset}
 
@@ -16,12 +16,12 @@
 ```{r filter_hpa_prognostic, echo=F, results='asis'}
 
 show_hpa_prognostic <- list()
-missing_hpa_prognostic <- list()
 prognostic_assoc_data <- list()
+active_tab <- list()
 
 for(n in c('favorable','unfavorable')){
     show_hpa_prognostic[[n]] <- TRUE
-    missing_hpa_prognostic[[n]] <- FALSE
+    active_tab[[n]] <- FALSE
     prognostic_assoc_data[[n]] <- data.frame()
   
     prognostic_assoc_data[[n]] <- 
@@ -30,15 +30,35 @@ for(n in c('favorable','unfavorable')){
       dplyr::select(-evidence_direction)
     
     if(nrow(prognostic_assoc_data[[n]]) == 0){
-      missing_hpa_prognostic[[n]] <- TRUE
       show_hpa_prognostic[[n]] <- FALSE
     }
 }
 
+if(show_hpa_prognostic[['favorable']] == T){
+  active_tab[['favorable']] <- T
+}else{
+  if(show_hpa_prognostic[['unfavorable']] == T){
+    active_tab[['unfavorable']] <- T
+  }else{
+    active_tab[['favorable']] <- T
+  }
+}
+
+
 ```
 
 
-##### Favorable associations
+```{r active_tab_favorable_hpa, echo = F, results = "asis"}
+if(active_tab[['favorable']] == T){
+  cat("")
+  cat("##### Favorable associations {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Favorable associations")
+  cat("")
+}
+```
 
 ```{r table_browse_hpa_prognostic_favorable, echo=F, results = "asis", eval = show_hpa_prognostic[['favorable']]}
 library(crosstalk)
@@ -80,7 +100,7 @@ DT::datatable(prognostic_genes_favorable, escape = F,
 ```
 
 
-```{r prognostic_missing_favorable, echo=F, results = 'asis', eval = missing_hpa_prognostic[['favorable']]}
+```{r prognostic_missing_favorable, echo=F, results = 'asis', eval = !show_hpa_prognostic[['favorable']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with favorable gene expression association to prognosis&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -88,10 +108,20 @@ cat('<br><br>')
 
 ```
 
-<br><br><br>
+<br><br>
 
+```{r active_tab_unfavorable_hpa, echo = F, results = "asis"}
+if(active_tab[['unfavorable']] == T){
+  cat("")
+  cat("##### Unfavorable associations {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Unfavorable associations")
+  cat("")
+}
+```
 
-##### Unfavorable associations
 
 ```{r table_browse_hpa_prognostic_unfavorable, echo=F, results = "asis", eval = show_hpa_prognostic[['unfavorable']]}
 library(crosstalk)
@@ -133,7 +163,7 @@ DT::datatable(prognostic_genes_unfavorable, escape = F,
 ```
 <br><br>
 
-```{r prognostic_missing_unfavorable, echo=F, results = 'asis', eval = missing_hpa_prognostic[['unfavorable']]}
+```{r prognostic_missing_unfavorable, echo=F, results = 'asis', eval = !show_hpa_prognostic[['unfavorable']]}
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with unfavorable gene expression association to prognosis&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')

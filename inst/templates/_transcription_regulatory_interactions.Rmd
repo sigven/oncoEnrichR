@@ -33,13 +33,19 @@ We interrogate interactions in the query set for two separate collections of reg
 
 
 reg_interactions <- list()
+active_tab <- list()
 for(cl in c('global','pancancer')){
   reg_interactions[[cl]] <- list()
+  active_tab[[cl]] <- list()
   
   reg_interactions[[cl]][['tf_target']] <- data.frame()
   reg_interactions[[cl]][['tf_only']] <- data.frame()
   reg_interactions[[cl]][['target_only']] <- data.frame()
 
+  active_tab[[cl]][['tf_target']] <- F
+  active_tab[[cl]][['tf_only']] <- F
+  active_tab[[cl]][['target_only']] <- F
+  
   if(NROW(onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]]) > 0){
     reg_interactions[[cl]][['tf_target']] <- 
       onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
@@ -48,6 +54,10 @@ for(cl in c('global','pancancer')){
                        target_cancer_max_rank)) %>%
       head(2500)
     
+    if(NROW(reg_interactions[[cl]][['tf_target']]) > 0){
+      active_tab[[cl]][['tf_target']] <- T
+    }
+    
     reg_interactions[[cl]][['tf_only']] <- 
       onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
       dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$")) %>%
@@ -55,12 +65,31 @@ for(cl in c('global','pancancer')){
                        target_cancer_max_rank)) %>%
       head(2500)
     
+    if(NROW(reg_interactions[[cl]][['tf_only']]) > 0 & 
+       active_tab[[cl]][['tf_target']] == F){
+      active_tab[[cl]][['tf_only']] <- T
+    }
+    
     reg_interactions[[cl]][['target_only']] <- 
       onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
       dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$")) %>%
       dplyr::select(-c(regulator_cancer_max_rank,
                        target_cancer_max_rank)) %>%
       head(2500)
+    
+    if(NROW(reg_interactions[[cl]][['target_only']]) > 0 & 
+       active_tab[[cl]][['tf_target']] == F &
+       active_tab[[cl]][['tf_only']] == F){
+      active_tab[[cl]][['target_only']] <- T
+    }
+  }
+}
+
+for(cl in c('global','pancancer')){
+  if(active_tab[[cl]][['tf_target']] == F & 
+     active_tab[[cl]][['tf_only']] == F & 
+     active_tab[[cl]][['target_only']] == F){
+    active_tab[[cl]][['tf_target']] <- T
   }
 }
 
@@ -69,7 +98,17 @@ for(cl in c('global','pancancer')){
 
 #### DoRothEA - global set {.tabset}
 
-##### Regulatory gene and target
+```{r active_tab_tf_target_global, echo = F, results = "asis"}
+if(active_tab[['global']][['tf_target']] == T){
+  cat("")
+  cat("##### Regulatory gene and target {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene and target")
+  cat("")
+}
+```
 
 
 ```{r regulatory_interactions_1, echo = F, results = 'asis', eval = nrow(reg_interactions[['global']][['tf_target']]) > 0}
@@ -133,10 +172,20 @@ cat('<br><br>')
 
 ```
 
+<br>
 
-<br><br>
+```{r active_tab_tf_global, echo = F, results = "asis"}
+if(active_tab[['global']][['tf_only']] == T){
+  cat("")
+  cat("##### Regulatory gene only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene only")
+  cat("")
+}
+```
 
-##### Regulatory gene only
 
 ```{r regulatory_interactions_2, echo = F, results = 'asis', eval = nrow(reg_interactions[['global']][['tf_only']]) > 0}
 
@@ -190,7 +239,20 @@ cat('<br><br>')
 
 ```
 
-##### Target only
+<br>
+
+```{r active_tab_target_global, echo = F, results = "asis"}
+if(active_tab[['global']][['target_only']] == T){
+  cat("")
+  cat("##### Target only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Target only")
+  cat("")
+}
+```
+
 
 ```{r regulatory_interactions_3, echo = F, results = 'asis', eval = nrow(reg_interactions[['global']][['target_only']]) > 0}
 
@@ -244,11 +306,22 @@ cat('<br><br>')
 
 ```
 
-<br><br>
+<br>
 
 #### DoRothEA - cancer-focused set {.tabset}
 
-##### Regulatory gene and target
+
+```{r active_tab_tf_target_pancancer, echo = F, results = "asis"}
+if(active_tab[['pancancer']][['tf_target']] == T){
+  cat("")
+  cat("##### Regulatory gene and target {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene and target")
+  cat("")
+}
+```
 
 
 ```{r regulatory_interactions_4, echo = F, results = 'asis', eval = nrow(reg_interactions[['pancancer']][['tf_target']]) > 0}
@@ -314,10 +387,20 @@ cat('<br><br>')
 
 ```
 
+<br>
 
-<br><br>
+```{r active_tab_tf_pancancer, echo = F, results = "asis"}
+if(active_tab[['pancancer']][['tf_only']] == T){
+  cat("")
+  cat("##### Regulatory gene only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene only")
+  cat("")
+}
+```
 
-##### Regulatory gene only
 
 ```{r regulatory_interactions_5, echo = F, results = 'asis', eval = nrow(reg_interactions[['pancancer']][['tf_only']]) > 0}
 
@@ -372,7 +455,20 @@ cat('<br><br>')
 
 ```
 
-##### Target only
+<br>
+
+```{r active_tab_target_pancancer, echo = F, results = "asis"}
+if(active_tab[['pancancer']][['target_only']] == T){
+  cat("")
+  cat("##### Target only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Target only")
+  cat("")
+}
+```
+
 
 ```{r regulatory_interactions_6, echo = F, results = 'asis', eval = nrow(reg_interactions[['pancancer']][['target_only']]) > 0}
 

@@ -555,7 +555,7 @@ get_opentarget_associations <-
   function(basedir = '/Users/sigven/research/DB/var_annotation_tracks',
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2021.11",
+           release = "2022.02",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -1522,14 +1522,14 @@ get_cancer_drugs <- function(){
   cancerdrugdb[['drug_per_target']][['late_phase']] <-
     drugs_per_gene[['late_phase']]
 
-  cancerdrugdb[['ppi']] <- list()
-  cancerdrugdb[['ppi']][['edges']] <-
+  cancerdrugdb[['network']] <- list()
+  cancerdrugdb[['network']][['edges']] <-
     dplyr::bind_rows(target_drug_edges[['early_phase']],
                      target_drug_edges[['late_phase']]) %>%
     dplyr::select(from, to, width) %>%
     dplyr::distinct()
 
-  cancerdrugdb[['ppi']][['nodes']] <-
+  cancerdrugdb[['network']][['nodes']] <-
     dplyr::bind_rows(target_drug_nodes[['early_phase']],
                      target_drug_nodes[['late_phase']]) %>%
     dplyr::distinct()
@@ -1652,6 +1652,9 @@ get_pathway_annotations <- function(
       dplyr::rename(standard_name = pathway_id,
                     entrez_gene = gene_id) %>%
       dplyr::select(standard_name,entrez_gene) %>%
+      dplyr::mutate(entrez_gene = as.character(
+        entrez_gene
+      )) %>%
       dplyr::distinct()
 
     pathwaydb[['kegg']] <- keggdb
@@ -1816,39 +1819,84 @@ get_protein_complexes <- function(
     return(proteincomplexdb)
 }
 
-get_crispr_scores <- function(
+clean_project_score_cell_lines <- function(
+  mat){
+
+  ## Ignore cell lines that fail QC
+  mat <- mat[
+    , mat[3,] != "False"
+  ]
+
+  rownames(mat) <-
+    mat[,"model_name"]
+  mat <- mat[,-1]
+  colnames(mat) <-
+    mat["model_id",]
+  mat <- mat[-1,]
+  mat <- mat[-2,]
+  mat <- mat[-2,]
+
+  duplicate_cell_lines <-
+    plyr::count(colnames(mat)) %>%
+    dplyr::filter(freq == 2)
+
+  ## Mark cell lines included for analysis
+  ## - if duplicates - keep Sanger cell line
+  cell_line_identifiers <- colnames(mat)
+  for(i in 1:length(cell_line_identifiers)){
+    if(cell_line_identifiers[i] %in% duplicate_cell_lines$x){
+      if(mat[1,i] == "Sanger"){
+        mat[1,i] <- "Inc"
+      }else{
+        mat[1,i] <- "Ex"
+      }
+    }else{
+      mat[1,i] <- "Inc"
+    }
+  }
+
+  ## Exclude duplicate cell lines (Broad)
+  mat <- mat[
+    , mat[1,] != "Ex"
+  ]
+  mat <- mat[-1,]
+
+  return(mat)
+
+}
+
+get_fitness_data_crispr <- function(
     basedir = NULL,
     gene_info = NULL){
 
-    cell_lines <- read.table(
+    cell_lines <- read.csv2(
       file = file.path(
         basedir, "data-raw",
         "project_score",
         "model_list.csv"),
-      quote="",
-      comment.char="",sep=",", header = F, stringsAsFactors = F,
+      comment.char="",sep=",",
+      header = T, stringsAsFactors = F,
       fill = T,na.strings = c("")) %>%
-      dplyr::select(V1, V2, V3, V4, V18, V22, V24,
-                    V25, V32, V40, V39, V41) %>%
-      dplyr::filter(V4 == "Cell Line" & V39 == "Homo Sapiens") %>%
-      dplyr::filter(!stringr::str_detect(V1,"model_id")) %>%
-      dplyr::mutate(V2 = stringr::str_replace_all(V2,"-",".")) %>%
-      dplyr::filter(V18 == "True") %>%
-      magrittr::set_colnames(
-        c('model_id','model_name','synonyms','model_type',
-          'crispr_ko_data','tissue','cancer_type',
-          'cancer_type_detail','sample_site',
-          'gender','species','ethnicity')) %>%
-      dplyr::select(
-        -c(gender,species,ethnicity,cancer_type_detail,cancer_type,
-           crispr_ko_data,synonyms)) %>%
-      dplyr::filter(tissue != "Eye" & tissue != "Biliary Tract" &
-                      tissue != "Prostate" & tissue != "Soft Tissue") %>%
+      janitor::clean_names() %>%
+      dplyr::select(model_id, model_name, synonyms, model_type,
+                    crispr_ko_data, tissue, cancer_type,
+                    tissue_status, cancer_type_detail, cancer_type_ncit_id,
+                    sample_site, gender, species, ethnicity, mutational_burden,
+                    ploidy_wes, msi_status) %>%
+      dplyr::filter(model_type == "Cell Line" &
+                      species == "Homo Sapiens") %>%
+      dplyr::filter(tissue != "Unknown" &
+                      tissue != "Adrenal Gland" &
+                      tissue != "Placenta" &
+                      tissue != "Vulva") %>%
       dplyr::mutate(tissue = dplyr::if_else(tissue == "Central Nervous System",
                                             "CNS/Brain",
                                             as.character(tissue))) %>%
       dplyr::mutate(tissue = dplyr::if_else(tissue == "Large Intestine",
                                             "Colon/Rectum",
+                                            as.character(tissue))) %>%
+      dplyr::mutate(tissue = dplyr::if_else(tissue == "Small Intestine",
+                                            "Stomach",
                                             as.character(tissue)))
 
     gene_identifiers <-
@@ -1865,53 +1913,53 @@ get_crispr_scores <- function(
                       entrezgene), by = "entrezgene") %>%
       dplyr::select(gene_id_project_score, entrezgene, symbol)
 
-    bayes_factors <-
-      read.table(file = file.path(
-        basedir, "data-raw",
-        "project_score", "03_scaledBayesianFactors.tsv"),
-        header=T, quote="",sep="\t", stringsAsFactors = F)
-
-    rownames(bayes_factors) <- bayes_factors$Gene
-    bayes_factors$Gene <- NULL
-    bayes_factors <- as.matrix(bayes_factors)
-    bayes_factors <-
-      as.data.frame(setNames(reshape2::melt(bayes_factors, na.rm = T),
-                             c('symbol', 'model_name', 'scaled_BF'))) %>%
-      dplyr::mutate(model_name = as.character(model_name),
-                    symbol = as.character(symbol)) %>%
-      dplyr::filter(scaled_BF > 0) %>%
-      dplyr::left_join(cell_lines, by = c("model_name")) %>%
-      dplyr::filter(!is.na(model_id)) %>%
-      dplyr::left_join(gene_identifiers,by = c("symbol")) %>%
-      dplyr::filter(!is.na(gene_id_project_score))
-
-
-    ## Fitness scores
-    cell_fitness_scores <-
-      read.table(
+    bayes_factors <- as.matrix(
+      readr::read_tsv(
         file = file.path(
           basedir, "data-raw",
           "project_score",
-          "binaryDepScores.tsv"),header=T,
-        quote="",sep="\t", stringsAsFactors = F)
+          "scaledBayesianFactors.tsv.gz"),
+        show_col_types = F)) %>%
+      clean_project_score_cell_lines()
 
-    rownames(cell_fitness_scores) <- cell_fitness_scores$Gene
-    cell_fitness_scores$Gene <- NULL
-    cell_fitness_scores <- as.matrix(cell_fitness_scores)
+    bayes_factors <-
+      as.data.frame(setNames(reshape2::melt(bayes_factors, na.rm = T),
+                             c('symbol', 'model_id', 'scaled_BF'))) %>%
+      dplyr::mutate(model_id = as.character(model_id),
+                    symbol = as.character(symbol),
+                    scaled_BF = as.numeric(scaled_BF) * -1) %>%
+      dplyr::filter(!is.na(scaled_BF)) %>%
+      dplyr::filter(scaled_BF < 0)
+
+    ## Fitness scores - new
+    cell_fitness_scores <- as.matrix(readr::read_tsv(
+      file = file.path(
+        basedir, "data-raw",
+        "project_score",
+        "binaryFitnessScores.tsv.gz"),
+        show_col_types = F)) %>%
+      clean_project_score_cell_lines()
+
+
     projectscoredb <- list()
     projectscoredb[['fitness_scores']] <-
       as.data.frame(setNames(reshape2::melt(cell_fitness_scores, na.rm = T),
-                             c('symbol', 'model_name', 'loss_of_fitness'))) %>%
-      dplyr::mutate(model_name = as.character(model_name), symbol = as.character(symbol)) %>%
+                             c('symbol', 'model_id', 'loss_of_fitness'))) %>%
+      dplyr::mutate(model_id = as.character(model_id),
+                    symbol = as.character(symbol),
+                    loss_of_fitness = as.integer(loss_of_fitness)) %>%
       dplyr::filter(loss_of_fitness == 1) %>%
-      dplyr::left_join(cell_lines, by = c("model_name")) %>%
-      dplyr::filter(!is.na(model_id)) %>%
+      dplyr::left_join(
+        dplyr::select(cell_lines, model_id, model_name, tissue,
+                      cancer_type, sample_site, tissue_status),
+        by = c("model_id")) %>%
+      dplyr::filter(!is.na(model_name)) %>%
       dplyr::left_join(gene_identifiers,by=c("symbol")) %>%
       dplyr::filter(!is.na(gene_id_project_score)) %>%
-      dplyr::left_join(bayes_factors, by =
-                         c("symbol", "model_name","model_id",
-                           "model_type","tissue","sample_site",
-                           "gene_id_project_score","entrezgene"))
+      dplyr::left_join(
+        bayes_factors, by =
+          c("symbol", "model_id")) %>%
+      dplyr::arrange(symbol, scaled_BF)
 
     ## Target priority scores
     projectscoredb[['target_priority_scores']] <-
@@ -1954,7 +2002,6 @@ get_crispr_scores <- function(
                                     levels = priority_order$symbol))
 
     return(projectscoredb)
-    #saveRDS(projectscoredb, file="db/projectscoredb.rds")
 
 }
 
@@ -3181,6 +3228,44 @@ get_hpa_associations <- function(
 }
 
 
+get_mean_median_tpm <- function(
+  tpm_matrix,
+  detectable_tpm_level = 1,
+  tumor_code = "BRCA_1",
+  filter_on = "median"){
+
+  tpm_pr_gene <- as.data.frame(
+    data.frame(
+      symbol = rownames(tpm_matrix),
+      median_tpm_exp = round(matrixStats::rowMedians(
+        tpm_matrix), digits = 4
+      ),
+      mean_tpm_exp = round(matrixStats::rowMeans2(
+        tpm_matrix), digits = 4
+      ),
+      tumor = tumor_code,
+      stringsAsFactors = F
+    ) %>%
+      dplyr::group_by(symbol) %>%
+      dplyr::summarise(
+        median_tpm_exp = round(mean(median_tpm_exp), digits = 4),
+        mean_tpm_exp = round(mean(mean_tpm_exp), digits = 4),
+        tumor = paste(unique(tumor), collapse=","),
+        .groups = "drop") %>%
+      dplyr::filter(median_tpm_exp >= detectable_tpm_level)) %>%
+    dplyr::mutate(median_tpm_subtype = paste(
+      tumor, median_tpm_exp, sep=":"
+    )) %>%
+    dplyr::select(symbol, median_tpm_subtype)
+
+
+  return(tpm_pr_gene)
+
+
+}
+
+
+
 get_tcga_db <- function(
   basedir = NULL,
   gene_xref = NULL,
@@ -3189,7 +3274,7 @@ get_tcga_db <- function(
   rds_fname <- file.path(
     basedir, "data-raw", "tcga", "tcgadb.rds")
 
-  co_expression_tsv <- file.path(
+  coexpression_tsv <- file.path(
     basedir, "data-raw", "tcga",
     "co_expression_strong_moderate.release31_20211029.tsv.gz")
 
@@ -3381,11 +3466,11 @@ get_tcga_db <- function(
 
   ##TCGA co-expression data
   raw_coexpression <-
-    readr::read_tsv(co_expression_tsv,
+    readr::read_tsv(coexpression_tsv,
                     col_names = c("symbol_A","symbol_B",
                                   "r","p_value","tumor"),
                     show_col_types = F)
-  co_expression_genes1 <- raw_coexpression %>%
+  coexpression_genes1 <- raw_coexpression %>%
     dplyr::rename(symbol = symbol_A, symbol_partner = symbol_B) %>%
     dplyr::left_join(
       dplyr::select(gene_xref, symbol, tumor_suppressor,
@@ -3394,7 +3479,7 @@ get_tcga_db <- function(
                     oncogene == T |
                     cancer_driver == T)
 
-  co_expression_genes2 <- raw_coexpression %>%
+  coexpression_genes2 <- raw_coexpression %>%
     dplyr::rename(symbol = symbol_B, symbol_partner = symbol_A) %>%
     dplyr::left_join(
       dplyr::select(gene_xref, symbol, tumor_suppressor,
@@ -3403,8 +3488,10 @@ get_tcga_db <- function(
                     oncogene == T |
                     cancer_driver == T)
 
-  tcga_coexp_db <- dplyr::bind_rows(co_expression_genes1,
-                                    co_expression_genes2) %>%
+  rm(raw_coexpression)
+
+  tcga_coexp_db <- dplyr::bind_rows(coexpression_genes1,
+                                    coexpression_genes2) %>%
     dplyr::arrange(desc(r)) %>%
     dplyr::mutate(p_value = signif(p_value, digits = 4)) %>%
     dplyr::filter(p_value < 1e-6) %>%
@@ -3412,10 +3499,94 @@ get_tcga_db <- function(
     dplyr::filter((r <= -0.7 & r < 0) | (r >= 0.7))
 
 
+
+  gdc_projects <- as.data.frame(TCGAbiolinks::getGDCprojects()) %>%
+    dplyr::filter(is.na(dbgap_accession_number) & startsWith(id,"TCGA"))
+  tcga_release <- 'release31_20211029'
+
+  all_tcga_mean_median_tpm <- data.frame()
+
+  for(i in 1:nrow(gdc_projects)){
+    tumor_code <- gdc_projects[i,]$tumor
+    rnaseq_rds_fname <-
+      file.path("","Users","sigven", "project_data","analysis__tcga",
+                "tcga", "data", "rnaseq",
+                paste0("tcga_rnaseq_",tumor_code,"_",
+                       tcga_release,".rds"))
+
+    cat(tumor_code, '\n')
+    if(file.exists(rnaseq_rds_fname)){
+      exp_data <- readRDS(file = rnaseq_rds_fname)
+
+      tpm_matrix <- exp_data$matrix$tpm$tumor
+      rm(exp_data)
+
+      colnames(tpm_matrix) <-
+        stringr::str_replace(
+          colnames(tpm_matrix),"-0[0-9][A-Z]$","")
+
+      clinical_subtype_samples <- tcga_clinical %>%
+        dplyr::filter(tumor == tumor_code) %>%
+        dplyr::filter(primary_diagnosis_very_simplified !=
+                        "Other subtype(s)") %>%
+        dplyr::select(site_diagnosis_code, bcr_patient_barcode)
+
+      all_tpm_data <-  get_mean_median_tpm(
+        tpm_matrix,
+        tumor_code = tumor_code
+      )
+
+      if(length(unique(clinical_subtype_samples$site_diagnosis_code)) > 1){
+
+        subtypes <- unique(clinical_subtype_samples$site_diagnosis_code)
+
+        for(subtype in subtypes){
+
+          subtype_samples <- clinical_subtype_samples[
+            clinical_subtype_samples$site_diagnosis_code == subtype,]$bcr_patient_barcode
+
+          tpm_matrix_subtype <- tpm_matrix[
+            , colnames(tpm_matrix) %in% subtype_samples
+          ]
+
+          tpm_data <- get_mean_median_tpm(
+            tpm_matrix_subtype,
+            tumor_code = subtype
+          )
+
+          all_tpm_data <- all_tpm_data %>%
+            dplyr::bind_rows(tpm_data)
+
+        }
+
+      }
+      all_tcga_mean_median_tpm <- all_tcga_mean_median_tpm %>%
+        dplyr::bind_rows(all_tpm_data)
+      rm(all_tpm_data)
+
+    }
+  }
+
+  all_tcga_tpm_above_1 <- as.data.frame(
+    all_tcga_mean_median_tpm %>%
+      dplyr::group_by(symbol) %>%
+      dplyr::summarise(
+        median_tpm_subtype = paste(
+          sort(median_tpm_subtype), collapse="|"
+        )
+      )
+  ) %>%
+    dplyr::left_join(
+      dplyr::select(gene_info, symbol, gene_biotype)
+    ) %>%
+    dplyr::filter(gene_biotype == "protein-coding")
+
+
   tcgadb <- list()
-  tcgadb[['co_expression']] <- tcga_coexp_db
+  tcgadb[['coexpression']] <- tcga_coexp_db
   tcgadb[['aberration']] <- tcga_aberration_stats
   tcgadb[['recurrent_variants']] <- recurrent_tcga_variants
+  tcgadb[['median_ttype_expression']] <- all_tcga_tpm_above_1
   tcgadb[['pfam']] <- pfam_domains
   tcgadb[['maf_codes']] <- maf_codes
   tcgadb[['site_code']] <- site_code
@@ -3425,6 +3596,132 @@ get_tcga_db <- function(
   saveRDS(tcgadb, file = rds_fname)
 
   return(tcgadb)
+
+}
+
+get_paralog_SL_predictions <- function(
+  basedir = NULL,
+  gene_info = NULL){
+
+
+  predicted_SL_pairs_csv <- file.path(
+    basedir,
+    "data-raw",
+    "synlethdb",
+    "ryan_predicted_paralog_SL_pairs.csv"
+  )
+
+  predicted_SL_data <- readr::read_csv(
+    file = predicted_SL_pairs_csv,
+    show_col_types = F) %>%
+    dplyr::select(
+      A1_entrez, A2_entrez, prediction_score,
+      prediction_rank, prediction_percentile,
+      min_sequence_identity, fet_ppi_overlap,
+      conservation_score,
+      family_size,
+      has_pombe_ortholog,
+      has_cerevisiae_ortholog
+    ) %>%
+    dplyr::left_join(
+      dplyr::select(gene_info, symbol, entrezgene),
+      by = c("A1_entrez" = "entrezgene")
+    ) %>%
+    dplyr::rename(ppi_overlap = fet_ppi_overlap) %>%
+    dplyr::rename(symbol_A1 = symbol) %>%
+    dplyr::left_join(
+      dplyr::select(gene_info, symbol, entrezgene),
+      by = c("A2_entrez" = "entrezgene")
+    ) %>%
+    dplyr::rename(symbol_A2 = symbol) %>%
+    dplyr::mutate(
+      sequence_identity_pct = round(
+        min_sequence_identity * 100, digits = 3
+      )
+    ) %>%
+    dplyr::mutate(prediction_score = round(
+      prediction_score, digits = 3
+    )) %>%
+    dplyr::mutate(ppi_overlap = round(
+      ppi_overlap, digits = 2
+    )) %>%
+    dplyr::rename(entrezgene_A1 = A1_entrez,
+                  entrezgene_A2 = A2_entrez) %>%
+    dplyr::select(entrezgene_A1,
+                  symbol_A1,
+                  entrezgene_A2,
+                  symbol_A2,
+                  prediction_score,
+                  prediction_percentile,
+                  sequence_identity_pct,
+                  family_size,
+                  conservation_score,
+                  ppi_overlap,
+                  has_pombe_ortholog,
+                  has_cerevisiae_ortholog
+                  )
+
+  return(predicted_SL_data)
+
+
+}
+
+get_synthetic_lethality_pairs <- function(
+  basedir = NULL){
+
+  sl_pairs_csv <- file.path(
+    basedir,
+    "data-raw",
+    "synlethdb",
+    "Human_SL.csv"
+  )
+
+  sl_pairs_data_raw <- as.data.frame(
+    readr::read_csv(
+      sl_pairs_csv, show_col_types = F) %>%
+      janitor::clean_names() %>%
+      dplyr::mutate(entrezgene_a = as.integer(gene_a_identifier)) %>%
+      dplyr::mutate(entrezgene_b = as.integer(gene_b_identifier)) %>%
+      dplyr::rename(pmid = sl_pubmed_id) %>%
+      dplyr::select(entrezgene_a, entrezgene_b,
+                    pmid, sl_source, sl_cell_line, sl_statistic_score) %>%
+      dplyr::mutate(sl_id = dplyr::row_number()) %>%
+      tidyr::separate_rows(pmid, sep=";") %>%
+      tidyr::separate_rows(pmid, sep="/") %>%
+      dplyr::filter(!stringr::str_detect(pmid, ",")) %>%
+      tidyr::separate_rows(sl_cell_line, sep=";") %>%
+      dplyr::distinct() %>%
+      dplyr::group_by(entrezgene_a, entrezgene_b, sl_id,
+                      pmid, sl_source, sl_statistic_score) %>%
+      dplyr::summarise(sl_cell_line = paste(
+        sl_cell_line, collapse=";"), .groups = "drop") %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(sl_statistic_score = round(
+        as.numeric(sl_statistic_score), digits = 3)) %>%
+      dplyr::filter(stringr::str_detect(
+        sl_source, "GenomeRNAi|CRISPR"))
+  )
+
+  pmid_data <-
+    get_citations_pubmed(unique(sl_pairs_data_raw$pmid)) %>%
+    dplyr::mutate(pmid = as.character(pmid)) %>%
+    dplyr::rename(sl_citation = citation,
+                  sl_citation_link = link)
+
+  sl_pairs_data <- as.data.frame(
+    sl_pairs_data_raw %>%
+      dplyr::left_join(pmid_data, by = "pmid") %>%
+      dplyr::group_by(
+        sl_id, entrezgene_a, entrezgene_b,
+        sl_source, sl_cell_line, sl_statistic_score) %>%
+      dplyr::summarise(
+        sl_pmid = paste(pmid, collapse=";"),
+        sl_citation = paste(sl_citation, collapse="; "),
+        sl_citation_link = paste(sl_citation_link, collapse= ", "),
+        .groups = "drop")
+  )
+
+  return(sl_pairs_data)
 
 }
 

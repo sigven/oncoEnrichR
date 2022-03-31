@@ -3,24 +3,17 @@ gene_tissue_cell_spec_cat <-
            q_id_type = "symbol",
            resolution = "tissue",
            genedb = NULL,
-           oeDB = NULL,
+           hpa_enrichment_db_df = NULL,
+           hpa_expr_db_df = NULL,
            logger = NULL){
 
     stopifnot(!is.null(logger))
-    etype <- "tissue"
-    edb <- "GTex"
-    if(resolution != "tissue"){
-      etype <- "cell type"
-      edb <- "HPA"
-    }
-    log4r_info(logger,
-               paste0("Retrieving ", etype,
-                      " specificity (", edb,
-                      ") category of target genes")
-    )
-
     stopifnot(!is.null(genedb))
-    stopifnot(!is.null(oeDB$tissuecelldb))
+    stopifnot(!is.null(hpa_enrichment_db_df))
+    stopifnot(!is.null(hpa_expr_db_df))
+    stopifnot(is.data.frame(hpa_expr_db_df) &
+                length(colnames(hpa_expr_db_df)) > 35 &
+                typeof(hpa_expr_db_df) == "list")
     validate_db_df(genedb, dbtype = "genedb")
     stopifnot(resolution == "tissue" | resolution == "single_cell")
     stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
@@ -38,6 +31,8 @@ gene_tissue_cell_spec_cat <-
         dplyr::inner_join(genedb, by = "symbol") %>%
         dplyr::distinct()
     }
+    etype <- "tissue"
+    edb <- "GTex"
     specificity_categories <-
       c('Group enriched',
         'Low tissue specificity',
@@ -46,7 +41,12 @@ gene_tissue_cell_spec_cat <-
         'Tissue enhanced',
         'Tissue enriched')
     source = 'tissue'
-    if(resolution == "single_cell"){
+
+    if(resolution != "tissue"){
+      etype <- "cell type"
+      edb <- "HPA"
+      validate_db_df(hpa_enrichment_db_df,
+                     dbtype = "enrichment_db_hpa_singlecell")
       specificity_categories <-
         c('Group enriched',
           'Low cell type specificity',
@@ -55,10 +55,19 @@ gene_tissue_cell_spec_cat <-
           'Cell type enhanced',
           'Cell type enriched')
       source = 'single_cell'
+    }else{
+      validate_db_df(hpa_enrichment_db_df,
+                     dbtype = "enrichment_db_hpa_tissue")
     }
+    log4r_info(logger,
+               paste0("Retrieving ", etype,
+                      " specificity (", edb,
+                      ") category of target genes")
+    )
 
     specificity_groups_target <- as.data.frame(
-      oeDB$tissuecelldb[[source]][['te_df']] %>%
+      #oeDB$tissuecelldb[[source]][['te_df']] %>%
+      hpa_enrichment_db_df %>%
         dplyr::inner_join(
           dplyr::select(query_genes_df,
                         .data$symbol,
@@ -125,7 +134,7 @@ gene_tissue_cell_spec_cat <-
     }
 
     specificity_groups_all <- as.data.frame(
-      oeDB$tissuecelldb[[source]][['te_df']] %>%
+      hpa_enrichment_db_df %>%
         dplyr::group_by(.data$category) %>%
         dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
         dplyr::mutate(tot = sum(.data$n)) %>%
@@ -145,7 +154,7 @@ gene_tissue_cell_spec_cat <-
     )
 
     exp_dist_df <- data.frame()
-    exp_dist_df <- oeDB$tissuecelldb[[resolution]]$expr_df
+    exp_dist_df <- hpa_expr_db_df
     exp_dist_df$ensembl_gene_id <-
       rownames(exp_dist_df)
 
@@ -160,8 +169,8 @@ gene_tissue_cell_spec_cat <-
                           .data$symbol,
                           .data$ensembl_gene_id),
             by = "ensembl_gene_id") %>%
-          dplyr::mutate(exp = round(log2(.data$nTPM), digits = 3)) %>%
-          dplyr::mutate(exp_measure = "log2(nTPM)")
+          dplyr::mutate(exp = round(log2(.data$nTPM + 1), digits = 3)) %>%
+          dplyr::mutate(exp_measure = "log2(nTPM + 1)")
       )
     }else{
       exp_dist_df <- as.data.frame(
@@ -174,8 +183,8 @@ gene_tissue_cell_spec_cat <-
                           .data$symbol,
                           .data$ensembl_gene_id),
             by = "ensembl_gene_id") %>%
-          dplyr::mutate(exp = round(log2(.data$nTPM), digits = 3)) %>%
-          dplyr::mutate(exp_measure = "log2(nTPM)")
+          dplyr::mutate(exp = round(log2(.data$nTPM + 1), digits = 3)) %>%
+          dplyr::mutate(exp_measure = "log2(nTPM  + 1)")
       )
     }
 
@@ -189,34 +198,39 @@ gene_tissue_cell_enrichment <-
   function(qgenes_entrez,
            background_entrez = NULL,
            genedb = NULL,
-           oeDB = NULL,
+           hpa_enrichment_db_df = NULL,
+           hpa_enrichment_db_SE = NULL,
            resolution = "tissue",
-           logger = logger){
+           logger = NULL){
 
     stopifnot(!is.null(logger))
+    stopifnot(!is.null(genedb))
+    stopifnot(!is.null(hpa_enrichment_db_df))
+    stopifnot(!is.null(hpa_enrichment_db_SE))
+    stopifnot(!is.null(qgenes_entrez) &
+                is.integer(qgenes_entrez))
+    stopifnot(resolution == "tissue" | resolution == "single_cell")
+    validate_db_df(genedb, dbtype = "genedb")
+
+    if(!("GSEABase" %in% (.packages(all.available = T)))){
+      suppressPackageStartupMessages(library(GSEABase))
+    }
+
     etype <- "tissues"
     edb <- "GTex"
     if(resolution != "tissue"){
       etype <- "cell types"
       edb <- "HPA"
+      validate_db_df(hpa_enrichment_db_df,
+                     dbtype = "enrichment_db_hpa_singlecell")
+    }else{
+      validate_db_df(hpa_enrichment_db_df,
+                     dbtype = "enrichment_db_hpa_tissue")
     }
     log4r_info(logger,
       paste0("Estimating enrichment of ", etype,
              " (", edb,
              ") in target set with TissueEnrich"))
-
-    stopifnot(!is.null(qgenes_entrez) &
-                is.integer(qgenes_entrez))
-    stopifnot(!is.null(genedb) |
-                !is.data.frame(genedb))
-    stopifnot(!is.null(oeDB$tissuecelldb))
-    stopifnot(resolution == "tissue" | resolution == "single_cell")
-    assertable::assert_colnames(
-      genedb, c("ensembl_gene_id",
-                "entrezgene",
-                "gene_biotype",
-                "cancer_max_rank"),
-      only_colnames = F, quiet = T)
 
     df <- data.frame('entrezgene' = as.integer(qgenes_entrez),
                      stringsAsFactors = F) %>%
@@ -250,9 +264,7 @@ gene_tissue_cell_enrichment <-
         )
     }
 
-
-
-    bg <- oeDB$tissuecelldb[[resolution]][['te_df']]
+    bg <- hpa_enrichment_db_df
 
     q <- bg %>%
       dplyr::select(.data$ensembl_gene_id) %>%
@@ -289,11 +301,19 @@ gene_tissue_cell_enrichment <-
 
     background_ensembl <- bg$ensembl_gene_id
     if(!is.null(background_entrez)){
+
+
+
       df <-
         data.frame('entrezgene' = as.integer(background_entrez),
-                   stringsAsFactors = F)
+                   stringsAsFactors = F) %>%
+        dplyr::inner_join(
+          dplyr::select(
+            genedb, .data$ensembl_gene_id, .data$entrezgene),
+          by = "entrezgene"
+        )
       bg <- bg %>%
-        dplyr::inner_join(df, by = "entrezgene") %>%
+        dplyr::inner_join(df, by = "ensembl_gene_id") %>%
         dplyr::distinct()
       background_ensembl <- bg$ensembl_gene_id
 
@@ -317,7 +337,8 @@ gene_tissue_cell_enrichment <-
 
     ## get pre-defined tissue-specificities (SummarisedExperiement) - created with
     ## tissueEnrich::teGeneRetrieval on expression data sets
-    se <- oeDB$tissuecelldb[[resolution]][['te_SE']]
+    se <- hpa_enrichment_db_SE
+    #se <- oeDB$tissuecelldb[[resolution]][['te_SE']]
 
     ## perform tissue enrichment analysis for query dataset (gs_query),
     ## using gs_background as the background dataset, and the annotated

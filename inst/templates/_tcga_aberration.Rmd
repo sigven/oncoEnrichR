@@ -1,4 +1,4 @@
-### TCGA aberration frequency
+### Tumor aberration frequencies
 
 * The somatic mutation frequencies of the target genes in ~10,000 tumor samples have been calculated with data from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/)
 
@@ -832,7 +832,7 @@ fig
 ```
 
 ```{r tcga_amplificiations_too_few, echo=F, results = 'asis', eval = is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']])}
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in copy number amplifications (<b>< 5, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in copy number amplifications (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -877,7 +877,7 @@ fig
 ```
 
 ```{r tcga_homdel_too_few, echo=F, results = 'asis', eval = is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']])}
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in homozygous deletions (<b>< 5, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heatmap not shown - limited number of genes in the queryset are involved in homozygous deletions (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

@@ -3,9 +3,11 @@ validate_query_genes <- function(qgenes,
                                qtype = "target",
                                ignore_id_err = F,
                                genedb = NULL,
-                               transcript_xref_db = NULL,
+                               transcript_xref = NULL,
                                logger = NULL){
 
+  stopifnot(!is.null(q_id_type))
+  stopifnot(is.character(qgenes))
   stopifnot(q_id_type == "symbol" |
               q_id_type == "entrezgene" |
               q_id_type == "ensembl_mrna" |
@@ -15,19 +17,27 @@ validate_query_genes <- function(qgenes,
               q_id_type == "uniprot_acc" |
               q_id_type == "ensembl_gene")
   stopifnot(is.character(qgenes))
+  qgenes <- qgenes[!is.na(qgenes)]
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(logger))
+  stopifnot(!is.null(transcript_xref))
   validate_db_df(genedb, dbtype = "genedb")
-  validate_db_df(transcript_xref_db, dbtype = "transcript_xref")
+  validate_db_df(transcript_xref, dbtype = "transcript_xref")
 
   alias2entrez <-
-    transcript_xref_db %>%
+    transcript_xref %>%
     dplyr::filter(.data$property == "alias") %>%
     dplyr::rename(alias = .data$value) %>%
     dplyr::select(-.data$property)
 
   target_genes <- data.frame(
-    'qid' = unique(qgenes), stringsAsFactors = F)
+    'qid' = unique(qgenes),
+    stringsAsFactors = F)
+
+  if(q_id_type == "entrezgene"){
+    target_genes$qid <- as.integer(target_genes$qid)
+  }
+
   gdb <- genedb %>%
     dplyr::select(.data$symbol,
                   .data$entrezgene,
@@ -53,8 +63,8 @@ validate_query_genes <- function(qgenes,
 
     target_genes <- target_genes %>%
       dplyr::left_join(gdb,
-                       by = c("qid" = q_id_type)) %>%
-      dplyr::mutate(!!rlang::sym(q_id_type) := .data$qid) %>%
+                       by = c("qid" = qtype_id)) %>%
+      dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) %>%
       dplyr::distinct()
 
   }else{
@@ -70,16 +80,8 @@ validate_query_genes <- function(qgenes,
       qtype_id <- "ensembl_protein_id"
     }
 
-
-    assertable::assert_colnames(
-      transcript_xref_db,
-      c("entrezgene","property","value"),
-      only_colnames = T,
-      quiet = T
-    )
-
     gene_xref_map <-
-      transcript_xref_db %>%
+      transcript_xref %>%
       dplyr::filter(.data$property == qtype_id) %>%
       dplyr::rename(!!rlang::sym(qtype_id) := .data$value) %>%
       dplyr::select(.data$entrezgene, rlang::sym(qtype_id))
@@ -125,8 +127,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        log4r_info(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -150,13 +152,12 @@ validate_query_genes <- function(qgenes,
             query_as_alias <- query_as_alias %>%
               dplyr::left_join(gdb,
                                by = "entrezgene") %>%
-                               #by = c("symbol" = "symbol")) %>%
               dplyr::distinct() %>%
               dplyr::mutate(alias = T)
 
             log4r_info(logger,
               paste0("Mapped query identifiers as gene aliases ",
-                     paste0(queryset[['not_found']]$qid, collapse=", ")," ---> ",
+                     paste0(query_as_alias$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
 
             queryset[['found']] <-
@@ -166,9 +167,9 @@ validate_query_genes <- function(qgenes,
 
             if(nrow(queryset[['not_found']]) > 0){
               log4r_warn(logger,
-                paste0("Query gene identifiers NOT found: ",
+                paste0(Hmisc::capitalize(qtype)," gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
-                       " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                       " (make sure that unambiguous primary identifiers/symbols are used)"))
             }else{
               queryset[['match_status']] <- "perfect_go"
             }
@@ -177,12 +178,13 @@ validate_query_genes <- function(qgenes,
           log4r_warn(logger,
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
-                   " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                   " (make sure that unambiguous primary identifiers/symbols are used)"))
         }
 
       }else{
-        log4r_warn(logger, paste0("Query gene identifiers NOT found: ",
-                                 paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(logger, paste0(
+          Hmisc::capitalize(qtype), " gene identifiers NOT found: ",
+          paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
       ## Indicate that processing should stop when encountering invalid query identifiers
@@ -190,8 +192,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        log4r_warn(logger, paste0("WARNING: query gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map query identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_warn(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -203,15 +205,14 @@ validate_query_genes <- function(qgenes,
           query_as_alias <- query_as_alias %>%
             dplyr::left_join(gdb,
                              by = "entrezgene") %>%
-                             #by = c("symbol" = "symbol")) %>%
             dplyr::distinct() %>%
           dplyr::mutate(alias = T)
 
 
           log4r_info(logger,
-            paste0("Mapped query identifiers as gene aliases ",
-                   paste0(queryset[['not_found']]$qid,collapse=", ")," ---> ",
-                   paste0(query_as_alias$qid,collapse=", ")))
+            paste0("Mapped ", qtype, " gene identifiers as gene aliases ",
+                   paste0(query_as_alias$qid,collapse=", ")," ---> ",
+                   paste0(query_as_alias$symbol,collapse=", ")))
 
           queryset[['found']] <-
             dplyr::bind_rows(queryset[['found']], query_as_alias)
@@ -220,24 +221,24 @@ validate_query_genes <- function(qgenes,
 
           if(nrow(queryset[['not_found']]) > 0){
             log4r_info(logger,
-              paste0("ERROR: Query gene identifiers NOT found: ",
+              paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
-                     " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                     " (make sure that unambiguous primary identifiers/symbols are used)"))
           }else{
             queryset[['match_status']] <- "perfect_go"
 
           }
         }else{
-          log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
+          log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
-                         " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                         " (make sure that unambiguous primary identifiers/symbols are used)"))
 
         }
       }
       else{
-        log4r_info(logger, paste0("ERROR: query gene identifiers NOT found: ",
+        log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
-                       " (make sure that primary identifiers/symbols are used, not aliases or synonyms)"))
+                       " (make sure that unambiguous primary identifiers/symbols are used)"))
       }
     }
   }
@@ -247,15 +248,15 @@ validate_query_genes <- function(qgenes,
   }else{
     if(nrow(queryset[['found']]) == 0){
       log4r_info(logger, paste0(
-        "ERROR: NO query gene identifiers found: ",
+        "ERROR: NO ", qtype, " gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?","\n"))
       queryset[['match_status']] <- "imperfect_stop"
     }else{
       log4r_info(logger,
         paste0('Identified n = ',
-               nrow(queryset[['found']]),' entries in ',
-               'target set (n = ',
+               nrow(queryset[['found']]),' entries in ', qtype,
+               ' set (n = ',
                nrow(queryset[['not_found']]),' invalid entries)'))
     }
 
@@ -293,11 +294,12 @@ validate_query_genes <- function(qgenes,
                     .data$status,
                     .data$symbol,
                     .data$genename) %>%
-      dplyr::rowwise() %>%
+        dplyr::rowwise() %>%
         dplyr::mutate(
-          symbol = dplyr::if_else(.data$status == "not_found",
-                                  as.character(NA),
-                                  as.character(.data$symbol)))
+          symbol = dplyr::if_else(
+            .data$status == "not_found",
+            as.character(NA),
+            as.character(.data$symbol)))
     )
   }
 
@@ -323,6 +325,7 @@ validate_db <- function(oe_db){
     c("cancerdrugdb", "release_notes", "subcelldb",
     "ligandreceptordb", "genedb", "otdb", "tftargetdb",
     "tissuecelldb", "hpa", "projectsurvivaldb",
+    "slparalogdb",
     "projectscoredb", "tcgadb", "pathwaydb")
 
   for(db in db_entries){
@@ -330,6 +333,24 @@ validate_db <- function(oe_db){
       log4r_info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
       return(-1)
     }
+    # if(db == "otdb"){
+    #   if(!identical(
+    #     names(oedb[[db]]),
+    #     c("all","site_rank","max_site_rank"))){
+    #     log4r_info(paste0("ERROR: 'oedb[[",db,"]]' is missing a part"))
+    #     return(-1)
+    #   }
+    # }
+    # if(db == "genedb"){
+    #
+    # }
+    # if(db == "subcelldb"){
+    #
+    # }
+    # if(db == "tcgadb"){
+    #
+    # }
+
   }
   return(0)
 }
@@ -348,17 +369,32 @@ validate_db_df <- function(df, dbtype = "genedb"){
     is.data.frame(df)
   )
   if(!is.logical(val)){
-    message(val)
+    stop(val)
   }
 
   dbtypes <- c("genedb",
+               "hpadb",
+               "tcga_aberration",
+               "tcga_diagnosis_code",
+               "tcga_site_code",
+               "tcga_clinical_strata_code",
+               "tcga_coexpression",
+               "tcga_recurrent_variants",
                "protein_complex",
                "dorothea",
-               "ligand_receptor",
+               "ligand_receptor_db",
+               "ligand_receptor_xref",
                "transcript_xref",
                "comppidb",
                "oeDB",
+               "tf_target_interactions",
+               "go_gganatogram",
+               "opentarget_disease_assoc",
+               "opentarget_disease_site_rank",
+               "enrichment_db_hpa_singlecell",
+               "enrichment_db_hpa_tissue",
                "ppi_nodes",
+               "slparalog",
                "fitness_scores",
                "target_priority_scores",
                "survival_km_cshl",
@@ -395,6 +431,116 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'unknown_function_rank',
               'has_gene_summary')
   }
+
+  if(dbtype == "opentarget_disease_assoc"){
+    cols <- c("disease_efo_id",
+              "direct_ot_association",
+              "ot_association_score",
+              "ensembl_gene_id",
+              "efo_name",
+              "primary_site",
+              "cancer_phenotype",
+              "ot_link")
+  }
+
+  if(dbtype == "tcga_aberration"){
+    cols <- c("symbol",
+              "variant_type",
+              "samples_mutated",
+              "tot_samples",
+              "percent_mutated",
+              "percentile",
+              "decile",
+              "clinical_strata_code",
+              "diagnosis_code",
+              "site_code")
+  }
+
+  if(dbtype == "slparalog"){
+    cols <- c("entrezgene_A1",
+              "symbol_A1",
+              "entrezgene_A2",
+              "symbol_A2",
+              "prediction_score",
+              "prediction_percentile",
+              "sequence_identity_pct",
+              "family_size",
+              "conservation_score",
+              "ppi_overlap")
+  }
+
+  if(dbtype == "tcga_coexpression"){
+    cols <- c("symbol",
+              "symbol_partner",
+              "r",
+              "p_value",
+              "tumor",
+              "tumor_suppressor",
+              "oncogene",
+              "cancer_driver")
+  }
+
+  if(dbtype == "tcga_diagnosis_code"){
+    cols <- c("primary_diagnosis",
+              "diagnosis_code")
+  }
+
+  if(dbtype == "tcga_site_code"){
+    cols <- c("primary_site",
+              "site_code")
+  }
+
+  if(dbtype == "tcga_clinical_strata_code"){
+    cols <- c("clinical_strata",
+              "clinical_strata_code")
+  }
+
+
+  if(dbtype == "opentarget_disease_site_rank"){
+    cols <- c("ensembl_gene_id",
+              "tissue_assoc_rank",
+              "primary_site",
+              "tissue_assoc_score")
+  }
+
+  if(dbtype == "enrichment_db_hpa_singlecell"){
+    cols <- c("ensembl_gene_id",
+              "category",
+              "cell_type")
+  }
+
+  if(dbtype == "enrichment_db_hpa_tissue"){
+    cols <- c("ensembl_gene_id",
+              "category",
+              "tissue")
+  }
+
+  if(dbtype == "hpadb"){
+    cols <- c("ensembl_gene_id",
+              "property",
+              "value")
+  }
+
+
+  if(dbtype == "tf_target_interactions"){
+    cols = c("queryset_overlap",
+                 "literature_support",
+                 "interaction_sources",
+                 "regulator_cancer_max_rank",
+                 "target_cancer_max_rank",
+                 "regulator",
+                 "regulator_name",
+                 "target",
+                 "target_name",
+                 "confidence_level",
+                 "mode_of_regulation")
+  }
+
+
+  if(dbtype == "go_gganatogram"){
+    cols <- c("ggcompartment",
+                  "go_id")
+  }
   if(dbtype == "protein_complex"){
     cols <- c('complex_id',
               'complex_name',
@@ -406,7 +552,13 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'complex_literature',
               'complex_literature_support')
   }
-  if(dbtype == "ligand_receptor"){
+  if(dbtype == "ligand_receptor_xref"){
+    cols <- c('interaction_id',
+              'symbol',
+              'class')
+  }
+
+  if(dbtype == "ligand_receptor_db"){
     cols <- c('interaction_id',
               'interaction_name',
               'annotation',
@@ -450,10 +602,12 @@ validate_db_df <- function(df, dbtype = "genedb"){
   if(dbtype == "fitness_scores"){
     cols <- c('symbol',
               'model_name',
-              'loss_of_fitness',
               'model_id',
-              'model_type',
+              'loss_of_fitness',
+              'scaled_BF',
               'tissue',
+              'cancer_type',
+              'tissue_status',
               'entrezgene',
               'sample_site',
               'gene_id_project_score')
@@ -511,6 +665,34 @@ validate_db_df <- function(df, dbtype = "genedb"){
                               only_colnames = F,
                               quiet = T)
 
+  if(dbtype == 'transcript_xref'){
+    identifiers_expected <- c('alias',
+                     'ensembl_gene_id',
+                     'ensembl_protein_id',
+                     'ensembl_transcript_id',
+                     'refseq_mrna',
+                     'refseq_peptide',
+                     'symbol',
+                     'uniprot_acc')
+
+    identifiers_found <- sort(unique(df$property))
+
+    assertthat::assert_that(
+      identical(identifiers_expected, identifiers_found),
+      msg = paste0("Identifier types present in 'transcript_xref' data frame",
+                   " ('property' column) does not have all necessary values")
+    )
+
+    assertthat::assert_that(
+      typeof(df$entrezgene) == "integer",
+      msg = paste0("Type of 'entrezgene' column in 'transcript_xref' ",
+                   "is not of type 'integer'")
+    )
+
+
+  }
+
+  return(0)
 
 }
 
@@ -547,7 +729,7 @@ add_excel_sheet <- function(
       if(NROW(report$data$unknown_function$hits_df) > 0){
         target_df <- report$data$unknown_function$hits_df %>%
           dplyr::mutate(
-            annotation_source = "GO (MsigDB 7.4)/NCBI Gene/UniProt (2021_02)",
+            annotation_source = "GO (MsigDB 7.5.1)/NCBI Gene/UniProt (2022.01)",
             version = NA) %>%
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) %>%
@@ -829,6 +1011,42 @@ add_excel_sheet <- function(
     }
   }
 
+  if(analysis_output == "synthetic_lethality"){
+    for(t in c('single_pair_member','both_in_pair')){
+
+      if(is.data.frame(report$data$synleth[[t]])){
+        if(NROW(report$data$synleth[[t]]) > 0){
+          df <- report$data$synleth[[t]] %>%
+            dplyr::mutate(
+              annotation_source = "Prediction of synthetic lethality pairs (De Kegel et al., Cell Systems, 2021)",
+              version = "v1") %>%
+            dplyr::mutate(feature_type = t) %>%
+            dplyr::mutate(
+              genename_A =
+                stringr::str_trim(
+                  textclean::replace_html(.data$genename_A)
+                )
+            ) %>%
+            dplyr::mutate(
+              genename_B =
+                stringr::str_trim(
+                  textclean::replace_html(.data$genename_B)
+                )
+            ) %>%
+            dplyr::arrange(.data$feature_type,
+                           dplyr::desc(.data$prediction_score)) %>%
+            dplyr::select(.data$annotation_source, .data$version,
+                          .data$feature_type, dplyr::everything())
+
+          target_df <- target_df %>%
+            dplyr::bind_rows(df)
+
+        }
+      }
+    }
+  }
+
+
   if(analysis_output == "survival_association"){
     for(t in c('cna','mut','exp')){
       if(is.data.frame(report$data$cancer_prognosis$km_cshl$assocs[[t]])){
@@ -992,24 +1210,25 @@ add_excel_sheet <- function(
 
 
 
-  if(analysis_output == "crispr_ps_fitness"){
-    if(is.data.frame(report$data$crispr_ps$fitness_scores$targets)){
-      if(NROW(report$data$crispr_ps$fitness_scores$targets) > 0){
-        target_df <- report$data$crispr_ps$fitness_scores$targets %>%
+  if(analysis_output == "fitness_scores"){
+    if(is.data.frame(report$data$fitness$fitness_scores$targets)){
+      if(NROW(report$data$fitness$fitness_scores$targets) > 0){
+        target_df <- report$data$fitness$fitness_scores$targets %>%
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
             version = report$config$resources$projectscore$version) %>%
-          dplyr::select(-c(.data$symbol_link_ps, .data$cmp_link)) %>%
+          dplyr::select(-c(.data$symbol_link_ps, .data$model_link_ps,
+                           .data$n_gene)) %>%
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
     }
   }
 
-  if(analysis_output == "crispr_ps_prioritized"){
-    if(is.data.frame(report$data$crispr_ps$target_priority_scores$targets)){
-      if(NROW(report$data$crispr_ps$target_priority_scores$targets) > 0){
-        target_df <- report$data$crispr_ps$target_priority_scores$targets %>%
+  if(analysis_output == "fitness_prioritized"){
+    if(is.data.frame(report$data$fitness$target_priority_scores$targets)){
+      if(NROW(report$data$fitness$target_priority_scores$targets) > 0){
+        target_df <- report$data$fitness$target_priority_scores$targets %>%
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
             version = report$config$resources$projectscore$version) %>%
@@ -1061,7 +1280,7 @@ add_excel_sheet <- function(
   if(analysis_output == "cell_tissue"){
 
     target_df <- data.frame()
-    for(e in c("tissue_enrichment","scRNA_enrichment")){
+    for(e in c("tissue_enrichment", "scRNA_enrichment")){
       if(is.data.frame(report$data$cell_tissue[[e]]$per_gene)){
         if(NROW(report$data$cell_tissue[[e]]$per_gene) > 0){
           if(e == "tissue_enrichment"){

@@ -1,17 +1,20 @@
 hpa_prognostic_genes <- function(qgenes,
                                  q_id_type = "symbol",
                                 genedb = NULL,
-                                oeDB = NULL,
+                                hpadb = NULL,
                                 logger = NULL){
   stopifnot(!is.null(logger))
   log4r_info(logger,
     paste0("Human Protein Atlas: retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(oeDB$hpa))
+  stopifnot(!is.null(hpadb))
   validate_db_df(genedb, dbtype = "genedb")
+  validate_db_df(hpadb, dbtype = "hpadb")
   stopifnot(q_id_type == "symbol" | q_id_type == "entrezgene")
-  stopifnot(is.data.frame(oeDB$hpa))
+  stopifnot(is.data.frame(hpadb))
+  stopifnot(!is.null(qgenes))
+
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
   if(q_id_type == 'entrezgene'){
     stopifnot(is.integer(qgenes))
@@ -26,7 +29,7 @@ hpa_prognostic_genes <- function(qgenes,
       dplyr::distinct()
   }
 
-  prognostic_associations <- oeDB$hpa %>%
+  prognostic_associations <- hpadb %>%
     dplyr::filter(stringr::str_detect(.data$property,"pathology_prognostics")) %>%
     tidyr::separate(.data$value, c("evidence_direction","is_prognostic","p_value"),
                     sep="\\|") %>%
@@ -120,52 +123,58 @@ hpa_prognostic_genes <- function(qgenes,
 
 }
 
-km_cshl_survival_genes <-
+km_cshl_survival_genes <- function(qgenes,
+                                   qsource = "symbol",
+                                   projectsurvivaldb = NULL,
+                                   logger = NULL,
+                                   ...){
 
-  function(qgenes,
-           qsource = "symbol",
-           projectsurvivaldb = NULL,
-           logger = NULL,
-           ...){
 
-    stopifnot(!is.null(logger))
-    dot_args <- list(...)
-    log4r_info(logger,
-      paste0("Project Survival_KM_CSHL: retrieval of ",
-             "genetic determinants of cancer survival - ",
-            dot_args$genetic_feature
-      ))
-    stopifnot(is.character(qgenes))
-    stopifnot(!is.null(projectsurvivaldb))
-    validate_db_df(projectsurvivaldb,
-                   dbtype = "survival_km_cshl")
+  stopifnot(!is.null(logger))
+  dot_args <- list(...)
+  log4r_info(logger,
+             paste0("Project Survival_KM_CSHL: retrieval of ",
+                    "genetic determinants of cancer survival - ",
+                    dot_args$genetic_feature
+             ))
+  stopifnot(is.character(qgenes))
+  km_survival_targets <- data.frame()
+  # if(unique(nchar(qgenes)) == 0){
+  #   log4r_warn(logger, paste0("Length of queryset is empty"))
+  #   return(km_survival_targets)
+  #
+  # }
+  stopifnot(!is.null(projectsurvivaldb))
+  validate_db_df(projectsurvivaldb,
+                 dbtype = "survival_km_cshl")
 
-    target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
 
-    km_survival_targets <- data.frame()
+  target_genes <- data.frame(
+    "symbol" = qgenes, stringsAsFactors = F)
 
-    targets_survival <- as.data.frame(
-      projectsurvivaldb %>%
-        dplyr::inner_join(target_genes, by = c("symbol"))
-    )
 
-    symlevels <- levels(projectsurvivaldb$symbol)
+  targets_survival <- as.data.frame(
+    projectsurvivaldb %>%
+      dplyr::inner_join(target_genes, by = c("symbol"))
+  )
 
-    if(nrow(targets_survival) > 0){
+  symlevels <- levels(projectsurvivaldb$symbol)
 
-      km_survival_targets <- as.data.frame(
-        targets_survival %>%
-          dplyr::select(.data$symbol,
-                        .data$tcga_cohort,
-                        .data$z_score) %>%
+  if(nrow(targets_survival) > 0){
+
+    km_survival_targets <- as.data.frame(
+      targets_survival %>%
+        dplyr::select(.data$symbol,
+                      .data$tcga_cohort,
+                      .data$z_score) %>%
         dplyr::mutate(
           symbol = factor(.data$symbol, levels = symlevels))
-      )
+    )
 
-
-    }
-
-    return(km_survival_targets)
 
   }
+
+  return(km_survival_targets)
+
+}
 

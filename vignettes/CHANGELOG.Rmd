@@ -3,6 +3,38 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.0.9
+
+* Date: 2022-03-31
+
+### Added 
+
+* Data updates: 
+  * CancerMine (v43)
+  * Open Targets Platform (2022.02)
+  * WikiPathways (20220310)
+  * Project Score (July 2021 release)
+
+* New analysis section: *Synthetic lethality* - shows how members of the queryset overlaps with predicted synthetic lethality interactions (as published by De Kegel et al., Cell Systems, 2021)
+  * add this section in the output with option `--show_synleth`
+
+### Fixed
+
+* Bug in query identification for background set
+* Bug in rank of top gene-cancer associations
+
+### Changed
+
+* Option `--show_crispr_lof` renamed to `--show_fitness`. Corresponding section in HTML report renamed from 
+`CRISPR/Cas9 loss-of-fitness` to `Gene fitness scores`.
+* Renamed sections in HTML report:
+  - `TCGA co-expression` --> `Tumor co-expression`
+  - `TCGA aberration frequency` ---> `Tumor aberration frequencies`
+  - `TCGA prognostic associations` ---> `Prognostic associations`
+
+* Sections that include *tabsets* are now organized so that the initial active tab
+always contains data (with the exception of all tabs being empty)
+
 ## Version 1.0.8
 
 * Date: 2022-02-18
@@ -25,6 +57,8 @@ output: rmarkdown::html_document
 
 ## Version 1.0.7
 
+* Date: 2021-11-30
+
 ### Added
 
 * Data updates
@@ -45,6 +79,8 @@ the addition of an initial step in the analysis; **database loading**.
 
 
 ## Version 1.0.6
+
+* Date: 2021-10-27
 
 ### Added
 
@@ -90,6 +126,8 @@ EFO (v3.34.0)
 
 ## Version 1.0.4
 
+* Date: 2021-07-08
+
 ### Added
 
 * Data updates: Open Targets Platform (21.06), CancerMine (v37)
@@ -120,7 +158,9 @@ EFO (v3.34.0)
 * Fixed assymetrical scales of prognostic Z-score plots
 * To decrease the size of the HTML report, limited datatable output of recurrent somatic SNVs/InDels and sCNA frequencies to top 2,500 (full set is kept in Excel output)
 
-## Version 0.9.7 (June 4th 2021) 
+## Version 0.9.7 
+
+* Date: 2021-06-07
 
 ### New
 
