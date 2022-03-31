@@ -1928,6 +1928,7 @@ get_fitness_data_crispr <- function(
       dplyr::mutate(model_id = as.character(model_id),
                     symbol = as.character(symbol),
                     scaled_BF = as.numeric(scaled_BF) * -1) %>%
+      dplyr::filter(!is.na(scaled_BF)) %>%
       dplyr::filter(scaled_BF < 0)
 
     ## Fitness scores - new

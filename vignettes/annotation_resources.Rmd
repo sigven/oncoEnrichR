@@ -23,6 +23,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 -   [ComPPI](http://comppi.linkgroup.hu/) - subcellular compartment database
 -   [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
 -   [Genetic determinants of survival in cancer](http://survival.cshl.edu/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
+-   [Predicted synthetic lethality interactions](https://pubmed.ncbi.nlm.nih.gov/34529928/) - Resource on predicted synthetic lethality interactions between human gene paralogs (using human cancer cell lines)
 
 
 ## Resources - annotation types
@@ -98,6 +99,8 @@ the overall association score is greater or equal to 0.1 (range 0-1).
 
 * Ligand-receptor interactions have been collected from the [CellChatDB](http://www.cellchat.org) resource. In the *oncoEnrichR* module for these interactions, only interactions where **both ligand and receptor are found in the queryset** are shown.
 
+### Synthetic lethality interactions
 
+* Predicted synthetic lethality interactions between human gene paralogs have been collected from [De Kegel et al., Cell Systems, 2021](https://pubmed.ncbi.nlm.nih.gov/34529928/). Interactions are shown for which both members are part of the queryset, and interactions where only a single member of the query set is present.
 
 

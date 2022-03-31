@@ -11,8 +11,45 @@
 
 <br><br>
 
-#### Secreted Signaling
+```{r ligand_receptor_prep, echo = F, results = 'asis', eval = T}
 
+active_tab <- list()
+
+for(cl in c('ss','ecm','ccc')){
+  active_tab[[cl]] <- F
+}
+
+if(NROW(onc_enrich_report[['data']][['ligand_receptor']][['secreted_signaling']]) > 0){
+  active_tab[['ss']] <- T
+}else{
+  if(NROW(onc_enrich_report[['data']][['ligand_receptor']][['ecm_receptor']]) > 0){
+    active_tab[['ecm']] <- T
+  }else{
+     if(NROW(onc_enrich_report[['data']][['ligand_receptor']][['cell_cell_contact']]) > 0){
+      active_tab[['ccc']] <- T
+    }
+  }
+}
+
+if(active_tab[['ss']] == F &
+   active_tab[['ecm']] == F &
+   active_tab[['ccc']] == F){
+  active_tab[['ss']] <- T
+}
+  
+```
+
+```{r active_tab_ss, echo = F, results = "asis"}
+if(active_tab[['ss']] == T){
+  cat("")
+  cat("#### Secreted Signaling {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### Secreted Signaling")
+  cat("")
+}
+```
 
 ```{r lig_rec_interactions_1, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['secreted_signaling']]) > 0}
 
@@ -55,10 +92,19 @@ cat('<br><br>')
 
 ```
 
+<br>
 
-<br><br>
-
-#### ECM-Receptor
+```{r active_tab_ecm, echo = F, results = "asis"}
+if(active_tab[['ecm']] == T){
+  cat("")
+  cat("#### ECM-Receptor {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### ECM-Receptor")
+  cat("")
+}
+```
 
 
 ```{r lig_rec_interactions_2, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['ecm_receptor']]) > 0}
@@ -102,10 +148,19 @@ cat('<br><br>')
 
 ```
 
-<br><br>
+<br>
 
-#### Cell-Cell Contact
-
+```{r active_tab_ccc, echo = F, results = "asis"}
+if(active_tab[['ccc']] == T){
+  cat("")
+  cat("#### Cell-Cell Contact {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### Cell-Cell Contact")
+  cat("")
+}
+```
 
 ```{r lig_rec_interactions_3, echo = F, results = 'asis', eval = nrow(onc_enrich_report[['data']][['ligand_receptor']][['cell_cell_contact']]) > 0}
 
@@ -148,4 +203,4 @@ cat('<br><br>')
 
 ```
 
-<br><br>
+<br>

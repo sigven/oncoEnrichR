@@ -93,6 +93,8 @@ init_report(
 
 \item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
 
+\item{max_fitness_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
+
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}

@@ -11,7 +11,7 @@ gencode_version <- "39"
 update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- F
-update_project_score <- F
+update_project_score <- T
 update_project_survival <- F
 update_tcga <- F
 update_cancer_hallmarks <- F

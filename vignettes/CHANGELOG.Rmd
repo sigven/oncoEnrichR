@@ -5,7 +5,7 @@ output: rmarkdown::html_document
 
 ## Version 1.0.9
 
-* Date: 2022-03-24
+* Date: 2022-03-31
 
 ### Added 
 
@@ -30,6 +30,9 @@ output: rmarkdown::html_document
   - `TCGA co-expression` --> `Tumor co-expression`
   - `TCGA aberration frequency` ---> `Tumor aberration frequencies`
   - `TCGA prognostic associations` ---> `Prognostic associations`
+
+* Sections that include *tabsets* are now organized so that the active tab
+always contains data (with the exception of all tabs being empty)
 
 ## Version 1.0.8
 

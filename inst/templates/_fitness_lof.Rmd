@@ -181,7 +181,7 @@ oe_target_priority_fig
 
 ```{r fitness_missing_priority, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['n_pri_targets']] < 5}
 
-cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO/LIMITED GENES</b> in the query set nominated as prioritized targets in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO / LIMITED GENES</b> in the query set nominated as prioritized targets in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 
 ```

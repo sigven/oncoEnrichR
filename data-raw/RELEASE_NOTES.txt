@@ -1,4 +1,4 @@
-##ONCOENRICHR_DB_VERSION = 20220330
+##ONCOENRICHR_DB_VERSION = 20220331
 oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.0.9	oncoEnrichR	software
 clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler	R package for comparing biological themes among gene clusters	v4.2.2	clusterprofiler	software
 Omnipath	https://omnipathdb.org/	Database of molecular biology prior knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.2.8/OmnipathR	omnipath	db
@@ -13,7 +13,7 @@ GENCODE	https://www.gencodegenes.org/	High quality reference gene annotation and
 TCGA	https://cancergenome.nih.gov	The Cancer Genome Atlas - Tumor gene expression and somatic DNA aberrations	v31.0 (October 29th 2021)	tcga	db
 UniProtKB	http://www.uniprot.org	Comprehensive resource of protein sequence and functional information	v2021_04	uniprot	db
 NetPath	http://www.netpath.org	Manually curated resource of signal transduction pathways in humans	v1 (2010)	netpath	db
-EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.39.1	efo	db
+EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.40.0	efo	db
 DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2022-03-02	do	db
 COMPPI	https://comppi.linkgroup.hu/	Compartmentalized protein-protein interaction database	v2.1.1 (Oct 2018)	comppi	db
 WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20220310	wikipathway	db

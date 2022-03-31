@@ -12,35 +12,55 @@ complete set are listed in the Excel output of *oncoEnrichR*)
 ```{r filter_tcga_coexp, echo=F, results='asis'}
 
 show_tcga_coexp <- list()
-missing_tcga_coexp <- list()
 coexp_data <- list()
+active_tab <- list()
 
 for(n in c('Positive','Negative')){
-    show_tcga_coexp[[n]] <- TRUE
-    missing_tcga_coexp[[n]] <- FALSE
-    coexp_data[[n]] <- data.frame()
+  show_tcga_coexp[[n]] <- TRUE
+  coexp_data[[n]] <- data.frame()
+  active_tab[[n]] <- FALSE
   
-    coexp_data[[n]] <- 
-      onc_enrich_report[['data']][['tcga']][['coexpression']] %>% 
-      dplyr::filter(corrtype == n) %>%
-      dplyr::select(-corrtype) %>%
-      head(2500)
-    
-    if(n == 'Negative'){
-      coexp_data[[n]] <- coexp_data[[n]] %>%
-        dplyr::arrange(r)
-    }
+  coexp_data[[n]] <- 
+    onc_enrich_report[['data']][['tcga']][['coexpression']] %>% 
+    dplyr::filter(corrtype == n) %>%
+    dplyr::select(-corrtype) %>%
+    head(2500)
   
-    if(nrow(coexp_data[[n]]) == 0){
-      missing_tcga_coexp[[n]] <- TRUE
-      show_tcga_coexp[[n]] <- FALSE
-    }
+  if(n == 'Negative'){
+    coexp_data[[n]] <- coexp_data[[n]] %>%
+      dplyr::arrange(r)
+  }
+  
+  if(nrow(coexp_data[[n]]) == 0){
+    show_tcga_coexp[[n]] <- FALSE
+  }
+}
+
+if(show_tcga_coexp[['Positive']] == T){
+  active_tab[['Positive']] <- T
+}else{
+  if(show_tcga_coexp[['Negative']] == T){
+    active_tab[['Negative']] <- T
+  }else{
+    active_tab[['Positive']] <- T
+  }
 }
 
 ```
 
 
-#### Positive correlation
+```{r active_tab_positive_coexp, echo = F, results = "asis"}
+if(active_tab[['Positive']] == T){
+  cat("")
+  cat("#### Positive correlation {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### Positive correlation")
+  cat("")
+}
+```
+
 
 ```{r table_browse_tcga_coexp, echo=F, results = "asis", eval = show_tcga_coexp[['Positive']]}
 library(crosstalk)
@@ -80,7 +100,7 @@ rm(coexp_genes_positive)
 ```
 
 
-```{r coexp_missing_positive, echo=F, results = 'asis', eval = missing_tcga_coexp[['Positive']]}
+```{r coexp_missing_positive, echo=F, results = 'asis', eval = !show_tcga_coexp[['Positive']]}
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with strong positive correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -88,10 +108,21 @@ cat('<br><br>')
 
 ```
 
-<br><br><br>
+<br><br>
 
 
-#### Negative correlation
+```{r active_tab_negative_coexp, echo = F, results = "asis"}
+if(active_tab[['Negative']] == T){
+  cat("")
+  cat("#### Negative correlation {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### Negative correlation")
+  cat("")
+}
+```
+
 
 ```{r table_browse_tcga_coexp2, echo=F, results = "asis", eval = show_tcga_coexp[['Negative']]}
 library(crosstalk)
@@ -131,10 +162,10 @@ rm(coexp_data)
 ```
 <br><br>
 
-```{r coexp_missing_negative, echo=F, results = 'asis', eval = missing_tcga_coexp[['Negative']]}
+```{r coexp_missing_negative, echo=F, results = 'asis', eval = !show_tcga_coexp[['Negative']]}
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No genes in the query set with strong negative correlations to tumor suppressors, oncogenes or cancer drivers.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 ```
 
-<br><br><br>
+<br><br>

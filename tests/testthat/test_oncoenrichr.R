@@ -220,6 +220,15 @@ test_that("oncoEnrichR - generate report", {
 
   expect_output(
     oncoEnrichR::onco_enrich(
+      query = myc_data$symbol,
+      max_fitness_score = 1,
+      oeDB = oedb
+    ),
+    regexp = "ERROR: "
+  )
+
+  expect_output(
+    oncoEnrichR::onco_enrich(
       query = c("BRAF","TESTZ4"),
       oeDB = oedb
     ),

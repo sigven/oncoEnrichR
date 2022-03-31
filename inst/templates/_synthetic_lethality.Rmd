@@ -7,7 +7,9 @@
 * In the tables below, predictions below the 50% percentile are ignored (the complete set can be found in the Excel output of oncoEnrichR). Additional properties of each predicted pair of interactors are included for filtering, including:
   * Prediction score and percentile
   * Percent sequence identity between the genes
-  * Size of gene paralog family 
+  * Size of gene paralog family
+  
+* The higher the prediction score, the more confident the prediction is with respect to a synthetic lethality interaction. 
 
 
 <br><br>
@@ -17,17 +19,27 @@
 sl_interactions <- list()
 sl_interactions[['a_b']] <- data.frame()
 sl_interactions[['a_only']] <- data.frame()
+active_tab <- list()
+active_tab[['a_b']] <- F
+active_tab[['a_only']] <- F
 
 if(NROW(onc_enrich_report[['data']][['synleth']][['both_in_pair']]) > 0){
   sl_interactions[['a_b']] <- onc_enrich_report[['data']][['synleth']][['both_in_pair']] %>%
     dplyr::filter(.data$prediction_percentile < 50) %>%
     head(2500)
+  
+  active_tab[['a_b']] <- T
+
 }
 
 if(NROW(onc_enrich_report[['data']][['synleth']][['single_pair_member']]) > 0){
   sl_interactions[['a_only']] <- onc_enrich_report[['data']][['synleth']][['single_pair_member']] %>%
     dplyr::filter(.data$prediction_percentile < 50) %>%
     head(2500)
+  
+  if(active_tab[['a_b']] == F){
+    active_tab[['a_only']] <- T
+  }
   
 }
 
@@ -39,7 +51,17 @@ if(NROW(onc_enrich_report[['data']][['synleth']][['single_pair_member']]) > 0){
 
 <br>
 
-##### Both pair members in query set
+```{r active_tab_a_b, echo = F, results = "asis"}
+if(active_tab[['a_b']] == T){
+  cat("")
+  cat("##### Both pair members in query set {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Both pair members in query set")
+  cat("")
+}
+```
 
 ```{r synleth_interactions_1, echo = F, results = 'asis', eval = nrow(sl_interactions[['a_b']]) > 0}
 
@@ -103,10 +125,19 @@ cat('<br><br>')
 
 ```
 
-
 <br><br>
 
-##### Single pair member in query set
+```{r active_tab_a_only, echo = F, results = "asis"}
+if(active_tab[['a_only']] == T){
+  cat("")
+  cat("##### Single pair member in query set {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Single pair member in query set")
+  cat("")
+}
+```
 
 ```{r sl_interactions_2, echo = F, results = 'asis', eval = nrow(sl_interactions[['a_only']]) > 0}
 

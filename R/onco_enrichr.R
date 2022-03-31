@@ -216,6 +216,7 @@ load_db <- function(remote = T,
 #' @param min_subcellcomp_confidence minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 #' @param min_confidence_reg_interaction minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
+#' @param max_fitness_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
@@ -881,7 +882,7 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  val <- max_fitness_score < 0
+  val <- max_fitness_score <= 0 & is.numeric(max_fitness_score)
 
   if(val == F){
     log4r_info(logger, paste0(
@@ -988,6 +989,7 @@ onco_enrich <- function(query = NULL,
     min_subcellcomp_confidence = min_subcellcomp_confidence,
     subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     min_confidence_reg_interaction = min_confidence_reg_interaction,
+    max_fitness_score = max_fitness_score,
     simplify_go = simplify_go,
     show_ppi = show_ppi,
     show_drugs_in_ppi = show_drugs_in_ppi,
