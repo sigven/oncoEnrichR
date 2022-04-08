@@ -303,7 +303,7 @@ target_disease_associations <-
                         .data$tissue_assoc_rank * 100) %>%
         dplyr::mutate(
           symbol = factor(
-            .data$symbol, levels = result$target$symbol
+            .data$symbol, levels = unique(result$target$symbol)
           )
         ) %>%
         dplyr::arrange(.data$symbol) %>%
