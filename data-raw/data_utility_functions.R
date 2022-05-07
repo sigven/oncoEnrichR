@@ -285,7 +285,7 @@ get_msigdb_signatures <- function(basedir = NULL,
 
 
 get_ts_oncogene_annotations <- function(basedir = NULL,
-                                        version = "39",
+                                        version = "45",
                                         gene_info = NULL){
   rlogging::message(
     "Retrieving proto-oncogenes/tumor suppressor status ",
@@ -323,8 +323,8 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
   )
 
   all_citations <- data.frame()
-  if(file.exists(paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv"))){
-    all_citations <- read.table(file=paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv"),
+  if(file.exists(paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv.gz"))){
+    all_citations <- read.table(file=paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv.gz"),
                                 sep = "\t", header = F, quote = "", comment.char = "", stringsAsFactors = F) %>%
       magrittr::set_colnames(c('pmid','citation','citation_link')) %>%
       dplyr::distinct() %>%
@@ -348,7 +348,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
       dplyr::mutate(n_citations_oncogene = as.integer(stringr::str_count(pmids_oncogene,", ")) + 1) %>%
       dplyr::filter(n_citations_oncogene > 1) %>%
       dplyr::mutate(oncogene_cancermine = dplyr::if_else(
-        n_citations_oncogene > 4,
+        n_citations_oncogene > 5,
         "MC",
         as.character("LC"))) %>%
       dplyr::mutate(oncogene_cancermine = dplyr::if_else(
@@ -371,7 +371,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
       dplyr::mutate(n_citations_tsgene = as.integer(stringr::str_count(pmids_tsgene,", ")) + 1) %>%
       dplyr::filter(n_citations_tsgene > 1) %>%
       dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
-        n_citations_tsgene > 4,
+        n_citations_tsgene > 5,
         "MC",
         as.character("LC"))) %>%
       dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
@@ -393,7 +393,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
       dplyr::mutate(n_citations_cdriver = as.integer(stringr::str_count(pmids_cdriver,", ")) + 1) %>%
       dplyr::filter(n_citations_cdriver > 1) %>%
       dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(
-        n_citations_cdriver > 4,
+        n_citations_cdriver > 5,
         "MC",
         as.character("LC"))) %>%
       dplyr::mutate(cancer_driver_cancermine = dplyr::if_else(
@@ -457,58 +457,89 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
   tsgene_full <- dplyr::full_join(tsgene, oncogene, by = c("entrezgene")) %>%
     dplyr::full_join(cdriver, by="entrezgene") %>%
     dplyr::full_join(ncg, by = "entrezgene") %>%
-    dplyr::mutate(ncg_oncogene = dplyr::if_else(is.na(ncg_oncogene) | ncg_oncogene == F,FALSE,TRUE)) %>%
-    dplyr::mutate(ncg_tumor_suppressor = dplyr::if_else(is.na(ncg_tumor_suppressor) | ncg_tumor_suppressor == F,FALSE,TRUE)) %>%
-    dplyr::mutate(n_citations_oncogene = dplyr::if_else(is.na(n_citations_oncogene),as.integer(0),as.integer(n_citations_oncogene))) %>%
-    dplyr::mutate(n_citations_tsgene = dplyr::if_else(is.na(n_citations_tsgene),as.integer(0),as.integer(n_citations_tsgene))) %>%
-    dplyr::mutate(n_citations_cdriver = dplyr::if_else(is.na(n_citations_cdriver),as.integer(0),as.integer(n_citations_cdriver))) %>%
+    dplyr::mutate(ncg_oncogene = dplyr::if_else(
+      is.na(ncg_oncogene) | ncg_oncogene == F,FALSE,TRUE)) %>%
+    dplyr::mutate(ncg_tumor_suppressor = dplyr::if_else(
+      is.na(ncg_tumor_suppressor) | ncg_tumor_suppressor == F,FALSE,TRUE)) %>%
+    dplyr::mutate(n_citations_oncogene = dplyr::if_else(
+      is.na(n_citations_oncogene),
+      as.integer(0),as.integer(n_citations_oncogene))) %>%
+    dplyr::mutate(n_citations_tsgene = dplyr::if_else(
+      is.na(n_citations_tsgene),as.integer(0),as.integer(n_citations_tsgene))) %>%
+    dplyr::mutate(n_citations_cdriver = dplyr::if_else(
+      is.na(n_citations_cdriver),as.integer(0),as.integer(n_citations_cdriver))) %>%
 
-    dplyr::mutate(oncogene = dplyr::if_else((ncg_oncogene == T & !is.na(oncogene_cancermine)) | oncogene_cancermine == "HC" | oncogene_cancermine == "MC",TRUE,FALSE)) %>%
-    dplyr::mutate(oncogene = dplyr::if_else(is.na(oncogene),FALSE,as.logical(oncogene))) %>%
-    dplyr::mutate(tumor_suppressor = dplyr::if_else((ncg_tumor_suppressor == T & !is.na(tumor_suppressor_cancermine)) | tumor_suppressor_cancermine == "HC" | tumor_suppressor_cancermine == "MC",TRUE,FALSE)) %>%
-    dplyr::mutate(tumor_suppressor = dplyr::if_else(is.na(tumor_suppressor),FALSE,as.logical(tumor_suppressor))) %>%
-    dplyr::mutate(cancer_driver = dplyr::if_else(cancer_driver_cancermine == "HC" |
-                                                   cancer_driver_cancermine == "MC" |
-                                                   cancer_driver_cancermine == "LC",TRUE,FALSE)) %>%
-    dplyr::mutate(cancer_driver = dplyr::if_else(is.na(cancer_driver),FALSE,as.logical(cancer_driver))) %>%
+    dplyr::mutate(oncogene = dplyr::if_else(
+      (ncg_oncogene == T & !is.na(oncogene_cancermine)) |
+        oncogene_cancermine == "HC" | oncogene_cancermine == "MC",
+      TRUE, FALSE)) %>%
+    dplyr::mutate(oncogene = dplyr::if_else(
+      is.na(oncogene), FALSE, as.logical(oncogene))) %>%
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      (ncg_tumor_suppressor == T & !is.na(tumor_suppressor_cancermine)) |
+        tumor_suppressor_cancermine == "HC" | tumor_suppressor_cancermine == "MC",
+      TRUE, FALSE)) %>%
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      is.na(tumor_suppressor),FALSE,as.logical(tumor_suppressor))) %>%
+    dplyr::mutate(cancer_driver = dplyr::if_else(
+      cancer_driver_cancermine == "HC" |
+        cancer_driver_cancermine == "MC" |
+        cancer_driver_cancermine == "LC",TRUE,FALSE)) %>%
+    dplyr::mutate(cancer_driver = dplyr::if_else(
+      is.na(cancer_driver), FALSE, as.logical(cancer_driver))) %>%
     dplyr::filter(tumor_suppressor == T | oncogene == T | cancer_driver == T) %>%
-    dplyr::mutate(ncg_links_tsgene = dplyr::if_else(ncg_tumor_suppressor == T,
-                                                    paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",entrezgene,"\" target=\"_blank\">Tumor Suppressor</a>"),
-                                                    as.character("NCG: Not defined"))) %>%
-    dplyr::mutate(ncg_links_tsgene = dplyr::if_else(is.na(ncg_links_tsgene),
-                                                    as.character("NCG: Not defined"),
-                                                    as.character(ncg_links_tsgene))) %>%
-    dplyr::mutate(ncg_links_oncogene = dplyr::if_else(ncg_oncogene == T,
-                                                      paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",entrezgene,"\" target=\"_blank\">Oncogene</a>"),
-                                                      as.character("NCG: Not defined"))) %>%
-    dplyr::mutate(ncg_links_oncogene = dplyr::if_else(is.na(ncg_links_oncogene),
-                                                      as.character("NCG: Not defined"),
-                                                      as.character(ncg_links_oncogene))) %>%
+    dplyr::mutate(ncg_links_tsgene = dplyr::if_else(
+      ncg_tumor_suppressor == T,
+      paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",
+             entrezgene,"\" target=\"_blank\">Tumor Suppressor</a>"),
+      as.character("NCG: Not defined"))) %>%
+    dplyr::mutate(ncg_links_tsgene = dplyr::if_else(
+      is.na(ncg_links_tsgene),
+      as.character("NCG: Not defined"),
+      as.character(ncg_links_tsgene))) %>%
+    dplyr::mutate(ncg_links_oncogene = dplyr::if_else(
+      ncg_oncogene == T,
+      paste0("NCG: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",
+             entrezgene,"\" target=\"_blank\">Oncogene</a>"),
+      as.character("NCG: Not defined"))) %>%
+    dplyr::mutate(ncg_links_oncogene = dplyr::if_else(
+      is.na(ncg_links_oncogene),
+      as.character("NCG: Not defined"),
+      as.character(ncg_links_oncogene))) %>%
     dplyr::mutate(ncg_link = paste(ncg_links_tsgene, ncg_links_oncogene, sep=", ")) %>%
-    dplyr::mutate(citation_links_cdriver = dplyr::if_else(is.na(cancer_driver),as.character(NA),as.character(citation_links_cdriver)),
-                  citations_cdriver = dplyr::if_else(is.na(cancer_driver),as.character(NA),as.character(citations_cdriver)),
-                  citation_links_oncogene = dplyr::if_else(is.na(oncogene_cancermine),
-                                                           "Oncogenic role (CancerMine): No records",
-                                                           as.character(paste0("Oncogenic role (CancerMine): ",citation_links_oncogene))),
-                  citations_oncogene = dplyr::if_else(is.na(oncogene),as.character(NA),
-                                                      as.character(citations_oncogene)),
-                  citation_links_tsgene = dplyr::if_else(is.na(tumor_suppressor_cancermine),
-                                                         "Tumor suppressive role (CancerMine): No records",
-                                                         as.character(paste0("Tumor suppressor role (CancerMine): ",citation_links_tsgene))),
-                  citations_tsgene = dplyr::if_else(is.na(tumor_suppressor),as.character(NA),as.character(citations_tsgene))) %>%
+    dplyr::mutate(citation_links_cdriver = dplyr::if_else(
+      is.na(cancer_driver),as.character(NA),as.character(citation_links_cdriver)),
+      citations_cdriver = dplyr::if_else(
+        is.na(cancer_driver),as.character(NA),as.character(citations_cdriver)),
+      citation_links_oncogene = dplyr::if_else(
+        is.na(oncogene_cancermine),
+        "Oncogenic role (CancerMine): No records",
+        as.character(paste0("Oncogenic role (CancerMine): ",citation_links_oncogene))),
+      citations_oncogene = dplyr::if_else(
+        is.na(oncogene),as.character(NA),
+        as.character(citations_oncogene)),
+      citation_links_tsgene = dplyr::if_else(
+        is.na(tumor_suppressor_cancermine),
+        "Tumor suppressive role (CancerMine): No records",
+        as.character(paste0("Tumor suppressor role (CancerMine): ",citation_links_tsgene))),
+      citations_tsgene = dplyr::if_else(
+        is.na(tumor_suppressor),as.character(NA),as.character(citations_tsgene))) %>%
     dplyr::mutate(cancergene_support = stringr::str_replace(paste(citation_links_oncogene,citation_links_tsgene,ncg_link, sep=", "),"^, ","")) %>%
     dplyr::mutate(tumor_suppressor_evidence = paste0("NCG:",ncg_tumor_suppressor,"&CancerMine:",tumor_suppressor_cancermine,":",n_citations_tsgene)) %>%
     dplyr::mutate(oncogene_evidence = paste0("NCG:",ncg_oncogene,"&CancerMine:",oncogene_cancermine,":",n_citations_oncogene)) %>%
     dplyr::mutate(cancer_driver_evidence = paste0("CancerMine:",cancer_driver,":",n_citations_cdriver)) %>%
-    dplyr::mutate(onco_ts_ratio = dplyr::if_else(tumor_suppressor == T & oncogene == T,
-                                                 as.numeric(n_citations_oncogene)/n_citations_tsgene,
-                                                 as.numeric(NA))) %>%
-    dplyr::mutate(tumor_suppressor = dplyr::if_else(tumor_suppressor == T & !is.na(onco_ts_ratio) & onco_ts_ratio > 3,
-                                                    FALSE,
-                                                    as.logical(tumor_suppressor))) %>%
-    dplyr::mutate(oncogene = dplyr::if_else(!is.na(onco_ts_ratio) & oncogene == T & onco_ts_ratio <= 0.33,
-                                            FALSE,
-                                            as.logical(oncogene))) %>%
+    dplyr::mutate(onco_ts_ratio = dplyr::if_else(
+      tumor_suppressor == T & oncogene == T,
+      as.numeric(n_citations_oncogene)/n_citations_tsgene,
+      as.numeric(NA))) %>%
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      tumor_suppressor == T & !is.na(onco_ts_ratio) & onco_ts_ratio > 3,
+      FALSE,
+      as.logical(tumor_suppressor))) %>%
+    dplyr::mutate(oncogene = dplyr::if_else(
+      !is.na(onco_ts_ratio) & oncogene == T & onco_ts_ratio <= 0.33,
+      FALSE,
+      as.logical(oncogene))) %>%
     dplyr::mutate(
       citation_links_oncogene =
         stringr::str_replace(
@@ -639,7 +670,7 @@ get_dbnsfp_gene_annotations <- function(basedir = '/Users/sigven/research/DB/var
 get_gencode_ensembl_transcripts <-
   function(basedir = NULL,
            build = "grch38",
-           gencode_version = "39",
+           gencode_version = "40",
            gene_info = NULL,
            update = F){
 
@@ -1063,7 +1094,7 @@ resolve_duplicates <- function(gencode_df){
 
 get_cancer_hallmarks <- function(basedir = NULL,
                                  gene_info = NULL,
-                                 opentargets_version = "2021.11",
+                                 opentargets_version = "2022.04",
                                  update = T){
 
   rds_fname <-
@@ -1096,6 +1127,7 @@ get_cancer_hallmarks <- function(basedir = NULL,
       dplyr::mutate(promotes = as.logical(stringr::str_replace(promotes,"PROMOTE:",""))) %>%
       dplyr::mutate(suppresses = as.logical(stringr::str_replace(suppresses,"SUPPRESS:",""))) %>%
       tidyr::separate(literature_support, into = c('pmid','pmid_summary'), sep="%%%") %>%
+      dplyr::filter(pmid != "37937225") %>%
       dplyr::mutate(pmid_summary = R.utils::capitalize(pmid_summary))
   )
 
@@ -1138,7 +1170,7 @@ get_cancer_hallmarks <- function(basedir = NULL,
 
 get_gencode_data <- function(
   basedir = NULL,
-  gencode_version = "39",
+  gencode_version = "40",
   build = "grch38",
   gene_info = NULL,
   update = T){
@@ -1214,7 +1246,14 @@ get_tf_target_interactions <- function(
         interaction_sources, ";","; "))) %>%
 
     ## Not available for non-academic use (entries provided solely with TRED)
-    dplyr::filter(!stringr::str_detect(interaction_sources,"^(RegNetwork_DoRothEA; TRED_DoRothEA)$"))
+    dplyr::filter(!stringr::str_detect(
+      interaction_sources,"^(RegNetwork_DoRothEA; TRED_DoRothEA)$")) %>%
+    dplyr::mutate(interaction_source = stringr::str_replace_all(
+      interaction_sources, "; TRED_DoRothEA$", ""
+    )) %>%
+    dplyr::mutate(interaction_source = stringr::str_replace_all(
+      interaction_sources, "; TRED_DoRothEA; ", "; "
+    ))
 
   tf_target_pmids <- tf_target_interactions_dorothea_all %>%
     dplyr::filter(!is.na(references) & nchar(references) > 0) %>%
@@ -1236,7 +1275,8 @@ get_tf_target_interactions <- function(
           link, collapse= ","),
         tf_target_literature = paste(
           citation, collapse="|"
-        )
+        ),
+        .groups = "drop"
       )
   )
 
@@ -1320,15 +1360,19 @@ get_function_summary_ncbi <- function(
                         scopes = "entrezgene",
                         fields= "summary",
                         species = "human")
-    )) %>%
-      dplyr::select(query, summary) %>%
-      dplyr::rename(entrezgene = query,
-                    gene_summary_ncbi = summary) %>%
-      dplyr::mutate(entrezgene = as.integer(entrezgene))
+    ))
 
-    ncbi_gene_summary <-
-      dplyr::bind_rows(ncbi_gene_summary,
-                       summary_results)
+    if("summary" %in% colnames(summary_results)){
+      res <- summary_results %>%
+        dplyr::select(query, summary) %>%
+        dplyr::rename(entrezgene = query,
+                      gene_summary_ncbi = summary) %>%
+        dplyr::mutate(entrezgene = as.integer(entrezgene))
+
+      ncbi_gene_summary <-
+        dplyr::bind_rows(ncbi_gene_summary,
+                         res)
+    }
 
     i <- i + 300
 
@@ -1340,18 +1384,21 @@ get_function_summary_ncbi <- function(
     as.data.frame(
       mygene::queryMany(queryset,
                         scopes = "entrezgene",
-                        fields="summary",
-                        species="human")
-    )) %>%
-    dplyr::select(query, summary) %>%
-    dplyr::rename(entrezgene = query,
-                  gene_summary_ncbi = summary) %>%
-    dplyr::mutate(entrezgene = as.integer(entrezgene))
+                        fields = "summary",
+                        species = "human")
+    ))
 
+  if("summary" %in% colnames(summary_results)){
+    res <- summary_results %>%
+      dplyr::select(query, summary) %>%
+      dplyr::rename(entrezgene = query,
+                    gene_summary_ncbi = summary) %>%
+      dplyr::mutate(entrezgene = as.integer(entrezgene))
 
-  ncbi_gene_summary <-
-    dplyr::bind_rows(ncbi_gene_summary,
-                     summary_results)
+    ncbi_gene_summary <-
+      dplyr::bind_rows(ncbi_gene_summary,
+                       res)
+  }
 
   ncbi_gene_summary <- ncbi_gene_summary %>%
     dplyr::mutate(
@@ -2189,7 +2236,8 @@ get_omnipath_gene_annotations <- function(
       dplyr::filter(
         !stringr::str_detect(
           source, "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski2015)$")) %>%
-      dplyr::rename(uniprot_acc = uniprot)
+      dplyr::rename(uniprot_acc = uniprot) %>%
+      dplyr::mutate(record_id = as.character(record_id))
     omnipathdb <-
       dplyr::bind_rows(
         omnipathdb, annotations)
@@ -2203,7 +2251,9 @@ get_omnipath_gene_annotations <- function(
       select_genes = genes) %>%
     dplyr::filter(!stringr::str_detect(
       source, "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski2015)$")) %>%
-    dplyr::rename(uniprot_acc = uniprot)
+    dplyr::rename(uniprot_acc = uniprot) %>%
+    dplyr::mutate(record_id = as.character(record_id))
+
   if(nrow(annotations) > 0){
     omnipathdb <-
       dplyr::bind_rows(omnipathdb, annotations)
@@ -2932,145 +2982,235 @@ get_ligand_receptors <- function(
   keggdb = NULL,
   update = F){
 
-  rds_fname <- file.path(
-    basedir, "data-raw",
-    "cellchatdb", "cellchatdb_interactions.rds")
+  ligand_receptordb <- list()
+  ligand_receptordb[['cellchatdb']] <- NULL
+  ligand_receptordb[['celltalkdb']] <- NULL
 
-  if(update == F & file.exists(rds_fname)){
-    ligandreceptordb <- readRDS(file = rds_fname)
-    return(ligandreceptordb)
+  for(db in c('cellchatdb','celltalkdb')){
+
+    if(db == 'cellchatdb'){
+      rds_fname <- file.path(
+        basedir, "data-raw",
+        "cellchatdb", "cellchatdb_interactions.rds")
+
+      if(update == F & file.exists(rds_fname)){
+        ligand_receptordb[[db]] <- readRDS(file=rds_fname)
+        next
+      }
+
+      ligand_receptor_db <- CellChat::CellChatDB.human$interaction %>%
+        magrittr::set_rownames(NULL) %>%
+        dplyr::rename(interaction_members = interaction_name) %>%
+        dplyr::rename(interaction_name = interaction_name_2) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC: 4393358", "PMID: 25772309"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC4571854", "PMID: 26124272"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC2194005", "PMID: 12208882"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC2194217", "PMID: 14530377"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC1237098", "PMID: 16093349"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,"PMC2431087", "PMID: 18250165"
+        )) %>%
+        dplyr::mutate(evidence = stringr::str_squish(
+          stringr::str_replace_all(
+            evidence,
+            ",","; "))
+        ) %>%
+        dplyr::mutate(evidence = stringr::str_replace_all(
+          evidence,
+          " ","")) %>%
+        dplyr::mutate(interaction_id = dplyr::row_number()) %>%
+        dplyr::select(interaction_id, interaction_name,
+                      annotation, pathway_name, dplyr::everything())
+
+
+      ligand_receptor_kegg_support <- ligand_receptor_db %>%
+        dplyr::select(interaction_id, evidence) %>%
+        tidyr::separate_rows(evidence, sep=";") %>%
+        dplyr::filter(stringr::str_detect(evidence,"KEGG")) %>%
+        dplyr::mutate(evidence = stringr::str_replace(
+          evidence, "KEGG:",""
+        )) %>%
+        dplyr::left_join(keggdb$TERM2NAME, by = c("evidence" = "standard_name")) %>%
+        dplyr::mutate(ligand_receptor_kegg_support = paste0(
+          "<a href='https://www.genome.jp/pathway/",
+          stringr::str_replace(evidence,"hsa","map"),
+          "' target='_blank'>",name,"</a>")) %>%
+        dplyr::select(-evidence)
+
+      ligand_receptor_literature <- as.data.frame(
+        ligand_receptor_db %>%
+          dplyr::select(interaction_id, evidence) %>%
+          tidyr::separate_rows(evidence, sep=";") %>%
+          dplyr::filter(stringr::str_detect(evidence,"PMID")) %>%
+          dplyr::mutate(evidence = stringr::str_replace(
+            evidence, "PMID:",""
+          )) %>%
+          dplyr::rename(pmid = evidence)
+      )
+
+      ligand_receptor_citations <- get_citations_pubmed(
+        pmid = unique(ligand_receptor_literature$pmid))
+
+      ligand_receptor_literature <- as.data.frame(
+        ligand_receptor_literature %>%
+          dplyr::mutate(pmid = as.integer(pmid)) %>%
+          dplyr::left_join(ligand_receptor_citations, by = c("pmid" = "pmid")) %>%
+          dplyr::group_by(interaction_id) %>%
+          dplyr::summarise(
+            ligand_receptor_literature_support = paste(
+              link, collapse= ","),
+            ligand_receptor_literature = paste(
+              citation, collapse="|"
+            )
+          )
+      )
+
+      ligand_receptor_db_final <- ligand_receptor_db %>%
+        dplyr::left_join(dplyr::select(
+          ligand_receptor_kegg_support, interaction_id,
+          ligand_receptor_kegg_support), by = "interaction_id") %>%
+        dplyr::left_join(dplyr::select(
+          ligand_receptor_literature, interaction_id,
+          ligand_receptor_literature_support)) %>%
+        dplyr::mutate(literature_support = dplyr::if_else(
+          is.na(ligand_receptor_kegg_support),
+          as.character(ligand_receptor_literature_support),
+          paste(ligand_receptor_kegg_support,
+                ligand_receptor_literature_support,
+                sep = ", ")
+        )) %>%
+        dplyr::mutate(literature_support = stringr::str_replace_all(
+          literature_support,",?NA$",""
+        )) %>%
+        dplyr::select(-c(ligand_receptor_literature_support,
+                         ligand_receptor_kegg_support,
+                         evidence))
+
+      interaction2ligands <- as.data.frame(
+        ligand_receptor_db_final %>%
+          dplyr::select(interaction_id, ligand) %>%
+          dplyr::rename(symbol = ligand) %>%
+          dplyr::mutate(class = "ligand")
+      )
+
+      interaction2receptor <- as.data.frame(
+        ligand_receptor_db_final %>%
+          dplyr::select(interaction_id, receptor) %>%
+          dplyr::rename(symbol = receptor) %>%
+          tidyr::separate_rows(symbol, sep = "_") %>%
+          dplyr::mutate(symbol = dplyr::if_else(
+            stringr::str_detect(symbol,"^(R2|TGFbR2)$"),
+            "TGFBR2",
+            as.character(symbol)
+          )) %>%
+          dplyr::mutate(class = "receptor") %>%
+          dplyr::mutate(symbol = stringr::str_replace(
+            symbol,"b","B"
+          ))
+      )
+
+      cellchatdb <- list()
+      cellchatdb[['db']] <- ligand_receptor_db_final
+      cellchatdb[['xref']] <- interaction2ligands %>%
+        dplyr::bind_rows(interaction2receptor)
+
+      saveRDS(cellchatdb, file = rds_fname)
+
+      ligand_receptordb[[db]] <- cellchatdb
+    }
+
+    if(db == "celltalkdb"){
+
+      rds_fname <- file.path(
+        basedir, "data-raw",
+        "celltalkdb", "celltalkdb_interactions.rds")
+
+      if(update == F & file.exists(rds_fname)){
+        celltalkdb <- readRDS(file=rds_fname)
+        next
+      }
+
+      celltalkdb_raw <- readr::read_tsv(
+        file = file.path(
+          basedir, "data-raw",
+          "celltalkdb", "human_lr_pair.txt"),
+        col_types = "cccddccccc",
+        show_col_types = F) %>%
+        dplyr::select(ligand_gene_id,
+                      receptor_gene_id,
+                      evidence) %>%
+        dplyr::mutate(interaction_id = dplyr::row_number()) %>%
+        dplyr::rename(entrezgene_ligand = ligand_gene_id,
+                      entrezgene_receptor = receptor_gene_id,
+                      pmid = evidence) %>%
+        dplyr::mutate(pmid = stringr::str_replace(
+          pmid, ",321961154", ""))
+
+
+      celltalkdb_literature <- as.data.frame(
+        celltalkdb_raw %>%
+          dplyr::select(interaction_id, pmid) %>%
+          tidyr::separate_rows(pmid, sep=",") %>%
+        dplyr::filter(nchar(pmid) > 2)
+      )
+
+      ligand_receptor_citations <- get_citations_pubmed(
+        pmid = unique(celltalkdb_literature$pmid))
+
+      celltalkdb_literature <- as.data.frame(
+        celltalkdb_literature %>%
+          dplyr::mutate(pmid = as.integer(pmid)) %>%
+          dplyr::left_join(ligand_receptor_citations, by = c("pmid" = "pmid")) %>%
+          dplyr::group_by(interaction_id) %>%
+          dplyr::summarise(
+            ligand_receptor_literature_support = paste(
+              link, collapse= ","),
+            ligand_receptor_literature = paste(
+              citation, collapse="|"
+            )
+          )
+      )
+
+      celltalkdb_final <- as.data.frame(
+        celltalkdb_raw %>%
+          dplyr::select(entrezgene_ligand,
+                        entrezgene_receptor,
+                        interaction_id) %>%
+          dplyr::left_join(
+            dplyr::select(
+              celltalkdb_literature,
+              interaction_id,
+              ligand_receptor_literature_support,
+              ligand_receptor_literature),
+            by = "interaction_id") %>%
+          dplyr::rename(
+            literature_support = ligand_receptor_literature_support) %>%
+          dplyr::select(
+            interaction_id,
+            entrezgene_ligand,
+            entrezgene_receptor,
+            dplyr::everything()
+          )
+      )
+
+      ligand_receptordb[[db]] <- celltalkdb_final
+
+      saveRDS(celltalkdb_final, file = rds_fname)
+
+    }
   }
 
-  ligand_receptor_db <- CellChat::CellChatDB.human$interaction %>%
-    magrittr::set_rownames(NULL) %>%
-    dplyr::rename(interaction_members = interaction_name) %>%
-    dplyr::rename(interaction_name = interaction_name_2) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC: 4393358", "PMID: 25772309"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC4571854", "PMID: 26124272"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC2194005", "PMID: 12208882"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC2194217", "PMID: 14530377"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC1237098", "PMID: 16093349"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,"PMC2431087", "PMID: 18250165"
-    )) %>%
-    dplyr::mutate(evidence = stringr::str_squish(
-      stringr::str_replace_all(
-        evidence,
-        ",","; "))
-    ) %>%
-    dplyr::mutate(evidence = stringr::str_replace_all(
-      evidence,
-      " ","")) %>%
-    dplyr::mutate(interaction_id = dplyr::row_number()) %>%
-    dplyr::select(interaction_id, interaction_name,
-                  annotation, pathway_name, dplyr::everything())
-
-
-  ligand_receptor_kegg_support <- ligand_receptor_db %>%
-    dplyr::select(interaction_id, evidence) %>%
-    tidyr::separate_rows(evidence, sep=";") %>%
-    dplyr::filter(stringr::str_detect(evidence,"KEGG")) %>%
-    dplyr::mutate(evidence = stringr::str_replace(
-      evidence, "KEGG:",""
-    )) %>%
-    dplyr::left_join(keggdb$TERM2NAME, by = c("evidence" = "standard_name")) %>%
-    dplyr::mutate(ligand_receptor_kegg_support = paste0(
-      "<a href='https://www.genome.jp/pathway/",
-      stringr::str_replace(evidence,"hsa","map"),
-      "' target='_blank'>",name,"</a>")) %>%
-    dplyr::select(-evidence)
-
-  ligand_receptor_literature <- as.data.frame(
-    ligand_receptor_db %>%
-      dplyr::select(interaction_id, evidence) %>%
-      tidyr::separate_rows(evidence, sep=";") %>%
-      dplyr::filter(stringr::str_detect(evidence,"PMID")) %>%
-      dplyr::mutate(evidence = stringr::str_replace(
-        evidence, "PMID:",""
-      )) %>%
-      dplyr::rename(pmid = evidence)
-  )
-
-  ligand_receptor_citations <- get_citations_pubmed(
-    pmid = unique(ligand_receptor_literature$pmid))
-
-  ligand_receptor_literature <- as.data.frame(
-    ligand_receptor_literature %>%
-      dplyr::mutate(pmid = as.integer(pmid)) %>%
-      dplyr::left_join(ligand_receptor_citations, by = c("pmid" = "pmid")) %>%
-      dplyr::group_by(interaction_id) %>%
-      dplyr::summarise(
-        ligand_receptor_literature_support = paste(
-          link, collapse= ","),
-        ligand_receptor_literature = paste(
-          citation, collapse="|"
-        )
-      )
-  )
-
-  ligand_receptor_db_final <- ligand_receptor_db %>%
-    dplyr::left_join(dplyr::select(
-      ligand_receptor_kegg_support, interaction_id,
-      ligand_receptor_kegg_support), by = "interaction_id") %>%
-    dplyr::left_join(dplyr::select(
-      ligand_receptor_literature, interaction_id,
-      ligand_receptor_literature_support)) %>%
-    dplyr::mutate(literature_support = dplyr::if_else(
-      is.na(ligand_receptor_kegg_support),
-      as.character(ligand_receptor_literature_support),
-      paste(ligand_receptor_kegg_support,
-            ligand_receptor_literature_support,
-            sep = ", ")
-    )) %>%
-    dplyr::mutate(literature_support = stringr::str_replace_all(
-      literature_support,",?NA$",""
-    )) %>%
-    dplyr::select(-c(ligand_receptor_literature_support,
-                     ligand_receptor_kegg_support,
-                     evidence))
-
-  interaction2ligands <- as.data.frame(
-    ligand_receptor_db_final %>%
-      dplyr::select(interaction_id, ligand) %>%
-      dplyr::rename(symbol = ligand) %>%
-      dplyr::mutate(class = "ligand")
-  )
-
-  interaction2receptor <- as.data.frame(
-    ligand_receptor_db_final %>%
-      dplyr::select(interaction_id, receptor) %>%
-      dplyr::rename(symbol = receptor) %>%
-      tidyr::separate_rows(symbol, sep = "_") %>%
-      dplyr::mutate(symbol = dplyr::if_else(
-        stringr::str_detect(symbol,"^(R2|TGFbR2)$"),
-        "TGFBR2",
-        as.character(symbol)
-      )) %>%
-      dplyr::mutate(class = "receptor") %>%
-      dplyr::mutate(symbol = stringr::str_replace(
-        symbol,"b","B"
-      ))
-  )
-
-  ligandreceptordb <- list()
-  ligandreceptordb[['db']] <- ligand_receptor_db_final
-  ligandreceptordb[['xref']] <- interaction2ligands %>%
-    dplyr::bind_rows(interaction2receptor)
-
-
-  saveRDS(ligandreceptordb,
-          file = rds_fname)
-  return(ligandreceptordb)
+  return(ligand_receptordb)
 }
 
 get_hpa_associations <- function(
@@ -3276,7 +3416,7 @@ get_tcga_db <- function(
 
   coexpression_tsv <- file.path(
     basedir, "data-raw", "tcga",
-    "co_expression_strong_moderate.release31_20211029.tsv.gz")
+    "co_expression_strong_moderate.release32_20220329.tsv.gz")
 
   tcga_clinical_rds <- file.path(
     basedir, "data-raw", "tcga",
@@ -3294,7 +3434,7 @@ get_tcga_db <- function(
   maf_path <- file.path(basedir, "data-raw", "tcga")
 
 
-  recurrent_variants_rds <- file.path(
+  recurrent_variants_tsv <- file.path(
     basedir, "data-raw", "tcga",
     "tcga_recurrent_coding_gvanno_grch38.tsv.gz"
   )
@@ -3360,7 +3500,7 @@ get_tcga_db <- function(
   while(i <= nrow(maf_codes)){
     primary_site <- maf_codes[i,]$primary_site
     maf_code <- maf_codes[i,]$code
-    maf_file <- paste0(maf_path,"/tcga_mutation_grch38_release31_20211029.",maf_code,"_0.maf.gz")
+    maf_file <- paste0(maf_path,"/tcga_mutation_grch38_release32_20220329.",maf_code,"_0.maf.gz")
     if(file.exists(maf_file)){
       tmp <- read.table(gzfile(maf_file), quote="", header = T, stringsAsFactors = F, sep="\t", comment.char="#")
       tmp$primary_site <- NULL
@@ -3405,7 +3545,7 @@ get_tcga_db <- function(
 
   ##TCGA recurrent SNVs/InDels
   recurrent_tcga_variants <- as.data.frame(readr::read_tsv(
-    file = recurrent_variants_rds,
+    file = recurrent_variants_tsv,
     skip = 1, na = c("."), show_col_types = F) %>%
       dplyr::select(TCGA_SITE_RECURRENCE,
                     CHROM, POS, REF, ALT,
@@ -3502,7 +3642,7 @@ get_tcga_db <- function(
 
   gdc_projects <- as.data.frame(TCGAbiolinks::getGDCprojects()) %>%
     dplyr::filter(is.na(dbgap_accession_number) & startsWith(id,"TCGA"))
-  tcga_release <- 'release31_20211029'
+  tcga_release <- 'release32_20220329'
 
   all_tcga_mean_median_tpm <- data.frame()
 

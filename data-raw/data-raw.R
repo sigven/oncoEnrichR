@@ -3,25 +3,25 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220310"
+wikipathways_version <- "20220410"
 netpath_version <- "2010"
-opentargets_version <- "2022.02"
-kegg_version <- "20220308"
-gencode_version <- "39"
+opentargets_version <- "2022.04"
+kegg_version <- "20220324"
+gencode_version <- "40"
 update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- F
-update_project_score <- T
+update_project_score <- F
 update_project_survival <- F
 update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
 update_gencode <- F
-update_ligand_receptor_db <- F
+update_ligand_receptor_db <- T
 
 
-uniprot_release <- "2021_04"
+uniprot_release <- "2022_01"
 
 software_db_version <-
   read.table(file="data-raw/RELEASE_NOTES.txt",
@@ -31,6 +31,7 @@ colnames(software_db_version) <-
   c('name','url','description',
     'version','key','resource_type')
 release_notes <- list()
+
 i <- 1
 while(i <= nrow(software_db_version)){
   release_notes[[software_db_version[i,]$key]] <-
@@ -74,7 +75,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     basedir = here::here(),
     gene_info = gene_info,
-    version = "43") %>%
+    version = "45") %>%
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,
