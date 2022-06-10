@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,8 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/input_output.html">Input &amp; Output</a>
+    <a class="dropdown-item" href="../articles/input.html">Input</a>
+    <a class="dropdown-item" href="../articles/output.html">Output</a>
     <a class="dropdown-item" href="../articles/annotation_resources.html">Annotation resources</a>
   </div>
 </li>
@@ -69,15 +70,16 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">init_report</span><span class="op">(</span>
   <span class="va">oeDB</span>,
-  project_title <span class="op">=</span> <span class="st">"Project title"</span>,
-  project_owner <span class="op">=</span> <span class="st">"Project owner"</span>,
+  project_title <span class="op">=</span> <span class="st">"_Project title_"</span>,
+  project_owner <span class="op">=</span> <span class="st">"_Project owner_"</span>,
   html_floating_toc <span class="op">=</span> <span class="cn">T</span>,
   html_report_theme <span class="op">=</span> <span class="st">"default"</span>,
   query_id_type <span class="op">=</span> <span class="st">"symbol"</span>,
   ignore_id_err <span class="op">=</span> <span class="cn">TRUE</span>,
-  project_description <span class="op">=</span> <span class="st">"Project description"</span>,
+  project_description <span class="op">=</span> <span class="st">"_Project description_"</span>,
   ppi_min_string_score <span class="op">=</span> <span class="fl">900</span>,
   ppi_add_nodes <span class="op">=</span> <span class="fl">50</span>,
+  ppi_node_shadow <span class="op">=</span> <span class="cn">TRUE</span>,
   bgset_description <span class="op">=</span> <span class="st">"All annotated protein-coding genes"</span>,
   bgset_id_type <span class="op">=</span> <span class="st">"symbol"</span>,
   p_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.05</span>,
@@ -108,7 +110,8 @@
   show_unknown_function <span class="op">=</span> <span class="cn">T</span>,
   show_prognostic_cancer_assoc <span class="op">=</span> <span class="cn">T</span>,
   show_synleth <span class="op">=</span> <span class="cn">T</span>,
-  show_complex <span class="op">=</span> <span class="cn">T</span>
+  show_complex <span class="op">=</span> <span class="cn">T</span>,
+  show_domain <span class="op">=</span> <span class="cn">T</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -135,6 +138,8 @@
 <dd><p>minimum score (0-1000) for retrieval of protein-protein interactions (STRING)</p></dd>
 <dt>ppi_add_nodes</dt>
 <dd><p>number of nodes to add to target set when computing the protein-protein interaction network (STRING)</p></dd>
+<dt>ppi_node_shadow</dt>
+<dd><p>show shadow for nodes in the displayed PPI network</p></dd>
 <dt>bgset_description</dt>
 <dd><p>character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")</p></dd>
 <dt>bgset_id_type</dt>
@@ -199,6 +204,8 @@ of target genes, using data from the Human Protein Atlas</p></dd>
 <dd><p>logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)</p></dd>
 <dt>show_complex</dt>
 <dd><p>logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)</p></dd>
+<dt>show_domain</dt>
+<dd><p>logical indicating if report should provide target memberships in known protein domains (Pfam)</p></dd>
 </dl></div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -210,7 +217,7 @@ of target genes, using data from the Human Protein Atlas</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
     </footer></div>

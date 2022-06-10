@@ -16,16 +16,16 @@
     <loc>https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/oncoEnrichR/articles/annotation_sources.html</loc>
-  </url>
-  <url>
     <loc>https://sigven.github.io/oncoEnrichR/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/oncoEnrichR/articles/input_output.html</loc>
+    <loc>https://sigven.github.io/oncoEnrichR/articles/input.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/articles/installation.html</loc>
+  </url>
+  <url>
+    <loc>https://sigven.github.io/oncoEnrichR/articles/output.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/articles/running.html</loc>
@@ -35,9 +35,6 @@
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/index.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/oncoEnrichR/news/index.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/reference/db_props.html</loc>
