@@ -787,7 +787,7 @@ get_curated_fp_cancer_genes <- function(basedir = NULL,
 }
 
 get_opentarget_associations <-
-  function(basedir = '/Users/sigven/research/DB/var_annotation_tracks',
+  function(basedir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
            release = "2022.04",
@@ -865,7 +865,7 @@ get_opentarget_associations <-
 
   }
 
-get_dbnsfp_gene_annotations <- function(basedir = '/Users/sigven/research/DB/var_annotation_tracks'){
+get_dbnsfp_gene_annotations <- function(basedir = NULL){
 
   rlogging::message("Retrieving gene damage scores/OMIM annotation from dbNSFP_gene")
   dbnsfp_gene <- read.table(file=gzfile(paste0(basedir,"/data-raw/dbnsfp/dbNSFP_gene.gz")),sep="\t",
