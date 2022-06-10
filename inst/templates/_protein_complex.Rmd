@@ -53,7 +53,7 @@ omnipath_complexes_df <-
 crosstalk::bscols(
   list(
     crosstalk::filter_slider("num_target_members", "Minimum number of query set members in complex", 
-                             omnipath_complexes_df, ~num_target_members)
+                             omnipath_complexes_df, ~num_target_members, step = 1)
   )
 )
 
