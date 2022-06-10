@@ -212,9 +212,9 @@ gene_tissue_cell_enrichment <-
     stopifnot(resolution == "tissue" | resolution == "single_cell")
     validate_db_df(genedb, dbtype = "genedb")
 
-    if(!("GSEABase" %in% (.packages(all.available = T)))){
-      suppressPackageStartupMessages(library(GSEABase))
-    }
+    #if(!("GSEABase" %in% (.packages(all.available = T)))){
+    #  suppressPackageStartupMessages(library(GSEABase))
+    #}
 
     etype <- "tissues"
     edb <- "GTex"

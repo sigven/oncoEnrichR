@@ -381,6 +381,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
                "tcga_coexpression",
                "tcga_recurrent_variants",
                "protein_complex",
+               "protein_domain",
                "dorothea",
                "ligand_receptor_db",
                "ligand_receptor_xref",
@@ -436,6 +437,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
     cols <- c("disease_efo_id",
               "direct_ot_association",
               "ot_association_score",
+              "ot_datatype_support",
               "ensembl_gene_id",
               "efo_name",
               "primary_site",
@@ -497,10 +499,12 @@ validate_db_df <- function(df, dbtype = "genedb"){
 
 
   if(dbtype == "opentarget_disease_site_rank"){
-    cols <- c("ensembl_gene_id",
+    cols <- c("primary_site",
+              "ensembl_gene_id",
+              "tissue_assoc_score",
               "tissue_assoc_rank",
-              "primary_site",
-              "tissue_assoc_score")
+              "global_assoc_score",
+              "global_assoc_rank")
   }
 
   if(dbtype == "enrichment_db_hpa_singlecell"){
@@ -552,6 +556,14 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'complex_literature',
               'complex_literature_support')
   }
+  if(dbtype == "protein_domain"){
+    cols <- c('uniprot_acc',
+              'pfam_id',
+              'pfam_short_name',
+              'pfam_long_name',
+              'domain_freq')
+  }
+
   if(dbtype == "ligand_receptor_xref"){
     cols <- c('interaction_id',
               'symbol',
@@ -708,6 +720,242 @@ add_excel_sheet <- function(
 
   target_df <- data.frame()
 
+  if(analysis_output == "settings"){
+    target_df <- data.frame(
+      category = 'CANCER_ASSOCIATION',
+      configuration = 'show_disease',
+      value = as.character(report$config$show$disease),
+      stringsAsFactors = F
+    )
+    target_df <- target_df %>%
+      dplyr::bind_rows(
+        data.frame(
+          category = 'CANCER_ASSOCIATION',
+          configuration = 'show_top_diseases',
+          value = as.character(report$config$disease$show_top_diseases),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'CANCER_HALLMARK',
+          configuration = 'show_hallmark',
+          value = as.character(report$config$show$cancer_hallmark),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'UNKNOWN_FUNCTION',
+          configuration = 'show_unknown_function',
+          value = as.character(report$config$show$unknown_function),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'DRUG_KNOWN',
+          configuration = 'show_drug',
+          value = as.character(report$config$show$drug),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'SYNTHETIC_LETHALITY',
+          configuration = 'show_synleth',
+          value = as.character(report$config$show$synleth),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PROTEIN_COMPLEX',
+          configuration = 'show_protein_complex',
+          value = as.character(report$config$show$protein_complex),
+          stringsAsFactors = F
+        ),
+
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'show_enrichment',
+          value = as.character(report$config$show$enrichment),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'p_value_adjustment_method',
+          value = as.character(report$config$enrichment$p_adjust_method),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'p_value_cutoff',
+          value = as.character(report$config$enrichment$p_value_cutoff),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'q_value_cutoff',
+          value = as.character(report$config$enrichment$q_value_cutoff),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'min_geneset_size',
+          value = as.character(report$config$enrichment$min_gs_size),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'max_geneset_size',
+          value = as.character(report$config$enrichment$max_gs_size),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'simplify_go',
+          value = as.character(report$config$enrichment$simplify_go),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'background_set_description',
+          value = as.character(report$config$enrichment$bgset_description),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ENRICHMENT',
+          configuration = 'background_set_size',
+          value = as.character(report$config$enrichment$bgset_size),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'REGULATORY',
+          configuration = 'show_regulatory_interactions',
+          value = as.character(report$config$show$regulatory),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'REGULATORY',
+          configuration = 'min_confidence_reg_interaction',
+          value = as.character(report$config$regulatory$min_confidence),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'SUBCELL',
+          configuration = 'show_subcell',
+          value = as.character(report$config$show$subcellcomp),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'SUBCELL',
+          configuration = 'min_subcellcomp_confidence',
+          value = as.character(report$config$subcellcomp$minimum_confidence),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'SUBCELL',
+          configuration = 'show_cytosol',
+          value = as.character(report$config$subcellcomp$show_cytosol),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'CELL_TISSUE',
+          configuration = 'show_cell_tissue',
+          value = as.character(report$config$show$cell_tissue),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PPI',
+          configuration = 'show_ppi',
+          value = as.character(report$config$show$ppi),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PPI',
+          configuration = 'ppi_score_threshold',
+          value = as.character(report$config$ppi$stringdb$minimum_score),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PPI',
+          configuration = 'show_drugs_in_ppi',
+          value = as.character(report$config$ppi$stringdb$show_drugs),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PPI',
+          configuration = 'ppi_add_nodes',
+          value = as.character(report$config$ppi$stringdb$add_nodes),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'FITNESS',
+          configuration = 'show_fitness',
+          value = as.character(report$config$show$fitness),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'FITNESS',
+          configuration = 'max_BF_score',
+          value = as.character(report$config$fitness$max_BF_score),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'ABERRATION',
+          configuration = 'show_tcga_aberration',
+          value = as.character(report$config$show$tcga_aberration),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'COEXPRESSION',
+          configuration = 'show_tcga_coexpression',
+          value = as.character(report$config$show$tcga_coexpression),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'LIGAND_RECEPTOR',
+          configuration = 'show_ligand_receptor',
+          value = as.character(report$config$show$ligand_receptor),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'PROGNOSTIC',
+          configuration = 'show_prognostic_cancer_assoc',
+          value = as.character(report$config$show$cancer_prognosis),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'project_title',
+          value = as.character(report$config$project_title),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'project_description',
+          value = as.character(report$config$project_description),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'project_owner',
+          value = as.character(report$config$project_owner),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'query_ignore_err',
+          value = as.character(report$config$query$ignore_err),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'bgset_id_type',
+          value = as.character(report$config$bgset$id_type),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'floating_TOC',
+          value = as.character(report$config$rmarkdown$floating_toc),
+          stringsAsFactors = F
+        )
+      )
+
+  }
+
   if(analysis_output == "query"){
     if(is.data.frame(report$data$query$target)){
       if(NROW(report$data$query$target) > 0){
@@ -751,7 +999,7 @@ add_excel_sheet <- function(
     }
   }
 
-  if(analysis_output == "disease_association"){
+  if(analysis_output == "cancer_association"){
     if(is.data.frame(report$data$disease$target)){
       if(NROW(report$data$disease$target) > 0){
         target_df <- report$data$disease$target %>%
@@ -937,6 +1185,34 @@ add_excel_sheet <- function(
     }
   }
 
+  if(analysis_output == "protein_domain"){
+
+    if(is.data.frame(report$data$protein_domain$target)){
+      if(NROW(report$data$protein_domain$target) > 0){
+
+        df <- report$data$protein_domain$target %>%
+          dplyr::mutate(
+            annotation_source = report$config$resources[['pfam']]$name,
+            version = report$config$resources[['pfam']]$version) %>%
+          dplyr::select(.data$annotation_source,
+                        .data$version,
+                        dplyr::everything()) %>%
+          dplyr::mutate(
+            protein_domain =
+              stringr::str_trim(
+                textclean::replace_html(.data$protein_domain)
+              ),
+            target_genes =
+              stringr::str_trim(
+                textclean::replace_html(.data$target_genes)
+              )
+          )
+
+        target_df <- target_df %>%
+          dplyr::bind_rows(df)
+      }
+    }
+  }
 
   if(analysis_output == "protein_complex"){
 
@@ -991,7 +1267,7 @@ add_excel_sheet <- function(
   }
 
 
-  if(analysis_output == "prognostic_association"){
+  if(analysis_output == "prognostic_association_I"){
     if(is.data.frame(report$data$cancer_prognosis$hpa$assocs)){
       if(NROW(report$data$cancer_prognosis$hpa$assocs) > 0){
         target_df <- report$data$cancer_prognosis$hpa$assocs %>%
@@ -1018,7 +1294,7 @@ add_excel_sheet <- function(
         if(NROW(report$data$synleth[[t]]) > 0){
           df <- report$data$synleth[[t]] %>%
             dplyr::mutate(
-              annotation_source = "Prediction of synthetic lethality pairs (De Kegel et al., Cell Systems, 2021)",
+              annotation_source = "De Kegel et al., Cell Systems, 2021",
               version = "v1") %>%
             dplyr::mutate(feature_type = t) %>%
             dplyr::mutate(
@@ -1047,13 +1323,13 @@ add_excel_sheet <- function(
   }
 
 
-  if(analysis_output == "survival_association"){
-    for(t in c('cna','mut','exp')){
+  if(analysis_output == "prognostic_association_II"){
+    for(t in c('cna','mut','exp','meth')){
       if(is.data.frame(report$data$cancer_prognosis$km_cshl$assocs[[t]])){
         if(NROW(report$data$cancer_prognosis$km_cshl$assocs[[t]]) > 0){
           df <- report$data$cancer_prognosis$km_cshl$assocs[[t]] %>%
             dplyr::mutate(
-              annotation_source = "Genetic determinants of survival in cancer (Smith et al., bioRxiv, 2021)",
+              annotation_source = "Smith et al., Cell Reports, 2022 (tcga-survival.com)",
               version = "v2") %>%
             dplyr::mutate(feature_type = t) %>%
             dplyr::arrange(.data$feature_type, .data$z_score) %>%
@@ -1071,9 +1347,9 @@ add_excel_sheet <- function(
   if(analysis_output == "coexpression"){
 
     ## co-expression
-    if(is.data.frame(report$data$tcga$co_expression)){
-      if(NROW(report$data$tcga$co_expression) > 0){
-        target_df <- report$data$tcga$co_expression %>%
+    if(is.data.frame(report$data$tcga$coexpression)){
+      if(NROW(report$data$tcga$coexpression) > 0){
+        target_df <- report$data$tcga$coexpression %>%
           dplyr::mutate(
             annotation_source = report$config$resources$tcga$name,
             version = report$config$resources$tcga$version) %>%

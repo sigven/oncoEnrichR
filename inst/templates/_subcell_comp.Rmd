@@ -1,4 +1,4 @@
-### Subcellular structures/compartments 
+### Subcellular compartments 
 
 <br>
 
@@ -47,7 +47,6 @@ gganatogram::gganatogram(data = subcellcomp_geneset_density,
   ggplot2::theme_void() +
   ggplot2::coord_fixed() +
   ggplot2::scale_fill_gradient(low ="#FFEDA0", high = "#800026")
-  #ggplot2::scale_fill_viridis_c()
 
 ```
 <br><br>
@@ -108,7 +107,7 @@ ggpubr::ggarrange(
 #### Subcellular data browser{.tabset}
 <br>
 
-##### By Gene
+##### By gene
 
 ```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['all']]) > 0}
 library(crosstalk)
@@ -143,7 +142,7 @@ DT::datatable(subcell_comp_all, escape = F,
 ```
 <br><br><br>
 
-##### By Compartment
+##### By compartment
 
 * Genes listed per compartment are calculated using only compartment annotations with a minimum confidence level of: __`r onc_enrich_report$config$subcellcomp$minimum_confidence` (number of sources)__
 

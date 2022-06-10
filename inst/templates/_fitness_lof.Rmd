@@ -62,7 +62,6 @@ cat('<br><br>')
 
 ```
 
-<br><br><br>
 
 #### Loss-of-fitness table
 
@@ -119,9 +118,6 @@ cat('<br><br>')
 
 ```
 
-<br><br>
-
-### {-}
 
 #### Target priority scores
 
@@ -187,4 +183,4 @@ cat('\n')
 ```
 
 
-<br><br><br>
+<br><br>

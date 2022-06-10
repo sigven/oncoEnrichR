@@ -6,15 +6,16 @@
 \usage{
 init_report(
   oeDB,
-  project_title = "Project title",
-  project_owner = "Project owner",
+  project_title = "_Project title_",
+  project_owner = "_Project owner_",
   html_floating_toc = T,
   html_report_theme = "default",
   query_id_type = "symbol",
   ignore_id_err = TRUE,
-  project_description = "Project description",
+  project_description = "_Project description_",
   ppi_min_string_score = 900,
   ppi_add_nodes = 50,
+  ppi_node_shadow = TRUE,
   bgset_description = "All annotated protein-coding genes",
   bgset_id_type = "symbol",
   p_value_cutoff_enrichment = 0.05,
@@ -45,7 +46,8 @@ init_report(
   show_unknown_function = T,
   show_prognostic_cancer_assoc = T,
   show_synleth = T,
-  show_complex = T
+  show_complex = T,
+  show_domain = T
 )
 }
 \arguments{
@@ -69,6 +71,8 @@ init_report(
 \item{ppi_min_string_score}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
 
 \item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
+
+\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
 
 \item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
@@ -133,6 +137,8 @@ of target genes, using data from the Human Protein Atlas}
 \item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
 
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
+
+\item{show_domain}{logical indicating if report should provide target memberships in known protein domains (Pfam)}
 }
 \description{
 Function that initiates oncoEnrichR report structure

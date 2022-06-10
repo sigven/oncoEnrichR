@@ -30,7 +30,7 @@ test_that("Ligand-receptor interactions - testing ", {
     oncoEnrichR:::annotate_ligand_receptor_interactions(
       qgenes = c("EGFR", "EGF"),
       genedb = oedb$genedb$all,
-      ligand_receptor_db = oedb$ligandreceptordb$db,
+      ligand_receptor_db = oedb$ligandreceptordb$cellchatdb$db,
       logger = log4r_logger
     )
   )
@@ -38,8 +38,8 @@ test_that("Ligand-receptor interactions - testing ", {
     oncoEnrichR:::annotate_ligand_receptor_interactions(
       qgenes = as.integer(c(200,300)),
       genedb = oedb$genedb$all,
-      ligand_receptor_db = oedb$ligandreceptordb$db,
-      ligand_receptor_xref = oedb$ligandreceptordb$xref,
+      ligand_receptor_db = oedb$ligandreceptordb$cellchatdb$db,
+      ligand_receptor_xref = oedb$ligandreceptordb$cellchatdb$xref,
       logger = log4r_logger)
   )
 
@@ -48,8 +48,8 @@ test_that("Ligand-receptor interactions - testing ", {
       oncoEnrichR:::annotate_ligand_receptor_interactions(
         qgenes = c("EGFR", "EGF"),
         genedb = oedb$genedb$all,
-        ligand_receptor_db = oedb$ligandreceptordb$db,
-        ligand_receptor_xref = oedb$ligandreceptordb$xref,
+        ligand_receptor_db = oedb$ligandreceptordb$cellchatdb$db,
+        ligand_receptor_xref = oedb$ligandreceptordb$cellchatdb$xref,
         logger = log4r_logger)$secreted_signaling
       ),
     1

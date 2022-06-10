@@ -221,7 +221,7 @@ test_that("Tissue/celltype gene enrichment ", {
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
         resolution = "tissue",
         logger = log4r_logger)$per_type),
-    as.integer(37))
+    as.integer(55))
 
   expect_identical(
     colnames(

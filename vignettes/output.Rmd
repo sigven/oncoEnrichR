@@ -1,0 +1,256 @@
+---
+title: "Output"
+output: rmarkdown::html_document
+---
+
+## Output files
+
+The output of the analyses performed with oncoEnrichR are provided in two different formats:
+
+* An interactive HTML report
+* A multi-sheet Excel workbook
+
+
+### HTML report
+
+Here, we showcase screenshots from the oncoEnrichR interactive HTML report, following the
+various types of questions that can be answered with the tool.
+
+#### Query verification
+
+* Are all my gene/query identifiers correctly identified? Are some of my query identifiers outdated, and no longer considered the primary identifier?
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/query_verification.jpg"><img src="module_screenshots/query_verification.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Poorly characterized genes
+
+* Which members of the query set have a poorly characterized/unknown function? 
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/unknown_function.jpg"><img src="module_screenshots/unknown_function.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Cancer associations
+
+* Which tumor types are associated with genes in the queryset? To what extents? Which genes are classified as tumor suppressors, proto-oncogenes or potential cancer driver genes?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/cancer_association_I.jpg"><img src="module_screenshots/cancer_association_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/cancer_association_II.jpg"><img src="module_screenshots/cancer_association_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Cancer hallmark evidence
+
+* Which genes have been attributed to the hallmarks of cancer?
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/cancer_hallmarks.jpg"><img src="module_screenshots/cancer_hallmarks.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+
+#### Drug associations
+
+* Are there available targeted cancer drugs for query set members? What are the target tractabilities of all query set members?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/drug_I.jpg"><img src="module_screenshots/drug_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/drug_II.jpg"><img src="module_screenshots/drug_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Synthetic lethality
+
+* Which genes are predicted to take part in synthetic lethality interactions?
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/synthetic_lethality.jpg"><img src="module_screenshots/synthetic_lethality.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Gene fitness scores
+
+* Which members in the query set have a significant effect on cell fitness, considering large-scale genome-wide CRISPR–Cas9 dropout screening data of cancer cell lines?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/fitness_I.jpg"><img src="module_screenshots/fitness_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/fitness_II.jpg"><img src="module_screenshots/fitness_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Protein complexes
+
+* Are members of the query set involved in cancer-relevant protein complexes? 
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/protein_complex.jpg"><img src="module_screenshots/protein_complex.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Protein domains
+
+* Which protein domains are most frequent among members of the query set?
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/protein_domains.jpg"><img src="module_screenshots/protein_domains.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Protein-protein interaction network
+
+* How are protein-protein interactions represented in the query set? Which proteins are hubs in the interaction network? Which members of the query set form community structures in the network?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/ppi_I.jpg"><img src="module_screenshots/ppi_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/ppi_II.jpg"><img src="module_screenshots/ppi_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+
+#### Regulatory interactions
+
+* Are there transcriptional regulatory interactions in the query set? Both TF/regulator and target present? What are the regulatory targets for other TFs present? What are the regulators of other targets?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/regulatory_I.jpg"><img src="module_screenshots/regulatory_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/regulatory_II.jpg"><img src="module_screenshots/regulatory_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Subcellular compartments
+
+* How are subcellular compartments represented in the query set? 
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/subcell_I.jpg"><img src="module_screenshots/subcell_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/subcell_II.jpg"><img src="module_screenshots/subcell_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+
+#### Function and pathway enrichment
+
+* Which biological pathways/processes, molecular functions, or cancer gene signatures are enriched in the query set?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/enrichment_I.jpg"><img src="module_screenshots/enrichment_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/enrichment_II.jpg"><img src="module_screenshots/enrichment_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Tissue and cell type enrichment
+
+* What are the tissue- and cell-type specific expression patterns of query genes in normal/healthy tissue?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/cell_tissue_I.jpg"><img src="module_screenshots/cell_tissue_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/cell_tissue_II.jpg"><img src="module_screenshots/cell_tissue_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Tumor aberration frequencies
+
+* To what extent are genes in the query set mutated in tumor samples, through copy number alterations or point mutations/indels? 
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/aberration_I.jpg"><img src="module_screenshots/aberration_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/aberration_II.jpg"><img src="module_screenshots/aberration_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+  <br><br><br>
+  <a href = "module_screenshots/aberration_III.jpg"><img src="module_screenshots/aberration_III.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/aberration_IV.jpg"><img src="module_screenshots/aberration_IV.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Tumor co-expression
+
+* Are members of the query set co-expressed with other cancer genes in tumor samples? 
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/tumor_coexpression.jpg"><img src="module_screenshots/tumor_coexpression.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+<br>
+
+#### Prognostic associations
+
+* Which genes are linked to survival in cancer patients, considering expression or methylation levels, 
+or mutation status of query genes in tumor samples?
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/prognostic_I.jpg"><img src="module_screenshots/prognostic_I.jpg" width = "500" height = "700" border = 1>
+  </a>
+   <br><br><br>
+   <a href = "module_screenshots/prognostic_II.jpg"><img src="module_screenshots/prognostic_II.jpg" width = "500" height = "700" border = 1>
+  </a>
+</p>
+
+
+### Excel workbook
+
+* The Excel workbook contains all results from the various analyses conducted, organized into multiple sheets (as indicated through red circles in the screenshot below)
+
+<br>
+<p align = "center">
+  <a href = "module_screenshots/excel.jpg"><img src="module_screenshots/excel.jpg" width = "700" height = "700" border = 1>
+  </a>
+</p>
+<br>
+

@@ -23,7 +23,7 @@ annotate_synleth_paralog_pairs <- function(
     data.frame("target" = qgenes, stringsAsFactors = F) %>%
       dplyr::inner_join(slparalogdb,
                         by = c("target" = "symbol_A1")) %>%
-      dplyr::rename(symbol_A = .data$target) %>%
+      dplyr::rename(gene_A = .data$target) %>%
       dplyr::left_join(
         dplyr::select(genedb, .data$entrezgene, .data$genename),
         by = c("entrezgene_A1" = "entrezgene")
@@ -33,9 +33,12 @@ annotate_synleth_paralog_pairs <- function(
         dplyr::select(genedb, .data$entrezgene, .data$genename),
         by = c("entrezgene_A2" = "entrezgene")
       ) %>%
-      dplyr::rename(genename_B = .data$genename, symbol_B = .data$symbol_A2) %>%
+      dplyr::rename(genename_B = .data$genename,
+                    gene_B = .data$symbol_A2) %>%
       dplyr::select(-c(.data$entrezgene_A1, .data$entrezgene_A2)) %>%
-      dplyr::select(.data$symbol_A, .data$genename_A, .data$symbol_B,
+      dplyr::select(.data$gene_A,
+                    .data$genename_A,
+                    .data$gene_B,
                     .data$genename_B, dplyr::everything()) %>%
       dplyr::arrange(dplyr::desc(.data$prediction_score))
   )
@@ -44,7 +47,7 @@ annotate_synleth_paralog_pairs <- function(
     data.frame("target" = qgenes, stringsAsFactors = F) %>%
       dplyr::inner_join(slparalogdb,
                         by = c("target" = "symbol_A2")) %>%
-      dplyr::rename(symbol_B = .data$target) %>%
+      dplyr::rename(gene_B = .data$target) %>%
       dplyr::left_join(
         dplyr::select(genedb, .data$entrezgene, .data$genename),
         by = c("entrezgene_A2" = "entrezgene")
@@ -55,10 +58,13 @@ annotate_synleth_paralog_pairs <- function(
         by = c("entrezgene_A1" = "entrezgene")
       ) %>%
       dplyr::rename(genename_A = .data$genename,
-                    symbol_A = .data$symbol_A1) %>%
+                    gene_A = .data$symbol_A1) %>%
       dplyr::select(-c(.data$entrezgene_A1, .data$entrezgene_A2)) %>%
-      dplyr::select(.data$symbol_A, .data$genename_A, .data$symbol_B,
-                    .data$genename_B, dplyr::everything()) %>%
+      dplyr::select(.data$gene_A,
+                    .data$genename_A,
+                    .data$gene_B,
+                    .data$genename_B,
+                    dplyr::everything()) %>%
       dplyr::arrange(dplyr::desc(.data$prediction_score))
   )
 
@@ -66,31 +72,31 @@ annotate_synleth_paralog_pairs <- function(
      NROW(targetA_interactions) > 0){
     paralog_synleth_interactions[['both_in_pair']] <- as.data.frame(
       dplyr::select(targetA_interactions,
-                    .data$symbol_A,
-                    .data$symbol_B) %>%
+                    .data$gene_A,
+                    .data$gene_B) %>%
         dplyr::inner_join(targetB_interactions,
-                          by = c("symbol_A","symbol_B"))
+                          by = c("gene_A","gene_B"))
     )
 
     if(NROW(paralog_synleth_interactions[['both_in_pair']]) > 0){
 
       targetA_interactions <- targetA_interactions %>%
         dplyr::anti_join(paralog_synleth_interactions[['both_in_pair']],
-                         by = c("symbol_A", "symbol_B"))
+                         by = c("gene_A", "gene_B"))
 
       targetB_interactions <- targetB_interactions %>%
         dplyr::anti_join(paralog_synleth_interactions[['both_in_pair']],
-                         by = c("symbol_A", "symbol_B")) %>%
-        dplyr::rename(tmp_symbol = .data$symbol_A,
+                         by = c("gene_A", "gene_B")) %>%
+        dplyr::rename(tmp_symbol = .data$gene_A,
                       tmp_genename = .data$genename_A) %>%
-        dplyr::mutate(symbol_A = .data$symbol_B,
+        dplyr::mutate(gene_A = .data$gene_B,
                       genename_A = .data$genename_B,
-                      symbol_B = .data$tmp_symbol,
+                      gene_B = .data$tmp_symbol,
                       genename_B = .data$tmp_genename) %>%
         dplyr::select(-c(.data$tmp_symbol, .data$tmp_genename)) %>%
-        dplyr::select(.data$symbol_A,
+        dplyr::select(.data$gene_A,
                       .data$genename_A,
-                      .data$symbol_B,
+                      .data$gene_B,
                       .data$genename_B, dplyr::everything())
 
       paralog_synleth_interactions[['single_pair_member']] <-
@@ -104,16 +110,16 @@ annotate_synleth_paralog_pairs <- function(
     if(NROW(targetB_interactions) > 0){
       paralog_synleth_interactions[['single_pair_member']] <-
         targetB_interactions %>%
-        dplyr::rename(tmp_symbol = .data$symbol_A,
+        dplyr::rename(tmp_symbol = .data$gene_A,
                       tmp_genename = .data$genename_A) %>%
-        dplyr::mutate(symbol_A = .data$symbol_B,
+        dplyr::mutate(gene_A = .data$gene_B,
                       genename_A = .data$genename_B,
-                      symbol_B = .data$tmp_symbol,
+                      gene_B = .data$tmp_symbol,
                       genename_B = .data$tmp_genename) %>%
         dplyr::select(-c(.data$tmp_symbol, .data$tmp_genename)) %>%
-        dplyr::select(.data$symbol_A,
+        dplyr::select(.data$gene_A,
                       .data$genename_A,
-                      .data$symbol_B,
+                      .data$gene_B,
                       .data$genename_B, dplyr::everything()) %>%
         dplyr::arrange(dplyr::desc(.data$prediction_score))
     }

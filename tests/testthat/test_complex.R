@@ -54,6 +54,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
+        otdb_gene_rank = oedb$otdb$gene_rank,
         logger = log4r_logger)
     ),
     "list"
@@ -67,10 +68,14 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
+        otdb_gene_rank = oedb$otdb$gene_rank,
         logger = log4r_logger)$omnipath
     ),
-    c("complex_name", "target_genes", "literature", "complex_genes",
-      "annotation_source", "disease_comment", "complex_comment",
+    c("complex_name", "target_genes",
+      "literature", "complex_genes",
+      "annotation_source", "disease_comment",
+      "complex_cancer_rank_score", "num_target_members",
+      "complex_comment",
       "confidence", "purification_method")
   )
 
@@ -83,6 +88,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
+        otdb_gene_rank = oedb$otdb$gene_rank,
         logger = log4r_logger)$omnipath
     ),
     0
@@ -96,6 +102,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
+        otdb_gene_rank = oedb$otdb$gene_rank,
         logger = log4r_logger
       )$humap2
     ),

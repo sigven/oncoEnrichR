@@ -31,9 +31,9 @@ output: rmarkdown::html_document
       ignore_id_err = TRUE,
       html_floating_toc = TRUE,
       html_report_theme = "default",
-      project_title = "Project title",
-      project_owner = "Project owner",
-      project_description = "Project description",
+      project_title = "_Project title_",
+      project_owner = "_Project owner_",
+      project_description = "_Project description_",
       bgset = NULL,
       bgset_id_type = "symbol",
       bgset_description = "All protein-coding genes",
@@ -50,6 +50,7 @@ output: rmarkdown::html_document
       simplify_go = TRUE,
       ppi_add_nodes = 50,
       ppi_score_threshold = 900,
+      ppi_node_shadow = TRUE,
       show_ppi = TRUE,
       show_drugs_in_ppi = TRUE,
       show_disease = TRUE,
@@ -67,7 +68,8 @@ output: rmarkdown::html_document
       show_subcell_comp = TRUE,
       show_synleth = TRUE,
       show_fitness = TRUE,
-      show_complex = TRUE)
+      show_complex = TRUE,
+      show_domain = TRUE)
     ```
 
     See [detailed descriptions of all options here](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html)
@@ -94,7 +96,7 @@ A target list of *n = 134* high-confidence interacting proteins with the c-MYC o
 -   `project_title = "cMYC_BioID_screen"`
 -   `project_owner = "Raught et al."`
 
-and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.6402572).
+and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.6630473).
 
 Below are R commands provided to reproduce the example output. **NOTE**: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
