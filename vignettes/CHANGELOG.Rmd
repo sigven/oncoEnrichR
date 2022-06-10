@@ -16,6 +16,7 @@ output: rmarkdown::html_document
   * GENCODE (v40)
   * CGC (v96)
   * TCGA (GDC release 32)
+  * EFO (v42.0)
   
 * Module that shows the occurrence of protein domains among query set members
 * Protein-complex cancer relevance score
