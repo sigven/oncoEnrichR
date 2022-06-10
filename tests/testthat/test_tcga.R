@@ -310,7 +310,7 @@ test_that("TCGA aberration matrix - testing ", {
       genedb = oedb$genedb$all,
       logger = log4r_logger
     ),
-    regexp = "NOTE: NO genes in query set with TCGA aberration data - type "
+    regexp = "NOTE: NO genes in query set with TCGA aberration data"
   )
 
   expect_identical(

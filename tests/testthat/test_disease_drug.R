@@ -128,12 +128,12 @@ test_that("TEST - Target disease associations", {
     logger = log4r_logger,
     qgenes = c("EGFR","BRAF"),
     otdb_all = oedb$otdb$all,
-    otdb_site_rank = oedb$otdb$site_rank))
+    otdb_gene_rank = oedb$otdb$gene_rank))
   expect_error(oncoEnrichR:::target_disease_associations(
     logger = log4r_logger,
     qgenes = c(300,400),
     otdb_all = oedb$otdb$all,
-    otdb_site_rank = oedb$otdb$site_rank,
+    otdb_gene_rank = oedb$otdb$gene_rank,
     genedb = oedb$genedb$all))
 
   expect_identical(
@@ -143,7 +143,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)
+        otdb_gene_rank = oedb$otdb$gene_rank)
     ),
     c("target", "assoc_pr_gene", "ttype_matrix")
   )
@@ -156,7 +156,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$target$cancer_associations
+        otdb_gene_rank = oedb$otdb$gene_rank)$target$cancer_associations
     ),
     nchar(
       oncoEnrichR:::target_disease_associations(
@@ -165,7 +165,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$target$cancer_associations
+        otdb_gene_rank = oedb$otdb$gene_rank)$target$cancer_associations
     )
   )
 
@@ -177,7 +177,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$assoc_pr_gene$cancer
+        otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$cancer
       ),
     as.integer(0)
   )
@@ -190,7 +190,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$assoc_pr_gene$other
+        otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$other
     ),
     as.integer(0)
   )
@@ -202,14 +202,23 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$target
+        otdb_gene_rank = oedb$otdb$gene_rank)$target
     ),
-    c('symbol', 'genename', 'ensembl_gene_id',
-      'oncogene', 'tumor_suppressor',
-      'targetset_cancer_prank', 'cancergene_evidence',
-      'cancer_associations', 'cancer_association_links',
-      'targetset_disease_prank', 'disease_associations',
-      'disease_association_links', 'gene_summary')
+    c('symbol',
+      'genename',
+      'ensembl_gene_id',
+      'oncogene',
+      'tumor_suppressor',
+      'cancer_driver',
+      'targetset_cancer_rank',
+      'global_cancer_rank',
+      'cancergene_evidence',
+      'cancer_associations',
+      'cancer_association_links',
+      'targetset_disease_rank',
+      'disease_associations',
+      'disease_association_links',
+      'gene_summary')
   )
 
   expect_identical(
@@ -219,7 +228,7 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$assoc_pr_gene
+        otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene
     ),
     "list"
   )
@@ -232,9 +241,9 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$assoc_pr_gene$other
+        otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$other
     ),
-    c('symbol', 'targetset_disease_prank', 'ot_links','ot_diseases')
+    c('symbol', 'targetset_disease_rank', 'ot_links','ot_diseases')
   )
 
   expect_identical(
@@ -244,9 +253,10 @@ test_that("TEST - Target disease associations", {
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
         logger = log4r_logger,
-        otdb_site_rank = oedb$otdb$site_rank)$assoc_pr_gene$cancer
+        otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$cancer
     ),
-    c('symbol', 'targetset_cancer_prank', 'ot_cancer_links','ot_cancer_diseases')
+    c('symbol', 'targetset_cancer_rank', 'global_cancer_rank',
+      'ot_cancer_links','ot_cancer_diseases')
   )
 
 })

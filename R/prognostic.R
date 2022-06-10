@@ -109,7 +109,8 @@ hpa_prognostic_genes <- function(qgenes,
                     .data$percentile_rank_site,
                     .data$percentile_rank_all,
                     .data$log10_p_value) %>%
-      dplyr::arrange(dplyr::desc(.data$log10_p_value))
+      dplyr::arrange(dplyr::desc(.data$log10_p_value)) %>%
+      dplyr::distinct()
 
     n_query_associations <- NROW(prognostic_query_associations)
 

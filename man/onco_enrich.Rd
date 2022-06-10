@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{onco_enrich}
 \alias{onco_enrich}
-\title{Interrogate a gene list for cancer relevance}
+\title{Interrogate and prioritize a gene list for cancer relevance}
 \usage{
 onco_enrich(
   query = NULL,
@@ -11,9 +11,9 @@ onco_enrich(
   ignore_id_err = TRUE,
   html_floating_toc = T,
   html_report_theme = "default",
-  project_title = "Project title",
-  project_owner = "Project owner",
-  project_description = "Project description",
+  project_title = "_Project title_",
+  project_owner = "_Project owner_",
+  project_description = "_Project description_",
   bgset = NULL,
   bgset_id_type = "symbol",
   bgset_description = "All protein-coding genes",
@@ -30,6 +30,7 @@ onco_enrich(
   simplify_go = TRUE,
   ppi_add_nodes = 50,
   ppi_score_threshold = 900,
+  ppi_node_shadow = TRUE,
   show_ppi = TRUE,
   show_drugs_in_ppi = TRUE,
   show_disease = TRUE,
@@ -48,6 +49,7 @@ onco_enrich(
   show_synleth = TRUE,
   show_fitness = TRUE,
   show_complex = TRUE,
+  show_domain = TRUE,
   ...
 )
 }
@@ -105,6 +107,8 @@ onco_enrich(
 
 \item{ppi_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
 
+\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
+
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
 
 \item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
@@ -142,8 +146,10 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 
+\item{show_domain}{logical indicating if report should provide target memberships in known protein domains (Pfam)}
+
 \item{...}{arguments for Galaxy/web-based processing}
 }
 \description{
-Interrogate a gene list for cancer relevance
+Interrogate and prioritize a gene list for cancer relevance
 }

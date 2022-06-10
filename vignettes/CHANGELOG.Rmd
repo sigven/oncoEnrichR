@@ -3,6 +3,36 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.1.0
+
+* Date: 2022-06-10
+
+### Added
+
+* Data updates:
+  * CancerMine (v46)
+  * Open Targets Platform (2022.04)
+  * WikiPathways (20220510)
+  * GENCODE (v40)
+  * CGC (v96)
+  * TCGA (GDC release 32)
+  
+* Module that shows the occurrence of protein domains among query set members
+* Protein-complex cancer relevance score
+
+### Changed
+
+*  Re-ordering of HTML sections, multiple cosmetic changes
+*  GO enrichment plots: now showing q-value and enrichment factors in bar plots
+*  Revised method to compute tumor-type specific cancer rank (and global)
+*  Dedicated _output_ article with output views on sigven.github.io/oncoEnrichR
+
+### Fixed
+
+*  Bug: duplicate records in retrieved co-expression pairs
+*  Removed most redundant protein complexes in OmniPath
+
+
 ## Version 1.0.9
 
 * Date: 2022-03-31

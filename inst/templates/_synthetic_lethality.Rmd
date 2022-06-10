@@ -9,7 +9,7 @@
   * Percent sequence identity between the genes
   * Size of gene paralog family
   
-* The higher the prediction score, the more confident the prediction is with respect to a synthetic lethality interaction. 
+* The higher the prediction score, the more confident the prediction is with respect to a synthetic lethality interaction. Interactions are here ranked according to confidence (percentile), visualized in varying shades of blue (from <span style="background-color:#b8b8ba; padding:2x; color:white"><b>&nbsp; low-confident interactions &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; high-confident interactions &nbsp; </b></span>).
 
 
 <br><br>
@@ -70,8 +70,8 @@ sl_ab <-
 
 crosstalk::bscols(
   list(
-    crosstalk::filter_select("symbol_A", "Interactor A", sl_ab, ~symbol_A),
-    crosstalk::filter_select("symbol_B", "Interactor B", sl_ab, ~symbol_B),
+    crosstalk::filter_select("gene_A", "Interactor A", sl_ab, ~gene_A),
+    crosstalk::filter_select("gene_B", "Interactor B", sl_ab, ~gene_B),
     crosstalk::filter_slider("prediction_score", "Prediction score", sl_ab, ~prediction_score,
                              step = 0.025, min = 0.0, max = 0.45),
     crosstalk::filter_slider("prediction_percentile", "Prediction percentile", sl_ab, ~prediction_percentile,
@@ -98,14 +98,14 @@ DT::datatable(
                bPaginate = T,
                dom = 'Bfrtip')
   ) %>%
-   DT::formatStyle("symbol_A",
+   DT::formatStyle("gene_A",
                   "prediction_percentile", 
                   color = "white", 
                   backgroundColor = DT::styleInterval(
                     onc_enrich_report[['config']][['synleth']][['breaks']],
                     onc_enrich_report[['config']][['synleth']][['colors']])
   ) %>%
-  DT::formatStyle("symbol_B",
+  DT::formatStyle("gene_B",
                   "prediction_percentile", 
                   color = "white", 
                   backgroundColor = DT::styleInterval(
@@ -147,8 +147,8 @@ sl_a <-
 
 crosstalk::bscols(
   list(
-    crosstalk::filter_select("symbol_A", "Interactor A", sl_a, ~symbol_A),
-    crosstalk::filter_select("symbol_B", "Interactor B", sl_a, ~symbol_B),
+    crosstalk::filter_select("gene_A", "Interactor A", sl_a, ~gene_A),
+    crosstalk::filter_select("gene_B", "Interactor B", sl_a, ~gene_B),
     crosstalk::filter_slider("prediction_score", "Prediction score", sl_a, ~prediction_score,
                              step = 0.025, min = 0.0, max = 0.45),
     crosstalk::filter_slider("prediction_percentile", "Prediction percentile", sl_a, ~prediction_percentile,
@@ -175,7 +175,7 @@ DT::datatable(
                bPaginate = T,
                dom = 'Bfrtip')
   ) %>%
-   DT::formatStyle("symbol_A",
+   DT::formatStyle("gene_A",
                   "prediction_percentile", 
                   color = "white", 
                   backgroundColor = DT::styleInterval(

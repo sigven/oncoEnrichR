@@ -52,16 +52,16 @@ test_that("oncoEnrichR - initialize report", {
 })
 
 
-test_that("oncoEnrichR - load database testing", {
-
-  expect_identical(
-    typeof(
-      oncoEnrichR:::load_db(cache_dir = "~/.oncoenrichr_cache", remote = F)
-    ),
-    "list"
-  )
-
-})
+# test_that("oncoEnrichR - load database testing", {
+#
+#   expect_identical(
+#     typeof(
+#       oncoEnrichR:::load_db(cache_dir = "~/.oncoenrichr_cache", remote = F)
+#     ),
+#     "list"
+#   )
+#
+# })
 
 test_that("oncoEnrichR - generate report", {
 

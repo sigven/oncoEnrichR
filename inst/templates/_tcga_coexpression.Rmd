@@ -73,12 +73,12 @@ crosstalk::bscols(
     crosstalk::filter_select("target_gene", "Target gene", 
                              coexp_genes_positive, ~target_gene),
     crosstalk::filter_slider("r", "Correlation coefficient (r)", coexp_genes_positive, 
-                             ~r, step = 0.05, min = 0.6, max = 1),
+                             ~r, step = 0.05, min = 0.7, max = 1),
     crosstalk::filter_checkbox("tumor_suppressor", "Tumor suppressor (partner)", 
                                coexp_genes_positive, ~tumor_suppressor)
   ),
   list(
-    crosstalk::filter_checkbox("oncogene", "Oncogene (partner)", 
+    crosstalk::filter_checkbox("oncogene", "Proto-oncogene (partner)", 
                                coexp_genes_positive, ~oncogene),
     crosstalk::filter_checkbox("cancer_driver", "Cancer driver (partner)", 
                                coexp_genes_positive, ~cancer_driver),
@@ -136,12 +136,12 @@ crosstalk::bscols(
                              coexp_genes_negative,~target_gene),
     crosstalk::filter_slider("r", "Correlation coefficient (r)", 
                              coexp_genes_negative, 
-                              ~r, step = 0.05, min = -1, max = -0.6),
+                              ~r, step = 0.05, min = -1, max = -0.7),
     crosstalk::filter_checkbox("tumor_suppressor", "Tumor suppressor (partner)", 
                                coexp_genes_negative, ~tumor_suppressor)
   ),
   list(
-    crosstalk::filter_checkbox("oncogene", "Oncogene (partner)", 
+    crosstalk::filter_checkbox("oncogene", "Proto-oncogene (partner)", 
                                coexp_genes_negative, ~oncogene),
     crosstalk::filter_checkbox("cancer_driver", "Cancer driver (partner)", 
                                coexp_genes_negative, ~cancer_driver),

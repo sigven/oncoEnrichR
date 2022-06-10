@@ -1,7 +1,7 @@
 ### Drug associations
 
 * Each protein/protein in the query set is annotated with:
-   * Targeted cancer drugs (inhibitors/antagonists), as found through the [Open Targets Platform](https://targetvalidation.org)
+   * Targeted drugs (inhibitors/antagonists), as found through the [Open Targets Platform](https://targetvalidation.org), limited to compounds indicated for a cancer condition/phenotype
    * We distinguish between drugs in <i>early clinical development/phase (<b>ep</b>)</i>, and drugs already in <i>late clinical development/phase (<b>lp</b>)</i>
 
 <br><br>
@@ -33,7 +33,7 @@ cat('<br><br>')
 
 #### Target tractabilities {.tabset }
 
-* Each gene/protein in the query set is annotated with _[target tractability information](https://docs.targetvalidation.org/getting-started/target-tractability)_ (aka druggability) towards
+* Each gene/protein in the query set is annotated with _[target tractability information](https://docs.targetvalidation.org/getting-started/target-tractability)_ (also known as _druggability_) towards
 small molecules/compounds and antibodies
 * Query genes are colored in varying shades of purple (from <span style="background-color:#b8b8ba; padding:2x; color:white">&nbsp;unknown tractability&nbsp;</span> to <span style="background-color:#810f7c; padding:2x; color:white">&nbsp;clinical precedence&nbsp;</span>)
    

@@ -450,7 +450,12 @@ tcga_coexpression <- function(qgenes,
                   .data$p_value,
                   .data$tumor) %>%
     dplyr::left_join(query_genes_df, by = c("symbol_partner" = "symbol")) %>%
-    dplyr::filter(!is.na(.data$entrezgene)) %>%
+    dplyr::filter(!is.na(.data$entrezgene))
+
+  if(NROW(coexp_target_tcga) == 0){
+    return(coexp_target_tcga)
+  }
+  coexp_target_tcga <- coexp_target_tcga %>%
     dplyr::mutate(tmp = .data$symbol) %>%
     dplyr::mutate(symbol = .data$symbol_partner) %>%
     dplyr::mutate(symbol_partner = .data$tmp) %>%
@@ -472,32 +477,54 @@ tcga_coexpression <- function(qgenes,
     dplyr::mutate(r = as.numeric(round(.data$r, digits = 3))) %>%
     dplyr::filter(stringr::str_detect(.data$tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|ESCA|MESO|UCEC|OV|CHOL|THCA|COAD|BLCA|STAD|KIRP|GBM|HNSC")) %>%
     dplyr::mutate(primary_site = "Breast") %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "LUAD" | .data$tumor == "LUSC","Lung", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "STAD" | .data$tumor == "ESCA","Esophagus/Stomach", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "BLCA","Bladder", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "SARC","Soft Tissue", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "HNSC","Head and Neck", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "UCEC","Endometrium", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "LAML","Myeloid", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "SKCM","Skin", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "GBM","Brain", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "PAAD","Pancreas", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "COAD" | .data$tumor == "READ","Colon/Rectum", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "PRAD","Prostate", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "THCA","Thyroid", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "KIRP" | .data$tumor == "KICH","Kidney", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "OV","Ovary", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "MESO","Pleura", as.character(.data$primary_site))) %>%
-    dplyr::mutate(primary_site = dplyr::if_else(.data$tumor == "CHOL","Biliary Tract", as.character(.data$primary_site)))
-
-
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "LUAD" | .data$tumor == "LUSC","Lung", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "STAD" | .data$tumor == "ESCA","Esophagus/Stomach", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "BLCA","Bladder", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "SARC","Soft Tissue", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "HNSC","Head and Neck", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "UCEC","Endometrium", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "LAML","Myeloid", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "SKCM","Skin", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "GBM","Brain", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "PAAD","Pancreas", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "COAD" | .data$tumor == "READ","Colon/Rectum", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "PRAD","Prostate", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "THCA","Thyroid", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "KIRP" | .data$tumor == "KICH","Kidney", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "OV","Ovary", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "MESO","Pleura", as.character(.data$primary_site))) %>%
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "CHOL","Biliary Tract", as.character(.data$primary_site)))
 
   coexp_target_tcga <- coexp_target_tcga %>%
     dplyr::filter(stringr::str_detect(.data$correlation,"Very") |
                     !is.na(.data$oncogene) |
                     !is.na(.data$tumor_suppressor) |
                     !is.na(.data$cancer_driver)) %>%
-    dplyr::arrange(dplyr::desc(.data$r))
+    dplyr::arrange(dplyr::desc(.data$r)) %>%
+    dplyr::select(.data$target_gene,
+                  .data$partner_gene,
+                  .data$correlation,
+                  .data$r,
+                  .data$p_value,
+                  .data$primary_site,
+                  dplyr::everything())
 
   coexp_target_tcga_positive <-
     dplyr::filter(coexp_target_tcga, .data$corrtype == "Positive")
@@ -509,6 +536,55 @@ tcga_coexpression <- function(qgenes,
     dplyr::bind_rows(coexp_target_tcga_negative,
                      coexp_target_tcga_positive)
   )
+
+  ### remove duplicates
+  duplicated_recs <- coexp_target_tcga %>%
+    dplyr::select(
+      .data$target_gene,
+      .data$partner_gene,
+      .data$tumor) %>%
+    dplyr::inner_join(
+      coexp_target_tcga, by =
+        c("target_gene" = "partner_gene",
+          "partner_gene" = "target_gene",
+          "tumor" = "tumor")
+    )
+
+  if(NROW(duplicated_recs) > 0){
+    nonduplicated_recs <- coexp_target_tcga %>%
+      dplyr::anti_join(
+        duplicated_recs,
+        by = c("target_gene","partner_gene","tumor"))
+
+    duplicated_recs <- duplicated_recs %>%
+      dplyr::filter(!(.data$tumor_suppressor == F &
+                        .data$oncogene == F &
+                        .data$cancer_driver == F))
+
+    remaining <- duplicated_recs %>%
+      dplyr::select(
+        .data$target_gene,
+        .data$partner_gene,
+        .data$tumor) %>%
+      dplyr::inner_join(
+        duplicated_recs, by =
+          c("target_gene" = "partner_gene",
+            "partner_gene" = "target_gene",
+            "tumor" = "tumor")) %>%
+      dplyr::mutate(rn = dplyr::row_number()) %>%
+      dplyr::filter(.data$rn %% 2 != 0)
+
+    deduplicated_recs <-
+      duplicated_recs %>% dplyr::anti_join(
+      remaining, by =
+        c("target_gene","partner_gene","tumor")
+    )
+
+    coexp_target_tcga <-
+      nonduplicated_recs %>%
+      dplyr::bind_rows(deduplicated_recs)
+
+  }
 
   return(coexp_target_tcga)
 

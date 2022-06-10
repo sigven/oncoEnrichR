@@ -25,7 +25,8 @@ get_genes_unknown_function <- function(qgenes,
   if(nrow(target_genes) > 0){
     results <- poorly_defined_genes %>%
       dplyr::inner_join(target_genes, by = "symbol") %>%
-      dplyr::arrange(.data$unknown_function_rank)
+      dplyr::arrange(.data$unknown_function_rank) %>%
+      dplyr::filter(.data$unknown_function_rank <= 5)
 
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }

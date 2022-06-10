@@ -38,11 +38,9 @@ The contents of the analysis report provided by oncoEnrichR address the followin
 
 ## News
 
+-   June 10th 2022: [**1.1.0 release**](articles/CHANGELOG.html#version-1-1-0)
 -   March 31st 2022: [**1.0.9 release**](articles/CHANGELOG.html#version-1-0-9)
 -   February 20th 2022: [**1.0.8 release**](articles/CHANGELOG.html#version-1-0-8)
--   November 30th 2021: [**1.0.7 release**](articles/CHANGELOG.html#version-1-0-7)
--   October 27th 2021: [**1.0.6 release**](articles/CHANGELOG.html#version-1-0-6)
--   July 8th 2021: [**1.0.4 release**](articles/CHANGELOG.html#version-1-0-4)
 
 ## Example report
 
@@ -56,6 +54,7 @@ The contents of the analysis report provided by oncoEnrichR address the followin
 
 * [Installation instructions](articles/installation.html)
 * [How to run oncoEnrichR](articles/running.html)
+* [Explore the various analysis outputs produced with oncoEnrichR](articles/output.html)
 * [Annotation resources available in oncoEnrichR](articles/annotation_resources.html)
 
 ## Contact

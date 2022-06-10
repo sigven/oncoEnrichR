@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.0.9
-Date: 2022-03-31
+Date: 2022-06-10
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -19,16 +19,17 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     (comprehensive target-drug associations, cancer hallmark evidence and 
     target-disease associations), TCGA (genetic aberrations and gene co-expression 
     patterns in human tumor samples), STRING (protein-protein interaction networks), 
-    CORUM (curated protein complexes), COMPPI (subcellular compartments), 
+    curated protein complexes (CORUM/Compleat), COMPPI (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
     prognostic associations), CellChatDB (ligand-receptor interactions),
-    DoRothEA (regulatory interactions), and Gene Ontology/MSigDB/REACTOME/KEGG/NetPath 
+    DoRothEA (regulatory interactions), synthetic lethality predictions, 
+    and Gene Ontology/MSigDB/REACTOME/KEGG/NetPath 
     (functional enrichment/over-representation analysis with respect to gene 
     function and cellular pathways). The package outputs both an interactive HTML 
     report and an Excel workbook in which the user can interrogate the various 
     types of annotations and analyses performed with the query geneset. 
 Depends: 
-    R (>= 4.0), GSEABase (>= 1.54.0)
+    R (>= 4.1), GSEABase (>= 1.58.0)
 biocViews: 
 Imports: dplyr,
          assertthat,
@@ -40,30 +41,30 @@ Imports: dplyr,
          tidyr,
          visNetwork (>= 2.1.0), 
          SummarizedExperiment (>= 1.22.0),
-         DT (>= 0.18), 
-         plotly (>= 4.10), 
+         DT (>= 0.20), 
+         plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
          magrittr (>= 2.0.1), 
-         clusterProfiler (>= 4.0.5), 
+         clusterProfiler, 
          igraph (>= 1.2.6), 
          reshape2 (>= 1.4.4), 
-         log4r (>= 0.3.2),
+         log4r (>= 0.4.2),
          gganatogram, 
          rlang,
          RCurl,
          R.cache,
-         maftools (>= 2.8.0), 
+         maftools (>= 2.12.0), 
          ggpubr (>= 0.4.0), 
-         assertable (>= 0.2.8), 
-         TissueEnrich (>= 1.12.0), 
+         assertable, 
+         TissueEnrich, 
          textclean (>= 0.9.3)
 License: MIT + file LICENSE
 Encoding: UTF-8
 Remotes: jespermaag/gganatogram
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Roxygen: list(markdown = TRUE)
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.1.0)
 Config/testthat/edition: 3

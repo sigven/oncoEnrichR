@@ -19,6 +19,7 @@
   i) interactions for which **both regulatory gene and regulatory target** are found in the queryset
   ii) interactions for which **only the regulatory gene** is found in the queryset
   iii) interactions for which **only the regulatory target** is found in the queryset
+  - Interactions are ranked according to confidence, visualized in varying shades of blue (from <span style="background-color:#4292c6; padding:2x; color:white"><b>&nbsp; low-confident interactions &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; high-confident interactions &nbsp; </b></span>).
   
 We interrogate interactions in the query set for two separate collections of regulatory interactions in DoRothEA: 
 

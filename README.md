@@ -13,17 +13,16 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 ## Getting started
 
 -   [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-adressed-by-oncoenrichr)
+-   [Output views from oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/output.html)
 -   [Installation instructions](https://sigven.github.io/oncoEnrichR/articles/installation.html)
 -   [Running instructions](https://sigven.github.io/oncoEnrichR/articles/running.html)
 -   [Annotation resources available in oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html)
 
 ## News
 
+-   June 10th 2022: [**1.1.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-1-0)
 -   March 31st 2022: [**1.0.9 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-9)
 -   February 20th 2022: [**1.0.8 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-8)
--   November 30th 2021: [**1.0.7 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-7)
--   October 27th 2021: [**1.0.6 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-6)
--   July 8th 2021: [**1.0.4 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-4)
 
 ## Example report
 

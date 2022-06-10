@@ -103,6 +103,7 @@ load_db <- function(remote = T,
               "hpa",
               "ligandreceptordb",
               "otdb",
+              "pfamdb",
               "pathwaydb",
               "projectscoredb",
               "projectsurvivaldb",
@@ -204,6 +205,7 @@ load_db <- function(remote = T,
 #' @param project_description project background information
 #' @param ppi_min_string_score minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
+#' @param ppi_node_shadow show shadow for nodes in the displayed PPI network
 #' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param bgset_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
@@ -237,20 +239,22 @@ load_db <- function(remote = T,
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
+#' @param show_domain logical indicating if report should provide target memberships in known protein domains (Pfam)
 #'
 #' @keywords internal
 #'
 
 init_report <- function(oeDB,
-                        project_title = "Project title",
-                        project_owner = "Project owner",
+                        project_title = "_Project title_",
+                        project_owner = "_Project owner_",
                         html_floating_toc = T,
                         html_report_theme = "default",
                         query_id_type = "symbol",
                         ignore_id_err = TRUE,
-                        project_description = "Project description",
+                        project_description = "_Project description_",
                         ppi_min_string_score = 900,
                         ppi_add_nodes = 50,
+                        ppi_node_shadow = TRUE,
                         bgset_description =
                           "All annotated protein-coding genes",
                         bgset_id_type = "symbol",
@@ -282,7 +286,8 @@ init_report <- function(oeDB,
                         show_unknown_function = T,
                         show_prognostic_cancer_assoc = T,
                         show_synleth = T,
-                        show_complex = T) {
+                        show_complex = T,
+                        show_domain = T) {
 
   ## report object
   rep <- list()
@@ -311,6 +316,7 @@ init_report <- function(oeDB,
   rep[["config"]][["show"]][["drug_tractability"]] <- show_drug
   rep[["config"]][["show"]][["enrichment"]] <- show_enrichment
   rep[["config"]][["show"]][["protein_complex"]] <- show_complex
+  rep[["config"]][["show"]][["protein_domain"]] <- show_domain
   rep[["config"]][["show"]][["tcga_aberration"]] <- show_tcga_aberration
   rep[["config"]][["show"]][["tcga_coexpression"]] <- show_tcga_coexpression
   rep[["config"]][["show"]][["subcellcomp"]] <- show_subcell_comp
@@ -370,12 +376,16 @@ init_report <- function(oeDB,
   ## thresholds for quantitative target-disease associations
   rep[["config"]][["disease"]] <- list()
   rep[["config"]][["disease"]][["breaks"]] <-
-     c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+     c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
   rep[["config"]][["disease"]][["colors"]] <-
     c("#b8b8ba",
-      "#c6dbef","#9ecae1",
-      "#6baed6","#4292c6",
-      "#2171b5","#08519c",
+      "#deebf7",
+      "#c6dbef",
+      "#9ecae1",
+      "#6baed6",
+      "#4292c6",
+      "#2171b5",
+      "#08519c",
       "#08306b")
   rep[['config']][['disease']][['show_top_diseases']] <-
     show_top_diseases_only
@@ -403,7 +413,7 @@ init_report <- function(oeDB,
   rep[["config"]][["ppi"]][["stringdb"]] <- list()
   rep[["config"]][["ppi"]][["stringdb"]][["minimum_score"]] <- ppi_min_string_score
   rep[["config"]][["ppi"]][["stringdb"]][["visnetwork_shape"]] <- "dot"
-  rep[["config"]][["ppi"]][["stringdb"]][["visnetwork_shadow"]] <- T
+  rep[["config"]][["ppi"]][["stringdb"]][["visnetwork_shadow"]] <- ppi_node_shadow
   rep[["config"]][["ppi"]][["stringdb"]][["show_drugs"]] <- show_drugs_in_ppi
   rep[["config"]][["ppi"]][["stringdb"]][["add_nodes"]] <- ppi_add_nodes
   rep[["config"]][["ppi"]][["stringdb"]][["query_type"]] <- "network"
@@ -439,11 +449,21 @@ init_report <- function(oeDB,
   rep[["config"]][["prognosis"]][["breaks"]] <-
     c(3, 5.2, 7.4, 9.5, 11.7, 13.9)
   rep[["config"]][["prognosis"]][["colors_unfavorable"]] <-
-    c("#fee5d9","#fcbba1","#fc9272",
-      "#fb6a4a","#ef3b2c","#cb181d","#99000d")
+    c("#fee5d9",
+      "#fcbba1",
+      "#fc9272",
+      "#fb6a4a",
+      "#ef3b2c",
+      "#cb181d",
+      "#99000d")
   rep[["config"]][["prognosis"]][["colors_favorable"]] <-
-    c("#edf8e9","#c7e9c0","#a1d99b",
-      "#74c476","#41ab5d","#238b45","#005a32")
+    c("#edf8e9",
+      "#c7e9c0",
+      "#a1d99b",
+      "#74c476",
+      "#41ab5d",
+      "#238b45",
+      "#005a32")
 
   rep[["config"]][["cell_tissue"]] <- list()
   rep[["config"]][["cell_tissue"]][["tissue_enrichment_levels"]] <-
@@ -461,18 +481,29 @@ init_report <- function(oeDB,
       'Low cell type specificity',
       'Not detected')
   rep[["config"]][["cell_tissue"]][["enrichment_colors"]] <-
-    c("#084594","#2171B5","#4292C6",
-      "#6BAED6","#9ECAE1","#b8b8ba")
+    c("#084594",
+      "#2171B5",
+      "#4292C6",
+      "#6BAED6",
+      "#9ECAE1",
+      "#b8b8ba")
 
   rep[["config"]][["unknown_function"]] <- list()
   rep[["config"]][["unknown_function"]][["rank"]] <-
     c(1, 2, 3, 4, 5, 6)
   rep[["config"]][["unknown_function"]][["colors"]] <-
-    c("#99000d","#cb181d","#ef3b2c","#fb6a4a","#fc9272","#fcbba1")
+    c("#99000d",
+      "#cb181d",
+      "#ef3b2c",
+      "#fb6a4a",
+      "#fc9272",
+      "#fcbba1")
 
   rep[["config"]][["unknown_function"]][['num_candidates']] <-
     oeDB[['genedb']]$all %>%
+    dplyr::filter(.data$gene_biotype == "protein-coding") %>%
     dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
+    dplyr::filter(.data$unknown_function_rank <= 5) %>%
     nrow()
 
   rep[['config']][['subcellcomp']] <- list()
@@ -482,6 +513,12 @@ init_report <- function(oeDB,
     subcellcomp_show_cytosol
   rep[['config']][['subcellcomp']][['gganatogram_legend']] <-
     oeDB$subcelldb$gganatogram_legend
+
+  rep[['config']][['complex']] <- list()
+  rep[['config']][['complex']][['breaks']] <-
+    rep[['config']][['disease']][['breaks']]
+  rep[['config']][['complex']][['colors']] <-
+    rep[['config']][['disease']][['colors']]
 
 
   ## initialize all data elements
@@ -495,6 +532,7 @@ init_report <- function(oeDB,
                      "regulatory",
                      "cancer_hallmark",
                      "protein_complex",
+                     "protein_domain",
                      "ligand_receptor",
                      "subcellcomp",
                      "fitness",
@@ -538,10 +576,11 @@ init_report <- function(oeDB,
   rep[["data"]][["ligand_receptor"]][["ecm_receptor"]] <- data.frame()
   rep[["data"]][["ligand_receptor"]][["secreted_signaling"]] <- data.frame()
 
-
-
   ## cancer hallmarks
   rep[["data"]][["cancer_hallmark"]][["target"]] <- data.frame()
+
+  ## protein domains
+  rep[["data"]][["cancer_hallmark"]][["protein_domain"]] <- data.frame()
 
   ## tissue and cell type enrichment
   rep[['data']][['cell_tissue']] <- list()
@@ -648,7 +687,7 @@ init_report <- function(oeDB,
   return(rep)
 }
 
-#' Interrogate a gene list for cancer relevance
+#' Interrogate and prioritize a gene list for cancer relevance
 #'
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
@@ -678,6 +717,7 @@ init_report <- function(oeDB,
 #' @param simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING)
 #' @param ppi_score_threshold minimum score (0-1000) for retrieval of protein-protein interactions (STRING)
+#' @param ppi_node_shadow show shadow for nodes in the displayed PPI network
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
@@ -697,6 +737,8 @@ init_report <- function(oeDB,
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
+#' @param show_domain logical indicating if report should provide target memberships in known protein domains (Pfam)
+
 #' @param ... arguments for Galaxy/web-based processing
 #'
 #' @export
@@ -707,9 +749,9 @@ onco_enrich <- function(query = NULL,
                         ignore_id_err = TRUE,
                         html_floating_toc = T,
                         html_report_theme = "default",
-                        project_title = "Project title",
-                        project_owner = "Project owner",
-                        project_description = "Project description",
+                        project_title = "_Project title_",
+                        project_owner = "_Project owner_",
+                        project_description = "_Project description_",
                         bgset = NULL,
                         bgset_id_type = "symbol",
                         bgset_description = "All protein-coding genes",
@@ -726,6 +768,7 @@ onco_enrich <- function(query = NULL,
                         simplify_go = TRUE,
                         ppi_add_nodes = 50,
                         ppi_score_threshold = 900,
+                        ppi_node_shadow = TRUE,
                         show_ppi = TRUE,
                         show_drugs_in_ppi = TRUE,
                         show_disease = TRUE,
@@ -744,6 +787,7 @@ onco_enrich <- function(query = NULL,
                         show_synleth = TRUE,
                         show_fitness = TRUE,
                         show_complex = TRUE,
+                        show_domain = TRUE,
                         ...) {
 
 
@@ -977,6 +1021,7 @@ onco_enrich <- function(query = NULL,
     project_description = project_description,
     ppi_min_string_score = ppi_score_threshold,
     ppi_add_nodes = ppi_add_nodes,
+    ppi_node_shadow = ppi_node_shadow,
     bgset_description =
       bgset_description,
     bgset_id_type = bgset_id_type,
@@ -1009,6 +1054,7 @@ onco_enrich <- function(query = NULL,
     show_synleth = show_synleth,
     show_prognostic_cancer_assoc =
       show_prognostic_cancer_assoc,
+    show_domain = show_domain,
     show_complex = show_complex)
 
   ## validate query gene set
@@ -1042,6 +1088,7 @@ onco_enrich <- function(query = NULL,
                "drug",
                "enrichment",
                "protein_complex",
+               "protein_domain",
                "ppi",
                "tcga_aberration",
                "tcga_coexpression",
@@ -1132,7 +1179,7 @@ onco_enrich <- function(query = NULL,
         show_top_diseases_only = show_top_diseases_only,
         genedb = oeDB[['genedb']][['all']],
         otdb_all = oeDB[['otdb']][['all']],
-        otdb_site_rank = oeDB[['otdb']][['site_rank']],
+        otdb_gene_rank = oeDB[['otdb']][['gene_rank']],
         min_association_score = 0.1,
         logger = logger)
   }
@@ -1161,8 +1208,8 @@ onco_enrich <- function(query = NULL,
       annotate_ligand_receptor_interactions(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        ligand_receptor_db = oeDB[['ligandreceptordb']][['db']],
-        ligand_receptor_xref = oeDB[['ligandreceptordb']][['xref']],
+        ligand_receptor_db = oeDB[['ligandreceptordb']][['cellchatdb']][['db']],
+        ligand_receptor_xref = oeDB[['ligandreceptordb']][['cellchatdb']][['xref']],
         logger = logger)
   }
 
@@ -1282,6 +1329,17 @@ onco_enrich <- function(query = NULL,
         genedb = oeDB[['genedb']][['all']],
         complex_db = oeDB[['genedb']][['proteincomplexdb']][['db']],
         complex_up_xref = oeDB[['genedb']][['proteincomplexdb']][['up_xref']],
+        transcript_xref = oeDB[['genedb']][['transcript_xref']],
+        otdb_gene_rank = oeDB[['otdb']][['gene_rank']],
+        logger = logger)
+  }
+
+  if(show_domain == T){
+    onc_rep[["data"]][["protein_domain"]][['target']] <-
+      annotate_protein_domain(
+        query_entrez = as.integer(query_entrezgene),
+        genedb = oeDB[['genedb']][['all']],
+        pfamdb = oeDB[['pfamdb']],
         transcript_xref = oeDB[['genedb']][['transcript_xref']],
         logger = logger)
   }
@@ -1867,36 +1925,38 @@ write <- function(report,
     log4r_info(logger, "Writing Excel workbook with report contents")
 
     table_style_index <- 15
-    for(elem in c("query",
-                  "disease_association",
+    for(elem in c("settings",
+                  "query",
                   "unknown_function",
+                  "cancer_association",
                   "cancer_hallmark",
                   "drug_known",
                   "drug_tractability",
-                  "protein_complex",
-                  "enrichment",
-                  "regulatory",
-                  "subcellcomp",
-                  "cell_tissue",
-                  "ppi",
-                  "ligand_receptor",
-                  "aberration",
-                  "coexpression",
-                  "prognostic_association",
-                  "survival_association",
                   "synthetic_lethality",
                   "fitness_scores",
-                  "fitness_prioritized"
+                  "fitness_prioritized",
+                  "protein_complex",
+                  "protein_domain",
+                  "ppi",
+                  "enrichment",
+                  "regulatory",
+                  "ligand_receptor",
+                  "subcellcomp",
+                  "cell_tissue",
+                  "aberration",
+                  "coexpression",
+                  "prognostic_association_I",
+                  "prognostic_association_II"
                   )){
 
       show_elem <- elem
-      if(elem == "disease_association"){
+      if(elem == "cancer_association"){
         show_elem <- "disease"
       }
-      if(elem == "prognostic_association"){
+      if(elem == "prognostic_association_I"){
         show_elem <- "cancer_prognosis"
       }
-      if(elem == "survival_association"){
+      if(elem == "prognostic_association_II"){
         show_elem <- "cancer_prognosis"
       }
       if(elem == "drug_known"){
@@ -1915,8 +1975,10 @@ write <- function(report,
         show_elem <- "fitness"
       }
 
-      if(report[['config']][['show']][[show_elem]] == FALSE){
-        next
+      if(elem != "settings"){
+        if(report[['config']][['show']][[show_elem]] == FALSE){
+          next
+        }
       }
 
       wb <- add_excel_sheet(

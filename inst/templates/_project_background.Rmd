@@ -4,7 +4,7 @@
 
 ```{r bg, echo=F, results = "asis", eval = T}
 
-cat(paste0('* ',onc_enrich_report[['config']][['project_description']]))
+cat(paste0('* Description: ',onc_enrich_report[['config']][['project_description']]))
 htmltools::br()
 
 

@@ -463,79 +463,6 @@ cat('<br><br>')
 
 <br>
 
-##### All subontologies
-
-```{r go_enrichment_barplot_all, echo = F, results = "asis", eval = subontology_plots[['ALL']]}
-
-plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::select(description, enrichment_factor, qvalue, db) %>%
-  dplyr::arrange(qvalue) %>%
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
-  dplyr::arrange(desc(qvalue)) %>%
-  dplyr::rename(Subontology = db) %>%
-  dplyr::mutate(
-    Subontology = dplyr::case_when(
-      Subontology == "GO_BP" ~ "Biological Process",
-      Subontology == "GO_CC" ~ "Cellular Component",
-      Subontology == "GO_MF" ~ "Molecular Function",
-      TRUE ~ as.character(Subontology)
-    ))
-
-plot_data$description <- 
-  factor(plot_data$description, levels = plot_data$description)
-
-max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
-
-p <- ggplot2::ggplot(
-  plot_data, 
-  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
-  ggplot2::geom_bar( stat = "identity" ) +
-  ggplot2::xlab("") +
-  ggplot2::ylab("-log10(Q-value)") +
-  ggplot2::ylim(0, max_y) +
-  ggplot2::theme_classic() +
-  ggplot2::coord_flip() +
-  ggplot2::theme(
-    #legend.position = "none",
-    legend.title = ggplot2::element_blank(),
-    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
-    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
-    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
-    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
-  )
-
-rm(max_y)
-
-height_plot <- 500
-if(nrow(plot_data) <= 15){
-  height_plot <- 400
-}
-if(nrow(plot_data) <= 10){
-  height_plot <- 300
-}
-
-enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
-    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
-
-enrichment_barplot
-rm(height_plot)
-rm(plot_data)
-
-```
-
-
-```{r go_plot_missing_all, echo=F, results = 'asis', eval = !subontology_plots[['ALL']]}
-
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
-cat('\n')
-cat('<br><br>')
-
-```
-
-
-<br><br>
-
 ##### Molecular function
 
 ```{r go_enrichment_barplot_mf, echo = F, results = "asis", eval = subontology_plots[['MF']]}
@@ -545,7 +472,8 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::filter(db == 'GO_MF') %>%
   dplyr::arrange(qvalue) %>%
   utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
-  dplyr::arrange(desc(qvalue)) %>%
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) %>%
   dplyr::rename(Subontology = db) %>%
   dplyr::mutate(
     Subontology = dplyr::case_when(
@@ -558,15 +486,18 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
 plot_data$description <- 
   factor(plot_data$description, levels = plot_data$description)
 
-max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+#max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
 
 p <- ggplot2::ggplot(
   plot_data, 
-  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  #ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
+  #ggplot2::scale_fill_gradient(low = "yellow", high = "red", midpoint = midpoint_qvalue, na.value = NA) +
+  #ggplot2::scale_fill_brewer(palette = "Dark2") +
   ggplot2::geom_bar( stat = "identity" ) +
   ggplot2::xlab("") +
-  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylab("Enrichment") +
   ggplot2::ylim(0, max_y) +
   ggplot2::theme_classic() +
   ggplot2::coord_flip() +
@@ -618,7 +549,8 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::filter(db == 'GO_BP') %>%
   dplyr::arrange(qvalue) %>%
   head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
-  dplyr::arrange(desc(qvalue)) %>%
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) %>%
   dplyr::rename(Subontology = db) %>%
   dplyr::mutate(
     Subontology = dplyr::case_when(
@@ -631,16 +563,14 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
 plot_data$description <- 
   factor(plot_data$description, levels = plot_data$description)
 
-max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
 
 p <- ggplot2::ggplot(
   plot_data, 
-  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
   ggplot2::geom_bar( stat = "identity" ) +
   ggplot2::xlab("") +
-  ggplot2::ylab("-log10(Q-value)") +
-  ggplot2::ylim(0, max_y) +
+  ggplot2::ylab("Enrichment") +
   ggplot2::theme_classic() +
   ggplot2::coord_flip() +
   ggplot2::theme(
@@ -691,7 +621,8 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
   dplyr::filter(db == 'GO_CC') %>%
   dplyr::arrange(qvalue) %>%
   head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
-  dplyr::arrange(desc(qvalue)) %>%
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) %>%
   dplyr::rename(Subontology = db) %>%
   dplyr::mutate(
     Subontology = dplyr::case_when(
@@ -704,15 +635,14 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
 plot_data$description <- 
   factor(plot_data$description, levels = plot_data$description)
 
-max_y <- max(plyr::round_any(-log10(plot_data$qvalue), 10, f = ceiling))
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
 
 p <- ggplot2::ggplot(
   plot_data, 
-  ggplot2::aes( x = description, y = -log10(qvalue), fill = Subontology) ) +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
   ggplot2::geom_bar( stat = "identity" ) +
   ggplot2::xlab("") +
-  ggplot2::ylab("-log10(Q-value)") +
+  ggplot2::ylab("Enrichment") +
   ggplot2::ylim(0, max_y) +
   ggplot2::theme_classic() +
   ggplot2::coord_flip() +

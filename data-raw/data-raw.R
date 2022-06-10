@@ -3,17 +3,17 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220410"
+wikipathways_version <- "20220510"
 netpath_version <- "2010"
 opentargets_version <- "2022.04"
 kegg_version <- "20220324"
 gencode_version <- "40"
 update_omnipathdb <- F
 update_hpa <- F
-update_ncbi_gene_summary <- F
+update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
-update_tcga <- F
+update_tcga <- T
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
@@ -57,6 +57,27 @@ gene_info <-
   get_gene_info_ncbi(
     basedir = here::here())
 
+####---Protein domains----####
+pfamdb <- as.data.frame(
+  readr::read_tsv(
+    file.path(here::here(),
+              "data-raw",
+              "pfam",
+              "pfam.uniprot.tsv.gz"),
+    show_col_types = F) %>%
+    dplyr::select(-uniprot_acc) %>%
+    dplyr::rename(uniprot_acc = uniprot_acc_noversion) %>%
+    ## reviewed accessions only
+    dplyr::filter(nchar(uniprot_acc) == 6) %>%
+    dplyr::group_by(uniprot_acc,
+                    pfam_id,
+                    pfam_short_name,
+                    pfam_long_name) %>%
+    dplyr::summarise(
+      domain_freq = dplyr::n(),
+      .groups = "drop")
+)
+
 ####---Cancer hallmark annotations----####
 genedb[['cancer_hallmark']] <-
   get_cancer_hallmarks(
@@ -75,7 +96,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     basedir = here::here(),
     gene_info = gene_info,
-    version = "45") %>%
+    version = "46") %>%
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,
@@ -87,11 +108,11 @@ opentarget_associations <-
   get_opentarget_associations(
     basedir = here::here(),
     min_num_sources = 2,
-    min_overall_score = 0.1,
+    min_overall_score = 0.05,
     direct_associations_only = T)
 
 otdb <- quantify_gene_cancer_relevance(
-  opentarget_associations)
+  ot_associations = opentarget_associations)
 
 ####---GENCODE----####
 gencode <- list()
@@ -253,6 +274,7 @@ oedb[['subcelldb']] <- subcelldb
 oedb[['ligandreceptordb']] <- ligandreceptordb
 oedb[['genedb']] <- genedb
 oedb[['otdb']] <- otdb
+oedb[['pfamdb']] <- pfamdb
 oedb[['tftargetdb']] <- tf_target_interactions
 oedb[['tissuecelldb']] <- tissuecelldb
 oedb[['hpa']] <- hpa
@@ -269,6 +291,7 @@ for(n in c('cancerdrugdb',
            'hpa',
            'ligandreceptordb',
            'otdb',
+           'pfamdb',
            'pathwaydb',
            'projectscoredb',
            'projectsurvivaldb',
@@ -298,7 +321,7 @@ for(n in c('cancerdrugdb',
                           'size' = as.character(size),
                           'hsize' = as.character(hsize),
                           'checksum' = checksum_db,
-                          'version' = '1.0.9',
+                          'version' = '1.1.0',
                           'date' = Sys.Date(),
                          stringsAsFactors = F
                         )
@@ -313,71 +336,44 @@ save(oedb, file="inst/internal_db/oedb.rda")
 
 usethis::use_data(db_props, overwrite = T)
 
-# tumor_types <- data.frame(
-#   code = 1, name = 'Adrenal Gland', tcga_code = 'ACC', project_score_code = NA, hpa_code = "adrenal_gland", stringsAsFactors = F
-# )
-# tumor_types <- tumor_types %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 2, name = 'Biliary Tract', tcga_code = "CHOL", project_score_code = NA, hpa_code = NA)) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 3, name = 'Bladder/Urinary Tract', tcga_code = 'BLCA', hpa_code = 'urinary_bladder')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 4, name = 'Bone', tcga_code = NA,  project_score_code = 'Bone')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 5, name = 'Breast', tcga_code = 'BRCA', project_score_code = 'Breast', hpa_code = 'breast')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 6, name = 'Cervix', tcga_code = 'CESC', project_score_code = NA, hpa_code = 'cervix')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 7, name = 'CNS/Brain', tcga_code = 'GBM|LGG', project_score_code = 'CNS/Brain',
-#                hpa_code = 'cerebral_cortex|cerebellum|hypothalamus|substantia_nigra|hippocampus|amygdala|nucleus_accumbens|caudate|putamen|')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 8, name = 'Colon/Rectum', tcga_code = 'COAD|READ', project_score_code = 'Colon/Rectum',
-#                hpa_code = 'colon')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 9, name = 'Esophagus/Stomach', tcga_code = 'ESCA|STAD', project_score_code = 'Esophagus|Stomach',
-#                hpa_code = 'small_intestine|esophagus|stomach')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 10, name = 'Eye', tcga_code = 'UVM', hpa_code = 'retina')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 11, name = 'Head and Neck', tcga_code = 'HNSC', project_score_code = "Head and Neck")) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 12, name = 'Kidney', tcga_code = 'KICH|KIRC|KIRP', project_score_code = "Kidney", hpa_code = 'kidney')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 13, name = 'Liver', tcga_code = 'LIHC', hpa_code = 'liver')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 14, name = 'Lung', tcga_code = 'LUAD|LUSC', project_score_code = "Lung", hpa_code = 'lung')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 15, name = 'Lymphoid', tcga_code = 'DLBC', project_score_code = "Haematopoietic and Lymphoid")) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 16, name = 'Myeloid', tcga_code = 'LAML', project_score_code = "Haematopoietic and Lymphoid")) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 17, name = 'Ovary/Fallopian Tube', tcga_code = 'OV', project_score_code = "Ovary",
-#                hpa_code = 'ovary|fallopian_tube')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 18, name = 'Pancreas', tcga_code = 'PRAD', project_score_code = 'Pancreas',
-#                hpa_code = 'pancreas')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 19, name = 'Peripheral Nervous System', tcga_code = NA, project_score_code = 'Peripheral Nervous System')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 20, name = 'Pleura', tcga_code = 'MESO')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 21, name = 'Prostate', tcga_code = 'PRAD', hpa_code = 'prostate')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 22, name = 'Skin', tcga_code = 'SKCM', project_score_code = "Skin", hpa_code = 'skin')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 23, name = 'Soft Tissue', tcga_code = 'SARC')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 24, name = 'Testis', tcga_code = 'TGCT')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 25, name = 'Thymus', tcga_code = 'THYM')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 26, name = 'Thyroid', tcga_code = 'THCA', hpa_code = 'thyroid_gland')) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 27, name = 'Uterus', tcga_code = 'UCEC', project_score_code = "Endometrium", hpa_code = "endometrium")) %>%
-#   dplyr::bind_rows(
-#     data.frame(code = 28, name = 'Vulva/Vagina', hpa_code = 'vagina'))
-#
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rm(pfamdb)
 rm(tcgadb)
 rm(gencode)
 rm(hpa)
