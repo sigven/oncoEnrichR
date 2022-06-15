@@ -3,6 +3,21 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.1.1
+
+* Date: 2022-06-15
+
+### Added
+
+* Data updates:
+  * WikiPathways (20220610)
+
+### Fixed
+
+*  Bug: database loading missing `pfamdb`
+*  Relaxed dependency versions (caused conflicts for R versions < 4.2)
+
+
 ## Version 1.1.0
 
 * Date: 2022-06-10
