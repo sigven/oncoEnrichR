@@ -1,0 +1,30 @@
+##ONCOENRICHR_DB_VERSION = 20220615
+oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.1.1	oncoEnrichR	software
+Omnipath	https://omnipathdb.org/	Database of molecular biology prior knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.4.0/OmnipathR	omnipath	db
+hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db
+dorothea	https://saezlab.github.io/dorothea/	Gene set resource containing signed transcription factor (TF) - target interactions	v1.8.0	dorothea	db
+tissueEnrich	https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html	 R package used to calculate enrichment of tissue-specific genes in a set of input genes	v1.16.0	tissueenrich	software
+oncoPhenoMap	https://github.com/sigven/oncoPhenoMap	Crossmapped phenotype ontologies for the oncology domain	v0.3.6	oncophenomap	software
+STRING	https://string-db.org	Protein-protein interaction database	v11.5	string	db
+GENCODE	https://www.gencodegenes.org/	High quality reference gene annotation and experimental validation	v40	gencode	db
+TCGA	https://cancergenome.nih.gov	The Cancer Genome Atlas - Tumor gene expression and somatic DNA aberrations	v32.0 (March 29th 2022)	tcga	db
+UniProtKB	http://www.uniprot.org	Comprehensive resource of protein sequence and functional information	v2022_01	uniprot	db
+NetPath	http://www.netpath.org	Manually curated resource of signal transduction pathways in humans	v1 (2010)	netpath	db
+EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.42.0	efo	db
+DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2022-04-28	do	db
+COMPPI	https://comppi.linkgroup.hu/	Compartmentalized protein-protein interaction database	v2.1.1 (Oct 2018)	comppi	db
+WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20220610	wikipathway	db
+MSigDB	http://software.broadinstitute.org/gsea/msigdb/index.jsp	Molecular Signatures Database - collection of annotated gene sets	v7.5.1 (Jan 2022)	msigdb	db
+REACTOME	https://reactome.org	Manually curated and peer-reviewed pathway database	v78 (MSigDB v7.5.1)	reactome	db
+CellChatDB	http://www.cellchat.org/cellchatdb/	Multimeric ligand-receptor complexes	v1 (2021)	cellchatdb	db
+CellTalkDB	http://tcm.zju.edu.cn/celltalkdb/	A manually curated database of literature-supported ligand-receptor interactions in human and mouse	Nov 2020	celltalkdb	db
+GeneOntology	https://geneontology.org	Knowledgebase that contains the largest structural source of information on the functions of genes	Jan 2022 (MSigDB v7.5.1)	go	db
+KEGG	https://www.genome.jp/kegg/pathway.html	Collection of manually drawn pathway maps representing our knowledge on the molecular interaction, reaction and relation networks	20220324	kegg	db
+CancerMine	http://bionlp.bcgsc.ca/cancermine/	Literature-mined database of tumor suppressor genes/proto-oncogenes	v46 - 20220606	cancermine	db
+NCG	http://ncg.kcl.ac.uk/index.php	Network of cancer genes - a web resource to analyze duplicability, orthology and network properties of cancer genes	v7.0	ncg	db
+CGC	https://cancer.sanger.ac.uk/census	Cancer Gene Census	v96	cgc	db
+Pfam	http://pfam.xfam.org	Collection of protein families/domains	2021_11 (v35.0)	pfam	db
+Human Protein Atlas	https://proteinatlas.org	Knowledge resource on human proteins in relation to tissue/cell type specificity and cancer prognosis	v21.0 - 20211118	hpa	db
+Genotype-Tissue Expression (GTEx) project	https://gtexportal.org	Ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation	v8	gtex	db
+Project Score	https://score.depmap.sanger.ac.uk/	Database with systematic genome-scale CRISPR/Cas9 drop-out screens in a large number of highly-annotated cancer models	v2 - July 2021	projectscore	db
+Open Targets Platform	https://www.targetvalidation.org	Comprehensive and robust data integration for target-disease associations	2022.04	opentargets	db

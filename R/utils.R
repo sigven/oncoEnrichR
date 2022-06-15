@@ -322,34 +322,27 @@ validate_db <- function(oe_db){
   ## check that db is of list type
 
   db_entries <-
-    c("cancerdrugdb", "release_notes", "subcelldb",
-    "ligandreceptordb", "genedb", "otdb", "tftargetdb",
-    "tissuecelldb", "hpa", "projectsurvivaldb",
-    "slparalogdb",
-    "projectscoredb", "tcgadb", "pathwaydb")
+    c("cancerdrugdb",
+      "genedb",
+      "hpa",
+      "ligandreceptordb",
+      "otdb",
+      "pathwaydb",
+      "pfamdb",
+      "projectscoredb",
+      "projectsurvivaldb",
+      "release_notes",
+      "slparalogdb",
+      "subcelldb",
+      "tcgadb",
+      "tftargetdb",
+      "tissuecelldb")
 
   for(db in db_entries){
     if(!(db %in% names(oe_db))){
       log4r_info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
       return(-1)
     }
-    # if(db == "otdb"){
-    #   if(!identical(
-    #     names(oedb[[db]]),
-    #     c("all","site_rank","max_site_rank"))){
-    #     log4r_info(paste0("ERROR: 'oedb[[",db,"]]' is missing a part"))
-    #     return(-1)
-    #   }
-    # }
-    # if(db == "genedb"){
-    #
-    # }
-    # if(db == "subcelldb"){
-    #
-    # }
-    # if(db == "tcgadb"){
-    #
-    # }
 
   }
   return(0)

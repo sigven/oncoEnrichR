@@ -47,13 +47,22 @@ if(active_tab[['omnipath']] == T){
 ```{r table_browse_complex_omnipath, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0}
 htmltools::br()
 
+stepsize <- 1
+max_complex_members <- max(onc_enrich_report[['data']][['protein_complex']][['omnipath']]$num_target_members)
+if(max_complex_members > 10){
+  stepsize <- 2
+}
+if(max_complex_members > 20){
+  stepsize <- 3
+}
+
 omnipath_complexes_df <- 
   crosstalk::SharedData$new(onc_enrich_report[['data']][['protein_complex']][['omnipath']])
 
 crosstalk::bscols(
   list(
     crosstalk::filter_slider("num_target_members", "Minimum number of query set members in complex", 
-                             omnipath_complexes_df, ~num_target_members, step = 1)
+                             omnipath_complexes_df, ~num_target_members, step = stepsize)
   )
 )
 

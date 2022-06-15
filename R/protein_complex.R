@@ -124,7 +124,7 @@ annotate_protein_complex <- function(query_entrez,
               dplyr::mutate(num_target_members =
                               stringr::str_count(.data$target_genes,",") + 1) %>%
               #dplyr::arrange(dplyr::desc(.data$num_target_members)) %>%
-              dplyr::filter(!is.na(complex_id)) %>%
+              dplyr::filter(!is.na(.data$complex_id)) %>%
               dplyr::inner_join(all_protein_complexes, by = "complex_id") %>%
               dplyr::arrange(dplyr::desc(.data$complex_cancer_rank_score),
                              .data$confidence) %>%
