@@ -10,10 +10,10 @@ kegg_version <- "20220324"
 gencode_version <- "40"
 update_omnipathdb <- F
 update_hpa <- F
-update_ncbi_gene_summary <- T
+update_ncbi_gene_summary <- F
 update_project_score <- F
 update_project_survival <- F
-update_tcga <- T
+update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
