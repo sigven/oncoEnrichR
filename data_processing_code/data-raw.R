@@ -321,7 +321,7 @@ for(n in c('cancerdrugdb',
                           'size' = as.character(size),
                           'hsize' = as.character(hsize),
                           'checksum' = checksum_db,
-                          'version' = '1.1.0',
+                          'version' = '1.1.1',
                           'date' = Sys.Date(),
                          stringsAsFactors = F
                         )

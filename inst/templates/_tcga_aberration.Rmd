@@ -16,7 +16,8 @@
 
 tcga_oncoplot_data <- onc_enrich_report[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
 maf_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-                  onc_enrich_report[["config"]][["resources"]][["oncoEnrichR"]][["version"]],
+                  "master",
+                  #onc_enrich_report[["config"]][["resources"]][["oncoEnrichR"]][["version"]],
                   "/data-raw/maf/")
 
 ## oncoplot arguments

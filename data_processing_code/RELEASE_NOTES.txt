@@ -1,13 +1,10 @@
-##ONCOENRICHR_DB_VERSION = 20220601
-oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.1.0	oncoEnrichR	software
-clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler	R package for comparing biological themes among gene clusters	v4.4.1	clusterprofiler	software
+##ONCOENRICHR_DB_VERSION = 20220615
+oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.1.1	oncoEnrichR	software
 Omnipath	https://omnipathdb.org/	Database of molecular biology prior knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.4.0/OmnipathR	omnipath	db
 hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db
 dorothea	https://saezlab.github.io/dorothea/	Gene set resource containing signed transcription factor (TF) - target interactions	v1.8.0	dorothea	db
 tissueEnrich	https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html	 R package used to calculate enrichment of tissue-specific genes in a set of input genes	v1.16.0	tissueenrich	software
 oncoPhenoMap	https://github.com/sigven/oncoPhenoMap	Crossmapped phenotype ontologies for the oncology domain	v0.3.6	oncophenomap	software
-visNetwork	https://datastorm-open.github.io/visNetwork/	R package for network visualization using vis.js library	v2.1.0	visnetwork	software
-rmarkdown	https://rmarkdown.rstudio.com	R package for conversion of Markdown documents into a variety of formats.	v2.13	rmarkdown	software
 STRING	https://string-db.org	Protein-protein interaction database	v11.5	string	db
 GENCODE	https://www.gencodegenes.org/	High quality reference gene annotation and experimental validation	v40	gencode	db
 TCGA	https://cancergenome.nih.gov	The Cancer Genome Atlas - Tumor gene expression and somatic DNA aberrations	v32.0 (March 29th 2022)	tcga	db
@@ -16,7 +13,7 @@ NetPath	http://www.netpath.org	Manually curated resource of signal transduction 
 EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.42.0	efo	db
 DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2022-04-28	do	db
 COMPPI	https://comppi.linkgroup.hu/	Compartmentalized protein-protein interaction database	v2.1.1 (Oct 2018)	comppi	db
-WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20220510	wikipathway	db
+WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20220610	wikipathway	db
 MSigDB	http://software.broadinstitute.org/gsea/msigdb/index.jsp	Molecular Signatures Database - collection of annotated gene sets	v7.5.1 (Jan 2022)	msigdb	db
 REACTOME	https://reactome.org	Manually curated and peer-reviewed pathway database	v78 (MSigDB v7.5.1)	reactome	db
 CellChatDB	http://www.cellchat.org/cellchatdb/	Multimeric ligand-receptor complexes	v1 (2021)	cellchatdb	db
