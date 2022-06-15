@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.1.0
-Date: 2022-06-10
+Date: 2022-06-15
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -29,7 +29,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     report and an Excel workbook in which the user can interrogate the various 
     types of annotations and analyses performed with the query geneset. 
 Depends: 
-    R (>= 4.1), GSEABase (>= 1.58.0)
+    R (>= 4.1), GSEABase (>= 1.54.0)
 biocViews: 
 Imports: dplyr,
          assertthat,
@@ -39,9 +39,9 @@ Imports: dplyr,
          stringi,
          stringr,
          tidyr,
-         visNetwork (>= 2.1.0), 
+         visNetwork (>= 2.0.9), 
          SummarizedExperiment (>= 1.22.0),
-         DT (>= 0.20), 
+         DT (>= 0.18), 
          plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
@@ -49,12 +49,12 @@ Imports: dplyr,
          clusterProfiler, 
          igraph (>= 1.2.6), 
          reshape2 (>= 1.4.4), 
-         log4r (>= 0.4.2),
+         log4r (>= 0.4.1),
          gganatogram, 
          rlang,
          RCurl,
          R.cache,
-         maftools (>= 2.12.0), 
+         maftools (>= 2.8.0), 
          ggpubr (>= 0.4.0), 
          assertable, 
          TissueEnrich, 
