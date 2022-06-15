@@ -8,7 +8,7 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 <br>
 
-<img src="man/figures/oncoenrichr_overview.png" align="center" border="1"/>
+<img src="man/figures/oncoenrichr_overview2.png" align="center" border="1"/>
 
 ## Getting started
 

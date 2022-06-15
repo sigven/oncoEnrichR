@@ -22,7 +22,7 @@ output: rmarkdown::html_document
 * Protein-complex cancer relevance score
 * New options
   * `--ppi_node_shadow` - logical indicating if nodes in the PPI network should carry a shadow or not
-  * `--protein_complex` - logical indicating if report should add section on protein domain frequencies in query set
+  * `--show_domain` - logical indicating if report should add section on protein domain frequencies in query set
   
 
 ### Changed

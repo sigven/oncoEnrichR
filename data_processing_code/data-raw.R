@@ -3,7 +3,7 @@ library(TissueEnrich)
 library(gganatogram)
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220510"
+wikipathways_version <- "20220610"
 netpath_version <- "2010"
 opentargets_version <- "2022.04"
 kegg_version <- "20220324"
@@ -24,7 +24,7 @@ update_ligand_receptor_db <- T
 uniprot_release <- "2022_01"
 
 software_db_version <-
-  read.table(file="data-raw/RELEASE_NOTES.txt",
+  read.table(file="data_processing_code/RELEASE_NOTES.txt",
              skip = 1, sep = "\t", stringsAsFactors = F,
              comment.char = "#",quote="")
 colnames(software_db_version) <-
@@ -50,7 +50,7 @@ rm(software_db_version)
 #usethis::use_data(release_notes, overwrite = T)
 genedb <- list()
 
-source('data-raw/data_utility_functions.R')
+source('data_processing_code/data_utility_functions.R')
 
 ####---Gene info----####
 gene_info <-

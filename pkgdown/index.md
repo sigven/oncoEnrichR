@@ -12,7 +12,7 @@ Web-based access to **oncoEnrichR** is available at <font size="4"> **[https://o
 
 <br>
 
-<img src="img/oncoenrichr_overview.png" align="center" border="1,"/>
+<img src="img/oncoenrichr_overview2.png" align="center" border="1"/>
 
 <br><br>
 
