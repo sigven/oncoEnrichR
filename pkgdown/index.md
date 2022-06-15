@@ -80,6 +80,9 @@ following scientific questions for a given gene list:
     targets, considering fitness effects and genomic biomarkers in
     combination?
 
+
+See also the [output views](articles/output.html) that addresses each of the questions above.
+
 ## News
 
 -   June 10th 2022: [**1.1.0
