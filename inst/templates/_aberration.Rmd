@@ -717,15 +717,15 @@ mutation_hotspot_levels <- levels(as.factor(
 
 
 vars <- vars %>%
-  dplyr::arrange(desc(SITE_RECURRENCE), desc(LOSS_OF_FUNCTION)) %>%
+  dplyr::arrange(dplyr::desc(SITE_RECURRENCE), dplyr::desc(LOSS_OF_FUNCTION)) %>%
   dplyr::mutate(CONSEQUENCE = stringr::str_replace_all(
-    CONSEQUENCE,"&",", "
+    CONSEQUENCE, "&", ", "
   )) %>%
   head(2500)
 
 if(length(mutation_hotspot_levels) > 0){
   vars <- vars %>%
-    dplyr::arrange(MUTATION_HOTSPOT, desc(SITE_RECURRENCE))
+    dplyr::arrange(MUTATION_HOTSPOT, dplyr::desc(SITE_RECURRENCE))
 }
 
 recurrent_vars_tcga <- crosstalk::SharedData$new(
@@ -900,7 +900,7 @@ all_targets_vtypes <-
   dplyr::bind_rows(
     onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
     ) %>%
-  dplyr::arrange(desc(percent_mutated)) %>%
+  dplyr::arrange(dplyr::desc(percent_mutated)) %>%
   head(2500)
 
 ```

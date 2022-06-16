@@ -815,7 +815,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'REGULATORY',
-          configuration = 'show_regulatory_interactions',
+          configuration = 'show_regulatory',
           value = as.character(report$config$show$regulatory),
           stringsAsFactors = F
         ),
@@ -887,14 +887,14 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'ABERRATION',
-          configuration = 'show_tcga_aberration',
-          value = as.character(report$config$show$tcga_aberration),
+          configuration = 'show_aberration',
+          value = as.character(report$config$show$aberration),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'COEXPRESSION',
-          configuration = 'show_tcga_coexpression',
-          value = as.character(report$config$show$tcga_coexpression),
+          configuration = 'show_coexpression',
+          value = as.character(report$config$show$coexpression),
           stringsAsFactors = F
         ),
         data.frame(
@@ -905,7 +905,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'PROGNOSTIC',
-          configuration = 'show_prognostic_cancer_assoc',
+          configuration = 'show_prognostic',
           value = as.character(report$config$show$cancer_prognosis),
           stringsAsFactors = F
         ),
@@ -935,16 +935,29 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'OTHER',
+          configuration = 'query_id_type',
+          value = as.character(report$config$query$id_type),
+          stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
           configuration = 'bgset_id_type',
           value = as.character(report$config$bgset$id_type),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'OTHER',
-          configuration = 'floating_TOC',
+          configuration = 'floating_toc',
           value = as.character(report$config$rmarkdown$floating_toc),
           stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'report_theme',
+          value = as.character(report$config$rmarkdown$theme),
+          stringsAsFactors = F
         )
+
       )
 
   }
