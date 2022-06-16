@@ -25,7 +25,7 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.6630473"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6630473.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6651912"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6651912.svg" alt="DOI"/></a>
 
 ### Contact
 
