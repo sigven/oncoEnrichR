@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
 
 
 <script src="CHANGELOG_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
-  <main id="main"><div class="page-header">
+  <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Changelog</h1>
             
       
@@ -91,13 +91,62 @@
     
     
 <div class="section level2">
+<h2 id="version-1-1-1">Version 1.1.1<a class="anchor" aria-label="anchor" href="#version-1-1-1"></a>
+</h2>
+<ul>
+<li>Date: 2022-06-16</li>
+</ul>
+<div class="section level3">
+<h3 id="added">Added<a class="anchor" aria-label="anchor" href="#added"></a>
+</h3>
+<ul>
+<li>Data updates:
+<ul>
+<li>WikiPathways (20220610)</li>
+</ul>
+</li>
+<li>Configurations for <code><a href="../reference/onco_enrich.html">onco_enrich()</a></code> populated at the end of HTML report</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="changed">Changed<a class="anchor" aria-label="anchor" href="#changed"></a>
+</h3>
+<ul>
+<li>Option renaming
+<ul>
+<li>
+<code>show_prognostic_cancer_assoc</code> renamed to <code>show_prognostic</code>.</li>
+<li>
+<code>show_tcga_aberration</code> renamed to <code>show_aberration</code>
+</li>
+<li>
+<code>show_regulatory_interactions</code> renamed to <code>show_regulatory</code>
+</li>
+<li>
+<code>show_tcga_coexpression</code> renamed to <code>show_coexpression</code>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="fixed">Fixed<a class="anchor" aria-label="anchor" href="#fixed"></a>
+</h3>
+<ul>
+<li>Bug: database loading missing <code>pfamdb</code>
+</li>
+<li>Relaxed dependency versions (caused conflicts for R versions &lt; 4.2)</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
 <h2 id="version-1-1-0">Version 1.1.0<a class="anchor" aria-label="anchor" href="#version-1-1-0"></a>
 </h2>
 <ul>
 <li>Date: 2022-06-10</li>
 </ul>
 <div class="section level3">
-<h3 id="added">Added<a class="anchor" aria-label="anchor" href="#added"></a>
+<h3 id="added-1">Added<a class="anchor" aria-label="anchor" href="#added-1"></a>
 </h3>
 <ul>
 <li>Data updates:
@@ -116,15 +165,15 @@
 <li>New options
 <ul>
 <li>
-<code>--ppi_node_shadow</code> - logical indicating if nodes in the PPI network should carry a shadow or not</li>
+<code>ppi_node_shadow</code> - logical indicating if nodes in the PPI network should carry a shadow or not</li>
 <li>
-<code>--protein_complex</code> - logical indicating if report should add section on protein domain frequencies in query set</li>
+<code>show_domain</code> - logical indicating if report should add section on protein domain frequencies in query set</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed">Changed<a class="anchor" aria-label="anchor" href="#changed"></a>
+<h3 id="changed-1">Changed<a class="anchor" aria-label="anchor" href="#changed-1"></a>
 </h3>
 <ul>
 <li>Re-ordering of HTML sections, multiple cosmetic changes</li>
@@ -134,7 +183,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="fixed">Fixed<a class="anchor" aria-label="anchor" href="#fixed"></a>
+<h3 id="fixed-1">Fixed<a class="anchor" aria-label="anchor" href="#fixed-1"></a>
 </h3>
 <ul>
 <li>Bug: duplicate records in retrieved co-expression pairs</li>
@@ -149,7 +198,7 @@
 <li>Date: 2022-03-31</li>
 </ul>
 <div class="section level3">
-<h3 id="added-1">Added<a class="anchor" aria-label="anchor" href="#added-1"></a>
+<h3 id="added-2">Added<a class="anchor" aria-label="anchor" href="#added-2"></a>
 </h3>
 <ul>
 <li>Data updates:
@@ -169,7 +218,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="fixed-1">Fixed<a class="anchor" aria-label="anchor" href="#fixed-1"></a>
+<h3 id="fixed-2">Fixed<a class="anchor" aria-label="anchor" href="#fixed-2"></a>
 </h3>
 <ul>
 <li>Bug in query identification for background set</li>
@@ -177,7 +226,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-1">Changed<a class="anchor" aria-label="anchor" href="#changed-1"></a>
+<h3 id="changed-2">Changed<a class="anchor" aria-label="anchor" href="#changed-2"></a>
 </h3>
 <ul>
 <li>Option <code>--show_crispr_lof</code> renamed to <code>--show_fitness</code>. Corresponding section in HTML report renamed from <code>CRISPR/Cas9 loss-of-fitness</code> to <code>Gene fitness scores</code>.</li>
@@ -205,7 +254,7 @@
 <li>Date: 2022-02-18</li>
 </ul>
 <div class="section level3">
-<h3 id="added-2">Added<a class="anchor" aria-label="anchor" href="#added-2"></a>
+<h3 id="added-3">Added<a class="anchor" aria-label="anchor" href="#added-3"></a>
 </h3>
 <ul>
 <li>Data updates:
@@ -222,7 +271,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-2">Changed<a class="anchor" aria-label="anchor" href="#changed-2"></a>
+<h3 id="changed-3">Changed<a class="anchor" aria-label="anchor" href="#changed-3"></a>
 </h3>
 <ul>
 <li>Refactoring of code and data for mapping gene identifiers</li>
@@ -237,7 +286,7 @@
 <li>Date: 2021-11-30</li>
 </ul>
 <div class="section level3">
-<h3 id="added-3">Added<a class="anchor" aria-label="anchor" href="#added-3"></a>
+<h3 id="added-4">Added<a class="anchor" aria-label="anchor" href="#added-4"></a>
 </h3>
 <ul>
 <li>Data updates
@@ -255,7 +304,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-3">Changed<a class="anchor" aria-label="anchor" href="#changed-3"></a>
+<h3 id="changed-4">Changed<a class="anchor" aria-label="anchor" href="#changed-4"></a>
 </h3>
 <ul>
 <li>Management of annotation databases have been re-designed, reducing the size and installation of <em>oncoEnrichR</em> significantly. The re-design results in the addition of an initial step in the analysis; <strong>database loading</strong>.</li>
@@ -269,7 +318,7 @@
 <li>Date: 2021-10-27</li>
 </ul>
 <div class="section level3">
-<h3 id="added-4">Added<a class="anchor" aria-label="anchor" href="#added-4"></a>
+<h3 id="added-5">Added<a class="anchor" aria-label="anchor" href="#added-5"></a>
 </h3>
 <ul>
 <li>Data updates
@@ -335,7 +384,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="fixed-2">Fixed<a class="anchor" aria-label="anchor" href="#fixed-2"></a>
+<h3 id="fixed-3">Fixed<a class="anchor" aria-label="anchor" href="#fixed-3"></a>
 </h3>
 <ul>
 <li>Report <em>disclaimer</em> occurring at the bottom of the report is no longer missing from web-based analysis (oncotools.elixir.no) - file <code>_site.yml</code> in <code>inst/templates</code>
@@ -356,7 +405,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer>
