@@ -445,21 +445,6 @@
         "S4Vectors"
       ]
     },
-    "KEGGREST": {
-      "Package": "KEGGREST",
-      "Version": "1.36.0",
-      "Source": "Bioconductor",
-      "git_url": "https://git.bioconductor.org/packages/KEGGREST",
-      "git_branch": "RELEASE_3_15",
-      "git_last_commit": "591818b",
-      "git_last_commit_date": "2022-04-26",
-      "Hash": "e718cd8ccc6fcdc817a84a2c01f6b43c",
-      "Requirements": [
-        "Biostrings",
-        "httr",
-        "png"
-      ]
-    },
     "KernSmooth": {
       "Package": "KernSmooth",
       "Version": "2.23-20",
@@ -556,18 +541,18 @@
     },
     "R.methodsS3": {
       "Package": "R.methodsS3",
-      "Version": "1.8.1",
+      "Version": "1.8.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4bf6453323755202d5909697b6f7c109",
+      "Hash": "278c286fd6e9e75d0c2e8f731ea445c8",
       "Requirements": []
     },
     "R.oo": {
       "Package": "R.oo",
-      "Version": "1.24.0",
+      "Version": "1.25.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "5709328352717e2f0a9c012be8a97554",
+      "Hash": "a0900a114f4f0194cf4aa8cd4a700681",
       "Requirements": [
         "R.methodsS3"
       ]
@@ -647,10 +632,10 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "0.11.1.1.0",
+      "Version": "0.11.2.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "631929e53829901562986c504f86104b",
+      "Hash": "1d3c02a90401734e893954c7f8f92f3e",
       "Requirements": [
         "Rcpp"
       ]
@@ -784,10 +769,10 @@
     },
     "XML": {
       "Package": "XML",
-      "Version": "3.99-0.9",
+      "Version": "3.99-0.10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "6e75b3884423e21eda89b424a98e091d",
+      "Hash": "f140675d766cf765bf06a5f14afb149d",
       "Requirements": []
     },
     "XVector": {
@@ -903,19 +888,6 @@
       "Hash": "543776ae6848fde2f48ff3816d0628bc",
       "Requirements": []
     },
-    "bcellViper": {
-      "Package": "bcellViper",
-      "Version": "1.32.0",
-      "Source": "Bioconductor",
-      "git_url": "https://git.bioconductor.org/packages/bcellViper",
-      "git_branch": "RELEASE_3_15",
-      "git_last_commit": "5e4a81e",
-      "git_last_commit_date": "2022-04-26",
-      "Hash": "2c8f6ff76ada0c71f349077420f08752",
-      "Requirements": [
-        "Biobase"
-      ]
-    },
     "bit": {
       "Package": "bit",
       "Version": "4.0.4",
@@ -1027,10 +999,10 @@
     },
     "car": {
       "Package": "car",
-      "Version": "3.0-13",
+      "Version": "3.1-0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "69e00596e08b7f64e5a7d16447bec44d",
+      "Hash": "afd3f5c7d144f00d05db8e7701af7829",
       "Requirements": [
         "MASS",
         "abind",
@@ -1141,13 +1113,13 @@
     },
     "clusterProfiler": {
       "Package": "clusterProfiler",
-      "Version": "4.4.2",
+      "Version": "4.4.3",
       "Source": "Bioconductor",
       "git_url": "https://git.bioconductor.org/packages/clusterProfiler",
       "git_branch": "RELEASE_3_15",
-      "git_last_commit": "4097794",
-      "git_last_commit_date": "2022-06-05",
-      "Hash": "1bb912b6e8e676c8ea18bd049fa3a25b",
+      "git_last_commit": "0367ca2",
+      "git_last_commit_date": "2022-06-13",
+      "Hash": "a893a86f12606ccc64843d5b1ad1cab8",
       "Requirements": [
         "AnnotationDbi",
         "DOSE",
@@ -1342,22 +1314,6 @@
       "Requirements": [
         "foreach",
         "iterators"
-      ]
-    },
-    "dorothea": {
-      "Package": "dorothea",
-      "Version": "1.8.0",
-      "Source": "Bioconductor",
-      "git_url": "https://git.bioconductor.org/packages/dorothea",
-      "git_branch": "RELEASE_3_15",
-      "git_last_commit": "12dd3d0",
-      "git_last_commit_date": "2022-04-26",
-      "Hash": "ed62e6388afc322954c7ed133775b64d",
-      "Requirements": [
-        "bcellViper",
-        "dplyr",
-        "magrittr",
-        "viper"
       ]
     },
     "downlit": {
@@ -2464,25 +2420,6 @@
         "colorspace"
       ]
     },
-    "mygene": {
-      "Package": "mygene",
-      "Version": "1.32.0",
-      "Source": "Bioconductor",
-      "git_url": "https://git.bioconductor.org/packages/mygene",
-      "git_branch": "RELEASE_3_15",
-      "git_last_commit": "a9dfdfc",
-      "git_last_commit_date": "2022-04-26",
-      "Hash": "1d47907b52eb350958b2e669defc3b07",
-      "Requirements": [
-        "GenomicFeatures",
-        "Hmisc",
-        "S4Vectors",
-        "httr",
-        "jsonlite",
-        "plyr",
-        "sqldf"
-      ]
-    },
     "network": {
       "Package": "network",
       "Version": "1.17.2",
@@ -2497,10 +2434,10 @@
     },
     "nlme": {
       "Package": "nlme",
-      "Version": "3.1-157",
+      "Version": "3.1-158",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "dbca60742be0c9eddc5205e5c7ca1f44",
+      "Hash": "9469aeaeddf4f48a7ac70877d0b7ba36",
       "Requirements": [
         "lattice"
       ]
@@ -3037,32 +2974,6 @@
       "Hash": "06c85365a03fdaf699966cc1d3cf53ea",
       "Requirements": []
     },
-    "rtracklayer": {
-      "Package": "rtracklayer",
-      "Version": "1.56.0",
-      "Source": "Bioconductor",
-      "git_url": "https://git.bioconductor.org/packages/rtracklayer",
-      "git_branch": "RELEASE_3_15",
-      "git_last_commit": "1d70f7d",
-      "git_last_commit_date": "2022-04-26",
-      "Hash": "e0b1d6164111fb0a81f7662a099a97aa",
-      "Requirements": [
-        "BiocGenerics",
-        "BiocIO",
-        "Biostrings",
-        "GenomeInfoDb",
-        "GenomicAlignments",
-        "GenomicRanges",
-        "IRanges",
-        "RCurl",
-        "Rsamtools",
-        "S4Vectors",
-        "XML",
-        "XVector",
-        "restfulr",
-        "zlibbioc"
-      ]
-    },
     "rvest": {
       "Package": "rvest",
       "Version": "1.0.2",
@@ -3559,7 +3470,6 @@
       "Hash": "c9c462b759a5cc844ae25b5942654d13",
       "Requirements": []
     },
-
     "vctrs": {
       "Package": "vctrs",
       "Version": "0.4.1",

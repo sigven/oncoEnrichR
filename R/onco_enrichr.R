@@ -232,9 +232,9 @@ load_db <- function(remote = T,
 #' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
-#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
+#' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
@@ -282,9 +282,9 @@ init_report <- function(oeDB,
                         show_fitness = T,
                         show_cell_tissue = F,
                         show_ligand_receptor = T,
-                        show_regulatory_interactions = T,
+                        show_regulatory = T,
                         show_unknown_function = T,
-                        show_prognostic_cancer_assoc = T,
+                        show_prognostic = T,
                         show_synleth = T,
                         show_complex = T,
                         show_domain = T) {
@@ -730,9 +730,9 @@ init_report <- function(oeDB,
 #' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
-#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
+#' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
@@ -780,9 +780,9 @@ onco_enrich <- function(query = NULL,
                         show_tcga_coexpression = TRUE,
                         show_cell_tissue = FALSE,
                         show_ligand_receptor = TRUE,
-                        show_regulatory_interactions = TRUE,
+                        show_regulatory = TRUE,
                         show_unknown_function = TRUE,
-                        show_prognostic_cancer_assoc = TRUE,
+                        show_prognostic = TRUE,
                         show_subcell_comp = TRUE,
                         show_synleth = TRUE,
                         show_fitness = TRUE,
@@ -1049,11 +1049,11 @@ onco_enrich <- function(query = NULL,
     show_fitness = show_fitness,
     show_cell_tissue = show_cell_tissue,
     show_ligand_receptor = show_ligand_receptor,
-    show_regulatory_interactions = show_regulatory_interactions,
+    show_regulatory = show_regulatory,
     show_unknown_function = show_unknown_function,
     show_synleth = show_synleth,
-    show_prognostic_cancer_assoc =
-      show_prognostic_cancer_assoc,
+    show_prognostic =
+      show_prognostic,
     show_domain = show_domain,
     show_complex = show_complex)
 
@@ -1542,7 +1542,7 @@ onco_enrich <- function(query = NULL,
         logger = logger)
   }
 
-  if (show_regulatory_interactions == T) {
+  if (show_regulatory == T) {
 
     for(collection in c('global','pancancer')){
       onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
@@ -1564,7 +1564,7 @@ onco_enrich <- function(query = NULL,
     }
   }
 
-  if(show_prognostic_cancer_assoc == T){
+  if(show_prognostic == T){
     onc_rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <-
       hpa_prognostic_genes(
         query_symbol,

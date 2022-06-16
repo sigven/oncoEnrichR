@@ -5,12 +5,16 @@ output: rmarkdown::html_document
 
 ## Version 1.1.1
 
-* Date: 2022-06-15
+* Date: 2022-06-16
 
 ### Added
 
 * Data updates:
   * WikiPathways (20220610)
+
+### Changed
+
+* Option `--show_prognostic_cancer_assoc` renamed to `--show_prognostic`. Option `--show_regulatory_interactions` renamed to `--show_regulatory`
 
 ### Fixed
 
