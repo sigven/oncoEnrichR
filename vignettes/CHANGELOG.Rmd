@@ -8,7 +8,7 @@ output: rmarkdown::html_document
 * Date: 2022-06-16
 
 ### Added
-
+ 
 * Data updates:
   * WikiPathways (20220610)
 * Configurations for `onco_enrich()` populated at the end of HTML report
