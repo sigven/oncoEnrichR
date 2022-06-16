@@ -52,7 +52,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```
 
 
-```{r target_regulatory, child='_transcription_regulatory_interactions.Rmd', eval = onc_enrich_report[['config']][['show']][['regulatory']]}
+```{r target_regulatory, child='_regulatory_interactions.Rmd', eval = onc_enrich_report[['config']][['show']][['regulatory']]}
 ```
 
 ```{r target_subcell, child='_subcell_comp.Rmd', eval = onc_enrich_report[['config']][['show']][['subcellcomp']]}
@@ -67,10 +67,10 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_cell_tissue, child='_cell_tissue.Rmd', eval = onc_enrich_report[['config']][['show']][['cell_tissue']]}
 ```
 
-```{r target_tcga_aberration, child='_tcga_aberration.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_aberration']]}
+```{r target_tcga_aberration, child='_aberration.Rmd', eval = onc_enrich_report[['config']][['show']][['aberration']]}
 ```
 
-```{r target_tcga_coexpression, child='_tcga_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['tcga_coexpression']]}
+```{r target_tcga_coexpression, child='_coexpression.Rmd', eval = onc_enrich_report[['config']][['show']][['coexpression']]}
 ```
 
 ```{r target_cancer_prognosis, child='_prognosis_survival.Rmd', eval = onc_enrich_report[['config']][['show']][['cancer_prognosis']]}

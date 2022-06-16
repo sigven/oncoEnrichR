@@ -36,15 +36,15 @@ init_report(
   show_cancer_hallmarks = T,
   show_drug = T,
   show_enrichment = T,
-  show_tcga_aberration = T,
-  show_tcga_coexpression = T,
+  show_aberration = T,
+  show_coexpression = T,
   show_subcell_comp = T,
   show_fitness = T,
   show_cell_tissue = F,
   show_ligand_receptor = T,
-  show_regulatory_interactions = T,
+  show_regulatory = T,
   show_unknown_function = T,
-  show_prognostic_cancer_assoc = T,
+  show_prognostic = T,
   show_synleth = T,
   show_complex = T,
   show_domain = T
@@ -115,9 +115,9 @@ init_report(
 
 \item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)}
 
-\item{show_tcga_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
+\item{show_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
 
-\item{show_tcga_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes}
+\item{show_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes}
 
 \item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
 
@@ -128,11 +128,11 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{show_ligand_receptor}{logical indicating if report should contain ligand-receptor interactions (CellChatDB)}
 
-\item{show_regulatory_interactions}{logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)}
+\item{show_regulatory}{logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)}
 
 \item{show_unknown_function}{logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)}
 
-\item{show_prognostic_cancer_assoc}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
+\item{show_prognostic}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
 
 \item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
 

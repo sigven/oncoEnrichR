@@ -227,14 +227,14 @@ load_db <- function(remote = T,
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
 #' @param show_drug logical indicating if report should contain targeted cancer drug information
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
-#' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
+#' @param show_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
+#' @param show_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
 #' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
-#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
+#' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
@@ -276,15 +276,15 @@ init_report <- function(oeDB,
                         show_cancer_hallmarks = T,
                         show_drug = T,
                         show_enrichment = T,
-                        show_tcga_aberration = T,
-                        show_tcga_coexpression = T,
+                        show_aberration = T,
+                        show_coexpression = T,
                         show_subcell_comp = T,
                         show_fitness = T,
                         show_cell_tissue = F,
                         show_ligand_receptor = T,
-                        show_regulatory_interactions = T,
+                        show_regulatory = T,
                         show_unknown_function = T,
-                        show_prognostic_cancer_assoc = T,
+                        show_prognostic = T,
                         show_synleth = T,
                         show_complex = T,
                         show_domain = T) {
@@ -317,18 +317,18 @@ init_report <- function(oeDB,
   rep[["config"]][["show"]][["enrichment"]] <- show_enrichment
   rep[["config"]][["show"]][["protein_complex"]] <- show_complex
   rep[["config"]][["show"]][["protein_domain"]] <- show_domain
-  rep[["config"]][["show"]][["tcga_aberration"]] <- show_tcga_aberration
-  rep[["config"]][["show"]][["tcga_coexpression"]] <- show_tcga_coexpression
+  rep[["config"]][["show"]][["aberration"]] <- show_aberration
+  rep[["config"]][["show"]][["coexpression"]] <- show_coexpression
   rep[["config"]][["show"]][["subcellcomp"]] <- show_subcell_comp
   rep[["config"]][["show"]][["fitness"]] <- show_fitness
   rep[["config"]][["show"]][["cell_tissue"]] <- show_cell_tissue
-  rep[["config"]][["show"]][["regulatory"]] <- show_regulatory_interactions
+  rep[["config"]][["show"]][["regulatory"]] <- show_regulatory
   rep[["config"]][["show"]][["ligand_receptor"]] <- show_ligand_receptor
   rep[["config"]][["show"]][["cancer_hallmark"]] <- show_cancer_hallmarks
   rep[["config"]][["show"]][["unknown_function"]] <- show_unknown_function
   rep[["config"]][["show"]][["synleth"]] <- show_synleth
   rep[["config"]][["show"]][["cancer_prognosis"]] <-
-    show_prognostic_cancer_assoc
+    show_prognostic
 
   ## config - report metadata (project owner, background, project_title)
   rep[["config"]][["project_title"]] <- project_title
@@ -441,8 +441,8 @@ init_report <- function(oeDB,
 
   ## specifiy plot height (tile/heatmap) - genes along y-axis
   ## tumor types / tissues / celltypes along x-axis
-  rep[["config"]][["tcga_aberration"]] <- list()
-  rep[["config"]][["tcga_aberration"]][["plot_height"]] <- 14
+  rep[["config"]][["aberration"]] <- list()
+  rep[["config"]][["aberration"]][["plot_height"]] <- 14
 
   ## config/prognosis - settings for prognostic associations
   rep[["config"]][["prognosis"]] <- list()
@@ -725,14 +725,14 @@ init_report <- function(oeDB,
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
 #' @param show_drug logical indicating if report should contain targeted cancer drug information
 #' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
-#' @param show_tcga_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-#' @param show_tcga_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
+#' @param show_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
+#' @param show_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
 #' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
 #' of target genes, using data from the Human Protein Atlas
 #' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
-#' @param show_regulatory_interactions logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
+#' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
-#' @param show_prognostic_cancer_assoc  logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
+#' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
 #' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
@@ -776,13 +776,13 @@ onco_enrich <- function(query = NULL,
                         show_cancer_hallmarks = TRUE,
                         show_drug = TRUE,
                         show_enrichment = TRUE,
-                        show_tcga_aberration = TRUE,
-                        show_tcga_coexpression = TRUE,
+                        show_aberration = TRUE,
+                        show_coexpression = TRUE,
                         show_cell_tissue = FALSE,
                         show_ligand_receptor = TRUE,
-                        show_regulatory_interactions = TRUE,
+                        show_regulatory = TRUE,
                         show_unknown_function = TRUE,
-                        show_prognostic_cancer_assoc = TRUE,
+                        show_prognostic = TRUE,
                         show_subcell_comp = TRUE,
                         show_synleth = TRUE,
                         show_fitness = TRUE,
@@ -1043,17 +1043,17 @@ onco_enrich <- function(query = NULL,
     show_cancer_hallmarks = show_cancer_hallmarks,
     show_drug = show_drug,
     show_enrichment = show_enrichment,
-    show_tcga_aberration = show_tcga_aberration,
-    show_tcga_coexpression = show_tcga_coexpression,
+    show_aberration = show_aberration,
+    show_coexpression = show_coexpression,
     show_subcell_comp = show_subcell_comp,
     show_fitness = show_fitness,
     show_cell_tissue = show_cell_tissue,
     show_ligand_receptor = show_ligand_receptor,
-    show_regulatory_interactions = show_regulatory_interactions,
+    show_regulatory = show_regulatory,
     show_unknown_function = show_unknown_function,
     show_synleth = show_synleth,
-    show_prognostic_cancer_assoc =
-      show_prognostic_cancer_assoc,
+    show_prognostic =
+      show_prognostic,
     show_domain = show_domain,
     show_complex = show_complex)
 
@@ -1090,8 +1090,8 @@ onco_enrich <- function(query = NULL,
                "protein_complex",
                "protein_domain",
                "ppi",
-               "tcga_aberration",
-               "tcga_coexpression",
+               "aberration",
+               "coexpression",
                "cell_tissue",
                "cancer_hallmark",
                "fitness",
@@ -1165,8 +1165,8 @@ onco_enrich <- function(query = NULL,
   query_symbol <- unique(qgenes_match[["found"]]$symbol)
 
   if (length(query_symbol) > 20) {
-    onc_rep[["config"]][["tcga_aberration"]][["plot_height"]] <-
-      onc_rep[["config"]][["tcga_aberration"]][["plot_height"]] +
+    onc_rep[["config"]][["aberration"]][["plot_height"]] <-
+      onc_rep[["config"]][["aberration"]][["plot_height"]] +
       as.integer((length(query_symbol) - 20)/ 7.5)
   }
 
@@ -1402,7 +1402,7 @@ onco_enrich <- function(query = NULL,
   }
 
 
-  if (show_tcga_aberration == T) {
+  if (show_aberration == T) {
     for (v in c("cna_homdel","cna_ampl")) {
       onc_rep[["data"]][["tcga"]][["aberration"]][["matrix"]][[v]] <-
         tcga_aberration_matrix(
@@ -1533,7 +1533,7 @@ onco_enrich <- function(query = NULL,
 
   }
 
-  if (show_tcga_coexpression == T) {
+  if (show_coexpression == T) {
     onc_rep[["data"]][["tcga"]][["coexpression"]] <-
       tcga_coexpression(
         qgenes = query_symbol,
@@ -1542,7 +1542,7 @@ onco_enrich <- function(query = NULL,
         logger = logger)
   }
 
-  if (show_regulatory_interactions == T) {
+  if (show_regulatory == T) {
 
     for(collection in c('global','pancancer')){
       onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
@@ -1564,7 +1564,7 @@ onco_enrich <- function(query = NULL,
     }
   }
 
-  if(show_prognostic_cancer_assoc == T){
+  if(show_prognostic == T){
     onc_rep[["data"]][["cancer_prognosis"]][['hpa']][['assocs']] <-
       hpa_prognostic_genes(
         query_symbol,
@@ -1961,12 +1961,6 @@ write <- function(report,
       }
       if(elem == "drug_known"){
         show_elem <- "drug"
-      }
-      if(elem == "aberration"){
-        show_elem <- "tcga_aberration"
-      }
-      if(elem == "coexpression"){
-        show_elem <- "tcga_coexpression"
       }
       if(elem == "synthetic_lethality"){
         show_elem <- "synleth"

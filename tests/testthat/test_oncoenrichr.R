@@ -34,15 +34,15 @@ test_that("oncoEnrichR - initialize report", {
         show_cancer_hallmarks = T,
         show_drug = T,
         show_enrichment = T,
-        show_tcga_aberration = T,
-        show_tcga_coexpression = T,
+        show_aberration = T,
+        show_coexpression = T,
         show_subcell_comp = T,
         show_fitness = T,
         show_cell_tissue = F,
         show_ligand_receptor = T,
-        show_regulatory_interactions = T,
+        show_regulatory = T,
         show_unknown_function = T,
-        show_prognostic_cancer_assoc = T,
+        show_prognostic = T,
         #show_syn_leth_pairs = T,
         show_complex = T)
     ),
@@ -140,8 +140,8 @@ test_that("oncoEnrichR - generate report", {
       oeDB = oedb,
       galaxy = T,
       show_enrichment = F,
-      show_tcga_aberration = F,
-      show_tcga_coexpression = F
+      show_aberration = F,
+      show_coexpression = F
     ),
     regexp = "NOTE: Running oncoEnrichR workflow in Galaxy mode"
   )

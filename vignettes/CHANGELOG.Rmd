@@ -5,12 +5,21 @@ output: rmarkdown::html_document
 
 ## Version 1.1.1
 
-* Date: 2022-06-15
+* Date: 2022-06-16
 
 ### Added
-
+ 
 * Data updates:
   * WikiPathways (20220610)
+* Configurations for `onco_enrich()` populated at the end of HTML report
+
+### Changed
+
+* Option renaming
+  - `show_prognostic_cancer_assoc` renamed to `show_prognostic`. 
+  - `show_tcga_aberration` renamed to `show_aberration`
+  - `show_regulatory_interactions` renamed to `show_regulatory`
+  - `show_tcga_coexpression` renamed to `show_coexpression`
 
 ### Fixed
 
@@ -36,8 +45,8 @@ output: rmarkdown::html_document
 * Module that shows the occurrence of protein domains among query set members
 * Protein-complex cancer relevance score
 * New options
-  * `--ppi_node_shadow` - logical indicating if nodes in the PPI network should carry a shadow or not
-  * `--show_domain` - logical indicating if report should add section on protein domain frequencies in query set
+  * `ppi_node_shadow` - logical indicating if nodes in the PPI network should carry a shadow or not
+  * `show_domain` - logical indicating if report should add section on protein domain frequencies in query set
   
 
 ### Changed
