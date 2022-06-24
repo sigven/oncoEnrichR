@@ -4,5 +4,5 @@ output: rmarkdown::html_document
 ---
 
 1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.1.1")`
+2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.2.0")`
 3.  `library(oncoEnrichR)`
