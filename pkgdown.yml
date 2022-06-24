@@ -1,5 +1,5 @@
 pandoc: 2.7.3
-pkgdown: 2.0.4
+pkgdown: 2.0.5
 pkgdown_sha: ~
 articles:
   CHANGELOG: CHANGELOG.html
@@ -8,7 +8,7 @@ articles:
   installation: installation.html
   output: output.html
   running: running.html
-last_built: 2022-06-16T11:37Z
+last_built: 2022-06-24T13:51Z
 urls:
   reference: https://sigven.github.io/oncoEnrichR/reference
   article: https://sigven.github.io/oncoEnrichR/articles
