@@ -26,8 +26,8 @@ attempts to map such cases as synonyms/aliases for the primary gene symbols.
 
 In order to keep the size of the HTML output report at a manageable level, there is currently an upper limit of
 
-  * **`n = 600`** 
+  * **`n = 500`** 
 
-genes that can be used as input to the tool. If you run oncoEnrichR through the Galaxy interface, the upper limit is set at `n = 500`. Please also note that the tool requires `n = 2` input genes at the bare minimum, although some analysis modules will not be included/run with so few genes as input. 
+genes that can be used as input to the tool. Please also note that the tool requires `n = 2` input genes at the bare minimum, although some analysis modules will not be included/run with so few genes as input. 
 
 

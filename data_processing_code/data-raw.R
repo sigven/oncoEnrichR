@@ -2,12 +2,17 @@ library(magrittr)
 library(TissueEnrich)
 library(gganatogram)
 
+source('data_processing_code/data_utility_functions.R')
+
 msigdb_version <- 'v7.5.1 (Jan 2022)'
 wikipathways_version <- "20220610"
 netpath_version <- "2010"
 opentargets_version <- "2022.04"
 kegg_version <- "20220324"
 gencode_version <- "40"
+uniprot_release <- "2022_01"
+
+## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- F
@@ -20,8 +25,10 @@ update_omnipath_complexdb <- F
 update_gencode <- F
 update_ligand_receptor_db <- T
 
+oe_version <- "1.2.0"
 
-uniprot_release <- "2022_01"
+data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
+data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
 
 software_db_version <-
   read.table(file="data_processing_code/RELEASE_NOTES.txt",
@@ -47,21 +54,18 @@ while(i <= nrow(software_db_version)){
   i <- i + 1
 }
 rm(software_db_version)
-#usethis::use_data(release_notes, overwrite = T)
 genedb <- list()
 
-source('data_processing_code/data_utility_functions.R')
 
 ####---Gene info----####
 gene_info <-
   get_gene_info_ncbi(
-    basedir = here::here())
+    raw_db_dir = data_raw_dir)
 
 ####---Protein domains----####
 pfamdb <- as.data.frame(
   readr::read_tsv(
-    file.path(here::here(),
-              "data-raw",
+    file.path(data_raw_dir,
               "pfam",
               "pfam.uniprot.tsv.gz"),
     show_col_types = F) %>%
@@ -82,19 +86,19 @@ pfamdb <- as.data.frame(
 genedb[['cancer_hallmark']] <-
   get_cancer_hallmarks(
     opentargets_version = opentargets_version,
-    basedir = here::here(),
+    raw_db_dir = data_raw_dir,
     gene_info = gene_info,
     update = update_cancer_hallmarks)
 
 ####---dbNSFP: gene summary descriptions---####
 uniprot_gene_summary <-
   get_dbnsfp_gene_annotations(
-    basedir = here::here())
+    raw_db_dir = data_raw_dir)
 
 ####----CancerMine/NCG---####
 ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
-    basedir = here::here(),
+    raw_db_dir = data_raw_dir,
     gene_info = gene_info,
     version = "46") %>%
   dplyr::select(
@@ -106,7 +110,7 @@ ts_oncogene_annotations <-
 ####--- OTP: Target-disease associations ----####
 opentarget_associations <-
   get_opentarget_associations(
-    basedir = here::here(),
+    raw_db_dir = data_raw_dir,
     min_num_sources = 2,
     min_overall_score = 0.05,
     direct_associations_only = T)
@@ -124,7 +128,7 @@ for(build in c('grch37','grch38')){
   }
 
   gencode[[build]] <- get_gencode_data(
-    basedir = here::here(),
+    raw_db_dir = data_raw_dir,
     gene_info = gene_info,
     build = build,
     gencode_version = gencode_v,
@@ -134,7 +138,7 @@ for(build in c('grch37','grch38')){
 }
 
 genedb[['transcript_xref']] <- get_unique_transcript_xrefs(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info,
   gencode = gencode,
   update = T
@@ -143,20 +147,20 @@ genedb[['transcript_xref']] <- get_unique_transcript_xrefs(
 
 ####---OmniPathDB - gene annotations ----####
 omnipathdb <- get_omnipath_gene_annotations(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info,
   update = update_omnipathdb
 )
 
 ####---OmniPathDB - TF interactions ----####
 tf_target_interactions <- get_tf_target_interactions(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   update = update_omnipath_regulatory
 )
 
 ####---Pathway annotations ----####
 pathwaydb <- get_pathway_annotations(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info,
   wikipathways_version = wikipathways_version,
   kegg_version = kegg_version,
@@ -171,13 +175,13 @@ pathwaydb <- get_pathway_annotations(
 
 ####---OmniPathDB - protein complexes ----####
 genedb[['proteincomplexdb']] <- get_protein_complexes(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   update = update_omnipath_complexdb
 )
 
 ## Gene summaries from NCBI (provided by RefSeq/OMIM):
 ncbi_gene_summary <- get_function_summary_ncbi(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_df = gene_info,
   update = update_ncbi_gene_summary)
 
@@ -186,7 +190,7 @@ cancerdrugdb <- get_cancer_drugs()
 
 ####--- Gene Ontology ---####
 go_terms_pr_gene <- get_gene_go_terms(
-  basedir = here::here()
+  raw_db_dir = data_raw_dir
 )
 
 ## Append all gene annotations to a single dataframe
@@ -198,7 +202,7 @@ go_terms_pr_gene <- get_gene_go_terms(
 ## 6) Assign unknown function rank
 
 genedb[['all']] <- generate_gene_xref_df(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info,
   transcript_xref_db = genedb[['transcript_xref']],
   ts_oncogene_annotations = ts_oncogene_annotations,
@@ -213,56 +217,56 @@ genedb[['all']] <- generate_gene_xref_df(
 
 ####--- Ligand-Receptor interactions ----####
 ligandreceptordb <- get_ligand_receptors(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   keggdb = pathwaydb$kegg,
   update = update_ligand_receptor_db
 )
 
 ####----ComPPI - subcellular compartments---####
 subcelldb <- get_subcellular_annotations(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   transcript_xref_db = genedb[['transcript_xref']]
 )
 
 ####---- Project Score/CRISPR ----####
 projectscoredb <- get_fitness_data_crispr(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info
 )
 
 ####--- Cancer-KM-Survival (CSHL) ---####
 projectsurvivaldb <- get_survival_associations(
   gene_info = gene_info,
-  basedir = here::here()
+  raw_db_dir = data_raw_dir
 )
 
 ###--- Predicted SL paralogs ---####
 slparalogdb <- get_paralog_SL_predictions(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_info = gene_info
 )
 
 # synlethdb <- get_synthetic_lethality_pairs(
-#   basedir = here::here()
+#   raw_db_dir = data_raw_dir
 # )
 
 
 ####--- Human Protein Atlas ---####
 hpa <- get_hpa_associations(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   gene_xref = genedb[['all']],
   update = update_hpa
 )
 
 ####----TCGA aberration data ----####
 tcgadb <- get_tcga_db(
-  basedir = here::here(),
+  raw_db_dir = data_raw_dir,
   update = update_tcga,
   gene_xref = genedb[['all']]
 )
 
 tissuecelldb <- get_tissue_celltype_specificity(
-  basedir = here::here()
+  raw_db_dir = data_raw_dir
 )
 
 db_props <- data.frame()
@@ -297,7 +301,6 @@ for(n in c('cancerdrugdb',
            'projectsurvivaldb',
            'subcelldb',
            'slparalogdb',
-           #'synlethdb',
            'tcgadb',
            'tftargetdb',
            'tissuecelldb',
@@ -321,57 +324,33 @@ for(n in c('cancerdrugdb',
                           'size' = as.character(size),
                           'hsize' = as.character(hsize),
                           'checksum' = checksum_db,
-                          'version' = '1.1.1',
+                          'version' = oe_version,
                           'date' = Sys.Date(),
                          stringsAsFactors = F
                         )
   db_props <- db_props %>%
     dplyr::bind_rows(db_entry)
 
-  saveRDS(oedb[[n]], file = paste0('db/',n,'.rds'))
+
+  if(!dir.exists(
+    file.path(data_output_dir, paste0("v",oe_version)))){
+    system(paste0('mkdir ', file.path(
+      data_output_dir,
+      paste0("v",oe_version)))
+    )
+  }
+
+  saveRDS(
+    oedb[[n]],
+    file = file.path(
+      data_output_dir,
+      paste0("v",oe_version),
+      paste0(n,'.rds'))
+    )
 
 }
 
 save(oedb, file="inst/internal_db/oedb.rda")
-
-usethis::use_data(db_props, overwrite = T)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 rm(pfamdb)
 rm(tcgadb)
@@ -399,3 +378,58 @@ rm(oedb)
 rm(slparalogdb)
 
 
+zenodo_files_for_upload <-
+  list.files(file.path(data_output_dir, paste0("v",oe_version)),
+             full.names = T)
+zenodo <- zen4R::ZenodoManager$new(
+  token = Sys.getenv("ZENODO_TOKEN"),
+  logger = "INFO"
+)
+
+oedb_rec <- zenodo$getDepositionByDOI("10.5281/zenodo.6697651")
+oedb_rec$setPublicationDate(publicationDate = Sys.Date())
+oedb_rec$setVersion(version = paste0("v",oe_version))
+oedb_rec <- zenodo$depositRecordVersion(
+  oedb_rec,
+  delete_latest_files = TRUE,
+  files = zenodo_files_for_upload,
+  publish = FALSE)
+
+#zenodo$discardChanges(oedb_rec$id)
+db_props$zenodo_doi <- oedb_rec$metadata$doi
+
+usethis::use_data(db_props, overwrite = T)
+
+oedb_rec <- zenodo$publishRecord(oedb_rec$id)
+
+db_packages <-
+  c('CellChat',
+    'rWikiPathways',
+    'ComplexHeatmap',
+    'Rtsne',
+    'expm',
+    'irlba',
+    'pbapply',
+    'cowplot',
+    'reticulate',
+    'RSpectra',
+    'sna',
+    'FNN',
+    'TCGAbiolinksGUI.data',
+    'TCGAbiolinks',
+    'rlogging',
+    'oncoPharmaDB',
+    'oncoPhenoMap')
+
+renv_packages <- jsonlite::fromJSON("renv.lock")
+for(c in db_packages){
+  renv_packages$Packages[[c]] <- NULL
+}
+docker_renv <- jsonlite::toJSON(
+  renv_packages, flatten = T, auto_unbox = T) %>%
+  jsonlite::prettify()
+sink(file = "docker/renv.lock")
+cat(docker_renv)
+sink()
+
+devtools::build(path = "docker", vignettes = F, manual = F)

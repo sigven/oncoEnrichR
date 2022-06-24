@@ -17,7 +17,7 @@ load_db <- function(remote = T,
   val <- remote == T | !is.null(cache_dir)
   if(val == F){
     log4r_info(logger,
-      "ERROR: Pull database either remotely ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
+      "ERROR: Pull database either remotely from zenodo.org ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
       return(-1)
   }
 
@@ -39,22 +39,23 @@ load_db <- function(remote = T,
   read_dest <- NULL
   write_dest <- NULL
   oe_version <- paste0("v", utils::packageVersion("oncoEnrichR"))
+
   write_to_cache <- T
+  zenodo_record_files <- data.frame()
 
   if(remote == T){
 
-    remote_db_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-                       oe_version, "/db/")
-    if(!RCurl::url.exists(remote_db_url)){
-      #if(is.null(cache_dir)){
-        log4r_info(logger, paste0("ERROR: OncoEnrichR annotation datasets for version '", oe_version,
-                                "' is not tagged on GitHub - exiting"))
-        return(-1)
-      #}
-    }else{
-      read_dest <- remote_db_url
-      log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets remotely from: ", read_dest))
-    }
+    log4r_info(
+      logger,
+      paste0("Loading oncoEnrichR annotation datasets for version '",
+             oe_version,"' from Zenodo (https://zenodo.org/api/files/)"))
+    log4r_info(
+      logger, "This may take several minutes depending on your connection/bandwidth")
+
+    zenodo <- zen4R::ZenodoManager$new()
+    zenodo_doi <- unique(oncoEnrichR::db_props$zenodo_doi)
+    oedb_rec <- zenodo$getRecordByDOI(zenodo_doi)
+    zenodo_record_files <- oedb_rec$listFiles(pretty = TRUE)
 
     if(!is.null(cache_dir)){
 
@@ -85,11 +86,11 @@ load_db <- function(remote = T,
 
       if(!dir.exists(cache_version_dir)){
         log4r_info(logger, paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
-        log4r_info(logger, paste0("Set 'remote' = TRUE to reload data from web and write to ", cache_dir))
+        log4r_info(logger, paste0("Set 'remote' = TRUE to reload data from zenodo.org and write to ", cache_dir))
         return(-1)
       }else{
         read_dest <- cache_version_dir
-        log4r_info(logger, paste0("Loading OncoEnrichR annotation datasets locally (cached) from: ",read_dest))
+        log4r_info(logger, paste0("Loading oncoEnrichR annotation datasets locally (cached) from: ",read_dest))
       }
 
     }
@@ -110,13 +111,20 @@ load_db <- function(remote = T,
               "release_notes",
               "subcelldb",
               "slparalogdb",
-              #"synlethdb",
               "tcgadb",
               "tissuecelldb",
               "tftargetdb")){
 
 
+
+    if(remote == T & NROW(zenodo_record_files) > 0){
+      zenodo_download_entry <-
+        zenodo_record_files[zenodo_record_files$filename == paste0(db,".rds"),]$download
+      read_dest <- stringr::str_replace(zenodo_download_entry,paste0("/",db,".rds"),"")
+    }
+
     db_dest <- file.path(read_dest, paste0(db,".rds"))
+    options(timeout=9999999)
     if(remote == T){
       if(RCurl::url.exists(db_dest)){
         oedb[[db]] <- readRDS(url(db_dest,"rb"))
@@ -875,7 +883,7 @@ onco_enrich <- function(query = NULL,
   }
 
   ## Number of allowed query genes
-  oncoenrichr_query_limit <- 600
+  oncoenrichr_query_limit <- 500
 
   if(length(names(dot_args)) > 0){
     if("galaxy" %in% names(dot_args))
@@ -1633,6 +1641,7 @@ onco_enrich <- function(query = NULL,
 #' Function that writes an oncoEnrichR report object to file
 #'
 #' @param report object with oncoEnrichR report data (returned by oeDB$onco_enrich)
+#' @param oeDB oncoEnrichR annotation database object
 #' @param file full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")
 #' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
 #' @param overwrite logical indicating if existing output files may be overwritten
@@ -1642,6 +1651,7 @@ onco_enrich <- function(query = NULL,
 #' @export
 
 write <- function(report,
+                  oeDB,
                   file = "testReport.html",
                   ignore_file_extension = F,
                   overwrite = F,
@@ -1772,6 +1782,19 @@ write <- function(report,
       "ERROR: oncoEnrichR report object is NULL - cannot write report contents")
     return()
   }
+
+
+
+  if(!is.null(oeDB[['tcgadb']][['maf']])){
+    assign("tcga_maf_datasets",
+           oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
+  }else{
+    log4r_info(logger,
+               "ERROR: oncoEnrichR db object (oeDB) is NULL - cannot write report contents")
+    return()
+  }
+
+
 
 
   if (format == "html") {

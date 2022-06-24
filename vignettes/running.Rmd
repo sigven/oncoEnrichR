@@ -9,7 +9,7 @@ output: rmarkdown::html_document
 
 ### 1. `oncoEnrichR::load_db()`
 
--   Loads (from web) all the necessary annotation datasets used in oncoEnrichR
+-   Loads (from a version-specific [Zenodo record](https://doi.org/10.5281/zenodo.6684347)) all the necessary annotation datasets used in oncoEnrichR
 
 <br>
 
@@ -104,6 +104,6 @@ Below are R commands provided to reproduce the example output. **NOTE**: Replace
 -   `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
 -   `oeDB <- oncoEnrichR::load_db()` **NOTE**: pass a writable directory to the argument `cache_dir` in order to speed the database loading in subsequent R sessions
 -   `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, oeDB = oeDB, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
--   `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
--   `oncoEnrichR::write(report = myc_report, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
+-   `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
+-   `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`
 

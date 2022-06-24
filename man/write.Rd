@@ -6,6 +6,7 @@
 \usage{
 write(
   report,
+  oeDB,
   file = "testReport.html",
   ignore_file_extension = F,
   overwrite = F,
@@ -15,6 +16,8 @@ write(
 }
 \arguments{
 \item{report}{object with oncoEnrichR report data (returned by oeDB$onco_enrich)}
+
+\item{oeDB}{oncoEnrichR annotation database object}
 
 \item{file}{full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")}
 

@@ -3,6 +3,16 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.2.0
+
+* Date: 2022-06-24
+
+### Changed
+
+- Moved to [zenodo.org](https://doi.org/10.5281/zenodo.6684347) for hosting underlying datasets, accessed with [zen4R](https://github.com/eblondel/zen4R/)
+- MAF objects (TCGA) no longer loaded from GitHub
+- Function `oncoEnrichR::write()` now requires the oncoEnrichR database object (`oeDB`) as an argument
+
 ## Version 1.1.1
 
 * Date: 2022-06-16

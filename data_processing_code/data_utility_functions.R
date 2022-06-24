@@ -58,13 +58,13 @@ get_citations_pubmed <- function(
 #' A function that returns a citation with first author, journal and year for a PubMed ID
 #'
 #' @param pmid An array of Pubmed IDs
-#' @param basedir base directory
+#' @param raw_db_dir base directory
 #' @param chunk_size Size of PMID chunks
 #' @return citation PubMed citation, with first author, journal and year
 #'
 get_citations_pubmed2 <- function(
     pmid,
-    basedir = NULL,
+    raw_db_dir = NULL,
     chunk_size = 300){
 
   ## make chunk of maximal 400 PMIDs from input array (limit by EUtils)
@@ -76,7 +76,7 @@ get_citations_pubmed2 <- function(
 
   eutils_medline_fname <-
     file.path(
-      basedir,
+      raw_db_dir,
       paste0("tmp_edirect_results_",
              stringi::stri_rand_strings(
                1, 20, pattern = "[A-Za-z0-9]"),
@@ -86,7 +86,7 @@ get_citations_pubmed2 <- function(
 
   eutils_medline_sh <-
     file.path(
-      basedir,
+      raw_db_dir,
       paste0("tmp_edirect_cmd_",
              stringi::stri_rand_strings(
                1, 20, pattern = "[A-Za-z0-9]"),
@@ -182,19 +182,19 @@ get_citations_pubmed2 <- function(
 }
 
 
-get_gene_info_ncbi <- function(basedir = NULL,
+get_gene_info_ncbi <- function(raw_db_dir = NULL,
                                update = T){
 
   invisible(assertthat::assert_that(
     update == T | update == F,
     msg = "'update' is not of type logical (TRUE/FALSE)"))
   invisible(assertthat::assert_that(
-    dir.exists(basedir),
+    dir.exists(raw_db_dir),
     msg = paste0("Directory '",
-                 basedir,"' does not exist")))
+                 raw_db_dir,"' does not exist")))
 
   rlogging::message("Retrieving gene_info from NCBI/Entrez")
-  gene_info_fname <- paste0(basedir,'/data-raw/gene_info/Homo_sapiens.gene_info.gz')
+  gene_info_fname <- paste0(raw_db_dir,'/gene_info/Homo_sapiens.gene_info.gz')
   if(update == F){
     invisible(assertthat::assert_that(
       file.exists(gene_info_fname),
@@ -280,16 +280,17 @@ get_gene_aliases <- function(gene_info = NULL){
   return(alias2primary)
 }
 
-get_msigdb_signatures <- function(basedir = NULL,
-                                  db_version = 'v7.5.1 (January 2022)'){
+get_msigdb_signatures <- function(
+    raw_db_dir = NULL,
+    db_version = 'v7.5.1 (January 2022)'){
 
   ## get full dataset: Broad Institute's Molecular Signatures Database (v7.1)
   invisible(assertthat::assert_that(
-    dir.exists(basedir),
+    dir.exists(raw_db_dir),
     msg = paste0("Directory '",
-                 basedir,"' does not exist")))
+                 raw_db_dir,"' does not exist")))
   msigdb_xml_fname <- file.path(
-    basedir, "data-raw","msigdb","msigdb.xml")
+    raw_db_dir, "msigdb", "msigdb.xml")
   invisible(assertthat::assert_that(
     file.exists(msigdb_xml_fname),
     msg = paste0("File '",
@@ -324,8 +325,9 @@ get_msigdb_signatures <- function(basedir = NULL,
     dplyr::mutate(description = stringr::str_replace_all(description,
                                                          "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
 
-  msigdb_category_description <- read.table(file="data-raw/msigdb/msigdb_collection_description.tsv",
-                                   sep = "\t", header = T, stringsAsFactors = F)
+  msigdb_category_description <- read.table(
+    file = file.path(raw_db_dir, "msigdb","msigdb_collection_description.tsv"),
+    sep = "\t", header = T, stringsAsFactors = F)
 
   msigdb_complete <- as.data.frame(all_msigdb %>%
     dplyr::left_join(msigdb_category_description,
@@ -414,18 +416,21 @@ get_msigdb_signatures <- function(basedir = NULL,
 }
 
 
-get_ts_oncogene_annotations <- function(basedir = NULL,
+get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
                                         version = "46",
                                         gene_info = NULL){
   rlogging::message(
     "Retrieving proto-oncogenes/tumor suppressor status ",
     "according to classifications form CancerMine & Network of Cancer Genes (NCG)")
 
-  fp_cancer_drivers <- get_curated_fp_cancer_genes(basedir = basedir, gene_info = gene_info)
+  fp_cancer_drivers <- get_curated_fp_cancer_genes(raw_db_dir = raw_db_dir, gene_info = gene_info)
 
   ## Tumor suppressor annotations or oncogene annotations from Network of cancer genes (NCG)
-  ncg <- read.table(file = paste0(basedir, "/data-raw/ncg/ncg_tsgene_oncogene.tsv"),header = T,
-                    stringsAsFactors = F, sep = "\t", quote = "", comment.char = "") %>%
+  ncg <- read.table(
+    file = paste0(raw_db_dir, "/ncg/ncg_tsgene_oncogene.tsv"),
+    header = T,
+    stringsAsFactors = F, sep = "\t",
+    quote = "", comment.char = "") %>%
     janitor::clean_names() %>%
     dplyr::mutate(
       ncg_tumor_suppressor = dplyr::if_else(
@@ -441,8 +446,9 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
     dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") %>%
     dplyr::distinct()
 
-  cgc <- readr::read_csv(file = paste0(basedir, "/data-raw/cgc/cancer_gene_census_96.csv"),
-                         show_col_types = F) %>%
+  cgc <- readr::read_csv(
+    file = paste0(raw_db_dir, "/cgc/cancer_gene_census_96.csv"),
+    show_col_types = F) %>%
     janitor::clean_names() %>%
     dplyr::filter(!is.na(role_in_cancer)) %>%
     dplyr::filter(is.na(translocation_partner) |
@@ -463,7 +469,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
 
   pmids <- as.data.frame(
-    read.table(gzfile(paste0(basedir,'/data-raw/cancermine/cancermine_sentences.tsv.gz')),
+    read.table(gzfile(paste0(raw_db_dir,'/cancermine/cancermine_sentences.tsv.gz')),
                header = T, comment.char = "", quote = "", sep="\t", stringsAsFactors = F) %>%
       dplyr::filter(predictprob >= 0.8) %>%
       dplyr::group_by(role, gene_entrez_id, pmid) %>%
@@ -474,8 +480,8 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
   )
 
   all_citations <- data.frame()
-  if(file.exists(paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv.gz"))){
-    all_citations <- read.table(file=paste0(basedir,"/data-raw/cancermine/citations/cancermine_citations.v",version,".tsv.gz"),
+  if(file.exists(paste0(raw_db_dir,"/cancermine/citations/cancermine_citations.v",version,".tsv.gz"))){
+    all_citations <- read.table(file=paste0(raw_db_dir,"/cancermine/citations/cancermine_citations.v",version,".tsv.gz"),
                                 sep = "\t", header = F, quote = "", comment.char = "", stringsAsFactors = F) %>%
       magrittr::set_colnames(c('pmid','citation','citation_link')) %>%
       dplyr::distinct() %>%
@@ -556,7 +562,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
   rlogging::message("Retrieving known proto-oncogenes/tumor suppressor genes from CancerMine")
   oncogene <- as.data.frame(
-    readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
+    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Oncogene") %>%
@@ -573,7 +579,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
 
   tsgene <- as.data.frame(
-    readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
+    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Tumor_Suppressor") %>%
@@ -590,7 +596,7 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 
 
   cdriver <- as.data.frame(
-    readr::read_tsv(paste0(basedir,'/data-raw/cancermine/cancermine_collated.tsv.gz'),
+    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
                     col_names = T,na ="-", comment = "#", quote = "",
                     show_col_types = F) %>%
       dplyr::filter(role == "Driver") %>%
@@ -767,14 +773,14 @@ get_ts_oncogene_annotations <- function(basedir = NULL,
 }
 
 
-get_curated_fp_cancer_genes <- function(basedir = NULL,
+get_curated_fp_cancer_genes <- function(raw_db_dir = NULL,
                                         gene_info = NULL){
 
   invisible(assertthat::assert_that(!is.null(gene_info), msg = "'gene_info' object is NULL"))
-  invisible(assertthat::assert_that(dir.exists(basedir), msg = paste0("Directory '",basedir,"' does not exist")))
+  invisible(assertthat::assert_that(dir.exists(raw_db_dir), msg = paste0("Directory '",raw_db_dir,"' does not exist")))
   assertable::assert_colnames(gene_info,c("symbol","entrezgene"), only_colnames = F, quiet = T)
   assertable::assert_coltypes(gene_info, list(symbol = character(), entrezgene = integer()), quiet = T)
-  xlsx_fname <- paste0(basedir,"/data-raw/cancer_driver/bailey_2018_cell.xlsx")
+  xlsx_fname <- paste0(raw_db_dir,"/cancer_driver/bailey_2018_cell.xlsx")
   invisible(assertthat::assert_that(file.exists(xlsx_fname),msg = paste0("File ",xlsx_fname," does not exist")))
   tmp <- openxlsx::read.xlsx(xlsx_fname,sheet = 8,startRow = 4)
   fp_cancer_drivers <- data.frame('symbol' = tmp[,2], stringsAsFactors = F) %>%
@@ -787,7 +793,7 @@ get_curated_fp_cancer_genes <- function(basedir = NULL,
 }
 
 get_opentarget_associations <-
-  function(basedir = NULL,
+  function(raw_db_dir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
            release = "2022.04",
@@ -795,8 +801,8 @@ get_opentarget_associations <-
 
     opentarget_targets <- as.data.frame(
       readRDS(
-        paste0(basedir,
-               "/data-raw/opentargets/opentargets_target_",
+        paste0(raw_db_dir,
+               "/opentargets/opentargets_target_",
                release,
                ".rds")) %>%
         dplyr::select(target_ensembl_gene_id,
@@ -811,8 +817,8 @@ get_opentarget_associations <-
 
     opentarget_associations_raw <- as.data.frame(
       readRDS(
-        paste0(basedir,
-               "/data-raw/opentargets/opentargets_association_direct_HC_",
+        paste0(raw_db_dir,
+               "/opentargets/opentargets_association_direct_HC_",
                release,
                ".rds")
       )
@@ -865,12 +871,13 @@ get_opentarget_associations <-
 
   }
 
-get_dbnsfp_gene_annotations <- function(basedir = NULL){
+get_dbnsfp_gene_annotations <- function(raw_db_dir = NULL){
 
   rlogging::message("Retrieving gene damage scores/OMIM annotation from dbNSFP_gene")
-  dbnsfp_gene <- read.table(file=gzfile(paste0(basedir,"/data-raw/dbnsfp/dbNSFP_gene.gz")),sep="\t",
-                            header = T, stringsAsFactors = F, na.strings = c(".",""), comment.char="",
-                            quote = NULL) %>%
+  dbnsfp_gene <- read.table(
+    file=gzfile(paste0(raw_db_dir,"/dbnsfp/dbNSFP_gene.gz")),sep="\t",
+    header = T, stringsAsFactors = F, na.strings = c(".",""), comment.char="",
+    quote = NULL) %>%
     janitor::clean_names() %>%
     dplyr::select(gene_name, entrez_gene_id, function_description) %>%
     dplyr::rename(symbol = gene_name) %>%
@@ -895,14 +902,14 @@ get_dbnsfp_gene_annotations <- function(basedir = NULL){
 }
 
 get_gencode_ensembl_transcripts <-
-  function(basedir = NULL,
+  function(raw_db_dir = NULL,
            build = "grch38",
            gencode_version = "40",
            gene_info = NULL,
            update = F){
 
     gencode_rds <- file.path(
-      basedir, "data-raw","gencode", build,
+      raw_db_dir, "gencode", build,
       paste0("gencode_transcripts_", gencode_version, ".rds"))
 
 
@@ -920,7 +927,7 @@ get_gencode_ensembl_transcripts <-
                              gencode_version,", build ",build))
 
     destfile_gtf <-
-      file.path(basedir, "data-raw","gencode", build,
+      file.path(raw_db_dir, "gencode", build,
                 paste0("gencode.", build, ".annotation.v",
                        gencode_version, ".gtf.gz"))
 
@@ -1319,13 +1326,13 @@ resolve_duplicates <- function(gencode_df){
 }
 
 
-get_cancer_hallmarks <- function(basedir = NULL,
+get_cancer_hallmarks <- function(raw_db_dir = NULL,
                                  gene_info = NULL,
                                  opentargets_version = "2022.04",
                                  update = T){
 
   rds_fname <-
-    file.path(basedir, "data-raw", "opentargets",
+    file.path(raw_db_dir, "opentargets",
               paste0("opentargets_hallmarkdata_",
               opentargets_version, ".rds"))
 
@@ -1335,7 +1342,7 @@ get_cancer_hallmarks <- function(basedir = NULL,
   }
 
   opentargets_target_rds <- file.path(
-    basedir, "data-raw", "opentargets",
+    raw_db_dir, "opentargets",
     paste0("opentargets_target_", opentargets_version, ".rds")
   )
 
@@ -1398,14 +1405,14 @@ get_cancer_hallmarks <- function(basedir = NULL,
 
 
 get_gencode_data <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gencode_version = "40",
   build = "grch38",
   gene_info = NULL,
   update = T){
 
   rds_fname <- file.path(
-    basedir, "data-raw",
+    raw_db_dir,
     "gencode", paste0("gencode_OE_", gencode_version, ".rds")
   )
 
@@ -1416,7 +1423,7 @@ get_gencode_data <- function(
 
   gencode <- as.data.frame(
     get_gencode_ensembl_transcripts(
-      basedir = basedir,
+      raw_db_dir = raw_db_dir,
       build = build,
       gene_info = gene_info,
       gencode_version = gencode_version,
@@ -1443,13 +1450,14 @@ get_gencode_data <- function(
 }
 
 get_tf_target_interactions <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   update = F){
 
 
   rds_fname = file.path(
-    basedir, "data-raw",
-    "omnipathdb", "omnipath_tf_interactions.rds")
+    raw_db_dir,
+    "omnipathdb",
+    "omnipath_tf_interactions.rds")
 
   if(update == F & file.exists(rds_fname)){
     tf_target_interactions <- readRDS(file = rds_fname)
@@ -1558,12 +1566,12 @@ get_tf_target_interactions <- function(
 }
 
 get_function_summary_ncbi <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_df = NULL,
   update = F){
 
   rds_fname <- file.path(
-    basedir, "data-raw", "gene_info",
+    raw_db_dir, "gene_info",
     "ncbi_gene_summary.rds")
 
   if(update == F & file.exists(rds_fname)){
@@ -1817,7 +1825,7 @@ get_cancer_drugs <- function(){
 }
 
 get_pathway_annotations <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_info = NULL,
   wikipathways = T,
   kegg = T,
@@ -1831,17 +1839,17 @@ get_pathway_annotations <- function(
 
 
   wikipathways_gmt <- file.path(
-    basedir, "data-raw", "wikipathways",
+    raw_db_dir, "wikipathways",
     paste0("wikipathways-", wikipathways_version,
            "-gmt-Homo_sapiens.gmt")
   )
 
   netpath_mapping_fname <- file.path(
-    basedir, "data-raw", "netpath",
+    raw_db_dir, "netpath",
     "id_mapping.tsv")
 
   keggdb_fname <- file.path(
-    basedir, "data-raw",
+    raw_db_dir,
     "kegg", "kegg.pathway.gene.tsv"
   )
 
@@ -1858,7 +1866,7 @@ get_pathway_annotations <- function(
       rWikiPathways::downloadPathwayArchive(
         organism = "Homo sapiens",
         date = wikipathways_version,
-        destpath = "data-raw/wikipathways/",
+        destpath = file.path(raw_db_dir,"wikipathways"),
         format = "gmt")
     }
 
@@ -1940,7 +1948,7 @@ get_pathway_annotations <- function(
   if(msigdb == T){
 
     msigdb <-
-      get_msigdb_signatures(basedir = basedir,
+      get_msigdb_signatures(raw_db_dir = raw_db_dir,
                             db_version = msigdb_version)
 
     pathwaydb[['msigdb']] <- msigdb$db
@@ -1952,19 +1960,19 @@ get_pathway_annotations <- function(
 }
 
 get_protein_complexes <- function(
-    basedir = NULL,
+    raw_db_dir = NULL,
     update = F){
 
     rds_fname <- file.path(
-      basedir, "data-raw",
+      raw_db_dir,
       "protein_complexes", "omnipath_complexdb.rds")
 
     humap2_complexes_tsv <-file.path(
-      basedir, "data-raw",
+      raw_db_dir,
       "protein_complexes", "humap2_complexes.tsv")
 
     corum_complexes_tsv <- file.path(
-      basedir, "data-raw",
+      raw_db_dir,
       "protein_complexes", "coreComplexes.txt")
 
     humap_url <-
@@ -2158,12 +2166,12 @@ clean_project_score_cell_lines <- function(
 }
 
 get_fitness_data_crispr <- function(
-    basedir = NULL,
+    raw_db_dir = NULL,
     gene_info = NULL){
 
     cell_lines <- read.csv2(
       file = file.path(
-        basedir, "data-raw",
+        raw_db_dir,
         "project_score",
         "model_list.csv"),
       comment.char="",sep=",",
@@ -2193,7 +2201,7 @@ get_fitness_data_crispr <- function(
 
     gene_identifiers <-
       read.csv(file = file.path(
-        basedir, "data-raw",
+        raw_db_dir,
         "project_score",
         "gene_identifiers.csv"),
         stringsAsFactors = F) %>%
@@ -2208,7 +2216,7 @@ get_fitness_data_crispr <- function(
     bayes_factors <- as.matrix(
       readr::read_tsv(
         file = file.path(
-          basedir, "data-raw",
+          raw_db_dir,
           "project_score",
           "scaledBayesianFactors.tsv.gz"),
         show_col_types = F)) %>%
@@ -2226,7 +2234,7 @@ get_fitness_data_crispr <- function(
     ## Fitness scores - new
     cell_fitness_scores <- as.matrix(readr::read_tsv(
       file = file.path(
-        basedir, "data-raw",
+        raw_db_dir,
         "project_score",
         "binaryFitnessScores.tsv.gz"),
         show_col_types = F)) %>%
@@ -2256,7 +2264,7 @@ get_fitness_data_crispr <- function(
     ## Target priority scores
     projectscoredb[['target_priority_scores']] <-
       read.csv(file = file.path(
-        basedir, "data-raw",
+        raw_db_dir,
         "project_score", "depmap-priority-scores.csv"),
         header = T, quote="", stringsAsFactors = F) %>%
       magrittr::set_colnames(c("tractability_bucket","gene_id","priority_score",
@@ -2300,13 +2308,13 @@ get_fitness_data_crispr <- function(
 
 get_survival_associations <- function(
   gene_info = NULL,
-  basedir = NULL){
+  raw_db_dir = NULL){
 
   for(feature_type in
       c('CNAs','Mutations','Gene expression','Methylation',
         'miRNA expression','Protein expression')){
     destfile_fname <-
-      file.path(basedir, "data-raw", "km_survival_cshl",
+      file.path(raw_db_dir, "km_survival_cshl",
                 paste0(
                   tolower(
                     stringr::str_replace(
@@ -2328,7 +2336,7 @@ get_survival_associations <- function(
                         'gene_expression',
                         'methylation')){
 
-    fname <- file.path(basedir, "data-raw",
+    fname <- file.path(raw_db_dir,
                        "km_survival_cshl",
                        paste0(feature_type,".xlsx"))
     data <- openxlsx::read.xlsx(fname)
@@ -2385,14 +2393,15 @@ get_survival_associations <- function(
 }
 
 get_unique_transcript_xrefs <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gencode = NULL,
   gene_info = NULL,
   update = F){
 
   rds_fname <- file.path(
-    basedir, "data-raw",
-    "transcript_xref", "transcript_xref_db.rds"
+    raw_db_dir,
+    "transcript_xref",
+    "transcript_xref_db.rds"
   )
 
   ## gene synonyms
@@ -2451,13 +2460,14 @@ get_unique_transcript_xrefs <- function(
 }
 
 get_omnipath_gene_annotations <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_info = NULL,
   update = F){
 
   rds_fname <- file.path(
-    basedir, "data-raw",
-    "omnipathdb", "omnipathdb.rds")
+    raw_db_dir,
+    "omnipathdb",
+    "omnipathdb.rds")
 
   if(update == F & file.exists(rds_fname)){
     omnipathdb <- readRDS(file = rds_fname)
@@ -2509,12 +2519,14 @@ get_omnipath_gene_annotations <- function(
 }
 
 get_gene_go_terms <- function(
-  basedir = NULL){
+  raw_db_dir = NULL){
 
 
   goa_human_fname <-
-    file.path(basedir, "data-raw",
-              "gene_ontology", "goa_human.gaf.gz")
+    file.path(
+      raw_db_dir,
+      "gene_ontology",
+      "goa_human.gaf.gz")
 
   go_annotations_qc <-
     read.table(gzfile(goa_human_fname),
@@ -2702,7 +2714,7 @@ remove_duplicate_ensembl_genes <- function(
 }
 
 generate_gene_xref_df <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_info = NULL,
   transcript_xref_db = NULL,
   ts_oncogene_annotations = NULL,
@@ -2715,7 +2727,9 @@ generate_gene_xref_df <- function(
   update = T){
 
   rds_fname <- file.path(
-    basedir, "data-raw", "gene_xref", "gene_xref.rds"
+    raw_db_dir,
+    "gene_xref",
+    "gene_xref.rds"
   )
 
   if(update == F & file.exists(rds_fname)){
@@ -2880,7 +2894,7 @@ generate_gene_xref_df <- function(
 }
 
 get_tissue_celltype_specificity <- function(
-  basedir = NULL){
+  raw_db_dir = NULL){
 
     ## https://www.proteinatlas.org/about/assays+annotation#gtex_rna
     ##
@@ -2915,7 +2929,8 @@ get_tissue_celltype_specificity <- function(
                "rna_single_cell_type")){
 
       local_hpa_file <- file.path(
-        basedir, "data-raw", "hpa",
+        raw_db_dir,
+        "hpa",
         paste0(t, ".tsv.zip")
       )
 
@@ -3282,7 +3297,7 @@ quantify_gene_cancer_relevance <- function(
 }
 
 get_ligand_receptors <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   keggdb = NULL,
   update = F){
 
@@ -3294,8 +3309,9 @@ get_ligand_receptors <- function(
 
     if(db == 'cellchatdb'){
       rds_fname <- file.path(
-        basedir, "data-raw",
-        "cellchatdb", "cellchatdb_interactions.rds")
+        raw_db_dir,
+        "cellchatdb",
+        "cellchatdb_interactions.rds")
 
       if(update == F & file.exists(rds_fname)){
         ligand_receptordb[[db]] <- readRDS(file=rds_fname)
@@ -3363,8 +3379,10 @@ get_ligand_receptors <- function(
       )
 
       ligand_receptor_citations <- readRDS(
-        file.path(basedir, "data-raw",
-                  "cellchatdb", "cellchatdb_citations.rds"))
+        file.path(
+          raw_db_dir,
+          "cellchatdb",
+          "cellchatdb_citations.rds"))
 
       #ligand_receptor_citations <- get_citations_pubmed(
       #  pmid = unique(ligand_receptor_literature$pmid),
@@ -3443,8 +3461,9 @@ get_ligand_receptors <- function(
     if(db == "celltalkdb"){
 
       rds_fname <- file.path(
-        basedir, "data-raw",
-        "celltalkdb", "celltalkdb_interactions.rds")
+        raw_db_dir,
+        "celltalkdb",
+        "celltalkdb_interactions.rds")
 
       if(update == F & file.exists(rds_fname)){
         celltalkdb <- readRDS(file=rds_fname)
@@ -3453,8 +3472,9 @@ get_ligand_receptors <- function(
 
       celltalkdb_raw <- readr::read_tsv(
         file = file.path(
-          basedir, "data-raw",
-          "celltalkdb", "human_lr_pair.txt"),
+          raw_db_dir,
+          "celltalkdb",
+          "human_lr_pair.txt"),
         col_types = "cccddccccc",
         show_col_types = F) %>%
         dplyr::select(ligand_gene_id,
@@ -3476,8 +3496,10 @@ get_ligand_receptors <- function(
       )
 
       ligand_receptor_citations <- readRDS(
-        file.path(basedir, "data-raw",
-                  "celltalkdb", "celltalkdb_citations.rds"))
+        file.path(
+          raw_db_dir,
+          "celltalkdb",
+          "celltalkdb_citations.rds"))
       # ligand_receptor_citations <- get_citations_pubmed(
       #   pmid = unique(celltalkdb_literature$pmid),
       #   chunk_size = 100)
@@ -3531,7 +3553,7 @@ get_ligand_receptors <- function(
 }
 
 get_hpa_associations <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_xref = NULL,
   update = F){
 
@@ -3542,7 +3564,10 @@ get_hpa_associations <- function(
     quiet = T
   )
 
-  rds_fname <- file.path(basedir, "data-raw", "hpa", "hpa.rds")
+  rds_fname <- file.path(
+    raw_db_dir,
+    "hpa",
+    "hpa.rds")
 
   if(update == F & file.exists(rds_fname)){
     hpa <- readRDS(file = rds_fname)
@@ -3615,8 +3640,10 @@ get_hpa_associations <- function(
     g <- gene_xref[i,]
 
     local_json <-
-      file.path("data-raw", "hpa", "json",
-                paste0(g$ensembl_gene_id,".json"))
+      file.path(
+        "hpa",
+        "json",
+        paste0(g$ensembl_gene_id,".json"))
 
     if(!file.exists(local_json)){
       protein_atlas_url <-
@@ -3724,40 +3751,50 @@ get_mean_median_tpm <- function(
 
 
 get_tcga_db <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_xref = NULL,
   update = F){
 
   rds_fname <- file.path(
-    basedir, "data-raw", "tcga", "tcgadb.rds")
+    raw_db_dir,
+    "tcga",
+    "tcgadb.rds")
 
   coexpression_tsv <- file.path(
-    basedir, "data-raw", "tcga",
+    raw_db_dir,
+    "tcga",
     "co_expression_strong_moderate.release32_20220329.tsv.gz")
 
   tcga_clinical_rds <- file.path(
-    basedir, "data-raw", "tcga",
+    raw_db_dir,
+    "tcga",
     "tcga_clinical.rds"
   )
 
   tcga_aberration_rds <- file.path(
-    basedir, "data-raw", "tcga",
+    raw_db_dir,
+    "tcga",
     "tcga_gene_aberration_stats.rds"
   )
 
   maf_codes_tsv <- file.path(
-    basedir, "data-raw", "maf_codes.tsv"
+    raw_db_dir,
+    "maf_codes.tsv"
   )
-  maf_path <- file.path(basedir, "data-raw", "tcga")
+  maf_path <- file.path(
+    raw_db_dir,
+    "tcga")
 
 
   recurrent_variants_tsv <- file.path(
-    basedir, "data-raw", "tcga",
+    raw_db_dir,
+    "tcga",
     "tcga_recurrent_coding_gvanno_grch38.tsv.gz"
   )
 
   pfam_domains_tsv <- file.path(
-    basedir, "data-raw", "pfam",
+    raw_db_dir,
+    "pfam",
     "pfam.domains.tsv.gz"
   )
 
@@ -3813,6 +3850,8 @@ get_tcga_db <- function(
 
   maf_codes <- read.table(file = maf_codes_tsv,
                           header = T, sep = "\t", quote ="")
+
+  maf_datasets <- list()
   i <- 1
   while(i <= nrow(maf_codes)){
     primary_site <- maf_codes[i,]$primary_site
@@ -3838,7 +3877,8 @@ get_tcga_db <- function(
                   col.names = T, sep ="\t")
       system('gzip -f tmp.maf', intern = T)
       maf <- maftools::read.maf("tmp.maf.gz", verbose = F, clinicalData = clinical)
-      saveRDS(maf, file = file.path(basedir, "data-raw", "maf", paste0(maf_code,".maf.rds")))
+      maf_datasets[[maf_code]] <- maf
+      #saveRDS(maf, file = file.path(raw_db_dir, "data-raw", "maf", paste0(maf_code,".maf.rds")))
     }
     i <- i + 1
     cat(primary_site,'\n')
@@ -4045,6 +4085,7 @@ get_tcga_db <- function(
   tcgadb[['median_ttype_expression']] <- all_tcga_tpm_above_1
   tcgadb[['pfam']] <- pfam_domains
   tcgadb[['maf_codes']] <- maf_codes
+  tcgadb[['maf']] <- maf_datasets
   tcgadb[['site_code']] <- site_code
   tcgadb[['diagnosis_code']] <- diagnosis_code
   tcgadb[['clinical_strata_code']] <- clinical_strata_code
@@ -4056,13 +4097,12 @@ get_tcga_db <- function(
 }
 
 get_paralog_SL_predictions <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   gene_info = NULL){
 
 
   predicted_SL_pairs_csv <- file.path(
-    basedir,
-    "data-raw",
+    raw_db_dir,
     "synlethdb",
     "ryan_predicted_paralog_SL_pairs.csv"
   )
@@ -4123,11 +4163,10 @@ get_paralog_SL_predictions <- function(
 }
 
 get_synthetic_lethality_pairs <- function(
-  basedir = NULL){
+  raw_db_dir = NULL){
 
   sl_pairs_csv <- file.path(
-    basedir,
-    "data-raw",
+    raw_db_dir,
     "synlethdb",
     "Human_SL.csv"
   )
@@ -4183,7 +4222,7 @@ get_synthetic_lethality_pairs <- function(
 }
 
 get_subcellular_annotations <- function(
-  basedir = NULL,
+  raw_db_dir = NULL,
   transcript_xref_db = NULL){
 
 
@@ -4207,18 +4246,25 @@ get_subcellular_annotations <- function(
   }
 
   comppi_fname <- file.path(
-    basedir, "data-raw", "comppi", "comppi_proteins.txt")
+    raw_db_dir,
+    "comppi",
+    "comppi_proteins.txt")
 
   comppi_locations_large_minor_yaml <- file.path(
-    basedir, "data-raw", "comppi", "largelocs.yml"
+    raw_db_dir,
+    "comppi",
+    "largelocs.yml"
   )
 
   comppi_locations_large_minor_manual <- file.path(
-    basedir, "data-raw", "comppi", "largelocs_manual.tsv"
+    raw_db_dir,
+    "comppi",
+    "largelocs_manual.tsv"
   )
 
   gganatogram_map_xlsx <- file.path(
-    basedir, "data-raw", "comppi",
+    raw_db_dir,
+    "comppi",
     "compartment_mapping_jw.xlsx")
 
   go_gganatogram_map <-

@@ -85,8 +85,8 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
--   June 16th 2022: [**1.1.0
-    release**](articles/CHANGELOG.html#version-1-1-1)
+-   June 24th 2022: [**1.2.0
+    release**](articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9
     release**](articles/CHANGELOG.html#version-1-0-9)
 -   February 20th 2022: [**1.0.8
