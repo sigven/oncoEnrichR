@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,51 +68,51 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">init_report</span><span class="op">(</span>
-  <span class="va">oeDB</span>,
-  project_title <span class="op">=</span> <span class="st">"_Project title_"</span>,
-  project_owner <span class="op">=</span> <span class="st">"_Project owner_"</span>,
-  html_floating_toc <span class="op">=</span> <span class="cn">T</span>,
-  html_report_theme <span class="op">=</span> <span class="st">"default"</span>,
-  query_id_type <span class="op">=</span> <span class="st">"symbol"</span>,
-  ignore_id_err <span class="op">=</span> <span class="cn">TRUE</span>,
-  project_description <span class="op">=</span> <span class="st">"_Project description_"</span>,
-  ppi_min_string_score <span class="op">=</span> <span class="fl">900</span>,
-  ppi_add_nodes <span class="op">=</span> <span class="fl">50</span>,
-  ppi_node_shadow <span class="op">=</span> <span class="cn">TRUE</span>,
-  bgset_description <span class="op">=</span> <span class="st">"All annotated protein-coding genes"</span>,
-  bgset_id_type <span class="op">=</span> <span class="st">"symbol"</span>,
-  p_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.05</span>,
-  p_value_adjustment_method <span class="op">=</span> <span class="st">"BH"</span>,
-  q_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.2</span>,
-  min_geneset_size <span class="op">=</span> <span class="fl">10</span>,
-  max_geneset_size <span class="op">=</span> <span class="fl">500</span>,
-  num_terms_enrichment_plot <span class="op">=</span> <span class="fl">20</span>,
-  min_subcellcomp_confidence <span class="op">=</span> <span class="fl">1</span>,
-  subcellcomp_show_cytosol <span class="op">=</span> <span class="cn">F</span>,
-  min_confidence_reg_interaction <span class="op">=</span> <span class="st">"D"</span>,
-  max_fitness_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,
-  simplify_go <span class="op">=</span> <span class="cn">F</span>,
-  show_ppi <span class="op">=</span> <span class="cn">T</span>,
-  show_drugs_in_ppi <span class="op">=</span> <span class="cn">T</span>,
-  show_disease <span class="op">=</span> <span class="cn">T</span>,
-  show_top_diseases_only <span class="op">=</span> <span class="cn">T</span>,
-  show_cancer_hallmarks <span class="op">=</span> <span class="cn">T</span>,
-  show_drug <span class="op">=</span> <span class="cn">T</span>,
-  show_enrichment <span class="op">=</span> <span class="cn">T</span>,
-  show_aberration <span class="op">=</span> <span class="cn">T</span>,
-  show_coexpression <span class="op">=</span> <span class="cn">T</span>,
-  show_subcell_comp <span class="op">=</span> <span class="cn">T</span>,
-  show_fitness <span class="op">=</span> <span class="cn">T</span>,
-  show_cell_tissue <span class="op">=</span> <span class="cn">F</span>,
-  show_ligand_receptor <span class="op">=</span> <span class="cn">T</span>,
-  show_regulatory <span class="op">=</span> <span class="cn">T</span>,
-  show_unknown_function <span class="op">=</span> <span class="cn">T</span>,
-  show_prognostic <span class="op">=</span> <span class="cn">T</span>,
-  show_synleth <span class="op">=</span> <span class="cn">T</span>,
-  show_complex <span class="op">=</span> <span class="cn">T</span>,
-  show_domain <span class="op">=</span> <span class="cn">T</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">init_report</span><span class="op">(</span></span>
+<span>  <span class="va">oeDB</span>,</span>
+<span>  project_title <span class="op">=</span> <span class="st">"_Project title_"</span>,</span>
+<span>  project_owner <span class="op">=</span> <span class="st">"_Project owner_"</span>,</span>
+<span>  html_floating_toc <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  html_report_theme <span class="op">=</span> <span class="st">"default"</span>,</span>
+<span>  query_id_type <span class="op">=</span> <span class="st">"symbol"</span>,</span>
+<span>  ignore_id_err <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  project_description <span class="op">=</span> <span class="st">"_Project description_"</span>,</span>
+<span>  ppi_min_string_score <span class="op">=</span> <span class="fl">900</span>,</span>
+<span>  ppi_add_nodes <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  ppi_node_shadow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  bgset_description <span class="op">=</span> <span class="st">"All annotated protein-coding genes"</span>,</span>
+<span>  bgset_id_type <span class="op">=</span> <span class="st">"symbol"</span>,</span>
+<span>  p_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  p_value_adjustment_method <span class="op">=</span> <span class="st">"BH"</span>,</span>
+<span>  q_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  min_geneset_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  max_geneset_size <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  num_terms_enrichment_plot <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  min_subcellcomp_confidence <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  subcellcomp_show_cytosol <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  min_confidence_reg_interaction <span class="op">=</span> <span class="st">"D"</span>,</span>
+<span>  max_fitness_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,</span>
+<span>  simplify_go <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  show_ppi <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_drugs_in_ppi <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_disease <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_top_diseases_only <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_cancer_hallmarks <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_drug <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_enrichment <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_aberration <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_coexpression <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_subcell_comp <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_fitness <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_cell_tissue <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  show_ligand_receptor <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_regulatory <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_unknown_function <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_prognostic <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_synleth <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_complex <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  show_domain <span class="op">=</span> <span class="cn">T</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">

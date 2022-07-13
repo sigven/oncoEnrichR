@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,9 +92,33 @@
     
 <ol style="list-style-type: decimal">
 <li><code>install.packages('devtools')</code></li>
-<li><code>devtools::install_github('sigven/oncoEnrichR', ref = "v1.2.0")</code></li>
+<li><code>devtools::install_github('sigven/oncoEnrichR', ref = "v1.2.1")</code></li>
 <li><code><a href="https://github.com/sigven/oncoEnrichR" class="external-link">library(oncoEnrichR)</a></code></li>
-</ol></main>
+</ol>
+<p><br></p>
+<div class="section level2">
+<h2 id="a-note-on-system-library-dependencies">A note on system library dependencies<a class="anchor" aria-label="anchor" href="#a-note-on-system-library-dependencies"></a>
+</h2>
+<p>Note that oncoEnrichR depends upon a large number of R packages, among them <a href="https://github.com/eblondel/zen4R" class="external-link">zen4R</a>, that may require the installation of a few extra libraries. Specifically, <em>zen4R</em> relies upon the <a href="https://github.com/r-lib/sodium" class="external-link">sodium</a> package, which requires the <a href="https://doc.libsodium.org/" class="external-link">libsodium</a> library. This can be installed as follows on OSX or Linux platforms:</p>
+<ul>
+<li>
+<code>brew install libsodium</code> (<strong>OSX</strong>)</li>
+<li>
+<code>apt-get install -y libsodium-dev</code> (<strong>Debian/Ubuntu</strong>)</li>
+<li>
+<code>yum -y install libsodium-devel</code> (<strong>Fedora</strong>)</li>
+</ul>
+<p><em>zen4R</em> also relies upon the <a href="https://github.com/cran/redland" class="external-link">redland</a> package, which contains methods to create, query, and write information stored in the Resource Description Framework (RDF). This package needs the <a href="https://librdf.org/" class="external-link">Redland</a> C libraries, which can be installed as follows on OSX or Linux platforms:</p>
+<ul>
+<li>
+<code>brew install redland</code> (<strong>OSX</strong>)</li>
+<li>
+<code>apt-get install -y librdf0 librdf0-dev</code> (<strong>Debian/Ubuntu</strong>)</li>
+<li>
+<code>yum -y install redland</code> (<strong>Fedora</strong>)</li>
+</ul>
+</div>
+  </main>
 </div>
 
 
