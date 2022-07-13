@@ -3,6 +3,17 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.2.1
+
+* Date: 2022-07-13
+
+### Added
+
+* Data updates:
+  * WikiPathways (20220610)
+  * Open Targets Platform (2022.06)
+  * CancerMine (v47)
+
 ## Version 1.2.0
 
 * Date: 2022-06-24

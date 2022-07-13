@@ -85,6 +85,8 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   July 13th 2022: [**1.2.1
+    release**](articles/CHANGELOG.html#version-1-2-1)
 -   June 24th 2022: [**1.2.0
     release**](articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9
@@ -94,7 +96,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.6651912"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6651912.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6828941"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6828941.svg" alt="DOI"/></a>
 
 <br>
 

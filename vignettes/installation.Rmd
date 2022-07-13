@@ -6,3 +6,20 @@ output: rmarkdown::html_document
 1.  `install.packages('devtools')`
 2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.2.0")`
 3.  `library(oncoEnrichR)`
+
+<br>
+
+## A note on system library dependencies
+
+Note that oncoEnrichR depends upon a large number of R packages, among them [zen4R](https://github.com/eblondel/zen4R), that may require the installation of a few extra libraries. Specifically, _zen4R_ relies upon the [sodium](https://github.com/r-lib/sodium) package, which requires
+the [libsodium](https://doc.libsodium.org/) library. This can be installed as follows on OSX or Linux platforms:
+
+  - `brew install libsodium` (**OSX**)
+  - `apt-get install -y libsodium-dev` (**Debian/Ubuntu**)
+  - `yum -y install libsodium-devel` (**Fedora**)
+
+_zen4R_ also relies upon the [redland](https://github.com/cran/redland) package, which contains methods to create, query, and write information stored in the Resource Description Framework (RDF). This package needs the [Redland](https://librdf.org/) C libraries, which can be installed as follows on OSX or Linux platforms:
+
+  - `brew install redland` (**OSX**)
+  - `apt-get install -y librdf0 librdf0-dev` (**Debian/Ubuntu**)
+  - `yum -y install redland` (**Fedora**)

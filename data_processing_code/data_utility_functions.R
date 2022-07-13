@@ -1367,7 +1367,7 @@ get_cancer_hallmarks <- function(raw_db_dir = NULL,
 
   pmid_data <- get_citations_pubmed(
     unique(hallmark_data_long$pmid),
-    chunk_size = 5) %>%
+    chunk_size = 50) %>%
     dplyr::mutate(pmid = as.character(pmid))
 
 

@@ -5,9 +5,9 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220610"
+wikipathways_version <- "20220710"
 netpath_version <- "2010"
-opentargets_version <- "2022.04"
+opentargets_version <- "2022.06"
 kegg_version <- "20220324"
 gencode_version <- "40"
 uniprot_release <- "2022_01"
@@ -25,7 +25,7 @@ update_omnipath_complexdb <- F
 update_gencode <- F
 update_ligand_receptor_db <- T
 
-oe_version <- "1.2.0"
+oe_version <- "1.2.1"
 
 data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
@@ -100,7 +100,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     raw_db_dir = data_raw_dir,
     gene_info = gene_info,
-    version = "46") %>%
+    version = "47") %>%
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,
@@ -386,7 +386,7 @@ zenodo <- zen4R::ZenodoManager$new(
   logger = "INFO"
 )
 
-oedb_rec <- zenodo$getDepositionByDOI("10.5281/zenodo.6697651")
+oedb_rec <- zenodo$getDepositionByDOI("10.5281/zenodo.6700715")
 oedb_rec$setPublicationDate(publicationDate = Sys.Date())
 oedb_rec$setVersion(version = paste0("v",oe_version))
 oedb_rec <- zenodo$depositRecordVersion(

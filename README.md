@@ -20,13 +20,13 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## News
 
+-   July 13th 2022: [**1.2.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-1)
 -   June 24th 2022: [**1.2.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-9)
--   February 20th 2022: [**1.0.8 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-8)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.6651912"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6651912.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.6828941"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6828941.svg" alt="DOI"/></a>
 
 ### Contact
 
