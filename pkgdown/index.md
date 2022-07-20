@@ -25,7 +25,7 @@ Web-based access to **oncoEnrichR** is available at <font size="4">
 
 <br>
 
-<img src="img/oncoenrichr_overview2.png" align="center" border="0"/>
+<img src="img/oncoenrichr_overview.png" align="center" border="0"/>
 
 <br><br>
 
@@ -100,7 +100,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 <br>
 
-<img src="img/oncoenrichr_slideshow2.gif" align="center" width="560" height="750" border="2,"/>
+<img src="img/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"/>
 
 ## Getting started
 
