@@ -25,8 +25,8 @@ for(n in c('favorable','unfavorable')){
     prognostic_assoc_data[[n]] <- data.frame()
   
     prognostic_assoc_data[[n]] <- 
-      onc_enrich_report[['data']][['cancer_prognosis']][['hpa']][['assocs']] %>% 
-      dplyr::filter(evidence_direction == n) %>%
+      onc_enrich_report[['data']][['cancer_prognosis']][['hpa']][['assocs']] |> 
+      dplyr::filter(evidence_direction == n) |>
       dplyr::select(-evidence_direction)
     
     if(nrow(prognostic_assoc_data[[n]]) == 0){
@@ -61,8 +61,6 @@ if(active_tab[['favorable']] == T){
 ```
 
 ```{r table_browse_hpa_prognostic_favorable, echo=F, results = "asis", eval = show_hpa_prognostic[['favorable']]}
-library(crosstalk)
-
 
 prognostic_genes_favorable <- crosstalk::SharedData$new(prognostic_assoc_data[['favorable']])
 
@@ -89,7 +87,7 @@ htmltools::br()
 DT::datatable(prognostic_genes_favorable, escape = F, 
               extensions=c("Buttons","Responsive"), width = "100%",
               options=list(buttons = c('csv','excel'), 
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
   DT::formatStyle("symbol","log10_p_value", 
                   color = "white", 
                   fontWeight = "bold",
@@ -124,8 +122,6 @@ if(active_tab[['unfavorable']] == T){
 
 
 ```{r table_browse_hpa_prognostic_unfavorable, echo=F, results = "asis", eval = show_hpa_prognostic[['unfavorable']]}
-library(crosstalk)
-
 
 prognostic_genes_unfavorable <- crosstalk::SharedData$new(prognostic_assoc_data[['unfavorable']])
 
@@ -152,7 +148,7 @@ htmltools::br()
 DT::datatable(prognostic_genes_unfavorable, escape = F, 
               extensions=c("Buttons","Responsive"), width = "100%",
               options=list(buttons = c('csv','excel'), 
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
   DT::formatStyle("symbol","log10_p_value", 
                   color = "white", 
                   fontWeight = "bold",
@@ -195,9 +191,9 @@ cat('<br><br>')
 ```{r mutation_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']]) > 0}
 
 mutation_zscore_matrix <- as.data.frame(
-  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']] %>%
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['mut']] |>
   tidyr::pivot_wider(names_from = tcga_cohort,
-                     values_from = z_score) %>%
+                     values_from = z_score) |>
     dplyr::arrange(symbol)
 )
 rownames(mutation_zscore_matrix) <-
@@ -222,20 +218,20 @@ if(NROW(mutation_zscore_matrix) < 20){
 mutation_survival_fig <- plotly::plot_ly(
   colors = "RdBu",
   width = 800,
-  height = 400 + (14.67 * NROW(mutation_zscore_matrix))) %>%
+  height = 400 + (14.67 * NROW(mutation_zscore_matrix))) |>
   plotly::add_heatmap(
     y = rownames(mutation_zscore_matrix),
     x = colnames(mutation_zscore_matrix),
     z = mutation_zscore_matrix,
     hovertext = "Z-score",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (mutation)',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = n_zscore_ticks, 
     title = list(text = "Z-score",side = "bottom"),
@@ -264,9 +260,9 @@ cat('\n')
 ```{r expression_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']]) > 0}
 
 expression_zscore_matrix <- as.data.frame(
-  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']] %>%
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['exp']] |>
   tidyr::pivot_wider(names_from = tcga_cohort,
-                     values_from = z_score) %>%
+                     values_from = z_score) |>
     dplyr::arrange(symbol)
 )
 rownames(expression_zscore_matrix) <-
@@ -291,20 +287,20 @@ if(NROW(expression_zscore_matrix) < 20){
 expression_survival_fig <- plotly::plot_ly(
   colors = "RdBu",
   width = 800,
-  height = 400 + (14.67 * NROW(expression_zscore_matrix))) %>%
+  height = 400 + (14.67 * NROW(expression_zscore_matrix))) |>
   plotly::add_heatmap(
     y = rownames(expression_zscore_matrix),
     x = colnames(expression_zscore_matrix),
     z = expression_zscore_matrix,
     hovertext = "Z-score",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (expression)',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = n_zscore_ticks, 
     title = list(text = "Z-score",side = "bottom"),
@@ -336,9 +332,9 @@ cat('\n')
 ```{r cna_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']]) > 0}
 
 cna_zscore_matrix <- as.data.frame(
-  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']] %>%
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['cna']] |>
   tidyr::pivot_wider(names_from = tcga_cohort,
-                     values_from = z_score) %>%
+                     values_from = z_score) |>
     dplyr::arrange(symbol)
 )
 rownames(cna_zscore_matrix) <-
@@ -363,20 +359,20 @@ if(NROW(cna_zscore_matrix) < 20){
 cna_survival_fig <- plotly::plot_ly(
   colors = "RdBu",
   width = 800,
-  height = 400 + (14.67 * NROW(cna_zscore_matrix))) %>%
+  height = 400 + (14.67 * NROW(cna_zscore_matrix))) |>
   plotly::add_heatmap(
     y = rownames(cna_zscore_matrix),
     x = colnames(cna_zscore_matrix),
     z = cna_zscore_matrix,
     hovertext = "Z-score",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (CNA)',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = n_zscore_ticks, 
     title = list(text = "Z-score",side = "bottom"),
@@ -407,9 +403,9 @@ cat('\n')
 ```{r meth_survival_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['meth']]) > 0}
 
 meth_zscore_matrix <- as.data.frame(
-  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['meth']] %>%
+  onc_enrich_report[['data']][['cancer_prognosis']][['km_cshl']][['assocs']][['meth']] |>
   tidyr::pivot_wider(names_from = tcga_cohort,
-                     values_from = z_score) %>%
+                     values_from = z_score) |>
     dplyr::arrange(symbol)
 )
 rownames(meth_zscore_matrix) <-
@@ -434,20 +430,20 @@ if(NROW(meth_zscore_matrix) < 20){
 meth_survival_fig <- plotly::plot_ly(
   colors = "RdBu",
   width = 800,
-  height = 400 + (14.67 * NROW(meth_zscore_matrix))) %>%
+  height = 400 + (14.67 * NROW(meth_zscore_matrix))) |>
   plotly::add_heatmap(
     y = rownames(meth_zscore_matrix),
     x = colnames(meth_zscore_matrix),
     z = meth_zscore_matrix,
     hovertext = "Z-score",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (methylation)',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = n_zscore_ticks, 
     title = list(text = "Z-score",side = "bottom"),

@@ -35,7 +35,7 @@ subcellcomp_geneset_density <-
 
 if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
   subcellcomp_geneset_density <- 
-    subcellcomp_geneset_density %>%
+    subcellcomp_geneset_density |>
     dplyr::filter(organ != "cytosol")
 }
 
@@ -53,13 +53,13 @@ gganatogram::gganatogram(data = subcellcomp_geneset_density,
 
 ```{r subcellcomp_density_barplot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0}
 
-plot_data <- onc_enrich_report[['data']][['subcellcomp']][['anatogram']] %>%
+plot_data <- onc_enrich_report[['data']][['subcellcomp']][['anatogram']] |>
   dplyr::arrange(value)
 plot_data$organ <- factor(plot_data$organ, levels = plot_data$organ)
 plot_data$toDownlight <- "NO"
 
 if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
-  plot_data <- plot_data %>%
+  plot_data <- plot_data |>
     dplyr::mutate(toDownlight = dplyr::if_else(
       organ == "cytosol",
       as.character("YES"),
@@ -110,8 +110,6 @@ ggpubr::ggarrange(
 ##### By gene
 
 ```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['all']]) > 0}
-library(crosstalk)
-
 
 subcell_comp_all <- 
   crosstalk::SharedData$new(onc_enrich_report[['data']][['subcellcomp']][['all']])
@@ -149,7 +147,6 @@ DT::datatable(subcell_comp_all, escape = F,
 <br>
 
 ```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['grouped']]) > 0}
-library(crosstalk)
 
 htmltools::br()
 DT::datatable(onc_enrich_report[['data']][['subcellcomp']][['grouped']], 

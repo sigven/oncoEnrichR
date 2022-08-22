@@ -24,8 +24,8 @@ active_tab[['a_b']] <- F
 active_tab[['a_only']] <- F
 
 if(NROW(onc_enrich_report[['data']][['synleth']][['both_in_pair']]) > 0){
-  sl_interactions[['a_b']] <- onc_enrich_report[['data']][['synleth']][['both_in_pair']] %>%
-    dplyr::filter(.data$prediction_percentile < 50) %>%
+  sl_interactions[['a_b']] <- onc_enrich_report[['data']][['synleth']][['both_in_pair']] |>
+    dplyr::filter(.data$prediction_percentile < 50) |>
     head(2500)
   
   active_tab[['a_b']] <- T
@@ -33,8 +33,8 @@ if(NROW(onc_enrich_report[['data']][['synleth']][['both_in_pair']]) > 0){
 }
 
 if(NROW(onc_enrich_report[['data']][['synleth']][['single_pair_member']]) > 0){
-  sl_interactions[['a_only']] <- onc_enrich_report[['data']][['synleth']][['single_pair_member']] %>%
-    dplyr::filter(.data$prediction_percentile < 50) %>%
+  sl_interactions[['a_only']] <- onc_enrich_report[['data']][['synleth']][['single_pair_member']] |>
+    dplyr::filter(.data$prediction_percentile < 50) |>
     head(2500)
   
   if(active_tab[['a_b']] == F){
@@ -97,14 +97,14 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
    DT::formatStyle("gene_A",
                   "prediction_percentile", 
                   color = "white", 
                   backgroundColor = DT::styleInterval(
                     onc_enrich_report[['config']][['synleth']][['breaks']],
                     onc_enrich_report[['config']][['synleth']][['colors']])
-  ) %>%
+  ) |>
   DT::formatStyle("gene_B",
                   "prediction_percentile", 
                   color = "white", 
@@ -174,7 +174,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
    DT::formatStyle("gene_A",
                   "prediction_percentile", 
                   color = "white", 

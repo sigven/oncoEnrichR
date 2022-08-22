@@ -21,13 +21,13 @@ for(n in c('Positive','Negative')){
   active_tab[[n]] <- FALSE
   
   coexp_data[[n]] <- 
-    onc_enrich_report[['data']][['tcga']][['coexpression']] %>% 
-    dplyr::filter(corrtype == n) %>%
-    dplyr::select(-corrtype) %>%
+    onc_enrich_report[['data']][['tcga']][['coexpression']] |> 
+    dplyr::filter(corrtype == n) |>
+    dplyr::select(-corrtype) |>
     head(2500)
   
   if(n == 'Negative'){
-    coexp_data[[n]] <- coexp_data[[n]] %>%
+    coexp_data[[n]] <- coexp_data[[n]] |>
       dplyr::arrange(r)
   }
   
@@ -63,8 +63,6 @@ if(active_tab[['Positive']] == T){
 
 
 ```{r table_browse_tcga_coexp, echo=F, results = "asis", eval = show_tcga_coexp[['Positive']]}
-library(crosstalk)
-
 
 coexp_genes_positive <- crosstalk::SharedData$new(coexp_data[['Positive']])
 
@@ -125,7 +123,6 @@ if(active_tab[['Negative']] == T){
 
 
 ```{r table_browse_tcga_coexp2, echo=F, results = "asis", eval = show_tcga_coexp[['Negative']]}
-library(crosstalk)
 
 
 coexp_genes_negative <- crosstalk::SharedData$new(coexp_data[['Negative']])

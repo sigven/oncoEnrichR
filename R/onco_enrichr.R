@@ -120,7 +120,9 @@ load_db <- function(remote = T,
     if(remote == T & NROW(zenodo_record_files) > 0){
       zenodo_download_entry <-
         zenodo_record_files[zenodo_record_files$filename == paste0(db,".rds"),]$download
-      read_dest <- stringr::str_replace(zenodo_download_entry,paste0("/",db,".rds"),"")
+      read_dest <- stringr::str_replace(
+        zenodo_download_entry,
+        paste0(.Platform$file.sep , db, ".rds"),"")
     }
 
     db_dest <- file.path(read_dest, paste0(db,".rds"))
@@ -508,10 +510,10 @@ init_report <- function(oeDB,
       "#fcbba1")
 
   rep[["config"]][["unknown_function"]][['num_candidates']] <-
-    oeDB[['genedb']]$all %>%
-    dplyr::filter(.data$gene_biotype == "protein-coding") %>%
-    dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
-    dplyr::filter(.data$unknown_function_rank <= 5) %>%
+    oeDB[['genedb']]$all |>
+    dplyr::filter(.data$gene_biotype == "protein-coding") |>
+    dplyr::filter(!is.na(.data$unknown_function_rank)) |>
+    dplyr::filter(.data$unknown_function_rank <= 5) |>
     nrow()
 
   rep[['config']][['subcellcomp']] <- list()
@@ -801,7 +803,8 @@ onco_enrich <- function(query = NULL,
 
   logger <- log4r::logger(
     threshold = "INFO",
-    appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
+    #appenders = log4r::console_appender(oncoEnrichR:::log4r_layout)
+    appenders = log4r::console_appender(log4r_layout))
 
   dot_args <- list(...)
 
@@ -1159,9 +1162,9 @@ onco_enrich <- function(query = NULL,
   }else{
     bg <- dplyr::select(oeDB[['genedb']][['all']],
                         .data$entrezgene,
-                        .data$gene_biotype) %>%
+                        .data$gene_biotype) |>
       dplyr::filter(!is.na(.data$entrezgene) &
-                      .data$gene_biotype == "protein-coding") %>%
+                      .data$gene_biotype == "protein-coding") |>
       dplyr::distinct()
     background_entrezgene <- as.character(bg$entrezgene)
   }
@@ -1247,7 +1250,7 @@ onco_enrich <- function(query = NULL,
             logger = logger)
           if (!is.null(enr)) {
             onc_rep[["data"]][["enrichment"]][["go"]] <-
-              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) %>%
+              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) |>
               dplyr::distinct()
           }
         }else{
@@ -1276,8 +1279,8 @@ onco_enrich <- function(query = NULL,
               logger = logger)
             if (!is.null(enr)) {
               onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
-                dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
-                dplyr::distinct() %>%
+                dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) |>
+                dplyr::distinct() |>
                 dplyr::arrange(.data$qvalue)
             }
           }
@@ -1431,31 +1434,31 @@ onco_enrich <- function(query = NULL,
     }
 
     onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-      oeDB$tcgadb[["recurrent_variants"]] %>%
+      oeDB$tcgadb[["recurrent_variants"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, .data$symbol),
-        by = c("SYMBOL" = "symbol")) %>%
+        by = c("SYMBOL" = "symbol")) |>
       dplyr::distinct()
 
     if(nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0){
       cosmic_variants <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::select(.data$VAR_ID, .data$COSMIC_MUTATION_ID) %>%
-        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) %>%
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+        dplyr::select(.data$VAR_ID, .data$COSMIC_MUTATION_ID) |>
+        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) |>
         dplyr::distinct()
 
       if(nrow(cosmic_variants) > 0){
 
         cosmic_variants <- as.data.frame(
-          cosmic_variants %>%
-          tidyr::separate_rows(.data$COSMIC_MUTATION_ID, sep="&") %>%
+          cosmic_variants |>
+          tidyr::separate_rows(.data$COSMIC_MUTATION_ID, sep="&") |>
           dplyr::mutate(
             COSMIC_MUTATION_ID = paste0(
               "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
               .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
               .data$COSMIC_MUTATION_ID,"</a>"
-            )) %>%
-          dplyr::group_by(.data$VAR_ID) %>%
+            )) |>
+          dplyr::group_by(.data$VAR_ID) |>
           dplyr::summarise(
             COSMIC_MUTATION_ID =
               paste(
@@ -1465,15 +1468,15 @@ onco_enrich <- function(query = NULL,
         )
 
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-          dplyr::select(-.data$COSMIC_MUTATION_ID) %>%
+          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+          dplyr::select(-.data$COSMIC_MUTATION_ID) |>
           dplyr::left_join(cosmic_variants,
                            by = c("VAR_ID"))
       }
 
       onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::left_join(oeDB[['tcgadb']][['pfam']], by = "PFAM_ID") %>%
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+        dplyr::left_join(oeDB[['tcgadb']][['pfam']], by = "PFAM_ID") |>
         dplyr::mutate(
           PROTEIN_DOMAIN = dplyr::if_else(
             !is.na(.data$PFAM_ID),
@@ -1484,19 +1487,19 @@ onco_enrich <- function(query = NULL,
             "</a>"),
             as.character(NA)
           )
-        ) %>%
-        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) %>%
+        ) |>
+        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) |>
         dplyr::left_join(dplyr::select(oeDB[['genedb']][['all']],
                                        .data$symbol, .data$ensembl_gene_id),
-                         by = c("SYMBOL" = "symbol")) %>%
-        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) %>%
+                         by = c("SYMBOL" = "symbol")) |>
+        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) |>
         dplyr::mutate(ENSEMBL_TRANSCRIPT_ID =
                         paste0("<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
                                .data$ENSEMBL_GENE_ID,
                                ";t=",
                                .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) %>%
-        dplyr::select(-.data$VAR_ID) %>%
+                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
+        dplyr::select(-.data$VAR_ID) |>
         dplyr::select(.data$SYMBOL,
                       .data$CONSEQUENCE,
                       .data$PROTEIN_CHANGE,
@@ -1524,11 +1527,11 @@ onco_enrich <- function(query = NULL,
 
     log4r_info(logger, "Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
-      oeDB[['genedb']][["cancer_hallmark"]][["short"]] %>%
+      oeDB[['genedb']][["cancer_hallmark"]][["short"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, .data$ensembl_gene_id),
-        by = "ensembl_gene_id") %>%
-      dplyr::select(-.data$ensembl_gene_id) %>%
+        by = "ensembl_gene_id") |>
+      dplyr::select(-.data$ensembl_gene_id) |>
       dplyr::distinct()
 
     n_genes_cancerhallmarks <- 0
@@ -1773,10 +1776,17 @@ write <- function(report,
     }
   }
 
+  ## Assign to env
+  pos <- 1
+  envir = as.environment(pos)
+  #for (e in export) assign(e, get(e), envir = envir)
+
   ## TODO: check that report parameter is a valid oncoEnrichR result object
   if(!is.null(report)){
+    # assign("onc_enrich_report",
+    #        report, envir = .GlobalEnv)
     assign("onc_enrich_report",
-           report, envir = .GlobalEnv)
+           report, envir = envir)
   }else{
     log4r_info(logger,
       "ERROR: oncoEnrichR report object is NULL - cannot write report contents")
@@ -1786,8 +1796,10 @@ write <- function(report,
 
 
   if(!is.null(oeDB[['tcgadb']][['maf']])){
+    # assign("tcga_maf_datasets",
+    #        oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
     assign("tcga_maf_datasets",
-           oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
+           report, envir = envir)
   }else{
     log4r_info(logger,
                "ERROR: oncoEnrichR db object (oeDB) is NULL - cannot write report contents")
@@ -1815,11 +1827,14 @@ write <- function(report,
           )
         )
       system(paste0('mkdir ', tmpdir))
-      system(paste0('cp ', oe_rmarkdown_template_dir, "/* ",
+      system(paste0('cp ',
+                    oe_rmarkdown_template_dir,
+                    .Platform$file.sep,
+                    "* ",
                     tmpdir))
 
       floating_toc <- "false"
-      if(onc_enrich_report$config$rmarkdown$floating_toc == T){
+      if(report$config$rmarkdown$floating_toc == T){
         floating_toc <- "true"
       }
 
@@ -1834,7 +1849,7 @@ write <- function(report,
           paste0("    toc_float: ", floating_toc),
           "    highlight: null",
           "    mathjax: null",
-          paste0("    theme: ", onc_enrich_report$config$rmarkdown$theme),
+          paste0("    theme: ", report$config$rmarkdown$theme),
           "    include:",
           "      after_body: _disclaimer.md", sep="\n")
       sink()
@@ -1907,8 +1922,8 @@ write <- function(report,
                                 "_disclaimer.md",
                                 package = "oncoEnrichR")
 
-      report_theme <- onc_enrich_report$config$rmarkdown$theme
-      toc_float <- onc_enrich_report$config$rmarkdown$floating_toc
+      report_theme <- report$config$rmarkdown$theme
+      toc_float <- report$config$rmarkdown$floating_toc
 
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")

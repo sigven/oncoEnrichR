@@ -15,21 +15,21 @@
 ```{r fitness_lof_plot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']]) > 0, fig.width = 11, fig.height = onc_enrich_report[['config']][['fitness']][['plot_height_fitness']]}
 
 targets_wide <- as.data.frame(
-  onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] %>%
+  onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] |>
     dplyr::group_by(.data$symbol,
                     .data$n_gene_tissue,
                     .data$symbol_link_ps,
                     .data$n_gene,
-                    .data$tissue) %>%
+                    .data$tissue) |>
     dplyr::summarise(cell_lines = paste(.data$model_name, collapse = ", "),
                      ps_link = paste(.data$model_link_ps, collapse = ", "),
-                     .groups = "drop") %>%
-    dplyr::ungroup() %>%
+                     .groups = "drop") |>
+    dplyr::ungroup() |>
     dplyr::mutate(cell_lines = stringr::str_replace_all(.data$cell_lines, "\\.", "-"))
 )
   
-fitness_lof_oe_plot <- targets_wide %>%
-  dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) %>%
+fitness_lof_oe_plot <- targets_wide |>
+  dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) |>
   ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
   ggplot2::geom_bar(stat = "identity") +
   ggplot2::coord_flip() +
@@ -71,18 +71,18 @@ cat('<br><br>')
 
 htmltools::br()
 
-fitness_lof_oe_df <- onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] %>%
+fitness_lof_oe_df <- onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] |>
   dplyr::group_by(.data$symbol,
                   .data$n_gene_tissue,
                   .data$symbol_link_ps,
                   .data$n_gene,
-                  .data$tissue) %>%
+                  .data$tissue) |>
   dplyr::summarise(ps_link = paste(.data$model_link_ps, collapse = ", "),
-                   .groups = "drop") %>%
-  dplyr::ungroup() %>%
-  dplyr::select(.data$symbol_link_ps, .data$tissue, .data$ps_link) %>%
-  dplyr::rename(cell_lines = .data$ps_link, symbol = .data$symbol_link_ps) %>%
-  dplyr::mutate(loss_of_fitness = T) %>%
+                   .groups = "drop") |>
+  dplyr::ungroup() |>
+  dplyr::select(.data$symbol_link_ps, .data$tissue, .data$ps_link) |>
+  dplyr::rename(cell_lines = .data$ps_link, symbol = .data$symbol_link_ps) |>
+  dplyr::mutate(loss_of_fitness = T) |>
   head(2000)
 
 fitness_lof_oe_table <- 
@@ -129,8 +129,8 @@ cat('<br><br>')
 ```{r target_priority_heatmap, echo = F, eval = onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['n_pri_targets']] > 4}
 
 oe_priority_matrix <- as.data.frame(
-  onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['targets']] %>%
-  dplyr::arrange(symbol) %>%
+  onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['targets']] |>
+  dplyr::arrange(symbol) |>
   tidyr::pivot_wider(names_from = tumor_type,
                      values_from = priority_score)
 )
@@ -149,20 +149,20 @@ oe_priority_matrix <-
 oe_target_priority_fig <- plotly::plot_ly(
   colors = "YlGn",
   width = 800,
-  height = 400 + (14.67 * NROW(oe_priority_matrix))) %>%
+  height = 400 + (14.67 * NROW(oe_priority_matrix))) |>
   plotly::add_heatmap(
     y = rownames(oe_priority_matrix),
     x = colnames(oe_priority_matrix),
     z = oe_priority_matrix,
     hovertext = "Priority score",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Target priority scores',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = 10, 
     title = list(text = "Priority score",side = "bottom"),

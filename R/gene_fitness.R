@@ -21,23 +21,23 @@ get_fitness_lof_scores <- function(qgenes,
   fitness_lof_results[["n_targets"]] <- 0
 
   fitness_lof_hits <- as.data.frame(
-    target_genes %>%
-    dplyr::inner_join(projectscoredb[['fitness_scores']], by = c("symbol")) %>%
+    target_genes |>
+    dplyr::inner_join(projectscoredb[['fitness_scores']], by = c("symbol")) |>
     dplyr::arrange(.data$scaled_BF)
   )
   if (nrow(fitness_lof_hits) > 0) {
 
     fitness_lof_results[["targets"]] <- as.data.frame(
-      fitness_lof_hits %>%
+      fitness_lof_hits |>
         dplyr::mutate(
           model_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/model/",
             .data$model_id,"?&scoreMax=0' target='_blank'>",
-            stringr::str_replace_all(.data$model_name,"\\.","-"),"</a>")) %>%
+            stringr::str_replace_all(.data$model_name,"\\.","-"),"</a>")) |>
         dplyr::mutate(
           symbol_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/gene/",
-            .data$gene_id_project_score,"' target='_blank'>", .data$symbol,"</a>")) %>%
+            .data$gene_id_project_score,"' target='_blank'>", .data$symbol,"</a>")) |>
         dplyr::select(.data$symbol,
                       .data$symbol_link_ps,
                       .data$model_name,
@@ -46,27 +46,27 @@ get_fitness_lof_scores <- function(qgenes,
                       .data$cancer_type,
                       .data$sample_site,
                       .data$tissue_status,
-                      .data$scaled_BF) %>%
+                      .data$scaled_BF) |>
         dplyr::filter(.data$scaled_BF <= max_fitness_score)
     )
 
     gene_pr_tissue_stats <- as.data.frame(
-      fitness_lof_results[["targets"]] %>%
-        dplyr::group_by(.data$symbol, .data$tissue) %>%
+      fitness_lof_results[["targets"]] |>
+        dplyr::group_by(.data$symbol, .data$tissue) |>
         dplyr::summarise(n_gene_tissue = dplyr::n(),
                          .groups = "drop")
     )
 
     gene_stats <- as.data.frame(
-      gene_pr_tissue_stats %>%
-        dplyr::group_by(.data$symbol) %>%
+      gene_pr_tissue_stats |>
+        dplyr::group_by(.data$symbol) |>
         dplyr::summarise(n_gene = sum(.data$n_gene_tissue),
                          .groups = "drop")
     )
 
-    fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] %>%
-      dplyr::left_join(gene_pr_tissue_stats, by = c("symbol","tissue")) %>%
-      dplyr::left_join(gene_stats, by = "symbol") %>%
+    fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] |>
+      dplyr::left_join(gene_pr_tissue_stats, by = c("symbol","tissue")) |>
+      dplyr::left_join(gene_stats, by = "symbol") |>
       dplyr::select(.data$symbol, .data$symbol_link_ps,
                     .data$model_name,
                     .data$scaled_BF, .data$tissue,
@@ -104,7 +104,7 @@ get_target_priority_scores <-
     prioritized_targets[["n_pri_targets"]] <- 0
 
     targets_crispr_priority <- as.data.frame(
-      projectscoredb[['target_priority_scores']] %>%
+      projectscoredb[['target_priority_scores']] |>
         dplyr::inner_join(target_genes, by = c("symbol"))
       )
 
@@ -114,13 +114,13 @@ get_target_priority_scores <-
     if(nrow(targets_crispr_priority) > 0){
 
       prioritized_targets[["targets"]] <- as.data.frame(
-        targets_crispr_priority %>%
+        targets_crispr_priority |>
         dplyr::mutate(symbol = factor(.data$symbol, levels =
-                 levels(projectscoredb[['target_priority_scores']]$symbol))) %>%
-        dplyr::arrange(dplyr::desc(.data$priority_score)) %>%
+                 levels(projectscoredb[['target_priority_scores']]$symbol))) |>
+        dplyr::arrange(dplyr::desc(.data$priority_score)) |>
         dplyr::select(.data$symbol,
                       .data$tumor_type,
-                      .data$priority_score) # %>%
+                      .data$priority_score) # |>
 
       )
     }

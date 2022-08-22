@@ -9,7 +9,7 @@
 
 htmltools::br()
 
-domains_recurrent <- onc_enrich_report[['data']][['protein_domain']][['target']] %>%
+domains_recurrent <- onc_enrich_report[['data']][['protein_domain']][['target']] |>
   dplyr::filter(stringr::str_detect(
     .data$target_genes, ","
   ))

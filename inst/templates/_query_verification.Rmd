@@ -12,9 +12,9 @@ cat('<br><br>')
 
 * A total of __n = `r NROW(onc_enrich_report[['data']][['query']][['target']])`__ target identifiers were provided (type: _`r onc_enrich_report[["config"]][["query"]][["id_type"]]`_, option _ignore_id_err_ = `r onc_enrich_report[["config"]][["query"]][["ignore_err"]]`)
 * All query identifiers have been mapped towards identifiers for known human genes (including non-ambiguous aliases), and valid/invalid entries in the query set are indicated as follows:
-   * <span style="background-color:#800026; line-height:110%; padding:2x; color:white"><b>&nbsp; Invalid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'not_found'))`__
-   * <span style="background-color:#238b45; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier (mapped as alias) &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found_as_alias'))`__
-   * <span style="background-color:#005a32; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == 'found'))`__
+   * <span style="background-color:#800026; line-height:110%; padding:2x; color:white"><b>&nbsp; Invalid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] |> dplyr::filter(status == 'not_found'))`__
+   * <span style="background-color:#238b45; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier (mapped as alias) &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] |> dplyr::filter(status == 'found_as_alias'))`__
+   * <span style="background-color:#005a32; line-height:110%; padding:2x; color:white"><b>&nbsp; Valid identifier &nbsp; </b></span> &nbsp;:&nbsp;&nbsp; __n = `r NROW(onc_enrich_report[['data']][['query']][['target']] |> dplyr::filter(status == 'found'))`__
 
 <br>
 
@@ -26,7 +26,7 @@ DT::datatable(onc_enrich_report[['data']][['query']][['target']], escape = F,
               extensions=c("Buttons","Responsive"), 
               width = "100%",
               options=list(buttons = c('csv','excel'), 
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
   DT::formatStyle(columns = c("query_id"),
                   valueColumns = c('status'),
                   color = "white", 

@@ -10,8 +10,8 @@ get_genes_unknown_function <- function(qgenes,
   validate_db_df(genedb, dbtype = "genedb")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
-  poorly_defined_genes <- genedb %>%
-    dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
+  poorly_defined_genes <- genedb |>
+    dplyr::filter(!is.na(.data$unknown_function_rank)) |>
     dplyr::select(.data$symbol,
                   .data$genename,
                   .data$num_go_terms,
@@ -23,9 +23,9 @@ get_genes_unknown_function <- function(qgenes,
   results <- data.frame()
   pct <- 0
   if(nrow(target_genes) > 0){
-    results <- poorly_defined_genes %>%
-      dplyr::inner_join(target_genes, by = "symbol") %>%
-      dplyr::arrange(.data$unknown_function_rank) %>%
+    results <- poorly_defined_genes |>
+      dplyr::inner_join(target_genes, by = "symbol") |>
+      dplyr::arrange(.data$unknown_function_rank) |>
       dplyr::filter(.data$unknown_function_rank <= 5)
 
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)

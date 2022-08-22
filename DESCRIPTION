@@ -3,12 +3,9 @@ Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.2.1
 Date: 2022-07-13
-Authors@R: 
-    c(person(given = "Sigve",
-             family = "Nakken",
-             role = c("aut", "cre"),
+Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
-             comment = c(ORCID = "0000-0001-8468-2050")))
+             comment = c(ORCID = "0000-0001-8468-2050"))
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 URL: https://github.com/sigven/oncoEnrichR
 BugReports: https://github.com/sigven/oncoEnrichR/issues
@@ -35,7 +32,6 @@ Imports: dplyr,
          assertthat,
          jsonlite,
          openxlsx,
-         rmarkdown,
          stringi,
          stringr,
          tidyr,
@@ -46,26 +42,27 @@ Imports: dplyr,
          plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
-         magrittr (>= 2.0.1), 
          clusterProfiler, 
          igraph (>= 1.2.6), 
-         reshape2 (>= 1.4.4), 
          log4r (>= 0.4.1),
          gganatogram, 
-         rlang,
          RCurl,
          R.cache,
+         rlang,
          maftools (>= 2.8.0), 
          ggpubr (>= 0.4.0), 
          assertable, 
          TissueEnrich, 
          textclean (>= 0.9.3)
+Suggests: 
+    testthat (>= 3.1.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Remotes: jespermaag/gganatogram
 LazyData: true
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
-Suggests: 
-    testthat (>= 3.1.0)
 Config/testthat/edition: 3
