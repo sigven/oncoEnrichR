@@ -56,7 +56,7 @@ onco_enrich(
 \arguments{
 \item{query}{character vector with gene/query identifiers}
 
-\item{oeDB}{oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()}
+\item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 
 \item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
 "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
@@ -149,6 +149,12 @@ of target genes, using data from the Human Protein Atlas}
 \item{show_domain}{logical indicating if report should provide target memberships in known protein domains (Pfam)}
 
 \item{...}{arguments for Galaxy/web-based processing}
+}
+\value{
+An oncoEnrichR report list object, with two main elements,
+\code{data} and \code{config}. \code{data} contains data that goes into
+each section of the output reports, \code{config} contains all
+metadata for annotation resources used.
 }
 \description{
 Function that interrogates a list of human gene identifiers for

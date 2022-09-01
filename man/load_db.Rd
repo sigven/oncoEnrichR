@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{load_db}
 \alias{load_db}
-\title{Load oncoEnrichR datasets}
+\title{Load oncoEnrichR data repository}
 \usage{
 load_db(cache_dir = NA, force_download = F)
 }
@@ -12,6 +12,11 @@ load_db(cache_dir = NA, force_download = F)
 \item{force_download}{Logical indicating if local cache should force downloaded
 (i.e. set to TRUE to re-download even if data exists in cache)}
 }
+\value{
+A \code{list} object with oncoEnrichR datasets, to be used as
+the \emph{oeDB} argument for \code{onco_enrich()} and \code{write()}
+}
 \description{
-Function that loads version-tagged oncoEnrichR data from Google Drive
+Function that fetches version-tagged oncoEnrichR data
+repository from Google Drive
 }

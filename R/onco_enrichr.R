@@ -1,10 +1,15 @@
-#' Load oncoEnrichR datasets
+#' Load oncoEnrichR data repository
 #'
-#' Function that loads version-tagged oncoEnrichR data from Google Drive
+#' Function that fetches version-tagged oncoEnrichR data
+#' repository from Google Drive
 #'
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded
 #' (i.e. set to TRUE to re-download even if data exists in cache)
+#'
+#' @returns
+#' A `list` object with oncoEnrichR datasets, to be used as
+#' the \emph{oeDB} argument for `onco_enrich()` and `write()`
 #'
 #' @export
 #'
@@ -830,7 +835,7 @@ init_report <- function(oeDB,
 #' interactions, subcellular compartments etc.
 #'
 #' @param query character vector with gene/query identifiers
-#' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
+#' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
@@ -880,6 +885,12 @@ init_report <- function(oeDB,
 #' @param show_domain logical indicating if report should provide target memberships in known protein domains (Pfam)
 
 #' @param ... arguments for Galaxy/web-based processing
+#'
+#' @return
+#' An oncoEnrichR report list object, with two main elements,
+#' `data` and `config`. `data` contains data that goes into
+#' each section of the output reports, `config` contains all
+#' metadata for annotation resources used.
 #'
 #' @export
 #'
@@ -1754,12 +1765,13 @@ onco_enrich <- function(query = NULL,
 
 #'
 #' @param report object with oncoEnrichR report data (returned by oeDB$onco_enrich)
-#' @param oeDB oncoEnrichR annotation database object
-#' @param file full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")
+#' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
+#' @param file full filename for report output (e.g. "oe_report.html" or "oe_report.xlsx")
 #' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
 #' @param overwrite logical indicating if existing output files may be overwritten
 #' @param format file format of output (html/excel)
 #' @param ... options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy
+#'
 #'
 #' @export
 
