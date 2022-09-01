@@ -821,7 +821,13 @@ init_report <- function(oeDB,
   return(rep)
 }
 
-#' Interrogate and prioritize a gene list for cancer relevance
+#' Interrogate a gene list for cancer relevance
+#'
+#' Function that interrogates a list of human gene identifiers for
+#' cancer relevance. Multiple perspectives are offered, including
+#' tumor aberration and co-expression patterns, druggability,
+#' protein-protein interactions, gene fitness effects, regulatory
+#' interactions, subcellular compartments etc.
 #'
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
@@ -1741,7 +1747,11 @@ onco_enrich <- function(query = NULL,
 
 }
 
-#' Function that writes an oncoEnrichR report object to file
+#' Write oncoEnrichR report object to output file
+#'
+#' Function that writes an oncoEnrichR report object to file,
+#' either as an interactive HTML report or as an Excel workbook.
+
 #'
 #' @param report object with oncoEnrichR report data (returned by oeDB$onco_enrich)
 #' @param oeDB oncoEnrichR annotation database object

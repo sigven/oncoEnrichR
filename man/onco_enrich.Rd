@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{onco_enrich}
 \alias{onco_enrich}
-\title{Interrogate and prioritize a gene list for cancer relevance}
+\title{Interrogate a gene list for cancer relevance}
 \usage{
 onco_enrich(
   query = NULL,
@@ -151,5 +151,9 @@ of target genes, using data from the Human Protein Atlas}
 \item{...}{arguments for Galaxy/web-based processing}
 }
 \description{
-Interrogate and prioritize a gene list for cancer relevance
+Function that interrogates a list of human gene identifiers for
+cancer relevance. Multiple perspectives are offered, including
+tumor aberration and co-expression patterns, druggability,
+protein-protein interactions, gene fitness effects, regulatory
+interactions, subcellular compartments etc.
 }

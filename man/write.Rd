@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{write}
 \alias{write}
-\title{Function that writes an oncoEnrichR report object to file}
+\title{Write oncoEnrichR report object to output file}
 \usage{
 write(
   report,
@@ -30,5 +30,6 @@ write(
 \item{...}{options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy}
 }
 \description{
-Function that writes an oncoEnrichR report object to file
+Function that writes an oncoEnrichR report object to file,
+either as an interactive HTML report or as an Excel workbook.
 }

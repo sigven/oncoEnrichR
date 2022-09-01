@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{load_db}
 \alias{load_db}
-\title{Function that loads version-tagged oncoEnrichR data from Google Drive}
+\title{Load oncoEnrichR datasets}
 \usage{
 load_db(cache_dir = NA, force_download = F)
 }
