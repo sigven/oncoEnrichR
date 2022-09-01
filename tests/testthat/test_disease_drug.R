@@ -1,21 +1,11 @@
-library(magrittr)
-
-# load(system.file("internal_db/oedb.rda", package = "oncoEnrichR"))
-#
-# log4r_logger <- log4r::logger(
-#   threshold = "WARN",
-#   appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
 test_that("Target drug associations", {
   expect_error(oncoEnrichR:::target_drug_associations())
-  expect_error(oncoEnrichR:::target_drug_associations(logger = log4r_logger))
   expect_error(oncoEnrichR:::target_drug_associations(
-    logger = log4r_logger,
     qgenes = c("BRAF","EGFR")
   ))
 
   expect_error(oncoEnrichR:::target_drug_associations(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     qgenes = c(1042,1044)
   ))
@@ -23,7 +13,6 @@ test_that("Target drug associations", {
   expect_identical(
     names(oncoEnrichR:::target_drug_associations(
     qgenes = c("EGFR","BRAF"),
-    logger = log4r_logger,
     genedb = oedb$genedb$all)),
     c("target_drugs","tractability_ab","tractability_sm")
   )
@@ -31,7 +20,6 @@ test_that("Target drug associations", {
   expect_identical(
     NROW(oncoEnrichR:::target_drug_associations(
       qgenes = c("MITF"),
-      logger = log4r_logger,
       genedb = oedb$genedb$all)$target_drugs),
     as.integer(0)
   )
@@ -39,7 +27,6 @@ test_that("Target drug associations", {
   expect_identical(
     names(oncoEnrichR:::target_drug_associations(
       qgenes = c("EGFR","BRAF"),
-      logger = log4r_logger,
       genedb = oedb$genedb$all)),
     c("target_drugs","tractability_ab","tractability_sm")
   )
@@ -47,7 +34,6 @@ test_that("Target drug associations", {
   expect_identical(
     colnames(oncoEnrichR:::target_drug_associations(
       qgenes = c("EGFR","BRAF"),
-      logger = log4r_logger,
       genedb = oedb$genedb$all)$target_drugs),
     c("symbol","genename",
       "targeted_cancer_drugs_lp",
@@ -57,7 +43,6 @@ test_that("Target drug associations", {
   expect_identical(
     colnames(oncoEnrichR:::target_drug_associations(
       qgenes = c("EGFR","BRAF"),
-      logger = log4r_logger,
       genedb = oedb$genedb$all)$tractability_ab),
     c("symbol",
       "AB_tractability_category",
@@ -67,7 +52,6 @@ test_that("Target drug associations", {
   expect_identical(
     colnames(oncoEnrichR:::target_drug_associations(
       qgenes = c("EGFR","BRAF"),
-      logger = log4r_logger,
       genedb = oedb$genedb$all)$tractability_sm),
     c("symbol",
       "SM_tractability_category",
@@ -79,33 +63,26 @@ test_that("Target drug associations", {
 test_that("TEST - Genes of unknown function", {
   expect_error(oncoEnrichR:::get_genes_unknown_function())
   expect_error(oncoEnrichR:::get_genes_unknown_function(
-    logger = log4r_logger
-  ))
-  expect_error(oncoEnrichR:::get_genes_unknown_function(
     qgenes = 'C1orf43',
-    logger = log4r_logger
   ))
 
   expect_identical(
     NROW(oncoEnrichR:::get_genes_unknown_function(
       qgenes = 'C1orf43',
-      genedb = oedb$genedb$all,
-      logger = log4r_logger)),
+      genedb = oedb$genedb$all)),
     as.integer(1)
   )
   expect_identical(
     NROW(oncoEnrichR:::get_genes_unknown_function(
       qgenes = 'BRAF',
-      genedb = oedb$genedb$all,
-      logger = log4r_logger)),
+      genedb = oedb$genedb$all)),
     as.integer(0)
   )
   expect_identical(
     colnames(
       oncoEnrichR:::get_genes_unknown_function(
         qgenes = 'C1orf43',
-        genedb = oedb$genedb$all,
-        logger = log4r_logger)
+        genedb = oedb$genedb$all)
     ),
     c("symbol","genename","num_go_terms",
       "gene_summary","unknown_function_rank",
@@ -116,21 +93,16 @@ test_that("TEST - Genes of unknown function", {
 
 test_that("TEST - Target disease associations", {
   expect_error(oncoEnrichR:::target_disease_associations())
-  expect_error(oncoEnrichR:::target_disease_associations(logger = log4r_logger))
   expect_error(oncoEnrichR:::target_disease_associations(
-    logger = log4r_logger,
     qgenes = c("EGFR","BRAF")))
   expect_error(oncoEnrichR:::target_disease_associations(
-    logger = log4r_logger,
     qgenes = c("EGFR","BRAF"),
     otdb_all = oedb$otdb$all))
   expect_error(oncoEnrichR:::target_disease_associations(
-    logger = log4r_logger,
     qgenes = c("EGFR","BRAF"),
     otdb_all = oedb$otdb$all,
     otdb_gene_rank = oedb$otdb$gene_rank))
   expect_error(oncoEnrichR:::target_disease_associations(
-    logger = log4r_logger,
     qgenes = c(300,400),
     otdb_all = oedb$otdb$all,
     otdb_gene_rank = oedb$otdb$gene_rank,
@@ -142,7 +114,6 @@ test_that("TEST - Target disease associations", {
         qgenes = "BRAF",
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)
     ),
     c("target", "assoc_pr_gene", "ttype_matrix")
@@ -155,7 +126,6 @@ test_that("TEST - Target disease associations", {
         show_top_diseases_only = F,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$target$cancer_associations
     ),
     nchar(
@@ -164,7 +134,6 @@ test_that("TEST - Target disease associations", {
         show_top_diseases_only = T,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$target$cancer_associations
     )
   )
@@ -176,7 +145,6 @@ test_that("TEST - Target disease associations", {
         show_top_diseases_only = T,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$cancer
       ),
     as.integer(0)
@@ -189,7 +157,6 @@ test_that("TEST - Target disease associations", {
         show_top_diseases_only = T,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$other
     ),
     as.integer(0)
@@ -201,7 +168,6 @@ test_that("TEST - Target disease associations", {
         qgenes = "BRAF",
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$target
     ),
     c('symbol',
@@ -227,7 +193,6 @@ test_that("TEST - Target disease associations", {
         qgenes = "BRAF",
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene
     ),
     "list"
@@ -240,7 +205,6 @@ test_that("TEST - Target disease associations", {
         qgenes = "BRAF",
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$other
     ),
     c('symbol', 'targetset_disease_rank', 'ot_links','ot_diseases')
@@ -252,7 +216,6 @@ test_that("TEST - Target disease associations", {
         qgenes = "BRAF",
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
-        logger = log4r_logger,
         otdb_gene_rank = oedb$otdb$gene_rank)$assoc_pr_gene$cancer
     ),
     c('symbol', 'targetset_cancer_rank', 'global_cancer_rank',

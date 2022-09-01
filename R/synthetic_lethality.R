@@ -1,17 +1,18 @@
 annotate_synleth_paralog_pairs <- function(
   qgenes,
   genedb = NULL,
-  slparalogdb = NULL,
-  logger = NULL){
+  slparalogdb = NULL){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(logger))
   stopifnot(is.data.frame(slparalogdb))
   validate_db_df(slparalogdb, dbtype = "slparalog")
   validate_db_df(genedb, dbtype = "genedb")
 
-  log4r_info(logger,
+  lgr::lgr$info(
              paste0("Annotation of membership in predicted synthetic lethal interactions - De Kegel et al., Cell Systems, 2021"))
 
 
@@ -134,10 +135,10 @@ annotate_synleth_paralog_pairs <- function(
   rm(targetA_interactions)
   rm(targetB_interactions)
 
-  log4r_info(logger,
+  lgr::lgr$info(
              paste0("Found n = ", NROW(paralog_synleth_interactions[['both_in_pair']]),
                     " predicted interactions of synthetic lethality for which both members are present in the query set"))
-  log4r_info(logger,
+  lgr::lgr$info(
              paste0("Found n = ", NROW(paralog_synleth_interactions[['single_pair_member']]),
                     " predicted interactions of synthetic lethality for whih a single member is present in the query set"))
 

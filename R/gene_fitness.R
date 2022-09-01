@@ -1,11 +1,12 @@
 get_fitness_lof_scores <- function(qgenes,
                                   qsource = "symbol",
                                   projectscoredb = NULL,
-                                  max_fitness_score = -2,
-                                  logger = NULL) {
+                                  max_fitness_score = -2) {
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, paste0("Project Score: retrieval of genes ",
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( paste0("Project Score: retrieval of genes ",
                     "associated with loss-of-fitness in cancer cell lines"))
   stopifnot(!is.null(qgenes))
   stopifnot(is.character(qgenes))
@@ -83,11 +84,12 @@ get_fitness_lof_scores <- function(qgenes,
 get_target_priority_scores <-
   function(qgenes,
            qsource = "symbol",
-           projectscoredb = NULL,
-           logger = NULL){
+           projectscoredb = NULL){
 
-    stopifnot(!is.null(logger))
-    log4r_info(logger, paste0("Project Score: retrieval of ",
+    lgr::lgr$appenders$console$set_layout(
+      lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+    lgr::lgr$info( paste0("Project Score: retrieval of ",
                       "prioritized targets from loss-of-fitness screens ",
                       "in cancer cell lines"))
     stopifnot(!is.null(qgenes))

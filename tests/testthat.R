@@ -4,9 +4,9 @@ suppressPackageStartupMessages(library(oncoEnrichR))
 
 load(system.file("internal_db/oedb.rda", package = "oncoEnrichR"))
 
-log4r_logger <- log4r::logger(
-  threshold = "INFO",
-  appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
+# log4r_logger <- log4r::logger(
+#   threshold = "INFO",
+#   appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
 myc_data <- read.csv(system.file("extdata","myc_data.csv",
                                  package = "oncoEnrichR"),

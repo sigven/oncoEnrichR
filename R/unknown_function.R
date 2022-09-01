@@ -1,10 +1,11 @@
 
 get_genes_unknown_function <- function(qgenes,
-                                       genedb = NULL,
-                                       logger = NULL){
+                                       genedb = NULL){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, "Retrieval of genes with unknown/poorly defined function in target set")
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( "Retrieval of genes with unknown/poorly defined function in target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   validate_db_df(genedb, dbtype = "genedb")
@@ -31,7 +32,7 @@ get_genes_unknown_function <- function(qgenes,
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }
 
-  log4r_info(logger, paste0("Detected n = ", nrow(results),
+  lgr::lgr$info( paste0("Detected n = ", nrow(results),
                     " (", pct,"%) target genes with unknown/poorly defined function"))
   return(results)
 

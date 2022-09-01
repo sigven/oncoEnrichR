@@ -3,8 +3,10 @@ validate_query_genes <- function(qgenes,
                                qtype = "target",
                                ignore_id_err = F,
                                genedb = NULL,
-                               transcript_xref = NULL,
-                               logger = NULL){
+                               transcript_xref = NULL){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   stopifnot(!is.null(q_id_type))
   stopifnot(is.character(qgenes))
@@ -19,7 +21,6 @@ validate_query_genes <- function(qgenes,
   stopifnot(is.character(qgenes))
   qgenes <- qgenes[!is.na(qgenes)]
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(logger))
   stopifnot(!is.null(transcript_xref))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(transcript_xref, dbtype = "transcript_xref")
@@ -127,8 +128,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        log4r_info(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -155,7 +156,7 @@ validate_query_genes <- function(qgenes,
               dplyr::distinct() |>
               dplyr::mutate(alias = T)
 
-            log4r_info(logger,
+            lgr::lgr$info(
               paste0("Mapped query identifiers as gene aliases ",
                      paste0(query_as_alias$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
@@ -166,7 +167,7 @@ validate_query_genes <- function(qgenes,
               dplyr::anti_join(query_as_alias, by = "qid")
 
             if(nrow(queryset[['not_found']]) > 0){
-              log4r_warn(logger,
+              lgr::lgr$warn(
                 paste0(stringr::str_to_title(qtype)," gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
                        " (make sure that unambiguous primary identifiers/symbols are used)"))
@@ -175,14 +176,14 @@ validate_query_genes <- function(qgenes,
             }
           }
         }else{
-          log4r_warn(logger,
+          lgr::lgr$warn(
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that unambiguous primary identifiers/symbols are used)"))
         }
 
       }else{
-        log4r_warn(logger, paste0(
+        lgr::lgr$warn(paste0(
           stringr::str_to_title(qtype), " gene identifiers NOT found: ",
           paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
@@ -192,8 +193,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        log4r_warn(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$warn( paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -209,7 +210,7 @@ validate_query_genes <- function(qgenes,
           dplyr::mutate(alias = T)
 
 
-          log4r_info(logger,
+          lgr::lgr$info(
             paste0("Mapped ", qtype, " gene identifiers as gene aliases ",
                    paste0(query_as_alias$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$symbol,collapse=", ")))
@@ -220,7 +221,7 @@ validate_query_genes <- function(qgenes,
             dplyr::anti_join(query_as_alias, by = "qid")
 
           if(nrow(queryset[['not_found']]) > 0){
-            log4r_info(logger,
+            lgr::lgr$info(
               paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
                      " (make sure that unambiguous primary identifiers/symbols are used)"))
@@ -229,31 +230,31 @@ validate_query_genes <- function(qgenes,
 
           }
         }else{
-          log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
+          lgr::lgr$info( paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that unambiguous primary identifiers/symbols are used)"))
 
         }
       }
       else{
-        log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
+        lgr::lgr$info( paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that unambiguous primary identifiers/symbols are used)"))
       }
     }
   }
   if(nrow(queryset[['found']]) == length(qgenes)){
-    log4r_info(logger, paste0('SUCCESS: Identified all genes (n = ',
+    lgr::lgr$info( paste0('SUCCESS: Identified all genes (n = ',
                              nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
     if(nrow(queryset[['found']]) == 0){
-      log4r_info(logger, paste0(
+      lgr::lgr$info( paste0(
         "ERROR: NO ", qtype, " gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?","\n"))
       queryset[['match_status']] <- "imperfect_stop"
     }else{
-      log4r_info(logger,
+      lgr::lgr$info(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ', qtype,
                ' set (n = ',
@@ -340,7 +341,7 @@ validate_db <- function(oe_db){
 
   for(db in db_entries){
     if(!(db %in% names(oe_db))){
-      log4r_info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
+      lgr::lgr$info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
       return(-1)
     }
 
@@ -1629,29 +1630,6 @@ add_excel_sheet <- function(
   return(workbook)
 }
 
-
-log4r_layout <-
-  function(level, ...) {
-    paste0(format(Sys.time()), " - ",
-           level, " - ", ..., "\n",
-           collapse = "")
-  }
-
-log4r_info <- function(log4r_logger, msg) {
-  log4r::info(log4r_logger, msg)
-}
-
-log4r_debug <- function(log4r_logger, msg) {
-  log4r::debug(log4r_logger, msg)
-}
-
-log4r_warn <- function(log4r_logger, msg) {
-  log4r::warn(log4r_logger, msg)
-}
-
-log4r_err <- function(log4r_logger, msg) {
-  log4r::error(log4r_logger, msg)
-}
 
 file_is_writable <- function(path) {
   assertthat::is.string(path) &&

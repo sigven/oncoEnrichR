@@ -6,7 +6,7 @@ editor_options:
 
 <br>
 
-# oncoEnrichR
+# oncoEnrichR <a href="https://sigven.github.io/oncoEnrichR/"><img src="man/figures/logo.png" align="right" height="130" width="113"/></a>
 
 **oncoEnrichR** is an R package for functional interrogation of human
 genesets in the context of cancer. It is primarily intended for
@@ -25,7 +25,7 @@ Web-based access to **oncoEnrichR** is available at <font size="4">
 
 <br>
 
-<img src="img/oncoenrichr_overview.png" align="center" border="0"/>
+<img src="man/figures/oncoenrichr_overview.png" align="center" border="0"/>
 
 <br><br>
 
@@ -100,7 +100,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 <br>
 
-<img src="img/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"/>
+<img src="man/figures/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"/>
 
 ## Getting started
 
@@ -117,7 +117,7 @@ sigven AT ifi.uio.no
 
 ## Funding and Collaboration
 
-OncoEnrichR is supported by the [Centre for Cancer Cell
+oncoEnrichR is supported by the [Centre for Cancer Cell
 Reprogramming](https://www.med.uio.no/cancell/english/) at the
 [University of Oslo](https://www.uio.no)/[Oslo University
 Hospital](https://radium.no), and [Elixir Norway (Oslo

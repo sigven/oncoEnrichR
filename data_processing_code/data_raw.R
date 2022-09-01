@@ -5,27 +5,27 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v7.5.1 (Jan 2022)'
-wikipathways_version <- "20220710"
+wikipathways_version <- "20220810"
 netpath_version <- "2010"
 opentargets_version <- "2022.06"
-kegg_version <- "20220324"
-gencode_version <- "40"
+kegg_version <- "20220809"
+gencode_version <- "41"
 uniprot_release <- "2022_01"
 
 ## Which databases to update or retrieve from last updated state
-update_omnipathdb <- F
+update_omnipathdb <- T
 update_hpa <- F
-update_ncbi_gene_summary <- F
+update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
 update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
-update_gencode <- F
+update_gencode <- T
 update_ligand_receptor_db <- T
 
-oe_version <- "1.2.1"
+oe_version <- "1.2.2"
 
 data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
@@ -68,15 +68,15 @@ pfamdb <- as.data.frame(
     file.path(data_raw_dir,
               "pfam",
               "pfam.uniprot.tsv.gz"),
-    show_col_types = F) %>%
-    dplyr::select(-uniprot_acc) %>%
-    dplyr::rename(uniprot_acc = uniprot_acc_noversion) %>%
+    show_col_types = F) |>
+    dplyr::select(-uniprot_acc) |>
+    dplyr::rename(uniprot_acc = uniprot_acc_noversion) |>
     ## reviewed accessions only
-    dplyr::filter(nchar(uniprot_acc) == 6) %>%
+    dplyr::filter(nchar(uniprot_acc) == 6) |>
     dplyr::group_by(uniprot_acc,
                     pfam_id,
                     pfam_short_name,
-                    pfam_long_name) %>%
+                    pfam_long_name) |>
     dplyr::summarise(
       domain_freq = dplyr::n(),
       .groups = "drop")
@@ -100,7 +100,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     raw_db_dir = data_raw_dir,
     gene_info = gene_info,
-    version = "47") %>%
+    version = "47") |>
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,
@@ -186,7 +186,9 @@ ncbi_gene_summary <- get_function_summary_ncbi(
   update = update_ncbi_gene_summary)
 
 ####---OTP - Targeted cancer drugs ---####
-cancerdrugdb <- get_cancer_drugs()
+cancerdrugdb <- get_cancer_drugs(
+  raw_db_dir = data_raw_dir
+)
 
 ####--- Gene Ontology ---####
 go_terms_pr_gene <- get_gene_go_terms(
@@ -290,7 +292,12 @@ oedb[['slparalogdb']] <- slparalogdb
 #oedb[['synlethdb']] <- synlethdb
 
 
-for(n in c('cancerdrugdb',
+googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
+gd_records <- list()
+db_id_ref <- data.frame()
+
+
+for(elem in c('cancerdrugdb',
            'genedb',
            'hpa',
            'ligandreceptordb',
@@ -306,52 +313,130 @@ for(n in c('cancerdrugdb',
            'tissuecelldb',
            'release_notes')){
 
-
-  checksum_db <- NA
-  size <- NA
-  hsize <- NA
-  if(n != "subcelldb"){
-    checksum_db <- R.cache::getChecksum(oedb[[n]])
-    size <- utils::object.size(oedb[[n]])
-    hsize <- R.utils::hsize.object_size(size)
-  }else{
-    checksum_db <- R.cache::getChecksum(oedb[[n]][['comppidb']])
-    size <- utils::object.size(oedb[[n]][['comppidb']])
-    hsize <- R.utils::hsize.object_size(size)
-  }
-
-  db_entry <- data.frame('name' = n,
-                          'size' = as.character(size),
-                          'hsize' = as.character(hsize),
-                          'checksum' = checksum_db,
-                          'version' = oe_version,
-                          'date' = Sys.Date(),
-                         stringsAsFactors = F
-                        )
-  db_props <- db_props %>%
-    dplyr::bind_rows(db_entry)
-
-
   if(!dir.exists(
     file.path(data_output_dir, paste0("v",oe_version)))){
-    system(paste0('mkdir ', file.path(
-      data_output_dir,
-      paste0("v",oe_version)))
-    )
+    dir.create(
+      file.path(
+        data_output_dir,
+        paste0("v",oe_version))
+      )
   }
 
-  saveRDS(
-    oedb[[n]],
-    file = file.path(
-      data_output_dir,
-      paste0("v",oe_version),
-      paste0(n,'.rds'))
-    )
+  local_rds_fpath <- file.path(data_output_dir, paste0("v",oe_version),
+                           paste0(elem,"_v", oe_version, ".rds"))
+
+  if(!file.exists(local_rds_fpath)){
+    saveRDS(oedb[[elem]],
+            file = local_rds_fpath)
+  }
+
+  (gd_records[[elem]] <- googledrive::drive_upload(
+    local_rds_fpath,
+    paste0("oncoEnrichR_DB/", elem, "_v", oe_version,".rds")
+  ))
+
+  google_rec_df <-
+    dplyr::select(
+      as.data.frame(gd_records[[elem]]), name, id) |>
+    dplyr::rename(
+      gid = id,
+      filename = name) |>
+    dplyr::mutate(
+      name =
+        stringr::str_replace(filename,"_v\\S+$",""),
+      date = as.character(Sys.Date()),
+      pVersion = oe_version) |>
+    dplyr::mutate(
+      md5Checksum =
+        gd_records[[elem]]$drive_resource[[1]]$md5Checksum)
+
+  size <- NA
+  hsize <- NA
+
+  if(elem != "subcelldb"){
+    size <- utils::object.size(oedb[[elem]])
+    hsize <- R.utils::hsize.object_size(size)
+  }else{
+    size <- utils::object.size(oedb[[elem]][['comppidb']])
+    hsize <- R.utils::hsize.object_size(size)
+  }
+
+  google_rec_df$size <- as.character(size)
+  google_rec_df$hsize <- hsize
+
+
+  db_id_ref <- db_id_ref |>
+    dplyr::bind_rows(google_rec_df)
 
 }
 
+usethis::use_data(db_id_ref, internal = T, overwrite = T)
+
+
+
+# for(n in c('cancerdrugdb',
+#            'genedb',
+#            'hpa',
+#            'ligandreceptordb',
+#            'otdb',
+#            'pfamdb',
+#            'pathwaydb',
+#            'projectscoredb',
+#            'projectsurvivaldb',
+#            'subcelldb',
+#            'slparalogdb',
+#            'tcgadb',
+#            'tftargetdb',
+#            'tissuecelldb',
+#            'release_notes')){
+#
+#
+#   checksum_db <- NA
+#   size <- NA
+#   hsize <- NA
+#   if(n != "subcelldb"){
+#     checksum_db <- R.cache::getChecksum(oedb[[n]])
+#     size <- utils::object.size(oedb[[n]])
+#     hsize <- R.utils::hsize.object_size(size)
+#   }else{
+#     checksum_db <- R.cache::getChecksum(oedb[[n]][['comppidb']])
+#     size <- utils::object.size(oedb[[n]][['comppidb']])
+#     hsize <- R.utils::hsize.object_size(size)
+#   }
+#
+#   db_entry <- data.frame('name' = n,
+#                           'size' = as.character(size),
+#                           'hsize' = as.character(hsize),
+#                           'checksum' = checksum_db,
+#                           'version' = oe_version,
+#                           'date' = Sys.Date(),
+#                          stringsAsFactors = F
+#                         )
+#   db_props <- db_props |>
+#     dplyr::bind_rows(db_entry)
+#
+#
+#   if(!dir.exists(
+#     file.path(data_output_dir, paste0("v",oe_version)))){
+#     system(paste0('mkdir ', file.path(
+#       data_output_dir,
+#       paste0("v",oe_version)))
+#     )
+#   }
+#
+#   saveRDS(
+#     oedb[[n]],
+#     file = file.path(
+#       data_output_dir,
+#       paste0("v",oe_version),
+#       paste0(n,'.rds'))
+#     )
+#
+# }
+
 save(oedb, file="inst/internal_db/oedb.rda")
 
+####--- Clean-up ----####
 rm(pfamdb)
 rm(tcgadb)
 rm(gencode)
@@ -377,30 +462,31 @@ rm(go_terms_pr_gene)
 rm(oedb)
 rm(slparalogdb)
 
+####---Zenodo upload ----####
 
-zenodo_files_for_upload <-
-  list.files(file.path(data_output_dir, paste0("v",oe_version)),
-             full.names = T)
-zenodo <- zen4R::ZenodoManager$new(
-  token = Sys.getenv("ZENODO_TOKEN"),
-  logger = "INFO"
-)
-
-oedb_rec <- zenodo$getDepositionByDOI("10.5281/zenodo.6700715")
-oedb_rec$setPublicationDate(publicationDate = Sys.Date())
-oedb_rec$setVersion(version = paste0("v",oe_version))
-oedb_rec <- zenodo$depositRecordVersion(
-  oedb_rec,
-  delete_latest_files = TRUE,
-  files = zenodo_files_for_upload,
-  publish = FALSE)
-
-#zenodo$discardChanges(oedb_rec$id)
-db_props$zenodo_doi <- oedb_rec$metadata$doi
+# zenodo_files_for_upload <-
+#   list.files(file.path(data_output_dir, paste0("v",oe_version)),
+#              full.names = T)
+# zenodo <- zen4R::ZenodoManager$new(
+#   token = Sys.getenv("ZENODO_TOKEN"),
+#   logger = "INFO"
+# )
+#
+# oedb_rec <- zenodo$getDepositionByDOI("10.5281/zenodo.6700715")
+# oedb_rec$setPublicationDate(publicationDate = Sys.Date())
+# oedb_rec$setVersion(version = paste0("v",oe_version))
+# oedb_rec <- zenodo$depositRecordVersion(
+#   oedb_rec,
+#   delete_latest_files = TRUE,
+#   files = zenodo_files_for_upload,
+#   publish = FALSE)
+#
+# #zenodo$discardChanges(oedb_rec$id)
+# db_props$zenodo_doi <- oedb_rec$metadata$doi
 
 usethis::use_data(db_props, overwrite = T)
 
-oedb_rec <- zenodo$publishRecord(oedb_rec$id)
+#oedb_rec <- zenodo$publishRecord(oedb_rec$id)
 
 db_packages <-
   c('CellChat',
@@ -418,7 +504,7 @@ db_packages <-
     'TCGAbiolinksGUI.data',
     'TCGAbiolinks',
     'rlogging',
-    'oncoPharmaDB',
+    'pharmaOncoX',
     'oncoPhenoMap')
 
 renv_packages <- jsonlite::fromJSON("renv.lock")
@@ -426,7 +512,7 @@ for(c in db_packages){
   renv_packages$Packages[[c]] <- NULL
 }
 docker_renv <- jsonlite::toJSON(
-  renv_packages, flatten = T, auto_unbox = T) %>%
+  renv_packages, flatten = T, auto_unbox = T) |>
   jsonlite::prettify()
 sink(file = "docker/renv.lock")
 cat(docker_renv)

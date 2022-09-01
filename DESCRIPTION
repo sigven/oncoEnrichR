@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.2.1
-Date: 2022-07-13
+Date: 2022-09-01
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -35,7 +35,7 @@ Imports: dplyr,
          stringi,
          stringr,
          tidyr,
-         zen4R,
+         googledrive,
          visNetwork (>= 2.0.9), 
          SummarizedExperiment (>= 1.22.0),
          DT (>= 0.18), 
@@ -44,7 +44,7 @@ Imports: dplyr,
          org.Hs.eg.db, 
          clusterProfiler, 
          igraph (>= 1.2.6), 
-         log4r (>= 0.4.1),
+         lgr,
          gganatogram, 
          RCurl,
          R.cache,

@@ -1,35 +1,22 @@
-library(magrittr)
-
-# load(system.file("internal_db/oedb.rda", package = "oncoEnrichR"))
-#
-# log4r_logger <- log4r::logger(
-#   threshold = "WARN",
-#   appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
 test_that("Protein complex annotations - testing input parameters ", {
   expect_error(oncoEnrichR:::annotate_protein_complex())
-  expect_error(oncoEnrichR:::annotate_protein_complex(logger = log4r_logger))
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     query_entrez = as.integer(1042)))
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     query_entrez = as.integer(1042)))
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     complex_db = oedb$genedb$proteincomplexdb$db,
     genedb = oedb$genedb$all,
     query_entrez = as.integer(1042)))
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     complex_db = oedb$genedb$proteincomplexdb$db,
     complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
     genedb = oedb$genedb$all,
     query_entrez = as.integer(1042)))
 
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     complex_db = oedb$genedb$proteincomplexdb$db,
     complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
     transcript_xref = oedb$genedb$transcript_xref,
@@ -37,7 +24,6 @@ test_that("Protein complex annotations - testing input parameters ", {
     query_entrez = "1042"))
 
   expect_error(oncoEnrichR:::annotate_protein_complex(
-    logger = log4r_logger,
     complex_db = oedb$genedb$proteincomplexdb$db,
     complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
     transcript_xref = oedb$genedb$all,
@@ -54,8 +40,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
-        otdb_gene_rank = oedb$otdb$gene_rank,
-        logger = log4r_logger)
+        otdb_gene_rank = oedb$otdb$gene_rank)
     ),
     "list"
   )
@@ -68,8 +53,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
-        otdb_gene_rank = oedb$otdb$gene_rank,
-        logger = log4r_logger)$omnipath
+        otdb_gene_rank = oedb$otdb$gene_rank)$omnipath
     ),
     c("complex_name", "target_genes",
       "literature", "complex_genes",
@@ -88,8 +72,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
-        otdb_gene_rank = oedb$otdb$gene_rank,
-        logger = log4r_logger)$omnipath
+        otdb_gene_rank = oedb$otdb$gene_rank)$omnipath
     ),
     0
   )
@@ -102,8 +85,7 @@ test_that("Protein complex annotations - testing input parameters ", {
         complex_db = oedb$genedb$proteincomplexdb$db,
         complex_up_xref = oedb$genedb$proteincomplexdb$up_xref,
         transcript_xref = oedb$genedb$transcript_xref,
-        otdb_gene_rank = oedb$otdb$gene_rank,
-        logger = log4r_logger
+        otdb_gene_rank = oedb$otdb$gene_rank
       )$humap2
     ),
     as.integer(0)

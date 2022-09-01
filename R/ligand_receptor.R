@@ -2,11 +2,12 @@
 annotate_ligand_receptor_interactions <- function(qgenes,
                                                   genedb = NULL,
                                                   ligand_receptor_db = NULL,
-                                                  ligand_receptor_xref = NULL,
-                                                  logger = NULL ){
+                                                  ligand_receptor_xref = NULL){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, "CellChatDB: retrieval of ligand-receptor interactions")
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( "CellChatDB: retrieval of ligand-receptor interactions")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(ligand_receptor_db))

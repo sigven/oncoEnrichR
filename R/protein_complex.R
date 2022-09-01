@@ -4,11 +4,9 @@ annotate_protein_complex <- function(query_entrez,
                                      complex_db = NULL,
                                      complex_up_xref = NULL,
                                      transcript_xref = NULL,
-                                     otdb_gene_rank = NULL,
-                                     logger = NULL){
+                                     otdb_gene_rank = NULL){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, "OmniPath: retrieval of protein complex information for target set - multiple underlying sources")
+  lgr::lgr$info( "OmniPath: retrieval of protein complex information for target set - multiple underlying sources")
   stopifnot(is.integer(query_entrez))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(complex_db))
@@ -174,11 +172,12 @@ annotate_protein_complex <- function(query_entrez,
 annotate_protein_domain <- function(query_entrez,
                                     genedb = NULL,
                                     pfamdb = NULL,
-                                    transcript_xref = NULL,
-                                    logger = NULL){
+                                    transcript_xref = NULL){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, "PFAM: retrieval of protein domain information for target set")
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( "PFAM: retrieval of protein domain information for target set")
   stopifnot(is.integer(query_entrez))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(pfamdb))

@@ -1,20 +1,13 @@
-library(magrittr)
 
 test_that("TCGA oncoplot generation - testing ", {
-  expect_error(oncoEnrichR:::tcga_oncoplot_genes())
   expect_error(oncoEnrichR:::tcga_oncoplot_genes(
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::tcga_oncoplot_genes(
-    logger = log4r_logger,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_oncoplot_genes(
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_oncoplot_genes(
     qgenes = c("KRAS","MYC"),
     site = "Unknown_Site",
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
 
@@ -25,8 +18,7 @@ test_that("TCGA oncoplot generation - testing ", {
         tcgadb = oedb$tcgadb,
         site = "Lung",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     "data.frame"
@@ -40,8 +32,7 @@ test_that("TCGA oncoplot generation - testing ", {
         qsource = "entrezgene",
         site = "Lung",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     "data.frame"
@@ -56,8 +47,7 @@ test_that("TCGA oncoplot generation - testing ", {
         tcgadb = oedb$tcgadb,
         site = "Lung",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     as.integer(1)
@@ -71,8 +61,7 @@ test_that("TCGA oncoplot generation - testing ", {
         tcgadb = oedb$tcgadb,
         site = "Lung",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     c("symbol", "variant_type", "primary_site", "percent_mutated",
@@ -84,18 +73,13 @@ test_that("TCGA oncoplot generation - testing ", {
 
 test_that("TCGA aberration table - testing ", {
   expect_error(oncoEnrichR:::tcga_aberration_table(
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::tcga_aberration_table(
-    logger = log4r_logger,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_aberration_table(
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_aberration_table(
     qgenes = c("KRAS","MYC"),
     vtype = "UNKNOWN_TYPE",
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
 
@@ -106,8 +90,7 @@ test_that("TCGA aberration table - testing ", {
         qgenes = as.integer(c(3845, 4609)),
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     )
   )
@@ -119,8 +102,7 @@ test_that("TCGA aberration table - testing ", {
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
         qsource = "symbol",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     )
   )
@@ -132,8 +114,7 @@ test_that("TCGA aberration table - testing ", {
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
         qsource = "symbol",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ), as.integer(0)
   )
@@ -145,8 +126,7 @@ test_that("TCGA aberration table - testing ", {
         qgenes = as.integer(c(3845, 4609)),
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     c("gene", "variant_type", "primary_site",
@@ -160,24 +140,18 @@ test_that("TCGA aberration table - testing ", {
 
 test_that("TCGA co-expression data - testing ", {
   expect_error(oncoEnrichR:::tcga_coexpression(
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::tcga_coexpression(
-    logger = log4r_logger,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_coexpression(
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_coexpression(
     qgenes = c(200,300),
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
 
   expect_true(
     is.data.frame(
       oncoEnrichR:::tcga_coexpression(
-        logger = log4r_logger,
         tcgadb = oedb$tcgadb,
         genedb = oedb$genedb$all,
         qgenes = c("MYC","KRAS")
@@ -187,7 +161,6 @@ test_that("TCGA co-expression data - testing ", {
   expect_gte(
     NROW(
       oncoEnrichR:::tcga_coexpression(
-        logger = log4r_logger,
         tcgadb = oedb$tcgadb,
         genedb = oedb$genedb$all,
         qgenes = c("MYC","KRAS")
@@ -203,25 +176,19 @@ test_that("TCGA co-expression data - testing ", {
 test_that("TCGA aberration matrix - testing ", {
 
   expect_error(oncoEnrichR:::tcga_aberration_matrix(
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::tcga_aberration_matrix(
-    logger = log4r_logger,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_aberration_matrix(
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_aberration_matrix(
     qgenes = c("KRAS","MYC"),
     vtype = "UNKNOWN_TYPE",
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::tcga_aberration_matrix(
     qgenes = c("KRAS","MYC"),
     vtype = "cna_homdel",
     cstrata = "UNKNOWN_STRATA",
-    logger = log4r_logger,
     tcgadb = oedb$tcgadb,
     genedb = oedb$genedb$all))
 
@@ -232,8 +199,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_ampl",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     NULL
   )
@@ -244,8 +210,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_ampl",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     regexp = "NOTE: NO genes in query set with TCGA aberration data"
   )
@@ -257,8 +222,7 @@ test_that("TCGA aberration matrix - testing ", {
       qsource = "entrezgene",
       vtype = "cna_ampl",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     NULL
   )
@@ -270,8 +234,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_ampl",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     NULL
   )
@@ -282,8 +245,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_ampl",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     regexp = "NOTE: Limited number of genes"
   )
@@ -295,8 +257,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_homdel",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     NULL
   )
@@ -307,8 +268,7 @@ test_that("TCGA aberration matrix - testing ", {
       tcgadb = oedb$tcgadb,
       vtype = "cna_homdel",
       cstrata = "site",
-      genedb = oedb$genedb$all,
-      logger = log4r_logger
+      genedb = oedb$genedb$all
     ),
     regexp = "NOTE: NO genes in query set with TCGA aberration data"
   )
@@ -320,8 +280,7 @@ test_that("TCGA aberration matrix - testing ", {
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     ),
     "double"
@@ -334,8 +293,7 @@ test_that("TCGA aberration matrix - testing ", {
         tcgadb = oedb$tcgadb,
         vtype = "cna_ampl",
         cstrata = "site",
-        genedb = oedb$genedb$all,
-        logger = log4r_logger
+        genedb = oedb$genedb$all
       )
     )
   )

@@ -15,10 +15,6 @@
 ```{r tcga_oncoplot_setup, echo = F, eval = T}
 
 tcga_oncoplot_data <- onc_enrich_report[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
-# maf_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-#                   "master",
-#                   #onc_enrich_report[["config"]][["resources"]][["oncoEnrichR"]][["version"]],
-#                   "/maf/")
 
 ## oncoplot arguments
 gene_mar <- 10

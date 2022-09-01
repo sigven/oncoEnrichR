@@ -4,11 +4,12 @@ tcga_oncoplot_genes <-
            cstrata = "site",
            genedb = NULL,
            tcgadb = NULL,
-           site = "Breast",
-           logger = NULL){
+           site = "Breast"){
 
-    stopifnot(!is.null(logger))
-    log4r_info(logger, paste0("TCGA: generating oncoplot, tissue =  ", site))
+    lgr::lgr$appenders$console$set_layout(
+      lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+    lgr::lgr$info( paste0("TCGA: generating oncoplot, tissue =  ", site))
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(tcgadb))
     stopifnot(
@@ -23,7 +24,7 @@ tcga_oncoplot_genes <-
                   "site_code",
                   "diagnosis_code",
                   "clinical_strata_code")
-    ))
+      ))
     validate_db_df(genedb, dbtype = "genedb")
     validate_db_df(tcgadb$aberration, dbtype = "tcga_aberration")
     validate_db_df(tcgadb$site_code, dbtype = "tcga_site_code")
@@ -74,12 +75,12 @@ tcga_oncoplot_genes <-
       utils::head(50)
 
     #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-    log4r_info(logger,
+    lgr::lgr$info(
       paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
 
     return(top_mutated_genes)
 
-}
+  }
 
 
 tcga_aberration_matrix <- function(qgenes,
@@ -88,11 +89,10 @@ tcga_aberration_matrix <- function(qgenes,
                                  vtype = "cna_ampl",
                                  genedb = NULL,
                                  tcgadb = NULL,
-                                 percentile = FALSE,
-                                 logger = NULL){
-
-  stopifnot(!is.null(logger))
-  log4r_info(logger, paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
+                                 percentile = FALSE){
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+  lgr::lgr$info( paste0("TCGA: generating gene aberration matrix, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(tcgadb))
   stopifnot(
@@ -153,7 +153,7 @@ tcga_aberration_matrix <- function(qgenes,
 
   ## return NULL if no query genes are found with aberration data from TCGA
   if(nrow(tcga_gene_stats) == 0){
-    log4r_info(logger, paste0("NOTE: NO genes in query set with TCGA aberration data"))
+    lgr::lgr$info( paste0("NOTE: NO genes in query set with TCGA aberration data"))
     return(NULL)
   }
 
@@ -162,7 +162,7 @@ tcga_aberration_matrix <- function(qgenes,
 
   ## return NULL if no query genes are found with copy number data from TCGA
   if(nrow(tcga_gene_stats) == 0){
-    log4r_info(logger, paste0("NOTE: NO genes in query set with TCGA aberration data - type '", vtype, "'"))
+    lgr::lgr$info( paste0("NOTE: NO genes in query set with TCGA aberration data - type '", vtype, "'"))
     return(NULL)
   }
 
@@ -180,7 +180,7 @@ tcga_aberration_matrix <- function(qgenes,
   ## return NULL if less than 3 query genes are found with copy number data from TCGA
   num_genes <- length(unique(tcga_gene_stats$symbol))
   if(num_genes < 3){
-    log4r_info(logger, paste0("NOTE: Limited number of genes (< 3) in query set with TCGA aberration data - type '", vtype, "'"))
+    lgr::lgr$info( paste0("NOTE: Limited number of genes (< 3) in query set with TCGA aberration data - type '", vtype, "'"))
     return(NULL)
   }
 
@@ -281,11 +281,9 @@ tcga_aberration_table <- function(qgenes,
                                   qsource = "entrezgene",
                                   genedb = NULL,
                                   tcgadb = NULL,
-                                  vtype = "snv_indel",
-                                  logger = NULL){
+                                  vtype = "snv_indel"){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
+  lgr::lgr$info( paste0("TCGA: collecting gene aberration data table, variant type =  ",vtype))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(tcgadb))
   stopifnot(
@@ -371,11 +369,12 @@ tcga_aberration_table <- function(qgenes,
 tcga_coexpression <- function(qgenes,
                                qsource = "symbol",
                                genedb = NULL,
-                               tcgadb = NULL,
-                               logger = NULL){
+                               tcgadb = NULL){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger, "TCGA: collecting co-expression data (strong negative and positive correlations)")
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( "TCGA: collecting co-expression data (strong negative and positive correlations)")
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(tcgadb))
   stopifnot(

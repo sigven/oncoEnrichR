@@ -2,15 +2,16 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{load_db}
 \alias{load_db}
-\title{Load oncoEnrichR annotation database}
+\title{Function that loads version-tagged oncoEnrichR data from Google Drive}
 \usage{
-load_db(remote = T, cache_dir = NULL)
+load_db(cache_dir = NA, force_download = F)
 }
 \arguments{
-\item{remote}{If TRUE (default), load database from tagged GitHub repository}
+\item{cache_dir}{Local directory for data download}
 
-\item{cache_dir}{path to local cache for more efficient subsequent loads}
+\item{force_download}{Logical indicating if local cache should force downloaded
+(i.e. set to TRUE to re-download even if data exists in cache)}
 }
 \description{
-Load oncoEnrichR annotation database
+Function that loads version-tagged oncoEnrichR data from Google Drive
 }

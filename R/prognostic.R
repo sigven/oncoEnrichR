@@ -1,10 +1,12 @@
 hpa_prognostic_genes <- function(qgenes,
                                  q_id_type = "symbol",
                                 genedb = NULL,
-                                hpadb = NULL,
-                                logger = NULL){
-  stopifnot(!is.null(logger))
-  log4r_info(logger,
+                                hpadb = NULL){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info(
     paste0("Human Protein Atlas: retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
@@ -51,7 +53,7 @@ hpa_prognostic_genes <- function(qgenes,
                                     " target='_blank'>",
                                     stringr::str_to_title(
                                       stringr::str_replace_all(.data$property,"_"," ")
-                                      ),
+                                    ),
                                     "</a>")) |>
     dplyr::mutate(property = dplyr::case_when(
       stringr::str_detect(.data$property,"breast") ~ "Breast",
@@ -117,8 +119,8 @@ hpa_prognostic_genes <- function(qgenes,
   }
 
   #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
-  log4r_info(logger, paste0("Found n = ",n_query_associations,
-                           " prognostic cancer associations within the target set"))
+  lgr::lgr$info( paste0("Found n = ",n_query_associations,
+                        " prognostic cancer associations within the target set"))
 
   return(prognostic_query_associations)
 
@@ -127,13 +129,13 @@ hpa_prognostic_genes <- function(qgenes,
 km_cshl_survival_genes <- function(qgenes,
                                    qsource = "symbol",
                                    projectsurvivaldb = NULL,
-                                   logger = NULL,
                                    ...){
 
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  stopifnot(!is.null(logger))
-  dot_args <- list(...)
-  log4r_info(logger,
+    dot_args <- list(...)
+  lgr::lgr$info(
              paste0("Project Survival_KM_CSHL: retrieval of ",
                     "genetic determinants of cancer survival - ",
                     dot_args$genetic_feature
@@ -141,7 +143,7 @@ km_cshl_survival_genes <- function(qgenes,
   stopifnot(is.character(qgenes))
   km_survival_targets <- data.frame()
   # if(unique(nchar(qgenes)) == 0){
-  #   log4r_warn(logger, paste0("Length of queryset is empty"))
+  #   lgr::lgr$warn(paste0("Length of queryset is empty"))
   #   return(km_survival_targets)
   #
   # }

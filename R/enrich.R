@@ -9,19 +9,20 @@ get_go_enrichment <- function(query_entrez,
                               min_geneset_size = 10,
                               max_geneset_size = 500,
                               simplify = F,
-                              pool = F,
-                              logger = NULL){
+                              pool = F){
 
-  stopifnot(!is.null(logger))
-  log4r_info(logger,
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info(
     paste0("Enrichment - GO: performing gene enrichment analysis of target set (subontology ",ontology,")"))
-  log4r_info(logger, paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  log4r_info(logger, paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  log4r_info(logger, paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
-  log4r_info(logger, paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
-  log4r_info(logger, paste0("Enrichment - GO: settings: remove redundancy of enriched GO terms = ",simplify))
-  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset: '",bgset_description,"'"))
-  log4r_info(logger, paste0("Enrichment - GO: settings: Background geneset size = ",length(background_entrez)))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: remove redundancy of enriched GO terms = ",simplify))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: Background geneset: '",bgset_description,"'"))
+  lgr::lgr$info( paste0("Enrichment - GO: settings: Background geneset size = ",length(background_entrez)))
 
 
   stopifnot(p_value_adjustment_method %in%
@@ -39,17 +40,18 @@ get_go_enrichment <- function(query_entrez,
 
   ego <-
     suppressMessages(
-      clusterProfiler::enrichGO(gene          = query_entrez,
-                                OrgDb         = "org.Hs.eg.db",
-                                ont           = ontology,
-                                minGSSize     = min_geneset_size,
-                                maxGSSize     = max_geneset_size,
-                                pAdjustMethod = p_value_adjustment_method,
-                                pvalueCutoff  = p_value_cutoff,
-                                qvalueCutoff  = q_value_cutoff,
-                                universe      = background_entrez,
-                                readable      = F,
-                                pool = pool)
+      clusterProfiler::enrichGO(
+        gene          = query_entrez,
+        OrgDb         = "org.Hs.eg.db",
+        ont           = ontology,
+        minGSSize     = min_geneset_size,
+        maxGSSize     = max_geneset_size,
+        pAdjustMethod = p_value_adjustment_method,
+        pvalueCutoff  = p_value_cutoff,
+        qvalueCutoff  = q_value_cutoff,
+        universe      = background_entrez,
+        readable      = F,
+        pool = pool)
     )
 
   if(simplify == T){
@@ -65,44 +67,48 @@ get_go_enrichment <- function(query_entrez,
     df <- df |> dplyr::mutate(db = ontology)
   }
   if(nrow(df) > 0){
-    df <- suppressWarnings(df |>
-      dplyr::mutate(db = paste0("GO_", .data$db)) |>
-      dplyr::rename(go_id = .data$ID,
-                    go_description = .data$Description,
-                    count = .data$Count,
-                    gene_ratio = .data$GeneRatio,
-                    background_ratio = .data$BgRatio,
-                    gene_id = .data$geneID) |>
-      dplyr::mutate(
-        go_description_link =
-          paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',
-                 .data$go_id,'\' target=\'_blank\'>',
-                 .data$go_description,'</a>')) |>
+    df <- suppressWarnings(
+      df |>
+        dplyr::mutate(db = paste0("GO_", .data$db)) |>
+        dplyr::rename(
+          go_id = .data$ID,
+          go_description = .data$Description,
+          count = .data$Count,
+          gene_ratio = .data$GeneRatio,
+          background_ratio = .data$BgRatio,
+          gene_id = .data$geneID) |>
+        dplyr::mutate(
+          go_description_link =
+            paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',
+                   .data$go_id,'\' target=\'_blank\'>',
+                   .data$go_description,'</a>')) |>
         tidyr::separate(.data$gene_ratio,
                         c('num_query_hits','num_query_all'),
                         sep='/',remove = F, convert = T) |>
-      dplyr::mutate(qvalue = as.numeric(.data$qvalue)) |>
-      dplyr::mutate(pvalue = as.numeric(.data$pvalue)) |>
-      dplyr::mutate(
-        qvalue =
-          dplyr::if_else(!is.na(.data$qvalue),
-                         as.numeric(formatC(.data$qvalue, format = "e",
-                                            digits = 1)),
-                         as.numeric(NA))) |>
+        dplyr::mutate(qvalue = as.numeric(.data$qvalue)) |>
+        dplyr::mutate(pvalue = as.numeric(.data$pvalue)) |>
+        dplyr::mutate(
+          qvalue =
+            dplyr::if_else(
+              !is.na(.data$qvalue),
+              as.numeric(formatC(.data$qvalue, format = "e",
+                                 digits = 1)),
+              as.numeric(NA))) |>
         dplyr::mutate(
           pvalue =
-            dplyr::if_else(!is.na(.data$pvalue),
-                           as.numeric(formatC(.data$pvalue, format = "e",
-                                              digits = 1)),
-                           as.numeric(NA))) |>
+            dplyr::if_else(
+              !is.na(.data$pvalue),
+              as.numeric(formatC(.data$pvalue, format = "e",
+                                 digits = 1)),
+              as.numeric(NA))) |>
         tidyr::separate(.data$background_ratio,
                         c('num_background_hits','num_background_all'),
                         sep='/',remove = F, convert = T) |>
-      dplyr::mutate(
-        enrichment_factor =
-          round(as.numeric((.data$num_query_hits / .data$num_query_all) /
-                             (.data$num_background_hits / .data$num_background_all)),
-                digits = 1)) |>
+        dplyr::mutate(
+          enrichment_factor =
+            round(as.numeric((.data$num_query_hits / .data$num_query_all) /
+                               (.data$num_background_hits / .data$num_background_all)),
+                  digits = 1)) |>
         dplyr::select(-c(.data$num_query_hits,
                          .data$num_query_all,
                          .data$num_background_hits,
@@ -175,16 +181,18 @@ get_universal_enrichment <- function(query_entrez,
                                      TERM2GENE = NULL,
                                      TERM2NAME = NULL,
                                      TERM2SOURCE = NULL,
-                                     dbsource = "",
-                                     logger = NULL){
-  stopifnot(!is.null(logger))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset: '",bgset_description,"'"))
-  log4r_info(logger, paste0("Enrichment - ",dbsource,": settings: Background geneset size = ",length(background_entrez)))
+                                     dbsource = ""){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: Background geneset: '",bgset_description,"'"))
+  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: Background geneset size = ",length(background_entrez)))
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(background_entrez))

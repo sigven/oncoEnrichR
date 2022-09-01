@@ -177,10 +177,11 @@ get_ppi_network <- function(qgenes,
                             ppi_source = "STRING",
                             genedb = NULL,
                             cancerdrugdb = NULL,
-                            settings = NULL,
-                            logger = NULL){
+                            settings = NULL){
 
-  stopifnot(!is.null(logger))
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
   stopifnot(!is.null(settings))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(cancerdrugdb))
@@ -227,7 +228,7 @@ get_ppi_network <- function(qgenes,
       dplyr::filter(.data$n > 1)
     )
 
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "Resolving ambiguous Entrez gene identifiers: ",
       paste(duplicate_records$entrezgene, collapse=", ")))
 
@@ -258,8 +259,8 @@ get_ppi_network <- function(qgenes,
 
   }
 
-  log4r_info(logger, "STRINGdb: retrieving protein-protein interaction network from (v11.5)")
-  log4r_info(logger, paste0("STRINGdb: Settings -  required_score = ",
+  lgr::lgr$info( "STRINGdb: retrieving protein-protein interaction network from (v11.5)")
+  lgr::lgr$info( paste0("STRINGdb: Settings -  required_score = ",
                                   settings$minimum_score,", add_nodes = ",settings$add_nodes))
 
   all_edges <- data.frame()

@@ -3,22 +3,23 @@ annotate_tf_targets <- function(qgenes,
                                 genedb = NULL,
                                 tf_target_interactions = NULL,
                                 collection = "global",
-                                min_confidence_reg_interaction = "D",
-                                logger = NULL){
+                                min_confidence_reg_interaction = "D"){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   stopifnot(is.character(collection))
   stopifnot(collection == "global" | collection == "pancancer")
 
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(logger))
   stopifnot(typeof(tf_target_interactions) == "list")
   stopifnot(!is.null(tf_target_interactions[[collection]]))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tf_target_interactions[[collection]], dbtype = "dorothea")
   stopifnot(min_confidence_reg_interaction %in% c("A","B","C","D"))
 
-  log4r_info(logger,
+  lgr::lgr$info(
     paste0("DoRothEA: retrieval of regulatory interactions involving members of target set - ", collection))
 
   exclude_level_regex <- "E"

@@ -6,14 +6,11 @@ annotate_subcellular_compartments <-
            genedb = NULL,
            comppidb = NULL,
            go_gganatogram_map = NULL,
-           transcript_xref = NULL,
-           #oeDB = NULL,
-           logger = NULL){
+           transcript_xref = NULL){
 
     stopifnot(!is.null(query_entrez))
     stopifnot(is.integer(query_entrez))
     stopifnot(!is.null(genedb))
-    stopifnot(!is.null(logger))
     stopifnot(!is.null(transcript_xref))
     stopifnot(!is.null(comppidb))
     stopifnot(!is.null(go_gganatogram_map))
@@ -23,7 +20,7 @@ annotate_subcellular_compartments <-
     validate_db_df(transcript_xref, dbtype = "transcript_xref")
     validate_db_df(go_gganatogram_map, dbtype = "go_gganatogram")
 
-    log4r_info(logger, "ComPPI: retrieval of subcellular compartments for target set")
+    lgr::lgr$info( "ComPPI: retrieval of subcellular compartments for target set")
 
     uniprot_xref <- transcript_xref |>
       dplyr::filter(.data$property == "uniprot_acc") |>

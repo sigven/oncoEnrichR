@@ -4,10 +4,12 @@ gene_tissue_cell_spec_cat <-
            resolution = "tissue",
            genedb = NULL,
            hpa_enrichment_db_df = NULL,
-           hpa_expr_db_df = NULL,
-           logger = NULL){
+           hpa_expr_db_df = NULL){
 
-    stopifnot(!is.null(logger))
+
+    lgr::lgr$appenders$console$set_layout(
+      lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(hpa_enrichment_db_df))
     stopifnot(!is.null(hpa_expr_db_df))
@@ -59,10 +61,10 @@ gene_tissue_cell_spec_cat <-
       validate_db_df(hpa_enrichment_db_df,
                      dbtype = "enrichment_db_hpa_tissue")
     }
-    log4r_info(logger,
-               paste0("Retrieving ", etype,
-                      " specificity (", edb,
-                      ") category of target genes")
+    lgr::lgr$info(
+      paste0("Retrieving ", etype,
+             " specificity (", edb,
+             ") category of target genes")
     )
 
     specificity_groups_target <- as.data.frame(
@@ -101,14 +103,14 @@ gene_tissue_cell_spec_cat <-
     }
     specificity_groups_target <- as.data.frame(
       specificity_groups_target |>
-      dplyr::group_by(.data$category) |>
-      dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
-      dplyr::mutate(tot = sum(.data$n)) |>
-      dplyr::mutate(pct = round((.data$n / .data$tot) * 100, digits = 2)) |>
-      dplyr::mutate(
-        group = paste0("Target set (n = ", .data$tot,")"
+        dplyr::group_by(.data$category) |>
+        dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
+        dplyr::mutate(tot = sum(.data$n)) |>
+        dplyr::mutate(pct = round((.data$n / .data$tot) * 100, digits = 2)) |>
+        dplyr::mutate(
+          group = paste0("Target set (n = ", .data$tot,")"
+          )
         )
-      )
     )
 
     tot <- unique(specificity_groups_target$tot)
@@ -191,7 +193,7 @@ gene_tissue_cell_spec_cat <-
     return(list('category_df' = category_df,
                 'exp_dist_df' = exp_dist_df))
 
-}
+  }
 
 
 gene_tissue_cell_enrichment <-
@@ -200,10 +202,11 @@ gene_tissue_cell_enrichment <-
            genedb = NULL,
            hpa_enrichment_db_df = NULL,
            hpa_enrichment_db_SE = NULL,
-           resolution = "tissue",
-           logger = NULL){
+           resolution = "tissue"){
 
-    stopifnot(!is.null(logger))
+    lgr::lgr$appenders$console$set_layout(
+      lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(hpa_enrichment_db_df))
     stopifnot(!is.null(hpa_enrichment_db_SE))
@@ -227,7 +230,7 @@ gene_tissue_cell_enrichment <-
       validate_db_df(hpa_enrichment_db_df,
                      dbtype = "enrichment_db_hpa_tissue")
     }
-    log4r_info(logger,
+    lgr::lgr$info(
       paste0("Estimating enrichment of ", etype,
              " (", edb,
              ") in target set with TissueEnrich"))

@@ -12,4 +12,5 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 .bumpversion.cfg
-rlogging.log
+data_processing_code
+#inst/internal_db
