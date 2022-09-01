@@ -1,3 +1,5 @@
+#' Load oncoEnrichR datasets
+#'
 #' Function that loads version-tagged oncoEnrichR data from Google Drive
 #'
 #' @param cache_dir Local directory for data download
@@ -29,8 +31,14 @@ load_db <- function(cache_dir = NA,
   }
 
   oe_version <- unique(db_id_ref$pVersion)
-  cache_version_dir <- file.path(cache_dir, oe_version)
-  write_dest <- cache_version_dir
+
+  cache_dir_ext <-
+    file.path(cache_dir, ".oncoenrichr")
+  if(!dir.exists(cache_dir_ext)){
+    dir.create(cache_dir_ext)
+  }
+  cache_version_dir <-
+    file.path(cache_dir, ".oncoenrichr", oe_version)
 
   if(!dir.exists(cache_version_dir)){
     dir.create(cache_version_dir)
