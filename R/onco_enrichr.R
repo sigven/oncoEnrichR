@@ -43,11 +43,13 @@ load_db <- function(cache_dir = NA,
     dir.create(cache_dir_ext)
   }
   cache_version_dir <-
-    file.path(cache_dir, ".oncoenrichr", oe_version)
+    file.path(cache_dir,
+              ".oncoenrichr",
+              paste0("v", oe_version))
 
   if(!dir.exists(cache_version_dir)){
     dir.create(cache_version_dir)
-    lgr::lgr$info( paste0("Data will be cached in ", cache_dir))
+    lgr::lgr$info( paste0("Data will be cached in ", cache_version_dir))
   }
 
   oedb <- list()

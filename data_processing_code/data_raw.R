@@ -271,7 +271,7 @@ tissuecelldb <- get_tissue_celltype_specificity(
   raw_db_dir = data_raw_dir
 )
 
-db_props <- data.frame()
+#db_props <- data.frame()
 
 oedb <- list()
 oedb[['cancerdrugdb']] <- cancerdrugdb
@@ -484,7 +484,7 @@ rm(slparalogdb)
 # #zenodo$discardChanges(oedb_rec$id)
 # db_props$zenodo_doi <- oedb_rec$metadata$doi
 
-usethis::use_data(db_props, overwrite = T)
+#usethis::use_data(db_props, overwrite = T)
 
 #oedb_rec <- zenodo$publishRecord(oedb_rec$id)
 
@@ -504,6 +504,15 @@ db_packages <-
     'TCGAbiolinksGUI.data',
     'TCGAbiolinks',
     'rlogging',
+    'oncoPharmaDB',
+    'rlogging',
+    'zen4R',
+    'biomaRt',
+    'redland',
+    'rdflib',
+    'magrittr',
+    'log4r',
+    'keyring',
     'pharmaOncoX',
     'oncoPhenoMap')
 
