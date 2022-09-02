@@ -37,9 +37,6 @@
     <loc>https://sigven.github.io/oncoEnrichR/index.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/oncoEnrichR/reference/db_props.html</loc>
-  </url>
-  <url>
     <loc>https://sigven.github.io/oncoEnrichR/reference/gseabase.html</loc>
   </url>
   <url>
@@ -53,9 +50,6 @@
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/oncoEnrichR/reference/pipe.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/oncoEnrichR/reference/tidyeval.html</loc>
