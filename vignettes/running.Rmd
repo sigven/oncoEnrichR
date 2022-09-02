@@ -9,7 +9,8 @@ output: rmarkdown::html_document
 
 ### 1. `oncoEnrichR::load_db()`
 
--   Loads all the necessary annotation datasets used in oncoEnrichR, utilizing the
+-   Loads the underlying annotation data repository for oncoEnrichR, and saves
+it to a local cache directory. Utilizing the 
 [googledrive](https://googledrive.tidyverse.org/) R package
 
 <br>

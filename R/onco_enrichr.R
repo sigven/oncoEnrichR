@@ -834,7 +834,8 @@ init_report <- function(oeDB,
 #' cancer relevance. Multiple perspectives are offered, including
 #' tumor aberration and co-expression patterns, druggability,
 #' protein-protein interactions, gene fitness effects, regulatory
-#' interactions, subcellular compartments etc.
+#' interactions, subcellular compartment enrichment, pathway enrichment,
+#' synthetic lethality interactions, prognostic associations, and more.
 #'
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`

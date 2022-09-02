@@ -85,14 +85,14 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   September 2nd 2022: [**1.2.2
+    release**](articles/CHANGELOG.html#version-1-2-2)
 -   July 13th 2022: [**1.2.1
     release**](articles/CHANGELOG.html#version-1-2-1)
 -   June 24th 2022: [**1.2.0
     release**](articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9
     release**](articles/CHANGELOG.html#version-1-0-9)
--   February 20th 2022: [**1.0.8
-    release**](articles/CHANGELOG.html#version-1-0-8)
 
 ## Example report
 
@@ -128,7 +128,8 @@ node)](https://elixir.no/organization/organisation/elixir-uio).
 <p float="left">
 
 <a href="https://www.med.uio.no/cancell/english/">
-<img src="img/can-cell.png" width="150"/> </a>        
+<img src="img/can-cell.png" width="150"/> </a>
+&nbsp; &nbsp; &nbsp;
 <a href="https://elixir.no/organization/organisation/elixir-uio">
 <img src="img/elixir_norway.png" width="200"/> </a>
 

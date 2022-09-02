@@ -161,5 +161,6 @@ Function that interrogates a list of human gene identifiers for
 cancer relevance. Multiple perspectives are offered, including
 tumor aberration and co-expression patterns, druggability,
 protein-protein interactions, gene fitness effects, regulatory
-interactions, subcellular compartments etc.
+interactions, subcellular compartment enrichment, pathway enrichment,
+synthetic lethality interactions, prognostic associations, and more.
 }
