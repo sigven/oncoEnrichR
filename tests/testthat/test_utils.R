@@ -1,24 +1,12 @@
-library(magrittr)
-
-# load(system.file("internal_db/oedb.rda", package = "oncoEnrichR"))
-#
-# log4r_logger <- log4r::logger(
-#   threshold = "INFO",
-#   appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
 
 test_that("Query gene validation routine - testing ", {
 
-  expect_error(oncoEnrichR:::validate_query_genes())
-  expect_error(oncoEnrichR:::validate_query_genes(logger = log4r_logger))
   expect_error(oncoEnrichR:::validate_query_genes(
-    logger = log4r_logger,
     qgenes = c("EGFR","KRAS")))
   expect_error(oncoEnrichR:::validate_query_genes(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     qgenes = c("EGFR","KRAS")))
   expect_error(oncoEnrichR:::validate_query_genes(
-    logger = log4r_logger,
     transcript_xref = oedb$genedb$transcript_xref,
     genedb = oedb$genedb$all,
     q_id_type = "UNKNOWN",
@@ -30,7 +18,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = c("EGFR","KRAS"),
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "symbol"
       )
     ),
@@ -43,7 +30,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = c("EGFR","KRAS"),
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "symbol"
       )$all
     ),
@@ -56,7 +42,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = c("EGFR","KRAS"),
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "symbol"
       )$not_found
     ),
@@ -70,7 +55,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = c("EGFR","KRAS"),
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "symbol"
       )$found
     ),
@@ -84,7 +68,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "NP_005219",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "refseq_protein"
       )$found
     ),
@@ -97,7 +80,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "NM_005228",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "refseq_mrna"
       )$found
     ),
@@ -110,7 +92,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "1956",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "entrezgene"
       )$found
     ),
@@ -123,7 +104,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "ENST00000275493",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "ensembl_mrna"
       )$found
     ),
@@ -136,7 +116,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "ENSP00000275493",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "ensembl_protein"
       )$found
     ),
@@ -149,7 +128,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "ENSG00000146648",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "ensembl_gene"
       )$found
     ),
@@ -162,7 +140,6 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "P00533",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        logger = log4r_logger,
         q_id_type = "uniprot_acc"
       )$found
     ),
@@ -176,7 +153,6 @@ test_that("Query gene validation routine - testing ", {
           qgenes = "NISBD2",
           transcript_xref = oedb$genedb$transcript_xref,
           genedb = oedb$genedb$all,
-          logger = log4r_logger,
           q_id_type = "symbol"
         )$found,
         status == "found_as_alias")
@@ -189,7 +165,6 @@ test_that("Query gene validation routine - testing ", {
       qgenes = "NISBD2",
       transcript_xref = oedb$genedb$transcript_xref,
       genedb = oedb$genedb$all,
-      logger = log4r_logger,
       q_id_type = "symbol"
     ), regexp = "WARNING: target gene identifiers NOT found as primary symbols"
   )
@@ -200,21 +175,9 @@ test_that("Query gene validation routine - testing ", {
       ignore_id_err = F,
       transcript_xref = oedb$genedb$transcript_xref,
       genedb = oedb$genedb$all,
-      logger = log4r_logger,
       q_id_type = "symbol"
     ), regexp = "ERROR: target gene identifiers NOT found: UNKNOWN"
   )
-
-  # expect_output(
-  #   oncoEnrichR:::validate_query_genes(
-  #     qgenes = c("NISBD2","UNKNOWN"),
-  #     ignore_id_err = T,
-  #     transcript_xref = oedb$genedb$transcript_xref,
-  #     genedb = oedb$genedb$all,
-  #     logger = log4r_logger,
-  #     q_id_type = "symbol"
-  #   ), regexp = "Target gene identifiers NOT found: UNKNOWN"
-  # )
 
   expect_output(
     oncoEnrichR:::validate_query_genes(
@@ -222,7 +185,6 @@ test_that("Query gene validation routine - testing ", {
       ignore_id_err = F,
       transcript_xref = oedb$genedb$transcript_xref,
       genedb = oedb$genedb$all,
-      logger = log4r_logger,
       q_id_type = "symbol"
     ), regexp = "ERROR: NO target gene identifiers found"
   )

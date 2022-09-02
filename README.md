@@ -1,4 +1,4 @@
-# oncoEnrichR - cancer-dedicated gene set interpretation
+# oncoEnrichR <a href="https://sigven.github.io/oncoEnrichR/"><img src="man/figures/logo.png" align="right" height="130" width="113"/></a>
 
 **oncoEnrichR** is an R package for functional interrogation of human gene lists in the context of cancer. The package leverages an extensive amount of prior molecular knowledge that allows for biological interpretation along multiple dimensions, both at the systems level and at the level of individual genes.
 
@@ -20,13 +20,14 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## News
 
+-   September 2nd 2022: [**1.2.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-2)
 -   July 13th 2022: [**1.2.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-1)
 -   June 24th 2022: [**1.2.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-0-9)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.6828941"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6828941.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.7042674"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7042674.svg" alt="DOI"/></a>
 
 ### Contact
 

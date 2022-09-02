@@ -46,17 +46,17 @@ subontology_plots[['CC']] <- T
 
 #for(ont in c('GO_BP','GO_CC','GO_MF')){
 if(show_enrichment_filters[['go']] == T){
-  subont_bp <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  subont_bp <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_BP')
   
   if(nrow(subont_bp) == 0){subontology_plots[['BP']] <- F}
   
-  subont_mf <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  subont_mf <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_MF')
   
   if(nrow(subont_mf) == 0){subontology_plots[['MF']] <- F}
   
-  subont_cc <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+  subont_cc <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_CC')
   
   if(nrow(subont_cc) == 0){subontology_plots[['CC']] <- F}
@@ -125,9 +125,8 @@ if(active_tab[['go']] == T){
 <br>
 
 ```{r table_browse_go, echo=F, results = "asis", eval = show_enrichment_filters[['go']]}
-library(crosstalk)
 
-enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
+enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
                 Gene_Members = gene_symbol_link, DB = db,
@@ -137,10 +136,10 @@ enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
                 Q_Value_Cutoff = setting_q_value_cutoff,
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
-                Max_Geneset_Size = setting_max_geneset_size) %>%
+                Max_Geneset_Size = setting_max_geneset_size) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 
@@ -196,9 +195,8 @@ if(active_tab[['msigdb']] == T){
 <br>
 
 ```{r table_browse_msigdb, echo=F, results = "asis", eval = show_enrichment_filters[['msigdb']]}
-library(crosstalk)
 
-enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] %>%
+enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] |>
   dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
@@ -207,10 +205,10 @@ enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigd
                 Q_Value_Cutoff = setting_q_value_cutoff,
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
-                Max_Geneset_Size = setting_max_geneset_size) %>%
+                Max_Geneset_Size = setting_max_geneset_size) |>
   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
@@ -264,9 +262,8 @@ if(active_tab[['kegg']] == T){
 <br>
 
 ```{r table_browse_kegg, echo=F, results = "asis", eval = show_enrichment_filters[['kegg']]}
-library(crosstalk)
 
-enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] %>%
+enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] |>
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, 
                 Q_Value = qvalue,  
@@ -280,10 +277,10 @@ enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg'
                 Q_Value_Cutoff = setting_q_value_cutoff,
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
-                Max_Geneset_Size = setting_max_geneset_size) %>%
+                Max_Geneset_Size = setting_max_geneset_size) |>
   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, P_Value_Cutoff, Q_Value_Cutoff,
-                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) %>%
+                P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
@@ -332,9 +329,8 @@ if(active_tab[['wikipathway']] == T){
 <br>
 
 ```{r table_browse_wikipathwaydb, echo=F, results = "asis", eval = show_enrichment_filters[['wikipathway']]}
-library(crosstalk)
 
-enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] %>%
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] |>
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, 
                 Q_Value = qvalue, P_Value = pvalue,
@@ -345,13 +341,13 @@ enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikip
                 Q_Value_Cutoff = setting_q_value_cutoff,
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
-                Max_Geneset_Size = setting_max_geneset_size) %>%
+                Max_Geneset_Size = setting_max_geneset_size) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
                  DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, 
                 P_Value_Cutoff, Q_Value_Cutoff,
                 P_Value_Adj_Method, 
-                Min_Geneset_Size, Max_Geneset_Size) %>%
+                Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 
@@ -405,9 +401,8 @@ if(active_tab[['netpath']] == T){
 <br>
 
 ```{r table_browse_netpathdb, echo=F, results = "asis", eval = show_enrichment_filters[['netpath']]}
-library(crosstalk)
 
-enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netpath']] %>%
+enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netpath']] |>
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, 
                 Q_Value = qvalue, P_Value = pvalue,
@@ -418,13 +413,13 @@ enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netp
                 Q_Value_Cutoff = setting_q_value_cutoff,
                 P_Value_Adj_Method = setting_p_value_adj_method,
                 Min_Geneset_Size = setting_min_geneset_size,
-                Max_Geneset_Size = setting_max_geneset_size) %>%
+                Max_Geneset_Size = setting_max_geneset_size) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
                  DB, Exact_Source, 
                 Background_Ratio, Gene_Ratio, Count, 
                 P_Value_Cutoff, Q_Value_Cutoff,
                 P_Value_Adj_Method, 
-                Min_Geneset_Size, Max_Geneset_Size) %>%
+                Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)
@@ -467,14 +462,14 @@ cat('<br><br>')
 
 ```{r go_enrichment_barplot_mf, echo = F, results = "asis", eval = subontology_plots[['MF']]}
 
-plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::select(description, enrichment_factor, qvalue, db) %>%
-  dplyr::filter(db == 'GO_MF') %>%
-  dplyr::arrange(qvalue) %>%
-  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_MF') |>
+  dplyr::arrange(qvalue) |>
+  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
-  dplyr::arrange(dplyr::desc(qvalue)) %>%
-  dplyr::rename(Subontology = db) %>%
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
   dplyr::mutate(
     Subontology = dplyr::case_when(
       Subontology == "GO_BP" ~ "Biological Process",
@@ -520,7 +515,7 @@ if(nrow(plot_data) <= 10){
   height_plot <- 300
 }
 
-enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
     plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
 
 enrichment_barplot
@@ -544,14 +539,14 @@ cat('<br><br>')
 
 ```{r go_enrichment_barplot_bp, echo = F, results = "asis", eval = subontology_plots[['BP']]}
 
-plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::select(description, enrichment_factor, qvalue, db) %>%
-  dplyr::filter(db == 'GO_BP') %>%
-  dplyr::arrange(qvalue) %>%
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_BP') |>
+  dplyr::arrange(qvalue) |>
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
-  dplyr::arrange(dplyr::desc(qvalue)) %>%
-  dplyr::rename(Subontology = db) %>%
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
   dplyr::mutate(
     Subontology = dplyr::case_when(
       Subontology == "GO_BP" ~ "Biological Process",
@@ -592,7 +587,7 @@ if(nrow(plot_data) <= 10){
   height_plot <- 300
 }
 
-enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
     plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
 
 enrichment_barplot
@@ -616,14 +611,14 @@ cat('<br><br>')
 
 ```{r go_enrichment_barplot_cc, echo = F, results = "asis", eval = subontology_plots[['CC']]}
 
-plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] %>%
-  dplyr::select(description, enrichment_factor, qvalue, db) %>%
-  dplyr::filter(db == 'GO_CC') %>%
-  dplyr::arrange(qvalue) %>%
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) %>%
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_CC') |>
+  dplyr::arrange(qvalue) |>
+  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
-  dplyr::arrange(dplyr::desc(qvalue)) %>%
-  dplyr::rename(Subontology = db) %>%
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
   dplyr::mutate(
     Subontology = dplyr::case_when(
       Subontology == "GO_BP" ~ "Biological Process",
@@ -665,7 +660,7 @@ if(nrow(plot_data) <= 10){
   height_plot <- 300
 }
 
-enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) %>%
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
     plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
 
 enrichment_barplot

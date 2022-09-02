@@ -3,6 +3,21 @@ title: "Changelog"
 output: rmarkdown::html_document
 ---
 
+## Version 1.2.2
+
+* Date: 2022-09-02
+
+### Added
+
+* Data updates:
+  * WikiPathways (20220810)
+  * KEGG (20220809)
+
+### Changed
+
+- Now using [googledrive](https://googledrive.tidyverse.org) as 
+data repository host, due to unstable code using Zenodo 
+
 ## Version 1.2.1
 
 * Date: 2022-07-13

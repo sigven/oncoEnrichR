@@ -49,10 +49,10 @@ for(cl in c('global','pancancer')){
   
   if(NROW(onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]]) > 0){
     reg_interactions[[cl]][['tf_target']] <- 
-      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_")) %>%
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_")) |>
       dplyr::select(-c(regulator_cancer_max_rank,
-                       target_cancer_max_rank)) %>%
+                       target_cancer_max_rank)) |>
       head(2500)
     
     if(NROW(reg_interactions[[cl]][['tf_target']]) > 0){
@@ -60,10 +60,10 @@ for(cl in c('global','pancancer')){
     }
     
     reg_interactions[[cl]][['tf_only']] <- 
-      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$")) %>%
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$")) |>
       dplyr::select(-c(regulator_cancer_max_rank,
-                       target_cancer_max_rank)) %>%
+                       target_cancer_max_rank)) |>
       head(2500)
     
     if(NROW(reg_interactions[[cl]][['tf_only']]) > 0 & 
@@ -72,10 +72,10 @@ for(cl in c('global','pancancer')){
     }
     
     reg_interactions[[cl]][['target_only']] <- 
-      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] %>%
-      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$")) %>%
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$")) |>
       dplyr::select(-c(regulator_cancer_max_rank,
-                       target_cancer_max_rank)) %>%
+                       target_cancer_max_rank)) |>
       head(2500)
     
     if(NROW(reg_interactions[[cl]][['target_only']]) > 0 & 
@@ -140,7 +140,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'regulator', 
     'queryset_overlap',
@@ -149,7 +149,7 @@ DT::datatable(
       onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
       onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
     )
-  ) %>%
+  ) |>
   DT::formatStyle(
     'target', 
     'queryset_overlap',
@@ -216,7 +216,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'regulator', 
     'queryset_overlap',
@@ -283,7 +283,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  )  %>%
+  )  |>
   DT::formatStyle(
     'target', 
     'queryset_overlap',
@@ -355,7 +355,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'regulator', 
     'queryset_overlap',
@@ -364,7 +364,7 @@ DT::datatable(
       onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
       onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
     )
-  ) %>%
+  ) |>
   DT::formatStyle(
     'target', 
     'queryset_overlap',
@@ -432,7 +432,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'regulator', 
     'queryset_overlap',
@@ -501,7 +501,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  )  %>%
+  )  |>
   DT::formatStyle(
     'target', 
     'queryset_overlap',
@@ -539,8 +539,8 @@ cat('<br><br>')
 regulatory_nodes <- onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]
 regulatory_edges <- onc_enrich_report[['data']][['regulatory']][['network']][['edges']]
 
-visNetwork::visNetwork(regulatory_nodes, regulatory_edges) %>% 
-  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) %>%
+visNetwork::visNetwork(regulatory_nodes, regulatory_edges) |> 
+  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
   visNetwork::visLegend()
   #visNetwork::visIgraphLayout(layout="layout_nicely")
 ```

@@ -1,4 +1,3 @@
-library(magrittr)
 
 ppi_settings <- list()
 ppi_settings[["minimum_score"]] <- 900
@@ -12,27 +11,19 @@ pc_genes <-
   oedb$genedb$all[oedb$genedb$all$gene_biotype == "protein-coding",]
 
 test_that("Tissue/celltype enrichment categories ", {
-  expect_error(oncoEnrichR:::get_ppi_network())
   expect_error(oncoEnrichR:::get_ppi_network(
-    logger = log4r_logger
-  ))
-  expect_error(oncoEnrichR:::get_ppi_network(
-    logger = log4r_logger,
     settings = ppi_settings
   ))
   expect_error(oncoEnrichR:::get_ppi_network(
-    logger = log4r_logger,
     settings = ppi_settings,
     genedb = oedb$genedb$all
   ))
   expect_error(oncoEnrichR:::get_ppi_network(
-    logger = log4r_logger,
     settings = ppi_settings,
     genedb = oedb$genedb$all,
     cancerdrugdb = oedb$cancerdrugdb
   ))
   expect_error(oncoEnrichR:::get_ppi_network(
-    logger = log4r_logger,
     settings = ppi_settings,
     genedb = oedb$genedb$all,
     cancerdrugdb = oedb$cancerdrugdb,
@@ -45,8 +36,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )
     ),
     c("source","complete_network",
@@ -59,8 +49,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     ),
     as.integer(0)
@@ -72,8 +61,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     ),
     as.integer(0)
@@ -87,8 +75,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
         )
       ),
     c("source","complete_network",
@@ -101,8 +88,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(dplyr::sample_n(pc_genes, 300)$entrezgene),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )
     ),
     c("source","complete_network",
@@ -115,8 +101,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$complete_network
     ),
     c("nodes",
@@ -129,8 +114,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     )
   )
@@ -141,8 +125,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     )
   )
@@ -153,8 +136,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     )
   )
@@ -165,8 +147,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
-        cancerdrugdb = oedb$cancerdrugdb,
-        logger = log4r_logger
+        cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     ),
     c("symbol","name","hub_score")

@@ -3,8 +3,10 @@ validate_query_genes <- function(qgenes,
                                qtype = "target",
                                ignore_id_err = F,
                                genedb = NULL,
-                               transcript_xref = NULL,
-                               logger = NULL){
+                               transcript_xref = NULL){
+
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   stopifnot(!is.null(q_id_type))
   stopifnot(is.character(qgenes))
@@ -19,15 +21,14 @@ validate_query_genes <- function(qgenes,
   stopifnot(is.character(qgenes))
   qgenes <- qgenes[!is.na(qgenes)]
   stopifnot(!is.null(genedb))
-  stopifnot(!is.null(logger))
   stopifnot(!is.null(transcript_xref))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(transcript_xref, dbtype = "transcript_xref")
 
   alias2entrez <-
-    transcript_xref %>%
-    dplyr::filter(.data$property == "alias") %>%
-    dplyr::rename(alias = .data$value) %>%
+    transcript_xref |>
+    dplyr::filter(.data$property == "alias") |>
+    dplyr::rename(alias = .data$value) |>
     dplyr::select(-.data$property)
 
   target_genes <- data.frame(
@@ -38,11 +39,11 @@ validate_query_genes <- function(qgenes,
     target_genes$qid <- as.integer(target_genes$qid)
   }
 
-  gdb <- genedb %>%
+  gdb <- genedb |>
     dplyr::select(.data$symbol,
                   .data$entrezgene,
                   .data$name,
-                  .data$ensembl_gene_id) %>%
+                  .data$ensembl_gene_id) |>
     dplyr::distinct()
 
   queryset <- list()
@@ -61,10 +62,10 @@ validate_query_genes <- function(qgenes,
       qtype_id <- 'ensembl_gene_id'
     }
 
-    target_genes <- target_genes %>%
+    target_genes <- target_genes |>
       dplyr::left_join(gdb,
-                       by = c("qid" = qtype_id)) %>%
-      dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) %>%
+                       by = c("qid" = qtype_id)) |>
+      dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) |>
       dplyr::distinct()
 
   }else{
@@ -81,27 +82,27 @@ validate_query_genes <- function(qgenes,
     }
 
     gene_xref_map <-
-      transcript_xref %>%
-      dplyr::filter(.data$property == qtype_id) %>%
-      dplyr::rename(!!rlang::sym(qtype_id) := .data$value) %>%
+      transcript_xref |>
+      dplyr::filter(.data$property == qtype_id) |>
+      dplyr::rename(!!rlang::sym(qtype_id) := .data$value) |>
       dplyr::select(.data$entrezgene, rlang::sym(qtype_id))
 
     target_genes <- as.data.frame(
-      target_genes %>%
+      target_genes |>
 
         ## map query to entrezgene
         dplyr::left_join(
           gene_xref_map,
-          by = c("qid" = qtype_id)) %>%
-        dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) %>%
+          by = c("qid" = qtype_id)) |>
+        dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) |>
         ## append other gene annotations
-        dplyr::left_join(gdb, by = c("entrezgene")) %>%
-        dplyr::distinct() %>%
+        dplyr::left_join(gdb, by = c("entrezgene")) |>
+        dplyr::distinct() |>
         dplyr::group_by(
           .data$symbol,
           .data$entrezgene,
           .data$ensembl_gene_id,
-          .data$name) %>%
+          .data$name) |>
         dplyr::summarise(
           !!rlang::sym(qtype_id) := paste(
             !!rlang::sym(qtype_id), collapse=","),
@@ -111,13 +112,13 @@ validate_query_genes <- function(qgenes,
 
   }
 
-  queryset[['found']] <- target_genes %>%
+  queryset[['found']] <- target_genes |>
     dplyr::filter(!is.na(.data$symbol) &
                     !is.na(.data$entrezgene) &
-                    !is.na(.data$ensembl_gene_id)) %>%
+                    !is.na(.data$ensembl_gene_id)) |>
     dplyr::mutate(alias = F)
 
-  queryset[['not_found']] <- target_genes %>%
+  queryset[['not_found']] <- target_genes |>
     dplyr::filter(is.na(.data$symbol) |
                     is.na(.data$entrezgene) |
                     is.na(.data$ensembl_gene_id))
@@ -127,8 +128,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if(q_id_type == 'symbol'){
-        log4r_info(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -142,32 +143,32 @@ validate_query_genes <- function(qgenes,
         if(nrow(query_as_alias) > 0){
 
           if(nrow(queryset[['found']]) > 0){
-            query_as_alias <- query_as_alias %>%
+            query_as_alias <- query_as_alias |>
               dplyr::anti_join(queryset[['found']],
-                               by = "entrezgene") %>%
+                               by = "entrezgene") |>
               dplyr::distinct()
           }
           if(nrow(query_as_alias) > 0){
 
-            query_as_alias <- query_as_alias %>%
+            query_as_alias <- query_as_alias |>
               dplyr::left_join(gdb,
-                               by = "entrezgene") %>%
-              dplyr::distinct() %>%
+                               by = "entrezgene") |>
+              dplyr::distinct() |>
               dplyr::mutate(alias = T)
 
-            log4r_info(logger,
+            lgr::lgr$info(
               paste0("Mapped query identifiers as gene aliases ",
                      paste0(query_as_alias$qid, collapse=", ")," ---> ",
                      paste0(query_as_alias$symbol, collapse=", ")))
 
             queryset[['found']] <-
               dplyr::bind_rows(queryset[['found']], query_as_alias)
-            queryset[['not_found']] <- queryset[['not_found']] %>%
+            queryset[['not_found']] <- queryset[['not_found']] |>
               dplyr::anti_join(query_as_alias, by = "qid")
 
             if(nrow(queryset[['not_found']]) > 0){
-              log4r_warn(logger,
-                paste0(Hmisc::capitalize(qtype)," gene identifiers NOT found: ",
+              lgr::lgr$warn(
+                paste0(stringr::str_to_title(qtype)," gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid,collapse=", "),
                        " (make sure that unambiguous primary identifiers/symbols are used)"))
             }else{
@@ -175,15 +176,15 @@ validate_query_genes <- function(qgenes,
             }
           }
         }else{
-          log4r_warn(logger,
+          lgr::lgr$warn(
             paste0("Query gene identifiers NOT found: ",
                    paste0(queryset[['not_found']]$qid,collapse=", "),
                    " (make sure that unambiguous primary identifiers/symbols are used)"))
         }
 
       }else{
-        log4r_warn(logger, paste0(
-          Hmisc::capitalize(qtype), " gene identifiers NOT found: ",
+        lgr::lgr$warn(paste0(
+          stringr::str_to_title(qtype), " gene identifiers NOT found: ",
           paste0(queryset[['not_found']]$qid,collapse=", ")))
       }
 
@@ -192,8 +193,8 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_stop"
 
       if(q_id_type == 'symbol'){
-        log4r_warn(logger, paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
-        log4r_info(logger, paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$warn( paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
+        lgr::lgr$info( paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid,collapse=", ")))
 
         query_as_alias <-
           dplyr::inner_join(
@@ -202,25 +203,25 @@ validate_query_genes <- function(qgenes,
             by = c("qid" = "alias"))
 
         if(nrow(query_as_alias) > 0){
-          query_as_alias <- query_as_alias %>%
+          query_as_alias <- query_as_alias |>
             dplyr::left_join(gdb,
-                             by = "entrezgene") %>%
-            dplyr::distinct() %>%
+                             by = "entrezgene") |>
+            dplyr::distinct() |>
           dplyr::mutate(alias = T)
 
 
-          log4r_info(logger,
+          lgr::lgr$info(
             paste0("Mapped ", qtype, " gene identifiers as gene aliases ",
                    paste0(query_as_alias$qid,collapse=", ")," ---> ",
                    paste0(query_as_alias$symbol,collapse=", ")))
 
           queryset[['found']] <-
             dplyr::bind_rows(queryset[['found']], query_as_alias)
-          queryset[['not_found']] <- queryset[['not_found']] %>%
+          queryset[['not_found']] <- queryset[['not_found']] |>
             dplyr::anti_join(query_as_alias, by = "qid")
 
           if(nrow(queryset[['not_found']]) > 0){
-            log4r_info(logger,
+            lgr::lgr$info(
               paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                      paste0(queryset[['not_found']]$qid,collapse=", "),
                      " (make sure that unambiguous primary identifiers/symbols are used)"))
@@ -229,31 +230,31 @@ validate_query_genes <- function(qgenes,
 
           }
         }else{
-          log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
+          lgr::lgr$info( paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                          paste0(queryset[['not_found']]$qid, collapse=", "),
                          " (make sure that unambiguous primary identifiers/symbols are used)"))
 
         }
       }
       else{
-        log4r_info(logger, paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
+        lgr::lgr$info( paste0("ERROR: ", qtype, " gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse=", "),
                        " (make sure that unambiguous primary identifiers/symbols are used)"))
       }
     }
   }
   if(nrow(queryset[['found']]) == length(qgenes)){
-    log4r_info(logger, paste0('SUCCESS: Identified all genes (n = ',
+    lgr::lgr$info( paste0('SUCCESS: Identified all genes (n = ',
                              nrow(queryset[['found']]),') in ',qtype,' set'))
   }else{
     if(nrow(queryset[['found']]) == 0){
-      log4r_info(logger, paste0(
+      lgr::lgr$info( paste0(
         "ERROR: NO ", qtype, " gene identifiers found: ",
         paste0(target_genes$qid,collapse=", "),
         " - wrong query_id_type (",q_id_type,")?","\n"))
       queryset[['match_status']] <- "imperfect_stop"
     }else{
-      log4r_info(logger,
+      lgr::lgr$info(
         paste0('Identified n = ',
                nrow(queryset[['found']]),' entries in ', qtype,
                ' set (n = ',
@@ -263,38 +264,38 @@ validate_query_genes <- function(qgenes,
   }
 
   if(nrow(queryset[['found']]) > 0){
-    queryset[['found']] <- queryset[['found']] %>%
-      dplyr::mutate(status = 'found') %>%
+    queryset[['found']] <- queryset[['found']] |>
+      dplyr::mutate(status = 'found') |>
       dplyr::mutate(
         status = dplyr::if_else(
           .data$status == "found" & .data$alias == T,
           as.character("found_as_alias"),
           as.character(.data$status))
-      ) %>%
-      dplyr::arrange(dplyr::desc(.data$status), .data$symbol) %>%
+      ) |>
+      dplyr::arrange(dplyr::desc(.data$status), .data$symbol) |>
       dplyr::mutate(
         genename = paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
                           .data$entrezgene,"' target='_blank'>",.data$name,"</a>")
       )
   }
   if(nrow(queryset[['not_found']]) > 0){
-    queryset[['not_found']] <- queryset[['not_found']] %>%
-      dplyr::mutate(status = 'not_found') %>%
-      dplyr::mutate(genename = NA) %>%
+    queryset[['not_found']] <- queryset[['not_found']] |>
+      dplyr::mutate(status = 'not_found') |>
+      dplyr::mutate(genename = NA) |>
       dplyr::arrange(.data$qid)
   }
 
   if(nrow(queryset[['found']]) > 0 | nrow(queryset[['not_found']]) > 0){
 
     queryset[['all']] <- as.data.frame(
-      queryset[['not_found']] %>%
-      dplyr::bind_rows(queryset[['found']]) %>%
-      dplyr::rename(query_id = .data$qid) %>%
+      queryset[['not_found']] |>
+      dplyr::bind_rows(queryset[['found']]) |>
+      dplyr::rename(query_id = .data$qid) |>
       dplyr::select(.data$query_id,
                     .data$status,
                     .data$symbol,
-                    .data$genename) %>%
-        dplyr::rowwise() %>%
+                    .data$genename) |>
+        dplyr::rowwise() |>
         dplyr::mutate(
           symbol = dplyr::if_else(
             .data$status == "not_found",
@@ -340,7 +341,7 @@ validate_db <- function(oe_db){
 
   for(db in db_entries){
     if(!(db %in% names(oe_db))){
-      log4r_info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
+      lgr::lgr$info(paste0("ERROR: '",db,"' NOT found in oncoEnrichR db object"))
       return(-1)
     }
 
@@ -720,7 +721,7 @@ add_excel_sheet <- function(
       value = as.character(report$config$show$disease),
       stringsAsFactors = F
     )
-    target_df <- target_df %>%
+    target_df <- target_df |>
       dplyr::bind_rows(
         data.frame(
           category = 'CANCER_ASSOCIATION',
@@ -965,7 +966,7 @@ add_excel_sheet <- function(
   if(analysis_output == "query"){
     if(is.data.frame(report$data$query$target)){
       if(NROW(report$data$query$target) > 0){
-        target_df <- report$data$query$target %>%
+        target_df <- report$data$query$target |>
           dplyr::mutate(
             genename =
               stringr::str_squish(
@@ -981,18 +982,18 @@ add_excel_sheet <- function(
   if(analysis_output == "unknown_function"){
     if(is.data.frame(report$data$unknown_function$hits_df)){
       if(NROW(report$data$unknown_function$hits_df) > 0){
-        target_df <- report$data$unknown_function$hits_df %>%
+        target_df <- report$data$unknown_function$hits_df |>
           dplyr::mutate(
             annotation_source = "GO (MsigDB 7.5.1)/NCBI Gene/UniProt (2022.01)",
-            version = NA) %>%
+            version = NA) |>
           dplyr::select(.data$annotation_source, .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             genename =
               stringr::str_trim(
                 textclean::replace_html(.data$genename)
               )
-          ) %>%
+          ) |>
           dplyr::mutate(
             gene_summary =
               stringr::str_squish(
@@ -1008,21 +1009,21 @@ add_excel_sheet <- function(
   if(analysis_output == "cancer_association"){
     if(is.data.frame(report$data$disease$target)){
       if(NROW(report$data$disease$target) > 0){
-        target_df <- report$data$disease$target %>%
+        target_df <- report$data$disease$target |>
           dplyr::mutate(
             annotation_source = report$config$resources$opentargets$name,
-            version = report$config$resources$opentargets$version) %>%
+            version = report$config$resources$opentargets$version) |>
           dplyr::select(-c(.data$cancer_association_links,
                            .data$disease_association_links,
-                           .data$cancergene_evidence)) %>%
+                           .data$cancergene_evidence)) |>
           dplyr::select(.data$annotation_source, .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             genename =
               stringr::str_trim(
                 textclean::replace_html(.data$genename)
               )
-          ) %>%
+          ) |>
           dplyr::mutate(
             gene_summary =
               stringr::str_squish(
@@ -1038,7 +1039,7 @@ add_excel_sheet <- function(
   if(analysis_output == "cancer_hallmark"){
     if(is.data.frame(report$data$cancer_hallmark$target)){
       if(NROW(report$data$cancer_hallmark$target) > 0){
-        target_df <- report$data$cancer_hallmark$target %>%
+        target_df <- report$data$cancer_hallmark$target |>
           dplyr::mutate(
             symbol =
               stringr::str_squish(
@@ -1046,7 +1047,7 @@ add_excel_sheet <- function(
                   textclean::replace_html(.data$symbol)
                 )
               )
-          ) %>%
+          ) |>
           dplyr::select(-.data$literature_support)
       }
     }
@@ -1056,18 +1057,18 @@ add_excel_sheet <- function(
   if(analysis_output == "drug_known"){
     if(is.data.frame(report$data$drug$target_drugs)){
       if(NROW(report$data$drug$target_drugs)){
-        target_df <- report$data$drug$target_drugs %>%
+        target_df <- report$data$drug$target_drugs |>
           dplyr::mutate(
             annotation_source = report$config$resources$opentargets$name,
-            version = report$config$resources$opentargets$version) %>%
+            version = report$config$resources$opentargets$version) |>
           dplyr::select(.data$annotation_source, .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             genename =
               stringr::str_trim(
                 textclean::replace_html(.data$genename)
               )
-          ) %>%
+          ) |>
           dplyr::mutate(
             targeted_cancer_drugs_lp =
               stringr::str_replace_all(
@@ -1079,7 +1080,7 @@ add_excel_sheet <- function(
                 " , ",
                 ", "
               )
-          ) %>%
+          ) |>
           dplyr::mutate(
             targeted_cancer_drugs_ep =
               stringr::str_replace_all(
@@ -1105,22 +1106,22 @@ add_excel_sheet <- function(
         target_df <- data.frame()
 
         if (NROW(report$data$drug$tractability_sm)){
-          df <- report$data$drug$tractability_sm %>%
+          df <- report$data$drug$tractability_sm |>
             dplyr::mutate(
               annotation_source = report$config$resources$opentargets$name,
-              version = report$config$resources$opentargets$version) %>%
+              version = report$config$resources$opentargets$version) |>
             dplyr::rename(tractability_category = .data$SM_tractability_category,
-                          tractability_support = .data$SM_tractability_support) %>%
-            dplyr::mutate(tractability_drugtype = "Small molecules/compounds") %>%
+                          tractability_support = .data$SM_tractability_support) |>
+            dplyr::mutate(tractability_drugtype = "Small molecules/compounds") |>
             dplyr::select(.data$annotation_source, .data$version,
                           .data$tractability_drugtype,
-                          dplyr::everything()) %>%
+                          dplyr::everything()) |>
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
                   textclean::replace_html(.data$symbol)
                 )
-            ) %>%
+            ) |>
             dplyr::mutate(
               tractability_support =
                 stringr::str_trim(
@@ -1128,27 +1129,27 @@ add_excel_sheet <- function(
                 )
             )
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
 
         if (NROW(report$data$drug$tractability_ab)){
-          df <- report$data$drug$tractability_ab %>%
+          df <- report$data$drug$tractability_ab |>
             dplyr::mutate(
               annotation_source = report$config$resources$opentargets$name,
-              version = report$config$resources$opentargets$version) %>%
+              version = report$config$resources$opentargets$version) |>
             dplyr::rename(tractability_category = .data$AB_tractability_category,
-                          tractability_support = .data$AB_tractability_support) %>%
-            dplyr::mutate(tractability_drugtype = "Antibody") %>%
+                          tractability_support = .data$AB_tractability_support) |>
+            dplyr::mutate(tractability_drugtype = "Antibody") |>
             dplyr::select(.data$annotation_source, .data$version,
                           .data$tractability_drugtype,
-                          dplyr::everything()) %>%
+                          dplyr::everything()) |>
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
                   textclean::replace_html(.data$symbol)
                 )
-            ) %>%
+            ) |>
             dplyr::mutate(
               tractability_support =
                 stringr::str_trim(
@@ -1156,7 +1157,7 @@ add_excel_sheet <- function(
                 )
             )
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
       }
@@ -1170,12 +1171,12 @@ add_excel_sheet <- function(
       if(is.data.frame(report$data$ligand_receptor[[c]])){
         if(NROW(report$data$ligand_receptor[[c]]) > 0){
 
-          df <- report$data$ligand_receptor[[c]] %>%
+          df <- report$data$ligand_receptor[[c]] |>
             dplyr::mutate(
               annotation_source = report$config$resources[['cellchatdb']]$name,
-              version = report$config$resources[['cellchatdb']]$version) %>%
+              version = report$config$resources[['cellchatdb']]$version) |>
             dplyr::select(.data$annotation_source, .data$version,
-                          dplyr::everything()) %>%
+                          dplyr::everything()) |>
             dplyr::mutate(
               literature_support =
                 stringr::str_trim(
@@ -1183,7 +1184,7 @@ add_excel_sheet <- function(
                 )
             )
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
       }
@@ -1196,13 +1197,13 @@ add_excel_sheet <- function(
     if(is.data.frame(report$data$protein_domain$target)){
       if(NROW(report$data$protein_domain$target) > 0){
 
-        df <- report$data$protein_domain$target %>%
+        df <- report$data$protein_domain$target |>
           dplyr::mutate(
             annotation_source = report$config$resources[['pfam']]$name,
-            version = report$config$resources[['pfam']]$version) %>%
+            version = report$config$resources[['pfam']]$version) |>
           dplyr::select(.data$annotation_source,
                         .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             protein_domain =
               stringr::str_trim(
@@ -1214,7 +1215,7 @@ add_excel_sheet <- function(
               )
           )
 
-        target_df <- target_df %>%
+        target_df <- target_df |>
           dplyr::bind_rows(df)
       }
     }
@@ -1228,12 +1229,12 @@ add_excel_sheet <- function(
         if(NROW(report$data$protein_complex[[c]]) > 0){
 
 
-          df <- report$data$protein_complex[[c]] %>%
+          df <- report$data$protein_complex[[c]] |>
             dplyr::mutate(
               annotation_source = report$config$resources[[c]]$name,
-              version = report$config$resources[[c]]$version) %>%
+              version = report$config$resources[[c]]$version) |>
             dplyr::select(.data$annotation_source, .data$version,
-                          dplyr::everything()) %>%
+                          dplyr::everything()) |>
             dplyr::mutate(
               complex_genes =
                 stringr::str_replace_all(
@@ -1247,7 +1248,7 @@ add_excel_sheet <- function(
                 )
             )
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
       }
@@ -1255,13 +1256,13 @@ add_excel_sheet <- function(
 
     if(NROW(target_df) > 0 &
        "literature" %in% colnames(target_df)){
-      target_df <- target_df %>%
+      target_df <- target_df |>
         dplyr::mutate(
           literature =
             stringr::str_trim(
               textclean::replace_html(.data$literature)
             )
-        ) %>%
+        ) |>
         dplyr::mutate(
           complex_name =
             stringr::str_trim(
@@ -1276,13 +1277,13 @@ add_excel_sheet <- function(
   if(analysis_output == "prognostic_association_I"){
     if(is.data.frame(report$data$cancer_prognosis$hpa$assocs)){
       if(NROW(report$data$cancer_prognosis$hpa$assocs) > 0){
-        target_df <- report$data$cancer_prognosis$hpa$assocs %>%
+        target_df <- report$data$cancer_prognosis$hpa$assocs |>
           dplyr::mutate(
             annotation_source = report$config$resources$hpa$name,
-            version = report$config$resources$hpa$version) %>%
+            version = report$config$resources$hpa$version) |>
           dplyr::select(.data$annotation_source,
                         .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             tumor_types =
               stringr::str_trim(
@@ -1298,29 +1299,29 @@ add_excel_sheet <- function(
 
       if(is.data.frame(report$data$synleth[[t]])){
         if(NROW(report$data$synleth[[t]]) > 0){
-          df <- report$data$synleth[[t]] %>%
+          df <- report$data$synleth[[t]] |>
             dplyr::mutate(
               annotation_source = "De Kegel et al., Cell Systems, 2021",
-              version = "v1") %>%
-            dplyr::mutate(feature_type = t) %>%
+              version = "v1") |>
+            dplyr::mutate(feature_type = t) |>
             dplyr::mutate(
               genename_A =
                 stringr::str_trim(
                   textclean::replace_html(.data$genename_A)
                 )
-            ) %>%
+            ) |>
             dplyr::mutate(
               genename_B =
                 stringr::str_trim(
                   textclean::replace_html(.data$genename_B)
                 )
-            ) %>%
+            ) |>
             dplyr::arrange(.data$feature_type,
-                           dplyr::desc(.data$prediction_score)) %>%
+                           dplyr::desc(.data$prediction_score)) |>
             dplyr::select(.data$annotation_source, .data$version,
                           .data$feature_type, dplyr::everything())
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
 
         }
@@ -1333,16 +1334,16 @@ add_excel_sheet <- function(
     for(t in c('cna','mut','exp','meth')){
       if(is.data.frame(report$data$cancer_prognosis$km_cshl$assocs[[t]])){
         if(NROW(report$data$cancer_prognosis$km_cshl$assocs[[t]]) > 0){
-          df <- report$data$cancer_prognosis$km_cshl$assocs[[t]] %>%
+          df <- report$data$cancer_prognosis$km_cshl$assocs[[t]] |>
             dplyr::mutate(
               annotation_source = "Smith et al., Cell Reports, 2022 (tcga-survival.com)",
-              version = "v2") %>%
-            dplyr::mutate(feature_type = t) %>%
-            dplyr::arrange(.data$feature_type, .data$z_score) %>%
+              version = "v2") |>
+            dplyr::mutate(feature_type = t) |>
+            dplyr::arrange(.data$feature_type, .data$z_score) |>
             dplyr::select(.data$annotation_source, .data$version,
                           dplyr::everything())
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
 
         }
@@ -1355,15 +1356,15 @@ add_excel_sheet <- function(
     ## co-expression
     if(is.data.frame(report$data$tcga$coexpression)){
       if(NROW(report$data$tcga$coexpression) > 0){
-        target_df <- report$data$tcga$coexpression %>%
+        target_df <- report$data$tcga$coexpression |>
           dplyr::mutate(
             annotation_source = report$config$resources$tcga$name,
-            version = report$config$resources$tcga$version) %>%
-          dplyr::rename(tcga_cohort = .data$tumor) %>%
-          dplyr::select(-.data$entrezgene) %>%
+            version = report$config$resources$tcga$version) |>
+          dplyr::rename(tcga_cohort = .data$tumor) |>
+          dplyr::select(-.data$entrezgene) |>
           dplyr::rename(partner_oncogene = .data$oncogene,
                         partner_tumor_suppressor = .data$tumor_suppressor,
-                        partner_cancer_driver = .data$cancer_driver) %>%
+                        partner_cancer_driver = .data$cancer_driver) |>
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
@@ -1377,26 +1378,26 @@ add_excel_sheet <- function(
 
       if(is.data.frame(report$data$regulatory$interactions[[c]])){
         if(NROW(report$data$regulatory$interactions[[c]]) > 0){
-          df <- report$data$regulatory$interactions[[c]] %>%
+          df <- report$data$regulatory$interactions[[c]] |>
             dplyr::mutate(
               dorothea_collection = c,
               annotation_source = report$config$resources$dorothea$name,
-              version = report$config$resources$dorothea$version) %>%
+              version = report$config$resources$dorothea$version) |>
             dplyr::select(.data$annotation_source, .data$version,
                           .data$dorothea_collection,
-                          dplyr::everything()) %>%
+                          dplyr::everything()) |>
             dplyr::mutate(
               target_name =
                 stringr::str_trim(
                   textclean::replace_html(.data$target_name)
                 )
-            ) %>%
+            ) |>
             dplyr::mutate(
               regulator_name =
                 stringr::str_trim(
                   textclean::replace_html(.data$regulator_name)
                 )
-            ) %>%
+            ) |>
             dplyr::mutate(
               literature_support =
                 stringr::str_trim(
@@ -1404,7 +1405,7 @@ add_excel_sheet <- function(
                 )
             )
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
       }
@@ -1419,21 +1420,21 @@ add_excel_sheet <- function(
       if(is.data.frame(report$data$tcga$aberration$table[[t]])){
         if(NROW(report$data$tcga$aberration$table[[t]]) > 0){
           df <-
-            report$data$tcga$aberration$table[[t]] %>%
+            report$data$tcga$aberration$table[[t]] |>
             dplyr::mutate(
               annotation_source = report$config$resources$tcga$name,
-              version = report$config$resources$tcga$version) %>%
+              version = report$config$resources$tcga$version) |>
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
                   textclean::replace_html(.data$gene)
                 )
-            ) %>%
-            dplyr::select(-.data$gene) %>%
+            ) |>
+            dplyr::select(-.data$gene) |>
             dplyr::select(.data$annotation_source, .data$version,
                           .data$symbol, dplyr::everything())
 
-          target_df <- target_df %>%
+          target_df <- target_df |>
             dplyr::bind_rows(df)
         }
       }
@@ -1444,19 +1445,19 @@ add_excel_sheet <- function(
   if(analysis_output == "subcellcomp"){
     if(is.data.frame(report$data$subcellcomp$all)){
       if(NROW(report$data$subcellcomp$all) > 0){
-        target_df <- report$data$subcellcomp$all %>%
+        target_df <- report$data$subcellcomp$all |>
           dplyr::mutate(
             annotation_source = report$config$resources$comppi$name,
-            version = report$config$resources$comppi$version) %>%
-          dplyr::select(-c(.data$ggcompartment)) %>%
+            version = report$config$resources$comppi$version) |>
+          dplyr::select(-c(.data$ggcompartment)) |>
           dplyr::select(.data$annotation_source, .data$version,
-                        dplyr::everything()) %>%
+                        dplyr::everything()) |>
           dplyr::mutate(
             compartment =
               stringr::str_trim(
                 textclean::replace_html(.data$compartment)
               )
-          ) %>%
+          ) |>
           dplyr::mutate(
             genename =
               stringr::str_trim(
@@ -1471,17 +1472,17 @@ add_excel_sheet <- function(
     enrichment_df <- data.frame()
     for(e in c('go','wikipathway','kegg','msigdb','netpath')){
       if(NROW(report$data$enrichment[[e]]) > 0){
-        enrichment_df <- enrichment_df %>%
+        enrichment_df <- enrichment_df |>
           dplyr::bind_rows(
-            report$data$enrichment[[e]] %>%
+            report$data$enrichment[[e]] |>
               dplyr::mutate(
                 annotation_source = report$config$resources[[e]]$name,
-                version = report$config$resources[[e]]$version) %>%
+                version = report$config$resources[[e]]$version) |>
               dplyr::rename(category = .data$db,
                             entrezgene = .data$gene_id)
-          ) %>%
+          ) |>
           dplyr::select(-c(.data$gene_symbol_link,
-                           .data$description_link)) %>%
+                           .data$description_link)) |>
           dplyr::select(.data$annotation_source, .data$version,
                         .data$category, .data$description,
                         dplyr::everything())
@@ -1495,12 +1496,12 @@ add_excel_sheet <- function(
   if(analysis_output == "fitness_scores"){
     if(is.data.frame(report$data$fitness$fitness_scores$targets)){
       if(NROW(report$data$fitness$fitness_scores$targets) > 0){
-        target_df <- report$data$fitness$fitness_scores$targets %>%
+        target_df <- report$data$fitness$fitness_scores$targets |>
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
-            version = report$config$resources$projectscore$version) %>%
+            version = report$config$resources$projectscore$version) |>
           dplyr::select(-c(.data$symbol_link_ps, .data$model_link_ps,
-                           .data$n_gene)) %>%
+                           .data$n_gene)) |>
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
@@ -1510,10 +1511,10 @@ add_excel_sheet <- function(
   if(analysis_output == "fitness_prioritized"){
     if(is.data.frame(report$data$fitness$target_priority_scores$targets)){
       if(NROW(report$data$fitness$target_priority_scores$targets) > 0){
-        target_df <- report$data$fitness$target_priority_scores$targets %>%
+        target_df <- report$data$fitness$target_priority_scores$targets |>
           dplyr::mutate(
             annotation_source = report$config$resources$projectscore$name,
-            version = report$config$resources$projectscore$version) %>%
+            version = report$config$resources$projectscore$version) |>
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
@@ -1525,7 +1526,7 @@ add_excel_sheet <- function(
     target_df <- data.frame()
     if(is.data.frame(report$data$ppi$complete_network$edges)){
       if(NROW(report$data$ppi$complete_network$edges) > 0){
-        target_df <- report$data$ppi$complete_network$edges %>%
+        target_df <- report$data$ppi$complete_network$edges |>
           dplyr::rename(symbol_A = .data$preferredName_A,
                         symbol_B = .data$preferredName_B,
                         is_target_A = .data$query_node_A,
@@ -1538,7 +1539,7 @@ add_excel_sheet <- function(
                         string_escore = .data$escore,
                         string_dscore = .data$dscore,
                         string_tscore = .data$tscore
-                        ) %>%
+                        ) |>
           dplyr::select(.data$symbol_A, .data$symbol_B,
                         .data$is_target_A, .data$is_target_B,
                         .data$string_score,
@@ -1548,10 +1549,10 @@ add_excel_sheet <- function(
                         .data$string_ascore,
                         .data$string_escore,
                         .data$string_dscore,
-                        .data$string_tscore) %>%
+                        .data$string_tscore) |>
           dplyr::mutate(
             annotation_source = report$config$resources$string$name,
-            version = report$config$resources$string$version) %>%
+            version = report$config$resources$string$version) |>
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything())
       }
@@ -1567,30 +1568,30 @@ add_excel_sheet <- function(
         if(NROW(report$data$cell_tissue[[e]]$per_gene) > 0){
           if(e == "tissue_enrichment"){
             df <-
-              report$data$cell_tissue[[e]]$per_gene %>%
+              report$data$cell_tissue[[e]]$per_gene |>
               dplyr::mutate(
                 annotation_source = report$config$resources$gtex$name,
                 version = report$config$resources$gtex$version,
-                category = stringr::str_replace(e,"_enrichment","")) %>%
+                category = stringr::str_replace(e,"_enrichment","")) |>
               dplyr::select(.data$annotation_source,
                             .data$version,
                             .data$category,
-                            dplyr::everything()) %>%
+                            dplyr::everything()) |>
               dplyr::rename(tissue_or_celltype = .data$tissue)
 
           }else{
             df <-
-              report$data$cell_tissue[[e]]$per_gene %>%
+              report$data$cell_tissue[[e]]$per_gene |>
               dplyr::mutate(
                 annotation_source = report$config$resources$hpa$name,
                 version = report$config$resources$hpa$version,
-                category = stringr::str_replace(e,"_enrichment","")) %>%
+                category = stringr::str_replace(e,"_enrichment","")) |>
               dplyr::select(.data$annotation_source, .data$version,
-                            .data$category, dplyr::everything()) %>%
+                            .data$category, dplyr::everything()) |>
               dplyr::rename(tissue_or_celltype = .data$cell_type)
           }
-          target_df <- target_df %>%
-            dplyr::bind_rows(df) %>%
+          target_df <- target_df |>
+            dplyr::bind_rows(df) |>
             dplyr::mutate(
               genename =
                 stringr::str_trim(
@@ -1630,45 +1631,12 @@ add_excel_sheet <- function(
 }
 
 
-log4r_layout <-
-  function(level, ...) {
-    paste0(format(Sys.time()), " - ",
-           level, " - ", ..., "\n",
-           collapse = "")
-  }
-
-log4r_info <- function(log4r_logger, msg) {
-  log4r::info(log4r_logger, msg)
-}
-
-log4r_debug <- function(log4r_logger, msg) {
-  log4r::debug(log4r_logger, msg)
-}
-
-log4r_warn <- function(log4r_logger, msg) {
-  log4r::warn(log4r_logger, msg)
-}
-
-log4r_err <- function(log4r_logger, msg) {
-  log4r::error(log4r_logger, msg)
-}
-
 file_is_writable <- function(path) {
   assertthat::is.string(path) &&
     file.exists(path) &&
     assertthat::is.writeable(path)
 }
 
-
-#' Pipe operator
-#'
-#' See \code{magrittr::\link[magrittr]{\%>\%}} for details.
-#'
-#' @name %>%
-#' @rdname pipe
-#' @keywords internal
-#' @importFrom magrittr %>%
-NULL
 
 #' RCurl url.exists
 #'

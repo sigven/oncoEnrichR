@@ -76,7 +76,7 @@ DT::datatable(omnipath_complexes_df,
               options=list(buttons = c('csv','excel'),
                            pageLength = 10,
                            bPaginate = T,
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
    DT::formatStyle("complex_name",
                   "complex_cancer_rank_score", 
                   color = "white", 
@@ -136,7 +136,7 @@ DT::datatable(humap2_complexes_df,
               options=list(buttons = c('csv','excel'),
                            pageLength = 10,
                            bPaginate = T,
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
   
   
    DT::formatStyle("complex_name",

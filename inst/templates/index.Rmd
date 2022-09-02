@@ -58,7 +58,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_subcell, child='_subcell_comp.Rmd', eval = onc_enrich_report[['config']][['show']][['subcellcomp']]}
 ```
 
-```{r target_enrichment_invalid, child='_functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']] %>% dplyr::filter(status == "found")) < 5}
+```{r target_enrichment_invalid, child='_functional_enrichment_invalid.Rmd', eval = NROW(onc_enrich_report[['data']][['query']][['target']] |> dplyr::filter(status == "found")) < 5}
 ```
 
 ```{r target_enrichment, child='_functional_enrichment.Rmd', eval = onc_enrich_report[['config']][['show']][['enrichment']]}

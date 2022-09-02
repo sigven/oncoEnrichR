@@ -7,7 +7,6 @@
 
 
 ```{r table_browse_hallmarks, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['cancer_hallmark']][['target']]) > 0}
-library(crosstalk)
 
 target_hm_shared <- crosstalk::SharedData$new(
   onc_enrich_report[['data']][['cancer_hallmark']][['target']])
@@ -23,14 +22,14 @@ DT::datatable(target_hm_shared,
               escape = F, 
               extensions=c("Buttons","Responsive"), 
               width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) |>
   DT::formatStyle(columns = c("promotes"),
                   valueColumns = c('promotes'),
                   color = "white", 
                   backgroundColor = DT::styleEqual(
                   c(TRUE, FALSE), 
                   c("#005a32","#989898"))
-  ) %>%
+  ) |>
    DT::formatStyle(columns = c("suppresses"),
                   valueColumns = c('suppresses'),
                   color = "white", 

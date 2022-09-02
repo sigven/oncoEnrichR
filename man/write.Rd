@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{write}
 \alias{write}
-\title{Function that writes an oncoEnrichR report object to file}
+\title{Write oncoEnrichR report object to output file}
 \usage{
 write(
   report,
@@ -17,9 +17,9 @@ write(
 \arguments{
 \item{report}{object with oncoEnrichR report data (returned by oeDB$onco_enrich)}
 
-\item{oeDB}{oncoEnrichR annotation database object}
+\item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 
-\item{file}{full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")}
+\item{file}{full filename for report output (e.g. "oe_report.html" or "oe_report.xlsx")}
 
 \item{ignore_file_extension}{logical to accept any type of filaname extensions (for Galaxy integration)}
 
@@ -30,5 +30,6 @@ write(
 \item{...}{options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy}
 }
 \description{
-Function that writes an oncoEnrichR report object to file
+Function that writes an oncoEnrichR report object to file,
+either as an interactive HTML report or as an Excel workbook.
 }

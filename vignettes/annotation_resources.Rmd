@@ -81,9 +81,15 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 * Gene fitness effects are retrieved from [Project Score](https://score.depmap.sanger.ac.uk/). We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).
 
-### Subcellular localization
+### Subcellular compartment localization
 
 * Subcellular localization annotations have been retrieved from [ComPPI](https://comppi.linkgroup.hu/). Users have the possibility to set threshold with respect to the confidence (number of underlying sources, **1-6**) for each target-localization annotation.
+
+
+### Protein complexes and protein domains
+
+* Protein complex annotations are retrieved from multiple resources, including [CORUM](https://mips.helmholtz-muenchen.de/corum/),
+[Compleat](https://fgr.hms.harvard.edu/compleat%3E), [ComplexPortal](https://www.ebi.ac.uk/complexportal/home), and [hu.MAP2](http://humap2.proteincomplexes.org). Protein domains are retrieved from [Pfam](https://pfam.xfam.org)
 
 ### Protein-protein interactions
 

@@ -17,7 +17,6 @@
 <br><br>
 
 ```{r table_browse_targets, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['disease']][['target']]) > 0}
-library(crosstalk)
 
 targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['disease']][['target']])
 
@@ -39,7 +38,7 @@ DT::datatable(targets_shared, escape = F,
               width = "100%",
               options=list(buttons = c('csv','excel'),
                            pageLength = 20,
-                           dom = 'Blfrtip')) %>%
+                           dom = 'Blfrtip')) |>
   DT::formatStyle("symbol",
                   "targetset_cancer_rank", 
                   color = "white", 
@@ -90,20 +89,20 @@ if(NROW(oe_ttype_matrix) < 20){
 target_ttype_rank_fig <- plotly::plot_ly(
   colors = "Blues",
   width = 800,
-  height = 400 + (14.67 * NROW(oe_ttype_matrix))) %>%
+  height = 400 + (14.67 * NROW(oe_ttype_matrix))) |>
   plotly::add_heatmap(
     y = rownames(oe_ttype_matrix),
     x = colnames(oe_ttype_matrix),
     z = oe_ttype_matrix,
     hovertext = "Tumor type percent rank",
-    yaxis = "y") %>%
+    yaxis = "y") |>
   plotly::layout(
     title = 'Tumor type association rank',
     xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                  tickangle = -50),
     yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
     margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-  ) %>%
+  ) |>
   plotly::colorbar(
     nticks = n_percent_ticks, 
     title = list(text = "Percent rank",side = "bottom"),

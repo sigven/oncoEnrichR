@@ -6,7 +6,7 @@ editor_options:
 
 <br>
 
-# oncoEnrichR
+# oncoEnrichR <a href="https://sigven.github.io/oncoEnrichR/"><img src="man/figures/logo.png" align="right" height="130" width="113"/></a>
 
 **oncoEnrichR** is an R package for functional interrogation of human
 genesets in the context of cancer. It is primarily intended for
@@ -25,7 +25,7 @@ Web-based access to **oncoEnrichR** is available at <font size="4">
 
 <br>
 
-<img src="img/oncoenrichr_overview.png" align="center" border="0"/>
+<img src="man/figures/oncoenrichr_overview.png" align="center" border="0"/>
 
 <br><br>
 
@@ -85,22 +85,22 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   September 2nd 2022: [**1.2.2
+    release**](articles/CHANGELOG.html#version-1-2-2)
 -   July 13th 2022: [**1.2.1
     release**](articles/CHANGELOG.html#version-1-2-1)
 -   June 24th 2022: [**1.2.0
     release**](articles/CHANGELOG.html#version-1-2-0)
 -   March 31st 2022: [**1.0.9
     release**](articles/CHANGELOG.html#version-1-0-9)
--   February 20th 2022: [**1.0.8
-    release**](articles/CHANGELOG.html#version-1-0-8)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.6828941"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6828941.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.7042674"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7042674.svg" alt="DOI"/></a>
 
 <br>
 
-<img src="img/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"/>
+<img src="man/figures/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"/>
 
 ## Getting started
 
@@ -117,7 +117,7 @@ sigven AT ifi.uio.no
 
 ## Funding and Collaboration
 
-OncoEnrichR is supported by the [Centre for Cancer Cell
+oncoEnrichR is supported by the [Centre for Cancer Cell
 Reprogramming](https://www.med.uio.no/cancell/english/) at the
 [University of Oslo](https://www.uio.no)/[Oslo University
 Hospital](https://radium.no), and [Elixir Norway (Oslo
@@ -128,7 +128,8 @@ node)](https://elixir.no/organization/organisation/elixir-uio).
 <p float="left">
 
 <a href="https://www.med.uio.no/cancell/english/">
-<img src="img/can-cell.png" width="150"/> </a>        
+<img src="img/can-cell.png" width="150"/> </a>
+&nbsp; &nbsp; &nbsp;
 <a href="https://elixir.no/organization/organisation/elixir-uio">
 <img src="img/elixir_norway.png" width="200"/> </a>
 

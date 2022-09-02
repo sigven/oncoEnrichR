@@ -1,35 +1,27 @@
-library(magrittr)
 
 test_that("TF-target annotations - testing ", {
-  expect_error(oncoEnrichR:::annotate_tf_targets())
-  expect_error(oncoEnrichR:::annotate_tf_targets(logger = log4r_logger))
+  expect_error(oncoEnrichR:::annotate_tf_targets(
+    qgenes = c("MYC")))
   expect_error(oncoEnrichR:::annotate_tf_targets(
     qgenes = c("MYC"),
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::annotate_tf_targets(
-    qgenes = c("MYC"),
-    genedb = oedb$genedb$all,
-    logger = log4r_logger))
+    genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::annotate_tf_targets(
     qgenes = c("MYC"),
     collection = "UNKNOWN_COLLECTION",
     tf_target_interactions = oedb$tftargetdb,
-    genedb = oedb$genedb$all,
-    logger = log4r_logger))
+    genedb = oedb$genedb$all))
 
   expect_error(oncoEnrichR:::annotate_tf_targets(
     qgenes = as.integer(200),
     genedb = oedb$genedb$all,
     tf_target_interactions  = oedb$tftargetdb,
-    collection = "global",
-    logger = log4r_logger))
+    collection = "global"))
 
   expect_gt(NROW(oncoEnrichR:::annotate_tf_targets(
     qgenes = c("MYC","TP53"),
     genedb = oedb$genedb$all,
     tf_target_interactions  = oedb$tftargetdb,
-    collection = "pancancer",
-    logger = log4r_logger)), 0)
+    collection = "pancancer")), 0)
 
   expect_gte(
     NROW(
@@ -38,8 +30,7 @@ test_that("TF-target annotations - testing ", {
         genedb = oedb$genedb$all,
         min_confidence_reg_interaction = "D",
         tf_target_interactions  = oedb$tftargetdb,
-        collection = "pancancer",
-        logger = log4r_logger)
+        collection = "pancancer")
       ),
     NROW(
       oncoEnrichR:::annotate_tf_targets(
@@ -47,8 +38,7 @@ test_that("TF-target annotations - testing ", {
         genedb = oedb$genedb$all,
         min_confidence_reg_interaction = "C",
         tf_target_interactions  = oedb$tftargetdb,
-        collection = "pancancer",
-        logger = log4r_logger)
+        collection = "pancancer")
     )
   )
 
@@ -59,8 +49,7 @@ test_that("TF-target annotations - testing ", {
         genedb = oedb$genedb$all,
         min_confidence_reg_interaction = "B",
         tf_target_interactions  = oedb$tftargetdb,
-        collection = "pancancer",
-        logger = log4r_logger)
+        collection = "pancancer")
     ),
     NROW(
       oncoEnrichR:::annotate_tf_targets(
@@ -68,8 +57,7 @@ test_that("TF-target annotations - testing ", {
         genedb = oedb$genedb$all,
         min_confidence_reg_interaction = "A",
         tf_target_interactions  = oedb$tftargetdb,
-        collection = "pancancer",
-        logger = log4r_logger)
+        collection = "pancancer")
     )
   )
 
@@ -79,8 +67,7 @@ test_that("TF-target annotations - testing ", {
         qgenes = c("SMARCA2"),
         genedb = oedb$genedb$all,
         tf_target_interactions  = oedb$tftargetdb,
-        collection = "pancancer",
-        logger = log4r_logger)
+        collection = "pancancer")
       ),
     0)
 
@@ -91,8 +78,7 @@ test_that("TF-target annotations - testing ", {
           qgenes = c("SMARCA2"),
           genedb = oedb$genedb$all,
           tf_target_interactions  = oedb$tftargetdb,
-          collection = "pancancer",
-          logger = log4r_logger)
+          collection = "pancancer")
       )),
     "list"
   )
@@ -104,8 +90,7 @@ test_that("TF-target annotations - testing ", {
           qgenes = c("MYC","TP53"),
           genedb = oedb$genedb$all,
           tf_target_interactions  = oedb$tftargetdb,
-          collection = "pancancer",
-          logger = log4r_logger)
+          collection = "pancancer")
       )),
     "list"
   )
@@ -117,8 +102,7 @@ test_that("TF-target annotations - testing ", {
           qgenes = c("MYC","TP53"),
           genedb = oedb$genedb$all,
           tf_target_interactions  = oedb$tftargetdb,
-          collection = "pancancer",
-          logger = log4r_logger)
+          collection = "pancancer")
       )),
     c("nodes", "edges")
   )

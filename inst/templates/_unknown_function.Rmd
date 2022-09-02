@@ -25,7 +25,6 @@ if(nrow(onc_enrich_report[['data']][['unknown_function']][['hits_df']]) > 0){
 
 
 ```{r table_browse_unknown, echo=F, results = "asis", eval = show_ufunction_genes}
-library(crosstalk)
 
 targets_unknown_function <- crosstalk::SharedData$new(onc_enrich_report[['data']][['unknown_function']][['hits_df']])
 
@@ -45,7 +44,7 @@ DT::datatable(targets_unknown_function,
               extensions=c("Buttons","Responsive"), 
               width = "100%",
               options=list(buttons = c('csv','excel'), 
-                           dom = 'Bfrtip')) %>%
+                           dom = 'Bfrtip')) |>
   
   DT::formatStyle(
     "symbol",

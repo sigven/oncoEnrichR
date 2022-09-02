@@ -1,23 +1,16 @@
-library(magrittr)
 
 test_that("Tissue/celltype enrichment categories ", {
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat())
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger))
-  expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df))
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df))
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     qgenes = c("BRAF","EGFR","KRAS"),
     resolution = "UNKNOWN",
@@ -37,8 +30,7 @@ test_that("Tissue/celltype enrichment categories ", {
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-    resolution = "tissue",
-    logger = log4r_logger))
+    resolution = "tissue"))
 
   ## hpa enrichment df's not correctly provided
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
@@ -47,8 +39,7 @@ test_that("Tissue/celltype enrichment categories ", {
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$expr_df,
     hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-    resolution = "tissue",
-    logger = log4r_logger))
+    resolution = "tissue"))
 
   ## mismatch between resolution and hpa df's provided
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
@@ -57,8 +48,7 @@ test_that("Tissue/celltype enrichment categories ", {
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-    resolution = "single_cell",
-    logger = log4r_logger))
+    resolution = "single_cell"))
 
   expect_identical(
     NROW(
@@ -68,8 +58,7 @@ test_that("Tissue/celltype enrichment categories ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-        resolution = "tissue",
-        logger = log4r_logger)$category_df
+        resolution = "tissue")$category_df
     ),
     as.integer(12)
   )
@@ -82,8 +71,7 @@ test_that("Tissue/celltype enrichment categories ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-        resolution = "tissue",
-        logger = log4r_logger)$exp_dist_df
+        resolution = "tissue")$exp_dist_df
     ),
     as.integer(0)
   )
@@ -96,8 +84,7 @@ test_that("Tissue/celltype enrichment categories ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df,
-        resolution = "tissue",
-        logger = log4r_logger)$exp_dist_df
+        resolution = "tissue")$exp_dist_df
     ),
     as.integer(0)
   )
@@ -110,8 +97,7 @@ test_that("Tissue/celltype enrichment categories ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_expr_db_df = oedb$tissuecelldb$single_cell$expr_df,
-        resolution = "single_cell",
-        logger = log4r_logger)$exp_dist_df
+        resolution = "single_cell")$exp_dist_df
     ),
     as.integer(0)
   )
@@ -124,8 +110,7 @@ test_that("Tissue/celltype enrichment categories ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_expr_db_df = oedb$tissuecelldb$single_cell$expr_df,
-        resolution = "single_cell",
-        logger = log4r_logger)$exp_dist_df
+        resolution = "single_cell")$exp_dist_df
     ),
     as.integer(0)
   )
@@ -137,32 +122,24 @@ test_that("Tissue/celltype enrichment categories ", {
 test_that("Tissue/celltype gene enrichment ", {
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment())
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger
-  ))
-  expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger,
     genedb = oedb$genedb$all
   ))
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df
   ))
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE
   ))
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
     qgenes_entrez = as.character(c(1042))
   ))
   expect_error(oncoEnrichR:::gene_tissue_cell_enrichment(
-    logger = log4r_logger,
     genedb = oedb$genedb$all,
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
@@ -176,8 +153,7 @@ test_that("Tissue/celltype gene enrichment ", {
       genedb = oedb$genedb$all,
       hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
       hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-      resolution = "tissue",
-      logger = log4r_logger)
+      resolution = "tissue")
   )
 
   ## hpa enrichment df's not correctly provided
@@ -187,8 +163,7 @@ test_that("Tissue/celltype gene enrichment ", {
       genedb = oedb$genedb$all,
       hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
       hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_df,
-      resolution = "tissue",
-      logger = log4r_logger))
+      resolution = "tissue"))
 
   ## mismatch between resolution and hpa df's provided
   expect_error(
@@ -197,8 +172,7 @@ test_that("Tissue/celltype gene enrichment ", {
       genedb = oedb$genedb$all,
       hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
       hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-      resolution = "single_cell",
-      logger = log4r_logger))
+      resolution = "single_cell"))
 
   expect_identical(
     NROW(
@@ -207,8 +181,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-        resolution = "tissue",
-        logger = log4r_logger)$per_gene),
+        resolution = "tissue")$per_gene),
     as.integer(0)
   )
 
@@ -219,8 +192,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-        resolution = "tissue",
-        logger = log4r_logger)$per_type),
+        resolution = "tissue")$per_type),
     as.integer(55))
 
   expect_identical(
@@ -230,8 +202,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-        resolution = "tissue",
-        logger = log4r_logger)$per_type),
+        resolution = "tissue")$per_type),
     c("tissue","tissue_specific_genes",
       "fold_change","log10_pvalue"))
 
@@ -242,8 +213,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
-        resolution = "single_cell",
-        logger = log4r_logger)$per_type
+        resolution = "single_cell")$per_type
     ),
     as.integer(76)
   )
@@ -255,8 +225,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
-        resolution = "single_cell",
-        logger = log4r_logger)$per_type),
+        resolution = "single_cell")$per_type),
     c("cell_type","celltype_specific_genes",
       "fold_change","log10_pvalue"))
 
@@ -268,8 +237,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
-        resolution = "tissue",
-        logger = log4r_logger)$per_gene
+        resolution = "tissue")$per_gene
     ),
     0
   )
@@ -281,8 +249,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
-        resolution = "single_cell",
-        logger = log4r_logger)$per_gene
+        resolution = "single_cell")$per_gene
     ),
     0
   )
@@ -297,8 +264,7 @@ test_that("Tissue/celltype gene enrichment ", {
         genedb = oedb$genedb$all,
         hpa_enrichment_db_df = oedb$tissuecelldb$single_cell$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
-        resolution = "single_cell",
-        logger = log4r_logger)$per_type
+        resolution = "single_cell")$per_type
     ),
     0
   )

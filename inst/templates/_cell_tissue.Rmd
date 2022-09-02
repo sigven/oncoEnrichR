@@ -51,7 +51,7 @@ oe_tissue_category_plot <-
     )
 
 rm(oe_tissue_category_df)
-plotly::ggplotly(oe_tissue_category_plot, height = 500, width = 900) %>%  
+plotly::ggplotly(oe_tissue_category_plot, height = 500, width = 900) |>  
   plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
 rm(oe_tissue_category_plot)
 
@@ -64,7 +64,7 @@ rm(oe_tissue_category_plot)
 
 tissue_specs_per_gene <- 
   crosstalk::SharedData$new(
-    onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']] %>% dplyr::select(-cancer_max_rank))
+    onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']] |> dplyr::select(-cancer_max_rank))
 
 crosstalk::bscols(
   list(
@@ -88,7 +88,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'category', 
     color = "white",
@@ -110,8 +110,8 @@ DT::datatable(
 ```{r filter_tissue, echo=F, results='asis'}
 
 num_significant_tissues <- 
-  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type %>%
-  dplyr::filter(log10_pvalue >= 1.3) %>%
+  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3) |>
   nrow()
 
 ```
@@ -135,7 +135,7 @@ htmltools::br()
 ```{r significantly_enriched_tissues, echo=F, results = 'asis', eval = num_significant_tissues > 0}
 
 enriched_tissues_df <- 
-  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type %>%
+  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type |>
   dplyr::filter(log10_pvalue >= 1.3)
 
 DT::datatable(
@@ -196,7 +196,7 @@ oe_ctype_category_plot <-
     )
 
 rm(oe_ctype_category_df)
-plotly::ggplotly(oe_ctype_category_plot, height = 500, width = 900) %>%  
+plotly::ggplotly(oe_ctype_category_plot, height = 500, width = 900) |>  
   plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
 rm(oe_ctype_category_plot)
 
@@ -211,7 +211,7 @@ rm(oe_ctype_category_plot)
 
 celltype_specs_per_gene <- 
   crosstalk::SharedData$new(
-    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']] %>% dplyr::select(-cancer_max_rank))
+    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']] |> dplyr::select(-cancer_max_rank))
 
 crosstalk::bscols(
   list(
@@ -234,7 +234,7 @@ DT::datatable(
                pageLength = 10,
                bPaginate = T,
                dom = 'Bfrtip')
-  ) %>%
+  ) |>
   DT::formatStyle(
     'category', 
     color = "white",
@@ -258,8 +258,8 @@ DT::datatable(
 ```{r filter_celltype, echo=F, results='asis'}
 
 num_significant_celltypes <- 
-  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type %>%
-  dplyr::filter(log10_pvalue >= 1.3) %>%
+  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3) |>
   nrow()
 
 
@@ -286,7 +286,7 @@ htmltools::br()
 ```{r significantly_enriched_celltypes, echo=F, results = 'asis', eval = num_significant_celltypes > 0}
 
 enriched_celltypes_df <- 
-  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type %>%
+  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type |>
   dplyr::filter(log10_pvalue >= 1.3)
 
 DT::datatable(

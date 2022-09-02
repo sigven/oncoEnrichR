@@ -15,10 +15,6 @@
 ```{r tcga_oncoplot_setup, echo = F, eval = T}
 
 tcga_oncoplot_data <- onc_enrich_report[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
-# maf_url <- paste0("https://github.com/sigven/oncoEnrichR/raw/",
-#                   "master",
-#                   #onc_enrich_report[["config"]][["resources"]][["oncoEnrichR"]][["version"]],
-#                   "/maf/")
 
 ## oncoplot arguments
 gene_mar <- 10
@@ -706,25 +702,23 @@ if(nrow(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0){
 ```
 
 ```{r table_browse_recurrent_vars, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0}
-library(crosstalk)
 
-
-vars <- onc_enrich_report[['data']][['tcga']][['recurrent_variants']] %>%
+vars <- onc_enrich_report[['data']][['tcga']][['recurrent_variants']] |>
   dplyr::mutate(SITE_RECURRENCE = as.integer(SITE_RECURRENCE))
 
 mutation_hotspot_levels <- levels(as.factor(
   vars$MUTATION_HOTSPOT))
 
 
-vars <- vars %>%
-  dplyr::arrange(dplyr::desc(SITE_RECURRENCE), dplyr::desc(LOSS_OF_FUNCTION)) %>%
+vars <- vars |>
+  dplyr::arrange(dplyr::desc(SITE_RECURRENCE), dplyr::desc(LOSS_OF_FUNCTION)) |>
   dplyr::mutate(CONSEQUENCE = stringr::str_replace_all(
     CONSEQUENCE, "&", ", "
-  )) %>%
+  )) |>
   head(2500)
 
 if(length(mutation_hotspot_levels) > 0){
-  vars <- vars %>%
+  vars <- vars |>
     dplyr::arrange(MUTATION_HOTSPOT, dplyr::desc(SITE_RECURRENCE))
 }
 
@@ -759,7 +753,7 @@ dt <- DT::datatable(recurrent_vars_tcga, escape = F,
 )
 
 if(length(mutation_hotspot_levels) > 0){
-  dt <- dt %>%
+  dt <- dt |>
     DT::formatStyle("MUTATION_HOTSPOT","MUTATION_HOTSPOT",
                     color = "white", fontWeight = "bold",
                     backgroundColor = DT::styleEqual(mutation_hotspot_levels, rep("black", length(mutation_hotspot_levels)))
@@ -809,13 +803,13 @@ gene_aberration_top_mat <-
 fig <- plotly::plot_ly(
   colors = "YlGn",
   width = 800,
-  height = 400 + (14.67 * NROW(onc_enrich_report$data$tcga$aberration$matrix$cna_ampl))) %>%
+  height = 400 + (14.67 * NROW(onc_enrich_report$data$tcga$aberration$matrix$cna_ampl))) |>
     plotly::add_heatmap(
       y = rownames(gene_aberration_top_mat),
       x = colnames(gene_aberration_top_mat),
       z = gene_aberration_top_mat,
       hovertext = "Percent mutated",
-      yaxis = "y") %>%
+      yaxis = "y") |>
     plotly::layout(
       title = "Amplifications",
       xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
@@ -823,7 +817,7 @@ fig <- plotly::plot_ly(
       yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
       margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4),
       legend = list(orientation = 'h')
-    ) %>%
+    ) |>
     plotly::colorbar(
       nticks = 10,
       title = list(text = "Percent mutated",side = "bottom"),
@@ -855,20 +849,20 @@ gene_aberration_top_mat <-
 fig <- plotly::plot_ly(
   colors = "YlOrRd",
   width = 800,
-  height = 400 + (14.67 * NROW(gene_aberration_top_mat))) %>%
+  height = 400 + (14.67 * NROW(gene_aberration_top_mat))) |>
     plotly::add_heatmap(
       y = rownames(gene_aberration_top_mat),
       x = colnames(gene_aberration_top_mat),
       z = gene_aberration_top_mat,
       hovertext = "Percent mutated",
-      yaxis = "y") %>%
+      yaxis = "y") |>
     plotly::layout(
       title = 'Homozygous deletions',
       xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
                    tickangle = -50),
       yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
       margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
-    ) %>%
+    ) |>
     plotly::colorbar(
       nticks = 10, 
       title = list(text = "Percent mutated",side = "bottom"),
@@ -896,19 +890,18 @@ cat('<br><br>')
 ```{r filter_tcga, echo=F, results='asis'}
 
 all_targets_vtypes <- 
-  onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']] %>% 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']] |> 
   dplyr::bind_rows(
     onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
-    ) %>%
-  dplyr::arrange(dplyr::desc(percent_mutated)) %>%
+    ) |>
+  dplyr::arrange(dplyr::desc(percent_mutated)) |>
   head(2500)
 
 ```
 
 
 ```{r table_browse_tcga_freqs, echo=F, results = "asis", eval = NROW(all_targets_vtypes) > 0}
-library(crosstalk)
-  
+
 oe_targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 
 crosstalk::bscols(

@@ -9,7 +9,9 @@ output: rmarkdown::html_document
 
 ### 1. `oncoEnrichR::load_db()`
 
--   Loads (from a version-specific [Zenodo record](https://doi.org/10.5281/zenodo.6684347)) all the necessary annotation datasets used in oncoEnrichR
+-   Loads the underlying annotation data repository for oncoEnrichR, and saves
+it to a local cache directory. Utilizing the 
+[googledrive](https://googledrive.tidyverse.org/) R package
 
 <br>
 
@@ -96,13 +98,13 @@ A target list of *n = 134* high-confidence interacting proteins with the c-MYC o
 -   `project_title = "cMYC_BioID_screen"`
 -   `project_owner = "Raught et al."`
 
-and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.6828941).
+and produced the [following HTML report with results](https://doi.org/10.5281/zenodo.7042674).
 
 Below are R commands provided to reproduce the example output. **NOTE**: Replace "LOCAL_FOLDER" with a directory on your local computer:
 
 -   `library(oncoEnrichR)`
 -   `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
--   `oeDB <- oncoEnrichR::load_db()` **NOTE**: pass a writable directory to the argument `cache_dir` in order to speed the database loading in subsequent R sessions
+-   `oeDB <- oncoEnrichR::load_db(cache_dir = "LOCAL_FOLDER")`
 -   `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, oeDB = oeDB, show_cell_tissue = T, project_title = "cMYC_BioID_screen", project_owner = "Raught et al.")`
 -   `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "LOCAL_FOLDER/myc_report_oncoenrichr.html", format = "html")`
 -   `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "LOCAL_FOLDER/myc_report_oncoenrichr.xlsx", format = "excel")`

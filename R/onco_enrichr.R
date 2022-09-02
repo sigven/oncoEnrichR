@@ -1,203 +1,336 @@
-#' Load oncoEnrichR annotation database
+#' Load oncoEnrichR data repository
 #'
-#' @param remote If TRUE (default), load database from tagged GitHub repository
-#' @param cache_dir path to local cache for more efficient subsequent loads
+#' Function that fetches version-tagged oncoEnrichR data
+#' repository from Google Drive
+#'
+#' @param cache_dir Local directory for data download
+#' @param force_download Logical indicating if local cache should force downloaded
+#' (i.e. set to TRUE to re-download even if data exists in cache)
+#'
+#' @returns
+#' A `list` object with oncoEnrichR datasets, to be used as
+#' the \emph{oeDB} argument for `onco_enrich()` and `write()`
 #'
 #' @export
 #'
-load_db <- function(remote = T,
-                    cache_dir = NULL){
+#'
+load_db <- function(cache_dir = NA,
+                    force_download = F){
 
-  logger <- log4r::logger(threshold = "INFO",
-                          appenders = log4r::console_appender(log4r_layout))
 
-  log4r_info(logger, paste0("Loading oncoEnrichR annotation databases"))
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  ## check that either remote is TRUE or cache_dir is provided
-  val <- remote == T | !is.null(cache_dir)
-  if(val == F){
-    log4r_info(logger,
-      "ERROR: Pull database either remotely from zenodo.org ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
-      return(-1)
+  lgr::lgr$info( paste0("Loading oncoEnrichR annotation databases"))
+
+  if(is.na(cache_dir)){
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' is not defined"))
+    stop()
   }
 
-  if(!is.null(cache_dir)){
-    val <- assertthat::validate_that(
-      dir.exists(cache_dir)
-    )
-    if(!is.logical(val)){
-      log4r_info(logger, paste0("ERROR: Cache directory '",cache_dir, "' does not exist"))
-      return(-1)
-    }
-
+  if(!dir.exists(cache_dir)){
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' does not exist"))
+    stop()
   }
 
+  oe_version <- unique(db_id_ref$pVersion)
 
-  ## if remote is TRUE
-  ## load from github (tagged)
+  cache_dir_ext <-
+    file.path(cache_dir, ".oncoenrichr")
+  if(!dir.exists(cache_dir_ext)){
+    dir.create(cache_dir_ext)
+  }
+  cache_version_dir <-
+    file.path(cache_dir,
+              ".oncoenrichr",
+              paste0("v", oe_version))
 
-  read_dest <- NULL
-  write_dest <- NULL
-  oe_version <- paste0("v", utils::packageVersion("oncoEnrichR"))
-
-  write_to_cache <- T
-  zenodo_record_files <- data.frame()
-
-  if(remote == T){
-
-    log4r_info(
-      logger,
-      paste0("Loading oncoEnrichR annotation datasets for version '",
-             oe_version,"' from Zenodo (https://zenodo.org/api/files/)"))
-    log4r_info(
-      logger, "This may take several minutes depending on your connection/bandwidth")
-
-    zenodo <- zen4R::ZenodoManager$new()
-    zenodo_doi <- unique(oncoEnrichR::db_props$zenodo_doi)
-    oedb_rec <- zenodo$getRecordByDOI(zenodo_doi)
-    zenodo_record_files <- oedb_rec$listFiles(pretty = TRUE)
-
-    if(!is.null(cache_dir)){
-
-      cache_version_dir <- file.path(cache_dir, oe_version)
-      write_dest <- cache_version_dir
-
-      if(!dir.exists(cache_version_dir)){
-        system(paste0('mkdir ', cache_version_dir),
-               intern = F)
-        log4r_info(logger, paste0("Data will be cached in ", cache_dir))
-
-      }else{
-        log4r_warn(logger, paste0("An existing cache for '",oe_version, "' was found in ",
-                   cache_dir, " - will be overwritten (set 'remote' = FALSE to read from cache only)"))
-
-      }
-    }else{
-      write_to_cache <- F
-    }
-
-  }else{
-
-    write_to_cache <- F
-
-    if(!is.null(cache_dir)){
-
-      cache_version_dir <- file.path(cache_dir, oe_version)
-
-      if(!dir.exists(cache_version_dir)){
-        log4r_info(logger, paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
-        log4r_info(logger, paste0("Set 'remote' = TRUE to reload data from zenodo.org and write to ", cache_dir))
-        return(-1)
-      }else{
-        read_dest <- cache_version_dir
-        log4r_info(logger, paste0("Loading oncoEnrichR annotation datasets locally (cached) from: ",read_dest))
-      }
-
-    }
+  if(!dir.exists(cache_version_dir)){
+    dir.create(cache_version_dir)
+    lgr::lgr$info( paste0("Data will be cached in ", cache_version_dir))
   }
 
   oedb <- list()
-  cache_in_use_log_printed <- 0
+  drug_datasets <- list()
+  oe_datasets <- c("cancerdrugdb",
+                   "genedb",
+                   "hpa",
+                   "ligandreceptordb",
+                   "otdb",
+                   "pfamdb",
+                   "pathwaydb",
+                   "projectscoredb",
+                   "projectsurvivaldb",
+                   "release_notes",
+                   "subcelldb",
+                   "slparalogdb",
+                   "tcgadb",
+                   "tissuecelldb",
+                   "tftargetdb")
 
-  for(db in c("cancerdrugdb",
-              "genedb",
-              "hpa",
-              "ligandreceptordb",
-              "otdb",
-              "pfamdb",
-              "pathwaydb",
-              "projectscoredb",
-              "projectsurvivaldb",
-              "release_notes",
-              "subcelldb",
-              "slparalogdb",
-              "tcgadb",
-              "tissuecelldb",
-              "tftargetdb")){
+  for(elem in oe_datasets){
 
+    fname_local <- file.path(
+      cache_version_dir,
+      db_id_ref[db_id_ref$name == elem,]$filename
+    )
 
+    fname_gd <- googledrive::as_id(
+      db_id_ref[db_id_ref$name == elem,]$gid)
 
-    if(remote == T & NROW(zenodo_record_files) > 0){
-      zenodo_download_entry <-
-        zenodo_record_files[zenodo_record_files$filename == paste0(db,".rds"),]$download
-      read_dest <- stringr::str_replace(zenodo_download_entry,paste0("/",db,".rds"),"")
-    }
+    md5checksum_package <-
+      db_id_ref[db_id_ref$name == elem,]$md5Checksum
 
-    db_dest <- file.path(read_dest, paste0(db,".rds"))
-    options(timeout=9999999)
-    if(remote == T){
-      if(RCurl::url.exists(db_dest)){
-        oedb[[db]] <- readRDS(url(db_dest,"rb"))
-      }else{
-        log4r_err(logger, paste0("Could not retrieve data from ", db_dest))
-        return(-1)
+    #dat <- NULL
+    if(file.exists(fname_local) & force_download == F){
+      oedb[[elem]] <- readRDS(fname_local)
+      if(!is.null(oedb[[elem]])){
+        lgr::lgr$info(paste0(
+          "Reading from cache_dir = '", cache_version_dir, "', argument force_download = F"))
+        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
       }
-      checksum_db <- R.cache::getChecksum(oedb[[db]])
-      if(db == 'subcelldb'){
-        if('comppidb' %in% names(oedb[[db]])){
-          checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
-        }
-      }
-      if(checksum_db ==
-         oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
-        log4r_info(logger, paste0("'",
-                                  db, "' - ",
-                                  oe_version, " - ",
-                                  checksum_db,
-                                  " - verifies correctly"))
-      }else{
-        log4r_err(logger, paste0("'",
-                                 db, "' - ",
-                                 oe_version, " - ",
-                                 checksum_db,
-                                 " - does not verify correctly"))
-      }
-      if(write_to_cache == T){
-        cache_db_dest = file.path(write_dest, paste0(db,".rds"))
-        saveRDS(oedb[[db]], file = cache_db_dest)
-      }
+
     }else{
-      if(file.exists(db_dest)){
-        oedb[[db]] <- readRDS(file = db_dest)
-      }else{
-        log4r_err(logger, paste0("Could not retrieve data from ", db_dest))
-        return()
-      }
 
+      googledrive::drive_deauth()
 
-      checksum_db <- R.cache::getChecksum(oedb[[db]])
+      lgr::lgr$info("Downloading remote oncoEnrichR dataset from Google Drive to cache_dir")
+      dl <- googledrive::with_drive_quiet(
+        googledrive::drive_download(
+          fname_gd,
+          path = fname_local,
+          overwrite = TRUE)
+      )
 
-      ##subcelldb's checksum does not recover correctly with all
-      ##list entries involved, choose comppi only
-      if(db == 'subcelldb'){
-        if('comppidb' %in% names(oedb[[db]])){
-          checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+      md5checksum_remote <- dl$drive_resource[[1]]$md5Checksum
+      md5checksum_local <- tools::md5sum(fname_local)
+      names(md5checksum_local) <- NULL
+
+      if(md5checksum_remote == md5checksum_local){
+        oedb[[elem]] <- readRDS(fname_local)
+        if(!is.null(oedb[[elem]])){
+          lgr::lgr$info(paste0(
+            "Reading from cache_dir = ' (", cache_version_dir, "'), argument force_download = F"))
+          lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
+          lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
         }
-      }
-
-
-      if(checksum_db ==
-         oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
-        log4r_info(logger, paste0("'",
-                                  db, "' - ",
-                                  oe_version, " - ",
-                                  checksum_db,
-                                  " - verifies correctly"))
       }else{
-        log4r_err(logger, paste0("'",
-                                 db, "' - ",
-                                 oe_version, " - ",
-                                 checksum_db,
-                                 " - does not verify correctly"))
+        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
+                              ") is inconsistent with remote file (",
+                              md5checksum_remote,")"))
+        stop()
       }
 
     }
   }
 
-
   return(oedb)
-
 }
+
+
+
+#' Load oncoEnrichR annotation database
+#'
+#' @param remote If TRUE (default), load database from version-tagged Zenodo repository
+#' @param cache_dir path to local cache for more efficient subsequent loads
+#'
+#' @keywords internal
+#'
+# load_db_zenodo <- function(remote = T,
+#                            cache_dir = NA){
+#
+#   lgr::lgr$appenders$console$set_layout(
+#     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+#
+#   lgr::lgr$info( paste0("Loading oncoEnrichR annotation databases"))
+#
+#   ## check that either remote is TRUE or cache_dir is provided
+#   val <- remote == T | !is.na(cache_dir)
+#   if(val == F){
+#     lgr::lgr$info(
+#       "ERROR: Pull database either remotely from zenodo.org ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
+#       return(-1)
+#   }
+#
+#   if(!is.na(cache_dir)){
+#     val <- assertthat::validate_that(
+#       dir.exists(cache_dir)
+#     )
+#     if(!is.logical(val)){
+#       lgr::lgr$info( paste0("ERROR: Cache directory '",cache_dir, "' does not exist"))
+#       return(-1)
+#     }
+#
+#   }
+#
+#
+#   ## if remote is TRUE
+#   ## load from Zenodo (tagged)
+#
+#   read_dest <- NULL
+#   write_dest <- NULL
+#   oe_version <- paste0("v", utils::packageVersion("oncoEnrichR"))
+#
+#   write_to_cache <- T
+#   zenodo_record_files <- data.frame()
+#
+#   if(remote == T){
+#
+#     lgr::lgr$info(
+#       paste0("Loading oncoEnrichR annotation datasets for version '",
+#              oe_version,"' from Zenodo (https://zenodo.org/api/files/)"))
+#     lgr::lgr$info("This may take several minutes depending on your connection/bandwidth")
+#
+#     zenodo <- zen4R::ZenodoManager$new()
+#     zenodo_doi <- unique(oncoEnrichR::db_props$zenodo_doi)
+#     oedb_rec <- zenodo$getRecordByDOI(zenodo_doi)
+#     zenodo_record_files <- oedb_rec$listFiles(pretty = TRUE)
+#
+#     if(!is.null(cache_dir)){
+#
+#       cache_version_dir <- file.path(cache_dir, oe_version)
+#       write_dest <- cache_version_dir
+#
+#       if(!dir.exists(cache_version_dir)){
+#         system(paste0('mkdir ', cache_version_dir),
+#                intern = F)
+#         lgr::lgr$info( paste0("Data will be cached in ", cache_dir))
+#
+#       }else{
+#         lgr::lgr$warn(paste0("An existing cache for '",oe_version, "' was found in ",
+#                    cache_dir, " - will be overwritten (set 'remote' = FALSE to read from cache only)"))
+#
+#       }
+#     }else{
+#       write_to_cache <- F
+#     }
+#
+#   }else{
+#
+#     write_to_cache <- F
+#
+#     if(!is.null(cache_dir)){
+#
+#       cache_version_dir <- file.path(cache_dir, oe_version)
+#
+#       if(!dir.exists(cache_version_dir)){
+#         lgr::lgr$info( paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
+#         lgr::lgr$info( paste0("Set 'remote' = TRUE to reload data from zenodo.org and write to ", cache_dir))
+#         return(-1)
+#       }else{
+#         read_dest <- cache_version_dir
+#         lgr::lgr$info( paste0("Loading oncoEnrichR annotation datasets locally (cached) from: ",read_dest))
+#       }
+#
+#     }
+#   }
+#
+#   oedb <- list()
+#   cache_in_use_log_printed <- 0
+#
+#   for(db in c("cancerdrugdb",
+#               "genedb",
+#               "hpa",
+#               "ligandreceptordb",
+#               "otdb",
+#               "pfamdb",
+#               "pathwaydb",
+#               "projectscoredb",
+#               "projectsurvivaldb",
+#               "release_notes",
+#               "subcelldb",
+#               "slparalogdb",
+#               "tcgadb",
+#               "tissuecelldb",
+#               "tftargetdb")){
+#
+#
+#
+#     if(remote == T & NROW(zenodo_record_files) > 0){
+#       zenodo_download_entry <-
+#         zenodo_record_files[zenodo_record_files$filename == paste0(db,".rds"),]$download
+#       read_dest <- stringr::str_replace(
+#         zenodo_download_entry,
+#         paste0(.Platform$file.sep , db, ".rds"),"")
+#     }
+#
+#     db_dest <- file.path(read_dest, paste0(db,".rds"))
+#     options(timeout=9999999)
+#     if(remote == T){
+#       if(RCurl::url.exists(db_dest)){
+#         oedb[[db]] <- readRDS(url(db_dest,"rb"))
+#       }else{
+#         lgr::lgr$error(paste0("Could not retrieve data from ", db_dest))
+#         return(-1)
+#       }
+#       checksum_db <- R.cache::getChecksum(oedb[[db]])
+#       if(db == 'subcelldb'){
+#         if('comppidb' %in% names(oedb[[db]])){
+#           checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+#         }
+#       }
+#       if(checksum_db ==
+#          oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
+#         lgr::lgr$info( paste0("'",
+#                               db, "' - ",
+#                               oe_version, " - ",
+#                               checksum_db,
+#                               " - verifies correctly"))
+#       }else{
+#         lgr::lgr$error(paste0("'",
+#                               db, "' - ",
+#                               oe_version, " - ",
+#                               checksum_db,
+#                               " - does not verify correctly"))
+#       }
+#       if(write_to_cache == T){
+#         cache_db_dest = file.path(write_dest, paste0(db,".rds"))
+#         saveRDS(oedb[[db]], file = cache_db_dest)
+#       }
+#     }else{
+#       if(file.exists(db_dest)){
+#         oedb[[db]] <- readRDS(file = db_dest)
+#       }else{
+#         lgr::lgr$error(paste0("Could not retrieve data from ", db_dest))
+#         return()
+#       }
+#
+#
+#       checksum_db <- R.cache::getChecksum(oedb[[db]])
+#
+#       ##subcelldb's checksum does not recover correctly with all
+#       ##list entries involved, choose comppi only
+#       if(db == 'subcelldb'){
+#         if('comppidb' %in% names(oedb[[db]])){
+#           checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+#         }
+#       }
+#
+#
+#       if(checksum_db ==
+#          oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]){
+#         lgr::lgr$info( paste0("'",
+#                               db, "' - ",
+#                               oe_version, " - ",
+#                               checksum_db,
+#                               " - verifies correctly"))
+#       }else{
+#         lgr::lgr$error(paste0("'",
+#                               db, "' - ",
+#                               oe_version, " - ",
+#                               checksum_db,
+#                               " - does not verify correctly"))
+#       }
+#
+#     }
+#   }
+#
+#
+#   return(oedb)
+#
+# }
 
 
 #' Function that initiates oncoEnrichR report structure
@@ -508,10 +641,10 @@ init_report <- function(oeDB,
       "#fcbba1")
 
   rep[["config"]][["unknown_function"]][['num_candidates']] <-
-    oeDB[['genedb']]$all %>%
-    dplyr::filter(.data$gene_biotype == "protein-coding") %>%
-    dplyr::filter(!is.na(.data$unknown_function_rank)) %>%
-    dplyr::filter(.data$unknown_function_rank <= 5) %>%
+    oeDB[['genedb']]$all |>
+    dplyr::filter(.data$gene_biotype == "protein-coding") |>
+    dplyr::filter(!is.na(.data$unknown_function_rank)) |>
+    dplyr::filter(.data$unknown_function_rank <= 5) |>
     nrow()
 
   rep[['config']][['subcellcomp']] <- list()
@@ -695,10 +828,17 @@ init_report <- function(oeDB,
   return(rep)
 }
 
-#' Interrogate and prioritize a gene list for cancer relevance
+#' Interrogate a gene list for cancer relevance
+#'
+#' Function that interrogates a list of human gene identifiers for
+#' cancer relevance. Multiple perspectives are offered, including
+#' tumor aberration and co-expression patterns, druggability,
+#' protein-protein interactions, gene fitness effects, regulatory
+#' interactions, subcellular compartment enrichment, pathway enrichment,
+#' synthetic lethality interactions, prognostic associations, and more.
 #'
 #' @param query character vector with gene/query identifiers
-#' @param oeDB oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()
+#' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
 #' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
@@ -748,6 +888,12 @@ init_report <- function(oeDB,
 #' @param show_domain logical indicating if report should provide target memberships in known protein domains (Pfam)
 
 #' @param ... arguments for Galaxy/web-based processing
+#'
+#' @return
+#' An oncoEnrichR report list object, with two main elements,
+#' `data` and `config`. `data` contains data that goes into
+#' each section of the output reports, `config` contains all
+#' metadata for annotation resources used.
 #'
 #' @export
 #'
@@ -799,14 +945,17 @@ onco_enrich <- function(query = NULL,
                         ...) {
 
 
-  logger <- log4r::logger(
-    threshold = "INFO",
-    appenders = log4r::console_appender(oncoEnrichR:::log4r_layout))
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  # logger <- log4r::logger(
+  #   threshold = "INFO",
+  #   appenders = log4r::console_appender(log4r_layout))
 
   dot_args <- list(...)
 
   if(is.null(oeDB)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: mandatory argument 'oeDB' cannot be NULL"))
     return()
   }
@@ -816,12 +965,12 @@ onco_enrich <- function(query = NULL,
   }
 
   if(is.null(query)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: mandatory argument 'query' cannot be NULL"))
     return()
   }
   if(!is.character(query)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: mandatory argument 'query' is of wrong type (not character)"))
     return()
   }
@@ -830,7 +979,7 @@ onco_enrich <- function(query = NULL,
     val <- assertthat::validate_that(
       is.character(bgset))
     if(!is.logical(val)){
-      log4r_info(logger, paste0(
+      lgr::lgr$info( paste0(
         "ERROR: ", val))
       return()
     }
@@ -838,7 +987,7 @@ onco_enrich <- function(query = NULL,
 
   val <- assertthat::validate_that(length(query) >= 2)
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: query set must contain at least two entries - length of query is: ", length(query)))
     return()
   }
@@ -850,7 +999,7 @@ onco_enrich <- function(query = NULL,
                                      "fdr", "none")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'p_value_adjustment_method' must take on any of the following values: ",
       "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
       " (value provided was '", p_value_adjustment_method,"')"))
@@ -862,7 +1011,7 @@ onco_enrich <- function(query = NULL,
                                           "C", "D")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'min_confidence_reg_interaction' must take on any of the following values: 'A', 'B', 'C', 'D'",
       " (value provided was '", min_confidence_reg_interaction,"')"))
     return()
@@ -874,7 +1023,7 @@ onco_enrich <- function(query = NULL,
                         "simplex","spacelab","united","yeti")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'html_report_theme' must take on any of the following values: ",
       "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
       "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
@@ -887,7 +1036,7 @@ onco_enrich <- function(query = NULL,
 
   if(length(names(dot_args)) > 0){
     if("galaxy" %in% names(dot_args))
-      log4r_info(logger,
+      lgr::lgr$info(
                  "NOTE: Running oncoEnrichR workflow in Galaxy mode")
       if(is.logical(dot_args$galaxy)){
         if(dot_args$galaxy == T){
@@ -897,7 +1046,7 @@ onco_enrich <- function(query = NULL,
   }
 
   if (length(query) > oncoenrichr_query_limit) {
-    log4r_info(logger,
+    lgr::lgr$info(
       paste0("WARNING: oncoEnrichR is limited to the analysis of n = ",
              oncoenrichr_query_limit," entries. Query contained n = ",
              length(query), " identifiers, limiting to top ",
@@ -912,7 +1061,7 @@ onco_enrich <- function(query = NULL,
                          "ensembl_gene")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'query_id_type' must take on of the following values: ",
       "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
@@ -926,7 +1075,7 @@ onco_enrich <- function(query = NULL,
                          "ensembl_gene")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'bgset_id_type' must take on any of the following values: ",
       "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
@@ -937,7 +1086,7 @@ onco_enrich <- function(query = NULL,
   val <- max_fitness_score <= 0 & is.numeric(max_fitness_score)
 
   if(val == F){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'max_fitness_score' must be a value (scaled Bayes factor from BAGEL) less than zero ",
       "(current type and value: '",typeof(max_fitness_score),"' - ",
       max_fitness_score,")")
@@ -952,7 +1101,7 @@ onco_enrich <- function(query = NULL,
       (ppi_score_threshold <= 1000)
 
   if(val == F){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'ppi_score_threshold' must be an integer/whole number and take a value from 1 to 1000 ",
       "(current type and value: '",typeof(ppi_score_threshold),"' - ",
       ppi_score_threshold,")")
@@ -965,7 +1114,7 @@ onco_enrich <- function(query = NULL,
       num_terms_enrichment_plot <= 30
 
   if(val == F){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'num_terms_enrichment_plot' must be an integer/whole number and take a value from 10 to 30 ",
       "(current type and value: '",typeof(num_terms_enrichment_plot),"' - ",
       num_terms_enrichment_plot,")")
@@ -979,7 +1128,7 @@ onco_enrich <- function(query = NULL,
       min_subcellcomp_confidence <= 6
 
   if(val == F){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'min_subcellcomp_confidence' must be an integer/whole number and take a value from 1 to 6 ",
       "(current type and value: '",typeof(min_subcellcomp_confidence),"' - ",
       min_subcellcomp_confidence,")")
@@ -992,7 +1141,7 @@ onco_enrich <- function(query = NULL,
       p_value_cutoff_enrichment > 0 & p_value_cutoff_enrichment < 1)
 
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'p_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
       "(current type and value: '",typeof(p_value_cutoff_enrichment),"' - ",
       p_value_cutoff_enrichment,")")
@@ -1005,7 +1154,7 @@ onco_enrich <- function(query = NULL,
       q_value_cutoff_enrichment > 0 & q_value_cutoff_enrichment < 1)
 
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: 'q_value_cutoff_enrichment' must be of type numeric and be greater than 0 and less than 1 ",
       "(current type and value: '",typeof(q_value_cutoff_enrichment),"' - ",
       q_value_cutoff_enrichment,")")
@@ -1072,12 +1221,11 @@ onco_enrich <- function(query = NULL,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
       genedb = oeDB[['genedb']][['all']],
-      transcript_xref = oeDB[['genedb']][['transcript_xref']],
-      logger = logger)
+      transcript_xref = oeDB[['genedb']][['transcript_xref']])
 
   val <- assertthat::validate_that(NROW(qgenes_match$found) >= 2)
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: query set must contain at least two valid entries - number of validated entries: ", NROW(qgenes_match$found)))
     return()
   }
@@ -1118,7 +1266,7 @@ onco_enrich <- function(query = NULL,
   ## is not performed (too few genes)
   if(NROW(qgenes_match[["found"]]) < 5){
     onc_rep[['config']][['show']][['enrichment']] <- F
-    log4r_info(logger,
+    lgr::lgr$info(
       paste0("WARNING: Function (GO) and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
              NROW(qgenes_match[["found"]])," valid entries"))
   }
@@ -1135,11 +1283,10 @@ onco_enrich <- function(query = NULL,
         ignore_id_err = ignore_id_err,
         genedb = oeDB[['genedb']][['all']],
         transcript_xref = oeDB[['genedb']][['transcript_xref']],
-        qtype = "background",
-        logger = logger)
+        qtype = "background")
     if (background_genes_match[["match_status"]] == "imperfect_stop" |
         NROW(background_genes_match[['found']]) <= 1) {
-      log4r_info(logger, paste0("WARNING: Background geneset not defined properly - ",
+      lgr::lgr$info( paste0("WARNING: Background geneset not defined properly - ",
                         "using all protein-coding genes instead"))
       background_entrezgene <- as.character(
         unique(oeDB[['genedb']][['all']]$entrezgene)
@@ -1150,7 +1297,7 @@ onco_enrich <- function(query = NULL,
       )
       if(onc_rep[['config']][['enrichment']][['bgset_description']] ==
          "All protein-coding genes"){
-        log4r_info(logger, paste0("WARNING: Description of background set is not set"))
+        lgr::lgr$info( paste0("WARNING: Description of background set is not set"))
         onc_rep[['config']][['enrichment']][['bgset_description']] <-
           "Undefined"
 
@@ -1159,9 +1306,9 @@ onco_enrich <- function(query = NULL,
   }else{
     bg <- dplyr::select(oeDB[['genedb']][['all']],
                         .data$entrezgene,
-                        .data$gene_biotype) %>%
+                        .data$gene_biotype) |>
       dplyr::filter(!is.na(.data$entrezgene) &
-                      .data$gene_biotype == "protein-coding") %>%
+                      .data$gene_biotype == "protein-coding") |>
       dplyr::distinct()
     background_entrezgene <- as.character(bg$entrezgene)
   }
@@ -1188,8 +1335,7 @@ onco_enrich <- function(query = NULL,
         genedb = oeDB[['genedb']][['all']],
         otdb_all = oeDB[['otdb']][['all']],
         otdb_gene_rank = oeDB[['otdb']][['gene_rank']],
-        min_association_score = 0.1,
-        logger = logger)
+        min_association_score = 0.1)
   }
 
   ## Include synthetic lethality interactions
@@ -1197,8 +1343,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["synleth"]] <- annotate_synleth_paralog_pairs(
       qgenes = query_symbol,
       genedb = oeDB[['genedb']][['all']],
-      slparalogdb = oeDB[['slparalogdb']],
-      logger = logger)
+      slparalogdb = oeDB[['slparalogdb']])
   }
 
   ## Include gene-drug annotations in the report (targeted cancer drugs)
@@ -1206,8 +1351,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["drug"]] <-
       target_drug_associations(
         qgenes = query_symbol,
-        genedb = oeDB[['genedb']][['all']],
-        logger = logger)
+        genedb = oeDB[['genedb']][['all']])
   }
 
   ## Include ligand-receptor interactions in the report
@@ -1216,9 +1360,10 @@ onco_enrich <- function(query = NULL,
       annotate_ligand_receptor_interactions(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        ligand_receptor_db = oeDB[['ligandreceptordb']][['cellchatdb']][['db']],
-        ligand_receptor_xref = oeDB[['ligandreceptordb']][['cellchatdb']][['xref']],
-        logger = logger)
+        ligand_receptor_db =
+          oeDB[['ligandreceptordb']][['cellchatdb']][['db']],
+        ligand_receptor_xref =
+          oeDB[['ligandreceptordb']][['cellchatdb']][['xref']])
   }
 
   ## Include enrichment analyses in the report (pathway, GO, MSigDB)
@@ -1243,11 +1388,10 @@ onco_enrich <- function(query = NULL,
               onc_rep[["config"]][["enrichment"]][["p_adjust_method"]],
             simplify = onc_rep[["config"]][["enrichment"]][["simplify_go"]],
             ontology = subcat,
-            genedb = oeDB[['genedb']][['all']],
-            logger = logger)
+            genedb = oeDB[['genedb']][['all']])
           if (!is.null(enr)) {
             onc_rep[["data"]][["enrichment"]][["go"]] <-
-              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) %>%
+              dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["go"]], enr) |>
               dplyr::distinct()
           }
         }else{
@@ -1272,12 +1416,11 @@ onco_enrich <- function(query = NULL,
               TERM2GENE = oeDB[['pathwaydb']][['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2GENE,
               TERM2NAME = oeDB[['pathwaydb']][['msigdb']]$COLLECTION[[c]][[subcat]]$TERM2NAME,
               TERM2SOURCE = oeDB[['pathwaydb']][['msigdb']]$TERM2SOURCE,
-              dbsource = db,
-              logger = logger)
+              dbsource = db)
             if (!is.null(enr)) {
               onc_rep[["data"]][["enrichment"]][["msigdb"]] <-
-                dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) %>%
-                dplyr::distinct() %>%
+                dplyr::bind_rows(onc_rep[["data"]][["enrichment"]][["msigdb"]], enr) |>
+                dplyr::distinct() |>
                 dplyr::arrange(.data$qvalue)
             }
           }
@@ -1309,8 +1452,7 @@ onco_enrich <- function(query = NULL,
           TERM2GENE = oeDB[['pathwaydb']][[pwaydb]]$TERM2GENE,
           TERM2NAME = oeDB[['pathwaydb']][[pwaydb]]$TERM2NAME,
           #TERM2SOURCE = oeDB[['pathwaydb']][[pwaydb]]$TERM2SOURCE,
-          dbsource = db,
-          logger = logger)
+          dbsource = db)
 
     }
   }
@@ -1325,8 +1467,7 @@ onco_enrich <- function(query = NULL,
         ppi_source = "STRING",
         genedb = oeDB[['genedb']][['all']],
         cancerdrugdb = oeDB[['cancerdrugdb']],
-        settings = onc_rep[["config"]][["ppi"]][["stringdb"]],
-        logger = logger)
+        settings = onc_rep[["config"]][["ppi"]][["stringdb"]])
   }
 
   ## include protein complex annotations in the report
@@ -1338,8 +1479,7 @@ onco_enrich <- function(query = NULL,
         complex_db = oeDB[['genedb']][['proteincomplexdb']][['db']],
         complex_up_xref = oeDB[['genedb']][['proteincomplexdb']][['up_xref']],
         transcript_xref = oeDB[['genedb']][['transcript_xref']],
-        otdb_gene_rank = oeDB[['otdb']][['gene_rank']],
-        logger = logger)
+        otdb_gene_rank = oeDB[['otdb']][['gene_rank']])
   }
 
   if(show_domain == T){
@@ -1348,8 +1488,7 @@ onco_enrich <- function(query = NULL,
         query_entrez = as.integer(query_entrezgene),
         genedb = oeDB[['genedb']][['all']],
         pfamdb = oeDB[['pfamdb']],
-        transcript_xref = oeDB[['genedb']][['transcript_xref']],
-        logger = logger)
+        transcript_xref = oeDB[['genedb']][['transcript_xref']])
   }
 
   ## include annotations regarding genes of unknown/poorly defined function
@@ -1357,9 +1496,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["unknown_function"]][["hits_df"]] <-
       get_genes_unknown_function(
         qgenes = query_symbol,
-        genedb = oeDB[['genedb']][['all']],
-        logger = logger
-      )
+        genedb = oeDB[['genedb']][['all']])
   }
 
   ## include subcellular enrichment and annotations
@@ -1372,8 +1509,7 @@ onco_enrich <- function(query = NULL,
         genedb = oeDB[['genedb']][['all']],
         comppidb = oeDB[['subcelldb']][['comppidb']],
         go_gganatogram_map = oeDB[['subcelldb']][['go_gganatogram_map']],
-        transcript_xref = oeDB[['genedb']][['transcript_xref']],
-        logger = logger)
+        transcript_xref = oeDB[['genedb']][['transcript_xref']])
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
        subcellcomp_annotations[["all"]]
@@ -1389,8 +1525,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["fitness"]][["fitness_scores"]] <-
       get_fitness_lof_scores(
         qgenes = query_symbol,
-        projectscoredb = oeDB[['projectscoredb']],
-        logger = logger)
+        projectscoredb = oeDB[['projectscoredb']])
 
     if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] <= 10){
       onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] <- 5
@@ -1405,8 +1540,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["fitness"]][["target_priority_scores"]] <-
       get_target_priority_scores(
         qgenes = query_symbol,
-        projectscoredb = oeDB[['projectscoredb']],
-        logger = logger)
+        projectscoredb = oeDB[['projectscoredb']])
   }
 
 
@@ -1418,44 +1552,42 @@ onco_enrich <- function(query = NULL,
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
           tcgadb = oeDB[['tcgadb']],
-          vtype = v,
-          logger = logger)
+          vtype = v)
       onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <-
         tcga_aberration_table(
           qgenes = as.integer(query_entrezgene),
           qsource = "entrezgene",
           genedb = oeDB[['genedb']][['all']],
           tcgadb = oeDB[['tcgadb']],
-          vtype = v,
-          logger = logger)
+          vtype = v)
     }
 
     onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-      oeDB$tcgadb[["recurrent_variants"]] %>%
+      oeDB$tcgadb[["recurrent_variants"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, .data$symbol),
-        by = c("SYMBOL" = "symbol")) %>%
+        by = c("SYMBOL" = "symbol")) |>
       dplyr::distinct()
 
     if(nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0){
       cosmic_variants <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::select(.data$VAR_ID, .data$COSMIC_MUTATION_ID) %>%
-        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) %>%
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+        dplyr::select(.data$VAR_ID, .data$COSMIC_MUTATION_ID) |>
+        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) |>
         dplyr::distinct()
 
       if(nrow(cosmic_variants) > 0){
 
         cosmic_variants <- as.data.frame(
-          cosmic_variants %>%
-          tidyr::separate_rows(.data$COSMIC_MUTATION_ID, sep="&") %>%
+          cosmic_variants |>
+          tidyr::separate_rows(.data$COSMIC_MUTATION_ID, sep="&") |>
           dplyr::mutate(
             COSMIC_MUTATION_ID = paste0(
               "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
               .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
               .data$COSMIC_MUTATION_ID,"</a>"
-            )) %>%
-          dplyr::group_by(.data$VAR_ID) %>%
+            )) |>
+          dplyr::group_by(.data$VAR_ID) |>
           dplyr::summarise(
             COSMIC_MUTATION_ID =
               paste(
@@ -1465,15 +1597,15 @@ onco_enrich <- function(query = NULL,
         )
 
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-          dplyr::select(-.data$COSMIC_MUTATION_ID) %>%
+          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+          dplyr::select(-.data$COSMIC_MUTATION_ID) |>
           dplyr::left_join(cosmic_variants,
                            by = c("VAR_ID"))
       }
 
       onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] %>%
-        dplyr::left_join(oeDB[['tcgadb']][['pfam']], by = "PFAM_ID") %>%
+        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+        dplyr::left_join(oeDB[['tcgadb']][['pfam']], by = "PFAM_ID") |>
         dplyr::mutate(
           PROTEIN_DOMAIN = dplyr::if_else(
             !is.na(.data$PFAM_ID),
@@ -1484,19 +1616,19 @@ onco_enrich <- function(query = NULL,
             "</a>"),
             as.character(NA)
           )
-        ) %>%
-        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) %>%
+        ) |>
+        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) |>
         dplyr::left_join(dplyr::select(oeDB[['genedb']][['all']],
                                        .data$symbol, .data$ensembl_gene_id),
-                         by = c("SYMBOL" = "symbol")) %>%
-        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) %>%
+                         by = c("SYMBOL" = "symbol")) |>
+        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) |>
         dplyr::mutate(ENSEMBL_TRANSCRIPT_ID =
                         paste0("<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
                                .data$ENSEMBL_GENE_ID,
                                ";t=",
                                .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) %>%
-        dplyr::select(-.data$VAR_ID) %>%
+                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
+        dplyr::select(-.data$VAR_ID) |>
         dplyr::select(.data$SYMBOL,
                       .data$CONSEQUENCE,
                       .data$PROTEIN_CHANGE,
@@ -1515,20 +1647,19 @@ onco_enrich <- function(query = NULL,
           qsource = "symbol",
           genedb = oeDB[['genedb']][['all']],
           tcgadb = oeDB[['tcgadb']],
-          site = psite,
-          logger = logger)
+          site = psite)
     }
   }
 
   if (show_cancer_hallmarks == T){
 
-    log4r_info(logger, "Retrieving genes with evidence of cancer hallmark properties")
+    lgr::lgr$info( "Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
-      oeDB[['genedb']][["cancer_hallmark"]][["short"]] %>%
+      oeDB[['genedb']][["cancer_hallmark"]][["short"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, .data$ensembl_gene_id),
-        by = "ensembl_gene_id") %>%
-      dplyr::select(-.data$ensembl_gene_id) %>%
+        by = "ensembl_gene_id") |>
+      dplyr::select(-.data$ensembl_gene_id) |>
       dplyr::distinct()
 
     n_genes_cancerhallmarks <- 0
@@ -1536,7 +1667,7 @@ onco_enrich <- function(query = NULL,
     if(nrow(onc_rep[["data"]][["cancer_hallmark"]][["target"]]) > 0){
       n_genes_cancerhallmarks <- length(unique(onc_rep[["data"]][["cancer_hallmark"]][["target"]]$symbol))
     }
-    log4r_info(logger, paste0("Number of query genes attributed with cancer hallmark properties: ",
+    lgr::lgr$info( paste0("Number of query genes attributed with cancer hallmark properties: ",
                              n_genes_cancerhallmarks))
 
   }
@@ -1546,8 +1677,7 @@ onco_enrich <- function(query = NULL,
       tcga_coexpression(
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        tcgadb = oeDB[['tcgadb']],
-        logger = logger)
+        tcgadb = oeDB[['tcgadb']])
   }
 
   if (show_regulatory == T) {
@@ -1559,8 +1689,7 @@ onco_enrich <- function(query = NULL,
           genedb = oeDB[['genedb']][['all']],
           tf_target_interactions = oeDB[['tftargetdb']],
           collection = collection,
-          min_confidence_reg_interaction = min_confidence_reg_interaction,
-          logger = logger)
+          min_confidence_reg_interaction = min_confidence_reg_interaction)
     }
 
     if(NROW(onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]) > 0){
@@ -1577,15 +1706,13 @@ onco_enrich <- function(query = NULL,
       hpa_prognostic_genes(
         query_symbol,
         genedb = oeDB[['genedb']][['all']],
-        hpadb = oeDB[['hpa']],
-        logger = logger)
+        hpadb = oeDB[['hpa']])
 
     for(feature in c('exp', 'mut', 'cna', 'meth')){
       onc_rep[["data"]][["cancer_prognosis"]][['km_cshl']][['assocs']][[feature]] <-
         km_cshl_survival_genes(
           query_symbol,
           projectsurvivaldb = oeDB[['projectsurvivaldb']][[feature]],
-          logger = logger,
           genetic_feature = feature)
     }
 
@@ -1599,8 +1726,7 @@ onco_enrich <- function(query = NULL,
         resolution = "tissue",
         genedb = oeDB[['genedb']][['all']],
         hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_expr_db_df = oeDB[['tissuecelldb']][['tissue']][['expr_df']],
-        logger = logger)
+        hpa_expr_db_df = oeDB[['tissuecelldb']][['tissue']][['expr_df']])
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
       gene_tissue_cell_enrichment(
@@ -1609,8 +1735,7 @@ onco_enrich <- function(query = NULL,
         background_entrez = as.integer(background_entrezgene),
         genedb = oeDB[['genedb']][['all']],
         hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['tissue']][['te_SE']],
-        logger = logger)
+        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['tissue']][['te_SE']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
       gene_tissue_cell_spec_cat(
@@ -1619,8 +1744,7 @@ onco_enrich <- function(query = NULL,
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_expr_db_df = oeDB[['tissuecelldb']][['single_cell']][['expr_df']],
-        logger = logger)
+        hpa_expr_db_df = oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
@@ -1629,8 +1753,7 @@ onco_enrich <- function(query = NULL,
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
         hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['single_cell']][['te_SE']],
-        logger = logger)
+        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
 
   }
 
@@ -1638,15 +1761,20 @@ onco_enrich <- function(query = NULL,
 
 }
 
-#' Function that writes an oncoEnrichR report object to file
+#' Write oncoEnrichR report object to output file
+#'
+#' Function that writes an oncoEnrichR report object to file,
+#' either as an interactive HTML report or as an Excel workbook.
+
 #'
 #' @param report object with oncoEnrichR report data (returned by oeDB$onco_enrich)
-#' @param oeDB oncoEnrichR annotation database object
-#' @param file full filename for report output (e.g. "oe_report.html", "oe_report.xlsx")
+#' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
+#' @param file full filename for report output (e.g. "oe_report.html" or "oe_report.xlsx")
 #' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
 #' @param overwrite logical indicating if existing output files may be overwritten
 #' @param format file format of output (html/excel)
 #' @param ... options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy
+#'
 #'
 #' @export
 
@@ -1658,17 +1786,20 @@ write <- function(report,
                   format = "html",
                   ...) {
 
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
   selfcontained <- T
   galaxy_run <- T
   html_extern_path <- NA
-  logger <- log4r::logger(threshold = "INFO",
-                          appenders = log4r::console_appender(log4r_layout))
+  # logger <- log4r::logger(threshold = "INFO",
+  #                         appenders = log4r::console_appender(log4r_layout))
   dot_args <- list(...)
   if(length(names(dot_args)) > 0){
 
     for(arg in names(dot_args)){
       if(!(arg == "selfcontained_html" | arg == "galaxy" | arg == "extra_files_path")){
-        log4r_info(logger, paste0(
+        lgr::lgr$info( paste0(
           "ERROR: argument '",arg,"' does not exist for oeDB$write()"))
         return()
       }
@@ -1689,15 +1820,8 @@ write <- function(report,
         html_extern_path <- dot_args$extra_files_path
 
         if(!dir.exists(html_extern_path)){
-          system(paste0('mkdir ', html_extern_path))
+          dir.create(html_extern_path)
         }
-        # val <- assertthat::validate_that(
-        #   dir.exists(html_extern_path)
-        # )
-        # if(!is.logical(val)){
-        #   log4r_info(paste0("ERROR: ",val))
-        #   return()
-        # }
       }
     }
   }
@@ -1706,7 +1830,7 @@ write <- function(report,
     format %in% c("html","excel")
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: ",val))
     return()
   }
@@ -1715,7 +1839,7 @@ write <- function(report,
     is.character(file)
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: ",val))
     return()
   }
@@ -1724,7 +1848,7 @@ write <- function(report,
     is.logical(overwrite)
   )
   if(!is.logical(val)){
-    log4r_info(logger, paste0(
+    lgr::lgr$info( paste0(
       "ERROR: ",val))
     return()
   }
@@ -1739,7 +1863,7 @@ write <- function(report,
       dir.exists(output_directory)
     )
     if(!is.logical(val)){
-      log4r_info(paste0("ERROR: ",val))
+      lgr::lgr$info(paste0("ERROR: ",val))
       return()
     }
   }
@@ -1749,7 +1873,7 @@ write <- function(report,
       file.exists(file)
     )
     if(is.logical(val)){
-      log4r_info(logger,
+      lgr::lgr$info(
         paste0("ERROR: output file (",file, ") exists, (overwrite = F)"))
       return()
     }
@@ -1757,7 +1881,7 @@ write <- function(report,
 
   if(ignore_file_extension == F){
     if(format == "html" & tools::file_ext(file) != "html"){
-      log4r_info(logger, paste0(
+      lgr::lgr$info( paste0(
         "ERROR: oncoEnrichR HTML output: File name must end with .html, not ",
         tools::file_ext(file))
       )
@@ -1765,7 +1889,7 @@ write <- function(report,
     }
 
     if(format == "excel" & tools::file_ext(file) != "xlsx"){
-      log4r_info(logger, paste0(
+      lgr::lgr$info( paste0(
         "ERROR: oncoEnrichR Excel output: File name must end with .xlsx, not ",
         tools::file_ext(file))
       )
@@ -1773,12 +1897,20 @@ write <- function(report,
     }
   }
 
+  ## Assign to env
+  pos <- 1
+  envir = as.environment(pos)
+  #for (e in export) assign(e, get(e), envir = envir)
+
   ## TODO: check that report parameter is a valid oncoEnrichR result object
   if(!is.null(report)){
+    # assign("onc_enrich_report",
+    #        report, envir = .GlobalEnv)
     assign("onc_enrich_report",
-           report, envir = .GlobalEnv)
+           report,
+           envir = envir)
   }else{
-    log4r_info(logger,
+    lgr::lgr$info(
       "ERROR: oncoEnrichR report object is NULL - cannot write report contents")
     return()
   }
@@ -1786,11 +1918,14 @@ write <- function(report,
 
 
   if(!is.null(oeDB[['tcgadb']][['maf']])){
+    # assign("tcga_maf_datasets",
+    #        oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
     assign("tcga_maf_datasets",
-           oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
+           oeDB[['tcgadb']][['maf']],
+           envir = envir)
   }else{
-    log4r_info(logger,
-               "ERROR: oncoEnrichR db object (oeDB) is NULL - cannot write report contents")
+    lgr::lgr$info(
+      "ERROR: oeDB$tcgadb$maf is NULL - cannot write report contents")
     return()
   }
 
@@ -1799,8 +1934,8 @@ write <- function(report,
 
   if (format == "html") {
 
-    log4r_info(logger, "------")
-    log4r_info(logger, "Writing HTML file with report contents")
+    lgr::lgr$info( "------")
+    lgr::lgr$info( "Writing HTML file with report contents")
 
     if(selfcontained == F){
 
@@ -1814,12 +1949,16 @@ write <- function(report,
                    1, 20, pattern = "[A-Za-z0-9]")
           )
         )
-      system(paste0('mkdir ', tmpdir))
-      system(paste0('cp ', oe_rmarkdown_template_dir, "/* ",
+      dir.create(tmpdir)
+      #system(paste0('mkdir ', tmpdir))
+      system(paste0('cp ',
+                    oe_rmarkdown_template_dir,
+                    .Platform$file.sep,
+                    "* ",
                     tmpdir))
 
       floating_toc <- "false"
-      if(onc_enrich_report$config$rmarkdown$floating_toc == T){
+      if(report$config$rmarkdown$floating_toc == T){
         floating_toc <- "true"
       }
 
@@ -1834,7 +1973,7 @@ write <- function(report,
           paste0("    toc_float: ", floating_toc),
           "    highlight: null",
           "    mathjax: null",
-          paste0("    theme: ", onc_enrich_report$config$rmarkdown$theme),
+          paste0("    theme: ", report$config$rmarkdown$theme),
           "    include:",
           "      after_body: _disclaimer.md", sep="\n")
       sink()
@@ -1849,7 +1988,7 @@ write <- function(report,
         if(dir.exists(file.path(
           html_extern_path, "site_libs"))){
           if(overwrite == F){
-            log4r_info(logger, paste0(
+            lgr::lgr$info( paste0(
               "ERROR: Cannot create HTML since 'site_libs' exist in output_directory",
               " and 'overwrite' is FALSE")
             )
@@ -1863,7 +2002,7 @@ write <- function(report,
         if(dir.exists(file.path(
           html_extern_path, "index_files"))){
           if(overwrite == F){
-            log4r_info(logger, paste0(
+            lgr::lgr$info( paste0(
               "ERROR: Cannot create HTML since 'index_files' exist in output_directory",
               " and 'overwrite' is FALSE")
             )
@@ -1895,9 +2034,9 @@ write <- function(report,
           system(paste0('mv ', rmdown_supporting2," ", html_extern_path))
           system(paste0('rm -rf ',tmpdir))
 
-          log4r_info(logger, paste0("Output file: ",
+          lgr::lgr$info( paste0("Output file: ",
                                           file))
-          log4r_info(logger, "------")
+          lgr::lgr$info( "------")
         }
       }
 
@@ -1907,8 +2046,8 @@ write <- function(report,
                                 "_disclaimer.md",
                                 package = "oncoEnrichR")
 
-      report_theme <- onc_enrich_report$config$rmarkdown$theme
-      toc_float <- onc_enrich_report$config$rmarkdown$floating_toc
+      report_theme <- report$config$rmarkdown$theme
+      toc_float <- report$config$rmarkdown$floating_toc
 
       markdown_input <- system.file("templates", "index.Rmd",
                                     package = "oncoEnrichR")
@@ -1934,9 +2073,9 @@ write <- function(report,
           quiet = T)
       )
 
-      log4r_info(logger, paste0("Output file (self-contained HTML): ",
+      lgr::lgr$info( paste0("Output file (self-contained HTML): ",
                                       file))
-      log4r_info(logger, "------")
+      lgr::lgr$info( "------")
     }
 
 
@@ -1944,8 +2083,8 @@ write <- function(report,
   if (format == "excel") {
 
     wb <- openxlsx::createWorkbook()
-    log4r_info(logger, "------")
-    log4r_info(logger, "Writing Excel workbook with report contents")
+    lgr::lgr$info( "------")
+    lgr::lgr$info( "Writing Excel workbook with report contents")
 
     table_style_index <- 15
     for(elem in c("settings",
@@ -2016,12 +2155,12 @@ write <- function(report,
     }
 
     openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
-    log4r_info(logger, paste0("Output file: ",file))
-    log4r_info(logger, "------")
+    lgr::lgr$info( paste0("Output file: ",file))
+    lgr::lgr$info( "------")
   }
   else{
     if(format == "json"){
-      log4r_info(logger, "JSON output not yet implemented")
+      lgr::lgr$info( "JSON output not yet implemented")
     }
   }
 }

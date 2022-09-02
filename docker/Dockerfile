@@ -3,12 +3,24 @@ FROM ubuntu:18.04
 RUN apt-get update && apt-get -y install apache2 apt-utils build-essential curl git unzip vim wget sudo libudunits2-dev libgeos-dev libgdal-dev
 RUN apt-get update && apt-get install apt-transport-https
 
-RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-RUN sudo apt-get update \
-   && sudo apt-get -y install software-properties-common
+#RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+#RUN sudo apt-get update \
+#   && sudo apt-get -y install software-properties-common
 
 ENV TZ=Europe/Minsk
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+
+
+
+RUN sudo apt update -qq
+# install two helper packages we need
+RUN sudo apt-get update && sudo apt-get -y install --no-install-recommends software-properties-common dirmngr
+# add the signing key (by Michael Rutter) for these repos
+# To verify key, run gpg --show-keys /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc 
+# Fingerprint: E298A3A825C0D65DFD57CBB651716619E084DAB9
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
 
 RUN sudo add-apt-repository 'deb [arch=amd64,i386] https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
 RUN apt-get update && apt-get -y install --no-install-recommends r-base-core r-recommended r-base
@@ -36,7 +48,7 @@ RUN cd cmake-3.20.0 && ./bootstrap && make && make install
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
 RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.15.5.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.2.1.tar.gz /
+COPY oncoEnrichR_1.2.2.tar.gz /
 
 #RUN R -e "library(renv)"
 
@@ -44,7 +56,7 @@ RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.2.1.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.2.2.tar.gz', lib = '/usr/lib/R/library/')"
 
 ## PINNED VERSION: pandoc (for HTML report generation)
 RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd64.deb && \
@@ -53,5 +65,5 @@ RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd6
   apt-get clean
 
 RUN rm -rf /root/.cache
-RUN rm -rf /oncoEnrichR_1.2.0.tar.gz
+RUN rm -rf /oncoEnrichR_1.2.2.tar.gz
 RUN rm -rf /cmake-3.20.0*

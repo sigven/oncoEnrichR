@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{onco_enrich}
 \alias{onco_enrich}
-\title{Interrogate and prioritize a gene list for cancer relevance}
+\title{Interrogate a gene list for cancer relevance}
 \usage{
 onco_enrich(
   query = NULL,
@@ -56,7 +56,7 @@ onco_enrich(
 \arguments{
 \item{query}{character vector with gene/query identifiers}
 
-\item{oeDB}{oncoEnrichR annotation database - as returned from oncoEnrichR::load_db()}
+\item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 
 \item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
 "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
@@ -150,6 +150,17 @@ of target genes, using data from the Human Protein Atlas}
 
 \item{...}{arguments for Galaxy/web-based processing}
 }
+\value{
+An oncoEnrichR report list object, with two main elements,
+\code{data} and \code{config}. \code{data} contains data that goes into
+each section of the output reports, \code{config} contains all
+metadata for annotation resources used.
+}
 \description{
-Interrogate and prioritize a gene list for cancer relevance
+Function that interrogates a list of human gene identifiers for
+cancer relevance. Multiple perspectives are offered, including
+tumor aberration and co-expression patterns, druggability,
+protein-protein interactions, gene fitness effects, regulatory
+interactions, subcellular compartment enrichment, pathway enrichment,
+synthetic lethality interactions, prognostic associations, and more.
 }
