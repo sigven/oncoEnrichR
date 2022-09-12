@@ -1,7 +1,7 @@
 Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
-Version: 1.2.2
+Version: 1.3.0
 Date: 2022-09-12
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
