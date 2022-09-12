@@ -1,6 +1,10 @@
 ---
-title: "Installation"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+title: Installation
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Installation}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 1.  `install.packages('devtools')`

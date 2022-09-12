@@ -318,15 +318,29 @@ get_msigdb_signatures <- function(
     dplyr::filter(organism == "Homo sapiens") |>
     dplyr::filter(subcategory_code != 'CP:KEGG') |>
     dplyr::arrange(category_code) |>
-    dplyr::mutate(pmid = dplyr::if_else(nchar(pmid) == 0,as.character(NA),as.character(pmid))) |>
-    dplyr::mutate(subcategory_code = dplyr::if_else(nchar(subcategory_code) == 0,as.character("ALL"),as.character(subcategory_code))) |>
-    dplyr::filter(category_code != "ARCHIVED" & category_code != "C1") |>
-    dplyr::mutate(external_url = dplyr::if_else(nchar(external_url) == 0,paste0("http://software.broadinstitute.org/gsea/msigdb/cards/",standard_name),as.character(external_url))) |>
-    dplyr::mutate(description = stringr::str_replace_all(description,
-                                                         "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
+    dplyr::mutate(pmid = dplyr::if_else(
+      nchar(pmid) == 0,
+      as.character(NA),
+      as.character(pmid))) |>
+    dplyr::mutate(subcategory_code = dplyr::if_else(
+      nchar(subcategory_code) == 0,
+      as.character("ALL"),
+      as.character(subcategory_code))) |>
+    dplyr::filter(
+      category_code != "ARCHIVED" &
+        category_code != "C1") |>
+    dplyr::mutate(external_url = dplyr::if_else(
+      nchar(external_url) == 0,
+      paste0("http://software.broadinstitute.org/gsea/msigdb/cards/",standard_name),
+      as.character(external_url))) |>
+    dplyr::mutate(description = stringr::str_replace_all(
+      description,
+      "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
 
   msigdb_category_description <- read.table(
-    file = file.path(raw_db_dir, "msigdb","msigdb_collection_description.tsv"),
+    file = file.path(
+      raw_db_dir, "msigdb",
+      "msigdb_collection_description.tsv"),
     sep = "\t", header = T, stringsAsFactors = F)
 
   msigdb_complete <- as.data.frame(all_msigdb |>
@@ -349,29 +363,49 @@ get_msigdb_signatures <- function(
     dplyr::filter(subcategory_code != "TFT:TFT_Legacy") |>
     dplyr::filter(subcategory_code != "CP:WIKIPATHWAYS") |>
     dplyr::filter(subcategory_code != "VAX") |>
-    dplyr::select(standard_name, exact_source, external_url, category_code, subcategory_code) |>
+    dplyr::select(standard_name, exact_source, external_url,
+                  category_code, subcategory_code) |>
     dplyr::distinct() |>
-    dplyr::mutate(external_url = stringr::str_replace(external_url,"\\|https://reactome.org/PathwayBrowser/","")) |>
-    dplyr::mutate(external_url = dplyr::if_else(nchar(external_url) == 0,as.character(NA),as.character(external_url))) |>
-    dplyr::mutate(db = dplyr::if_else(stringr::str_detect(standard_name,"^GO_"),subcategory_code,as.character(NA))) |>
-    dplyr::mutate(db = dplyr::if_else(stringr::str_detect(standard_name,"^HP_"),subcategory_code,as.character(NA))) |>
-    dplyr::mutate(db = dplyr::if_else(stringr::str_detect(standard_name,"^REACTOME_"),"REACTOME",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(stringr::str_detect(standard_name,"^BIOCARTA_"),"BIOCARTA",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(stringr::str_detect(standard_name,"^PID_"),"PATHWAY_INTERACTION_DB",as.character(db))) |>
+    dplyr::mutate(external_url = stringr::str_replace(
+      external_url,"\\|https://reactome.org/PathwayBrowser/","")) |>
+    dplyr::mutate(external_url = dplyr::if_else(
+      nchar(external_url) == 0,as.character(NA),as.character(external_url))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "H","HALLMARK",as.character(db))) |>
+      stringr::str_detect(standard_name,"^GO_"),
+      subcategory_code,as.character(NA))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C2" & subcategory_code == "CGP","CHEM_GEN_PERTURB",as.character(db))) |>
+      stringr::str_detect(standard_name,"^HP_"),
+      subcategory_code,as.character(NA))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C2" & subcategory_code == "CP","CANONICAL_PATHWAY",as.character(db))) |>
+      stringr::str_detect(standard_name,"^REACTOME_"),
+      "REACTOME",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C3" & subcategory_code == "MIR:MIRDB","MICRORNA_TARGET_MIRDB",as.character(db))) |>
+      stringr::str_detect(standard_name,"^BIOCARTA_"),
+      "BIOCARTA",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C3" & subcategory_code == "TFT:GTRD","TF_TARGET_GTRD",as.character(db))) |>
+      stringr::str_detect(standard_name,"^PID_"),
+      "PATHWAY_INTERACTION_DB",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C4" & subcategory_code == "CGN","CANCER_NEIGHBOURHOOD",as.character(db))) |>
+      category_code == "H",
+      "HALLMARK",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
-      category_code == "C4" & subcategory_code == "CM","CANCER_MODULE",as.character(db))) |>
+      category_code == "C2" & subcategory_code == "CGP",
+      "CHEM_GEN_PERTURB",as.character(db))) |>
+    dplyr::mutate(db = dplyr::if_else(
+      category_code == "C2" & subcategory_code == "CP",
+      "CANONICAL_PATHWAY",as.character(db))) |>
+    dplyr::mutate(db = dplyr::if_else(
+      category_code == "C3" & subcategory_code == "MIR:MIRDB",
+      "MICRORNA_TARGET_MIRDB",as.character(db))) |>
+    dplyr::mutate(db = dplyr::if_else(
+      category_code == "C3" & subcategory_code == "TFT:GTRD",
+      "TF_TARGET_GTRD",as.character(db))) |>
+    dplyr::mutate(db = dplyr::if_else(
+      category_code == "C4" & subcategory_code == "CGN",
+      "CANCER_NEIGHBOURHOOD",as.character(db))) |>
+    dplyr::mutate(db = dplyr::if_else(
+      category_code == "C4" & subcategory_code == "CM",
+      "CANCER_MODULE",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
       category_code == "C6","ONCOGENIC",as.character(db))) |>
     dplyr::mutate(db = dplyr::if_else(
@@ -382,12 +416,12 @@ get_msigdb_signatures <- function(
     dplyr::filter(!is.na(db))
 
 
-
   msigdb[['COLLECTION']] <- list()
 
   for(c in c('H','C2','C3','C4','C5','C6','C7','C8')){
     msigdb[['COLLECTION']][[c]] <- list()
-    subcategories <- unique(all_msigdb[all_msigdb$category_code == c,]$subcategory_code)
+    subcategories <-
+      unique(all_msigdb[all_msigdb$category_code == c,]$subcategory_code)
     for(scat in subcategories){
       subcat <- stringr::str_replace(scat,"GO:","")
       if(subcat == "CP:WIKIPATHWAYS" |
@@ -396,16 +430,20 @@ get_msigdb_signatures <- function(
          subcat == "TFT:TFT_Legacy"){
         next
       }
-      #cat(c,subcat,sep=" - ")
-      #cat('\n')
+
       msigdb[['COLLECTION']][[c]][[subcat]] <- list()
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2GENE']] <- data.frame()
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2GENE']] <-
-        dplyr::filter(all_msigdb, category_code == c & subcategory_code == scat) |>
+        dplyr::filter(all_msigdb,
+                      category_code == c &
+                        subcategory_code == scat) |>
         dplyr::select(standard_name, entrezgene) |>
         dplyr::rename(entrez_gene = entrezgene)
+
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2NAME']] <-
-        dplyr::filter(all_msigdb, category_code == c & subcategory_code == scat) |>
+        dplyr::filter(all_msigdb,
+                      category_code == c &
+                        subcategory_code == scat) |>
         dplyr::select(standard_name, description) |>
         dplyr::rename(name = description) |>
         dplyr::distinct()
@@ -417,7 +455,7 @@ get_msigdb_signatures <- function(
 
 
 get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
-                                        version = "46",
+                                        version = "47",
                                         gene_info = NULL){
   lgr::lgr$info(
     paste0("Retrieving proto-oncogenes/tumor suppressor status ",
@@ -427,7 +465,7 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
   ## Tumor suppressor annotations or oncogene annotations from Network of cancer genes (NCG)
   ncg <- read.table(
-    file = paste0(raw_db_dir, "/ncg/ncg_tsgene_oncogene.tsv"),
+    file = file.path(raw_db_dir, "ncg","ncg_tsgene_oncogene.tsv"),
     header = T,
     stringsAsFactors = F, sep = "\t",
     quote = "", comment.char = "") |>
@@ -447,7 +485,7 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
     dplyr::distinct()
 
   cgc <- readr::read_csv(
-    file = paste0(raw_db_dir, "/cgc/cancer_gene_census_96.csv"),
+    file = file.path(raw_db_dir, "cgc","cancer_gene_census_96.csv"),
     show_col_types = F) |>
     janitor::clean_names() |>
     dplyr::filter(!is.na(role_in_cancer)) |>
@@ -469,9 +507,19 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
 
   pmids <- as.data.frame(
-    read.table(gzfile(paste0(raw_db_dir,'/cancermine/cancermine_sentences.tsv.gz')),
-               header = T, comment.char = "", quote = "", sep="\t", stringsAsFactors = F) |>
+    read.table(
+      gzfile(file.path(raw_db_dir,"cancermine",
+                       "cancermine_sentences.tsv.gz")),
+               header = T, comment.char = "", quote = "",
+      sep="\t", stringsAsFactors = F) |>
       dplyr::filter(predictprob >= 0.8) |>
+      ## some entries wrongly captured, are in
+      ## fact mentions of anti-sense non-coding genes
+      dplyr::filter(
+        !stringr::str_detect(
+          formatted_sentence, "-<b>AS1|b>-AS1"
+        )
+      ) |>
       dplyr::group_by(role, gene_entrez_id, pmid) |>
       dplyr::summarise(doid = paste(unique(cancer_id), collapse=","), .groups = "drop") |>
       dplyr::rename(entrezgene = gene_entrez_id) |>
@@ -480,9 +528,13 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
   )
 
   all_citations <- data.frame()
-  if(file.exists(paste0(raw_db_dir,"/cancermine/citations/cancermine_citations.v",version,".tsv.gz"))){
-    all_citations <- read.table(file=paste0(raw_db_dir,"/cancermine/citations/cancermine_citations.v",version,".tsv.gz"),
-                                sep = "\t", header = F, quote = "", comment.char = "", stringsAsFactors = F) |>
+  if(file.exists(
+    file.path(raw_db_dir, "cancermine", "citations",
+              paste0("cancermine_citations.v",version,".tsv.gz")))){
+    all_citations <- read.table(
+      file = file.path(raw_db_dir,"cancermine", "citations",
+      paste0("cancermine_citations.v",version,".tsv.gz")),
+      sep = "\t", header = F, quote = "", comment.char = "", stringsAsFactors = F) |>
       magrittr::set_colnames(c('pmid','citation','citation_link')) |>
       dplyr::distinct() |>
       dplyr::arrange(desc(pmid))
@@ -562,14 +614,18 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
   lgr::lgr$info("Retrieving known proto-oncogenes/tumor suppressor genes from CancerMine")
   oncogene <- as.data.frame(
-    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
-                    col_names = T,na ="-", comment = "#", quote = "",
-                    show_col_types = F) |>
+    readr::read_tsv(
+      file.path(raw_db_dir,'cancermine','cancermine_collated.tsv.gz'),
+      col_names = T,na ="-", comment = "#", quote = "",
+      show_col_types = F) |>
       dplyr::filter(role == "Oncogene") |>
       dplyr::rename(entrezgene = gene_entrez_id) |>
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
+      dplyr::anti_join(
+        dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
       dplyr::group_by(entrezgene) |>
-      dplyr::summarise(doid_oncogene = paste(unique(cancer_id),collapse=","), .groups = "drop") |>
+      dplyr::summarise(
+        doid_oncogene = paste(unique(cancer_id),collapse=","),
+        .groups = "drop") |>
       dplyr::inner_join(pmids_oncogene, by = "entrezgene") |>
       dplyr::distinct())
 
@@ -579,14 +635,17 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
 
   tsgene <- as.data.frame(
-    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
-                    col_names = T,na ="-", comment = "#", quote = "",
-                    show_col_types = F) |>
+    readr::read_tsv(
+      file.path(raw_db_dir,'cancermine','cancermine_collated.tsv.gz'),
+      col_names = T,na ="-", comment = "#", quote = "",
+      show_col_types = F) |>
       dplyr::filter(role == "Tumor_Suppressor") |>
       dplyr::rename(entrezgene = gene_entrez_id) |>
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
+      dplyr::anti_join(
+        dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
       dplyr::group_by(entrezgene) |>
-      dplyr::summarise(doid_tsgene = paste(unique(cancer_id),collapse=","), .groups = "drop") |>
+      dplyr::summarise(
+        doid_tsgene = paste(unique(cancer_id),collapse=","), .groups = "drop") |>
       dplyr::inner_join(pmids_tsgene, by = "entrezgene") |>
       dplyr::distinct()
   )
@@ -596,14 +655,17 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
 
   cdriver <- as.data.frame(
-    readr::read_tsv(paste0(raw_db_dir,'/cancermine/cancermine_collated.tsv.gz'),
-                    col_names = T,na ="-", comment = "#", quote = "",
-                    show_col_types = F) |>
+    readr::read_tsv(
+      file.path(raw_db_dir,'cancermine','cancermine_collated.tsv.gz'),
+      col_names = T,na ="-", comment = "#", quote = "",
+      show_col_types = F) |>
       dplyr::filter(role == "Driver") |>
       dplyr::rename(entrezgene = gene_entrez_id) |>
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
+      dplyr::anti_join(
+        dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
       dplyr::group_by(entrezgene) |>
-      dplyr::summarise(doid_cdriver = paste(unique(cancer_id),collapse=","), .groups = "drop") |>
+      dplyr::summarise(
+        doid_cdriver = paste(unique(cancer_id),collapse=","), .groups = "drop") |>
       dplyr::inner_join(pmids_cdriver, by = "entrezgene") |>
       dplyr::distinct()
   )
@@ -764,9 +826,12 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
   n_ts <- dplyr::filter(tsgene_full, tumor_suppressor == T & oncogene == F)
   n_onc <- dplyr::filter(tsgene_full, oncogene == T & tumor_suppressor == F)
 
-  lgr::lgr$info("A total of n = ",nrow(n_onc)," classified proto-oncogenes were retrieved from CancerMine/NCG")
-  lgr::lgr$info("A total of n = ",nrow(n_ts)," classified tumor suppressor genes were retrieved from CancerMine/NCG")
-  lgr::lgr$info("A total of n = ",nrow(n_onc_ts)," genes were annotated with dual roles as tumor suppressor genes and oncogenes from CancerMine/NCG")
+  lgr::lgr$info(
+    paste0("A total of n = ",nrow(n_onc)," classified proto-oncogenes were retrieved from CancerMine/NCG"))
+  lgr::lgr$info(
+    paste0("A total of n = ",nrow(n_ts)," classified tumor suppressor genes were retrieved from CancerMine/NCG"))
+  lgr::lgr$info(
+    paste0("A total of n = ",nrow(n_onc_ts)," genes were annotated with dual roles as tumor suppressor genes and oncogenes from CancerMine/NCG"))
 
   return(tsgene_full)
 
@@ -780,8 +845,9 @@ get_curated_fp_cancer_genes <- function(raw_db_dir = NULL,
   invisible(assertthat::assert_that(dir.exists(raw_db_dir), msg = paste0("Directory '",raw_db_dir,"' does not exist")))
   assertable::assert_colnames(gene_info,c("symbol","entrezgene"), only_colnames = F, quiet = T)
   assertable::assert_coltypes(gene_info, list(symbol = character(), entrezgene = integer()), quiet = T)
-  xlsx_fname <- paste0(raw_db_dir,"/cancer_driver/bailey_2018_cell.xlsx")
-  invisible(assertthat::assert_that(file.exists(xlsx_fname),msg = paste0("File ",xlsx_fname," does not exist")))
+  xlsx_fname <- file.path(raw_db_dir,"cancer_driver", "bailey_2018_cell.xlsx")
+  invisible(assertthat::assert_that(
+    file.exists(xlsx_fname),msg = paste0("File ",xlsx_fname," does not exist")))
   tmp <- openxlsx::read.xlsx(xlsx_fname,sheet = 8,startRow = 4)
   fp_cancer_drivers <- data.frame('symbol' = tmp[,2], stringsAsFactors = F) |>
     dplyr::mutate(fp_driver_gene = TRUE) |>
@@ -801,10 +867,11 @@ get_opentarget_associations <-
 
     opentarget_targets <- as.data.frame(
       readRDS(
-        paste0(raw_db_dir,
-               "/opentargets/opentargets_target_",
+        file.path(raw_db_dir,
+               "opentargets",
+               paste0("opentargets_target_",
                release,
-               ".rds")) |>
+               ".rds"))) |>
         dplyr::select(target_ensembl_gene_id,
                       SM_tractability_category,
                       SM_tractability_support,
@@ -817,10 +884,12 @@ get_opentarget_associations <-
 
     opentarget_associations_raw <- as.data.frame(
       readRDS(
-        paste0(raw_db_dir,
-               "/opentargets/opentargets_association_direct_HC_",
-               release,
-               ".rds")
+        file.path(raw_db_dir,
+                  "opentargets",
+                  paste0(
+                    "opentargets_association_direct_HC_",
+                    release,
+                    ".rds"))
       )
     )
 
@@ -875,8 +944,10 @@ get_dbnsfp_gene_annotations <- function(raw_db_dir = NULL){
 
   lgr::lgr$info("Retrieving gene damage scores/OMIM annotation from dbNSFP_gene")
   dbnsfp_gene <- read.table(
-    file=gzfile(paste0(raw_db_dir,"/dbnsfp/dbNSFP_gene.gz")),sep="\t",
-    header = T, stringsAsFactors = F, na.strings = c(".",""), comment.char="",
+    file = gzfile(file.path(raw_db_dir,"dbnsfp", "dbNSFP_gene.gz")),
+    sep = "\t",
+    header = T, stringsAsFactors = F,
+    na.strings = c(".",""), comment.char="",
     quote = NULL) |>
     janitor::clean_names() |>
     dplyr::select(gene_name, entrez_gene_id, function_description) |>
@@ -1686,11 +1757,48 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   }
 
 
+  approved_inhibitors <- as.data.frame(
+    pharmaOncoX::get_onco_drugs(
+      cache_dir = raw_db_dir,
+      drug_is_targeted = T,
+      inhibitor_only = T,
+      drug_is_approved = T)$records |>
+      dplyr::filter(!is.na(primary_site)) |>
+      dplyr::filter(
+        stringr::str_detect(drug_clinical_source,"FDA|DailyMed|ATC")) |>
+      dplyr::select(
+        disease_efo_label, target_entrezgene,
+        drug_name, molecule_chembl_id) |>
+      dplyr::rename(entrezgene = target_entrezgene) |>
+      dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
+      dplyr::mutate(
+        drug_link =
+          paste0("<a href = 'https://platform.opentargets.org/drug/",
+                 molecule_chembl_id,
+                 "' target='_blank'>",drug_name,"</a>")) |>
+      dplyr::group_by(entrezgene, drug_link) |>
+      dplyr::summarise(indications = paste(
+        sort(unique(disease_efo_label)), collapse="; "
+      ), .groups = "drop") |>
+      dplyr::ungroup() |>
+      dplyr::mutate(indications = stringr::str_replace(
+        indications,
+        "breast cancer; breast carcinoma",
+        "breast cancer"
+      )) |>
+      dplyr::mutate(drug_indications = paste0(
+        drug_link, " (",indications,")")) |>
+      dplyr::group_by(entrezgene) |>
+      dplyr::summarise(approved_drugs = paste(
+        drug_indications, collapse=", "),
+        .groups = "drop")
+  )
+
   cancer_drugs[['late_phase']] <-
     pharmaOncoX::get_onco_drugs(
       cache_dir = raw_db_dir,
       drug_is_targeted = T,
-      source_opentargets_only = T,
+      inhibitor_only = T,
       drug_minimum_phase_any_indication = 3)$records |>
     dplyr::filter(!is.na(molecule_chembl_id)) |>
     dplyr::select(target_entrezgene,
@@ -1707,7 +1815,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
     pharmaOncoX::get_onco_drugs(
       cache_dir = raw_db_dir,
       drug_is_targeted = T,
-      source_opentargets_only = T,
+      inhibitor_only = T,
       drug_minimum_phase_any_indication = 0)$records |>
     dplyr::filter(!is.na(molecule_chembl_id)) |>
     dplyr::anti_join(
@@ -1803,6 +1911,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
 
   }
   cancerdrugdb <- list()
+  cancerdrugdb[['approved_per_target']] <- approved_inhibitors
   cancerdrugdb[['drug_per_target']] <- list()
   cancerdrugdb[['drug_per_target']][['early_phase']] <-
     drugs_per_gene[['early_phase']]
@@ -2847,6 +2956,8 @@ generate_gene_xref_df <- function(
                      by = "entrezgene") |>
     dplyr::left_join(cancerdrugdb[['drug_per_target']][['late_phase']],
                      by = "entrezgene") |>
+    dplyr::left_join(cancerdrugdb[['approved_per_target']],
+                     by = "entrezgene") |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
       is.na(tumor_suppressor),
       FALSE,
@@ -3858,9 +3969,12 @@ get_tcga_db <- function(
   while(i <= nrow(maf_codes)){
     primary_site <- maf_codes[i,]$primary_site
     maf_code <- maf_codes[i,]$code
-    maf_file <- paste0(maf_path,"/tcga_mutation_grch38_release32_20220329.",maf_code,"_0.maf.gz")
+    maf_file <- file.path(
+      maf_path, paste0("tcga_mutation_grch38_release32_20220329.",maf_code,"_0.maf.gz"))
     if(file.exists(maf_file)){
-      tmp <- read.table(gzfile(maf_file), quote="", header = T, stringsAsFactors = F, sep="\t", comment.char="#")
+      tmp <- read.table(gzfile(maf_file), quote="",
+                        header = T, stringsAsFactors = F,
+                        sep="\t", comment.char="#")
       tmp$primary_site <- NULL
       tmp$site_diagnosis_code <- NULL
       tmp$Tumor_Sample_Barcode <- stringr::str_replace(tmp$Tumor_Sample_Barcode,"-[0-9][0-9][A-Z]$","")

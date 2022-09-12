@@ -326,7 +326,8 @@ target_drug_associations <- function(qgenes,
   result[['target_drugs']] <- target_genes |>
     dplyr::select(.data$symbol, .data$genename,
                   .data$targeted_cancer_drugs_lp,
-                  .data$targeted_cancer_drugs_ep) |>
+                  .data$targeted_cancer_drugs_ep,
+                  .data$approved_drugs) |>
     dplyr::filter(!is.na(.data$targeted_cancer_drugs_lp) |
                     !is.na(.data$targeted_cancer_drugs_ep))
 

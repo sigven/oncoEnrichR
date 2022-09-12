@@ -37,7 +37,8 @@ test_that("Target drug associations", {
       genedb = oedb$genedb$all)$target_drugs),
     c("symbol","genename",
       "targeted_cancer_drugs_lp",
-      "targeted_cancer_drugs_ep")
+      "targeted_cancer_drugs_ep",
+      "approved_drugs")
   )
 
   expect_identical(

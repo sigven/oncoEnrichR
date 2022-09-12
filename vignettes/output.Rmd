@@ -1,6 +1,10 @@
 ---
-title: "Output"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+title: Output
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Output}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ## Output files

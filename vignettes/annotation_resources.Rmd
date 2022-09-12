@@ -1,6 +1,10 @@
 ---
-title: "Annotation resources"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+title: Annotation resources
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Annotation resources}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ## Resources - overview 

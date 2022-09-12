@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.2.2
-Date: 2022-09-02
+Date: 2022-09-12
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -62,7 +62,6 @@ VignetteBuilder: knitr
 License: MIT + file LICENSE
 Encoding: UTF-8
 Remotes: jespermaag/gganatogram
-LazyData: true
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3

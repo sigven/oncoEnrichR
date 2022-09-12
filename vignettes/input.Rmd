@@ -1,6 +1,10 @@
 ---
-title: "Input"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+title: Input
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Input}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ## Input data
