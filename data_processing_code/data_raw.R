@@ -3,7 +3,7 @@ library(gganatogram)
 
 source('data_processing_code/data_utility_functions.R')
 
-msigdb_version <- 'v7.5.1 (Jan 2022)'
+msigdb_version <- '2022.1'
 wikipathways_version <- "20220810"
 netpath_version <- "2010"
 opentargets_version <- "2022.06"
@@ -323,11 +323,8 @@ for(elem in c('cancerdrugdb',
 
   local_rds_fpath <- file.path(data_output_dir, paste0("v",oe_version),
                            paste0(elem,"_v", oe_version, ".rds"))
-
-  if(!file.exists(local_rds_fpath)){
-    saveRDS(oedb[[elem]],
-            file = local_rds_fpath)
-  }
+  saveRDS(oedb[[elem]],
+          file = local_rds_fpath)
 
   (gd_records[[elem]] <- googledrive::drive_upload(
     local_rds_fpath,
