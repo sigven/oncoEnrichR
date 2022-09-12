@@ -421,6 +421,7 @@ validate_db_df <- function(df, dbtype = "genedb"){
               'genename',
               'targeted_cancer_drugs_lp',
               'targeted_cancer_drugs_ep',
+              'approved_drugs',
               'num_go_terms',
               'cancer_max_rank',
               'unknown_function_rank',
@@ -1067,6 +1068,12 @@ add_excel_sheet <- function(
             genename =
               stringr::str_trim(
                 textclean::replace_html(.data$genename)
+              )
+          ) |>
+          dplyr::mutate(
+            approved_drugs =
+              stringr::str_trim(
+                textclean::replace_html(.data$approved_drugs)
               )
           ) |>
           dplyr::mutate(

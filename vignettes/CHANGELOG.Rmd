@@ -1,7 +1,25 @@
 ---
-title: "Changelog"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Changelog}
+  %\usepackage[UTF-8]{inputenc}
 ---
+
+## Version 1.3.0
+
+* Date: 2022-09-12
+
+### Added
+
+* Data updates:
+  * MSigDB (August 2022.1)
+
+### Changed
+
+* Fixed some artefacts (`-AS1` entries) in the output of CancerMine
+* Added `approved_drugs` as a column to the `Drug associations` section
+of the output report
 
 ## Version 1.2.2
 

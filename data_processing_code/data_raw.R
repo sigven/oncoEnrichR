@@ -1,4 +1,3 @@
-library(magrittr)
 library(TissueEnrich)
 library(gganatogram)
 
@@ -10,10 +9,10 @@ netpath_version <- "2010"
 opentargets_version <- "2022.06"
 kegg_version <- "20220809"
 gencode_version <- "41"
-uniprot_release <- "2022_01"
+uniprot_release <- "2022_03"
 
 ## Which databases to update or retrieve from last updated state
-update_omnipathdb <- T
+update_omnipathdb <- F
 update_hpa <- F
 update_ncbi_gene_summary <- T
 update_project_score <- F
@@ -22,10 +21,10 @@ update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
-update_gencode <- T
+update_gencode <- F
 update_ligand_receptor_db <- T
 
-oe_version <- "1.2.2"
+oe_version <- "1.3.0"
 
 data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
@@ -501,10 +500,10 @@ db_packages <-
     'RSpectra',
     'sna',
     'FNN',
+    'tweenr',
+    'reticulate',
     'TCGAbiolinksGUI.data',
     'TCGAbiolinks',
-    'rlogging',
-    'oncoPharmaDB',
     'rlogging',
     'zen4R',
     'biomaRt',

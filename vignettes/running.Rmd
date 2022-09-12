@@ -1,6 +1,9 @@
 ---
-title: "Running"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Running}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ## Key functions
