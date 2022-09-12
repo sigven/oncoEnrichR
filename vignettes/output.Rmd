@@ -1,5 +1,6 @@
 ---
 output: rmarkdown::html_vignette
+title: Output
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{Output}

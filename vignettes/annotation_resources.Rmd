@@ -1,5 +1,6 @@
 ---
 output: rmarkdown::html_vignette
+title: Annotation resources
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{Annotation resources}

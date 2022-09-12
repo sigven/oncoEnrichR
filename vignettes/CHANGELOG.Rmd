@@ -1,5 +1,6 @@
 ---
 output: rmarkdown::html_vignette
+title: Changelog
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{Changelog}
