@@ -36,8 +36,8 @@ test_that("Target drug associations", {
       qgenes = c("EGFR","BRAF"),
       genedb = oedb$genedb$all)$target_drugs),
     c("symbol","genename",
-      "targeted_cancer_drugs_lp",
-      "targeted_cancer_drugs_ep",
+      "drugs_late_phase",
+      "drugs_early_phase",
       "approved_drugs")
   )
 

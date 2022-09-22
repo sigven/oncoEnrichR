@@ -4,7 +4,7 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- '2022.1'
-wikipathways_version <- "20220810"
+wikipathways_version <- "20220910"
 netpath_version <- "2010"
 opentargets_version <- "2022.06"
 kegg_version <- "20220809"
@@ -14,17 +14,17 @@ uniprot_release <- "2022_03"
 ## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
 update_hpa <- F
-update_ncbi_gene_summary <- T
+update_ncbi_gene_summary <- F
 update_project_score <- F
 update_project_survival <- F
-update_tcga <- F
+update_tcga <- T
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
 update_gencode <- F
 update_ligand_receptor_db <- T
 
-oe_version <- "1.3.0"
+oe_version <- "1.3.1"
 
 data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
@@ -99,7 +99,7 @@ ts_oncogene_annotations <-
   get_ts_oncogene_annotations(
     raw_db_dir = data_raw_dir,
     gene_info = gene_info,
-    version = "47") |>
+    version = "48") |>
   dplyr::select(
     entrezgene, tumor_suppressor,
     oncogene, citation_links_oncogene,

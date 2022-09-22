@@ -1610,25 +1610,36 @@ onco_enrich <- function(query = NULL,
           PROTEIN_DOMAIN = dplyr::if_else(
             !is.na(.data$PFAM_ID),
             paste0(
-            "<a href=\"http://pfam.xfam.org/family/", .data$PFAM_ID,
+            "<a href=\"http://pfam.xfam.org/family/",
+            .data$PFAM_ID,
             "\" target='_blank'>",
             .data$PFAM_DOMAIN_NAME,
             "</a>"),
             as.character(NA)
           )
         ) |>
-        dplyr::select(-c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) |>
-        dplyr::left_join(dplyr::select(oeDB[['genedb']][['all']],
-                                       .data$symbol, .data$ensembl_gene_id),
-                         by = c("SYMBOL" = "symbol")) |>
-        dplyr::rename(ENSEMBL_GENE_ID = .data$ensembl_gene_id) |>
-        dplyr::mutate(ENSEMBL_TRANSCRIPT_ID =
-                        paste0("<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
-                               .data$ENSEMBL_GENE_ID,
-                               ";t=",
-                               .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-                               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
+        dplyr::select(
+          -c(.data$PFAM_DOMAIN_NAME, .data$PFAM_ID)) |>
+        dplyr::left_join(
+          dplyr::select(oeDB[['genedb']][['all']],
+                        .data$symbol, .data$ensembl_gene_id),
+          by = c("SYMBOL" = "symbol")) |>
+        dplyr::mutate(
+          ENSEMBL_GENE_ID =
+            paste0(
+              "<a href='https://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=",
+              .data$ensembl_gene_id,"' target='_blank'>",
+              .data$ensembl_gene_id,"</a>")) |>
+        dplyr::mutate(
+          ENSEMBL_TRANSCRIPT_ID =
+            paste0(
+              "<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
+              .data$ensembl_gene_id,
+              ";t=",
+              .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
+              .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
         dplyr::select(-.data$VAR_ID) |>
+        dplyr::rename(CONSEQUENCE_ALTERNATE = .data$VEP_ALL_CSQ) |>
         dplyr::select(.data$SYMBOL,
                       .data$CONSEQUENCE,
                       .data$PROTEIN_CHANGE,
@@ -1637,7 +1648,11 @@ onco_enrich <- function(query = NULL,
                       .data$LOSS_OF_FUNCTION,
                       .data$ENSEMBL_GENE_ID,
                       .data$ENSEMBL_TRANSCRIPT_ID,
-                      dplyr::everything())
+                      .data$PRIMARY_SITE,
+                      .data$SITE_RECURRENCE,
+                      .data$TOTAL_RECURRENCE,
+                      .data$COSMIC_MUTATION_ID,
+                      .data$CONSEQUENCE_ALTERNATE)
     }
 
     for(psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])){
@@ -2106,6 +2121,7 @@ write <- function(report,
                   "subcellcomp",
                   "cell_tissue",
                   "aberration",
+                  "recurrent_variants",
                   "coexpression",
                   "prognostic_association_I",
                   "prognostic_association_II"
@@ -2114,6 +2130,10 @@ write <- function(report,
       show_elem <- elem
       if(elem == "cancer_association"){
         show_elem <- "disease"
+      }
+
+      if(elem == "recurrent_variants"){
+        show_elem <- "aberration"
       }
       if(elem == "prognostic_association_I"){
         show_elem <- "cancer_prognosis"

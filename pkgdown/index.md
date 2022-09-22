@@ -29,7 +29,7 @@ Web-based access to **oncoEnrichR** is available at <font size="4">
 
 <br><br>
 
-## Questions adressed by oncoEnrichR
+## Questions addressed by oncoEnrichR
 
 The contents of the analysis report provided by oncoEnrichR address the
 following scientific questions for a given gene list:
@@ -38,7 +38,7 @@ following scientific questions for a given gene list:
     the query set, and to what extent?
 -   Which genes in the query set are attributed with cancer hallmark
     evidence?
--   Which proteins in the query sets are druggable in diffferent cancer
+-   Which proteins in the query sets are druggable in different cancer
     conditions (early and late clinical development phases)? For other
     proteins in the query set, what is their likelihood of being
     druggable?
@@ -85,6 +85,8 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   September 22nd 2022: [**1.3.1
+    release**](articles/CHANGELOG.html#version-1-3-1)
 -   September 12th 2022: [**1.3.0
     release**](articles/CHANGELOG.html#version-1-3-0)
 -   September 2nd 2022: [**1.2.2
@@ -94,7 +96,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.7070557"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7070557.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.7104355"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7104355.svg" alt="DOI"/></a>
 
 <br>
 
