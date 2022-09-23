@@ -30,7 +30,7 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `show_aberration` = __`r onc_enrich_report[['config']][['show']][['aberration']]`__
   * `show_prognostic` = __`r onc_enrich_report[['config']][['show']][['cancer_prognosis']]`__
 
-* <i>Cancer assocations:</i>
+* <i>Cancer associations:</i>
   * `show_top_diseases_only` = __`r onc_enrich_report[['config']][['disease']][['show_top_diseases']]`__
 
 * <i>Regulatory interactions:</i>

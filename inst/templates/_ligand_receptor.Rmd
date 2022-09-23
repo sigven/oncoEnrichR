@@ -2,7 +2,7 @@
 
 <br>
 
-* Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are here interrogating ligand-receptor interactions for members of the query set. Putative interactions are displayed along three different axes with respect to cell-cell comunication:
+* Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are here interrogating ligand-receptor interactions for members of the query set. Putative interactions are displayed along three different axes with respect to cell-cell communication:
 
    1) Secreted Signaling (Paracrine/autocrine signaling)
    2) ECM-Receptor (extracellular matrix-receptor interactions)

@@ -14,7 +14,7 @@ RUN sudo apt update -qq
 # install two helper packages we need
 RUN sudo apt-get update && sudo apt-get -y install --no-install-recommends software-properties-common dirmngr
 # add the signing key (by Michael Rutter) for these repos
-# To verify key, run gpg --show-keys /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc 
+# To verify key, run gpg --show-keys /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 # Fingerprint: E298A3A825C0D65DFD57CBB651716619E084DAB9
 RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 # add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
@@ -45,7 +45,7 @@ RUN cd cmake-3.20.0 && ./bootstrap && make && make install
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
 RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.15.5.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.3.0.tar.gz /
+COPY oncoEnrichR_1.3.1.tar.gz /
 
 #RUN R -e "library(renv)"
 
@@ -53,7 +53,7 @@ RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.3.0.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.3.1.tar.gz', lib = '/usr/lib/R/library/')"
 
 ## PINNED VERSION: pandoc (for HTML report generation)
 RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd64.deb && \
@@ -62,5 +62,5 @@ RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd6
   apt-get clean
 
 RUN rm -rf /root/.cache
-RUN rm -rf /oncoEnrichR_1.3.0.tar.gz
+RUN rm -rf /oncoEnrichR_1.3.1.tar.gz
 RUN rm -rf /cmake-3.20.0*

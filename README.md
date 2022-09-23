@@ -20,13 +20,14 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## News
 
+-   September 23rd 2022: [**1.3.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-3-1)
 -   September 12th 2022: [**1.3.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-3-0)
 -   September 2nd 2022: [**1.2.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-2)
 -   July 13th 2022: [**1.2.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-2-1)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.7070557"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7070557.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.7104355"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7104355.svg" alt="DOI"/></a>
 
 ### Contact
 
@@ -34,7 +35,7 @@ sigven AT ifi.uio.no
 
 ### Funding and Collaboration
 
-OncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://www.med.uio.no/cancell/english/) at the [University of Oslo](https://www.uio.no)/[Oslo University Hospital](https://radium.no), and [Elixir Norway (Oslo node)](https://elixir.no/organization/organisation/elixir-uio).
+oncoEnrichR is supported by the [Centre for Cancer Cell Reprogramming](https://www.med.uio.no/cancell/english/) at the [University of Oslo](https://www.uio.no)/[Oslo University Hospital](https://radium.no), and [Elixir Norway (Oslo node)](https://elixir.no/organization/organisation/elixir-uio).
 
 <br> <br>
 

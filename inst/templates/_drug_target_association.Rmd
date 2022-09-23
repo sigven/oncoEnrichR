@@ -2,7 +2,10 @@
 
 * Each protein/protein in the query set is annotated with:
    * Targeted drugs (inhibitors/antagonists), as found through the [Open Targets Platform](https://targetvalidation.org), limited to compounds indicated for a cancer condition/phenotype
-   * We distinguish between drugs in <i>early clinical development/phase (<b>ep</b>)</i>, and drugs already in <i>late clinical development/phase (<b>lp</b>)</i>
+   * Drugs are organized into the following buckets:
+       * Targeted cancer drugs in early clinical development/phase (phase 1-2)(column <b>drugs_early_phase</b>)
+       * Targeted cancer drugs in late clinical development/phase (phase 3-4) (column <b>drugs_late_phase</b>)
+       * <i>Approved drugs</i> - here also showing the (cancer type) indications for which the drugs are approved for
 
 <br><br>
 

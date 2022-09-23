@@ -3868,6 +3868,8 @@ get_tcga_db <- function(
   gene_xref = NULL,
   update = F){
 
+  tcga_release <- 'release34_20220727'
+
   rds_fname <- file.path(
     raw_db_dir,
     "tcga",
@@ -3876,7 +3878,10 @@ get_tcga_db <- function(
   coexpression_tsv <- file.path(
     raw_db_dir,
     "tcga",
-    "co_expression_strong_moderate.release32_20220329.tsv.gz")
+    paste0(
+      "co_expression_strong_moderate.",
+      tcga_release,
+      ".tsv.gz"))
 
   tcga_clinical_rds <- file.path(
     raw_db_dir,
@@ -3970,16 +3975,22 @@ get_tcga_db <- function(
     primary_site <- maf_codes[i,]$primary_site
     maf_code <- maf_codes[i,]$code
     maf_file <- file.path(
-      maf_path, paste0("tcga_mutation_grch38_release32_20220329.",maf_code,"_0.maf.gz"))
+      maf_path, paste0(
+        "tcga_mutation_grch38_",
+        tcga_release,
+        ".",
+        maf_code,"_0.maf.gz"))
     if(file.exists(maf_file)){
       tmp <- read.table(gzfile(maf_file), quote="",
                         header = T, stringsAsFactors = F,
                         sep="\t", comment.char="#")
       tmp$primary_site <- NULL
       tmp$site_diagnosis_code <- NULL
-      tmp$Tumor_Sample_Barcode <- stringr::str_replace(tmp$Tumor_Sample_Barcode,"-[0-9][0-9][A-Z]$","")
+      tmp$Tumor_Sample_Barcode <- stringr::str_replace(
+        tmp$Tumor_Sample_Barcode,"-[0-9][0-9][A-Z]$","")
 
-      clinical <- tcga_clinical |> dplyr::filter(primary_site == primary_site) |>
+      clinical <- tcga_clinical |>
+        dplyr::filter(primary_site == primary_site) |>
         dplyr::select(bcr_patient_barcode, primary_diagnosis_very_simplified,
                       MSI_status, Gleason_score, ER_status,
                       PR_status, HER2_status,
@@ -4029,7 +4040,9 @@ get_tcga_db <- function(
                     ENSEMBL_TRANSCRIPT_ID,
                     SYMBOL,
                     COSMIC_MUTATION_ID,
-                    Consequence) |>
+                    Consequence,
+                    AMINO_ACID_START,
+                    VEP_ALL_CSQ) |>
       dplyr::mutate(VAR_ID = paste(
         CHROM, POS, REF, ALT, sep = "_")
       ) |>
@@ -4047,13 +4060,15 @@ get_tcga_db <- function(
                     VAR_ID,
                     CONSEQUENCE,
                     PROTEIN_CHANGE,
+                    AMINO_ACID_START,
                     PFAM_ID,
                     MUTATION_HOTSPOT,
                     LOSS_OF_FUNCTION,
                     ENSEMBL_TRANSCRIPT_ID,
                     COSMIC_MUTATION_ID,
                     TCGA_SITE_RECURRENCE,
-                    TOTAL_RECURRENCE) |>
+                    TOTAL_RECURRENCE,
+                    VEP_ALL_CSQ) |>
       tidyr::separate_rows(TCGA_SITE_RECURRENCE, sep=",") |>
       tidyr::separate(TCGA_SITE_RECURRENCE, into =
                         c("PRIMARY_SITE","SITE_RECURRENCE", "TCGA_SAMPLES"),
@@ -4076,6 +4091,81 @@ get_tcga_db <- function(
       dplyr::filter(!stringr::str_detect(
         CONSEQUENCE,"^(intron|intergenic|mature|non_coding|synonymous|upstream|downstream|3_prime|5_prime)"))
   )
+
+  csq_all_fixed <- as.data.frame(
+    recurrent_tcga_variants |>
+    dplyr::select(VAR_ID, VEP_ALL_CSQ) |>
+    tidyr::separate_rows(VEP_ALL_CSQ, sep=",") |>
+    tidyr::separate(
+      VEP_ALL_CSQ, c("V1","V2","V3","V4",
+                     "V5","V6","V7","V8","V9"),
+                     sep = ":") |>
+    dplyr::mutate(VEP_ALL_CSQ = paste(
+      V1,V2,V5,V6, sep=":"
+    )) |>
+    dplyr::group_by(VAR_ID) |>
+    dplyr::summarise(VEP_ALL_CSQ = paste(
+      unique(VEP_ALL_CSQ), collapse=", "
+    ), .groups = "drop")
+  )
+
+
+  hotspots_fixed <- recurrent_tcga_variants |>
+    dplyr::filter(!is.na(MUTATION_HOTSPOT)) |>
+    tidyr::separate_rows(MUTATION_HOTSPOT, sep="&") |>
+    dplyr::select(SYMBOL, PROTEIN_CHANGE, VAR_ID, MUTATION_HOTSPOT) |>
+    tidyr::separate(MUTATION_HOTSPOT, c("genesym","aapos","altaa","qvalue"),
+                    sep = "\\|", remove = F) |>
+    dplyr::mutate(hs_hgvsp = paste0(
+      "p.",aapos,altaa
+    )) |>
+    dplyr::mutate(mismatch = dplyr::if_else(
+      PROTEIN_CHANGE != hs_hgvsp &
+        nchar(altaa) > 0 &
+        !(stringr::str_detect(
+          PROTEIN_CHANGE,"\\?")),
+      TRUE,
+      FALSE
+    )) |>
+    dplyr::filter(mismatch == T) |>
+    dplyr::mutate(
+      MUTATION_HOTSPOT_FIXED = paste0(
+        genesym, "|",
+        aapos,"/",
+        stringr::str_replace_all(
+          PROTEIN_CHANGE,"p\\.|[A-Z]$",""
+        ), "|",
+        altaa, "|", qvalue
+      )
+    ) |>
+    dplyr::select(
+      SYMBOL, PROTEIN_CHANGE,
+      VAR_ID, MUTATION_HOTSPOT_FIXED
+    ) |>
+    dplyr::distinct()
+
+  recurrent_tcga_variants$VEP_ALL_CSQ <- NULL
+  recurrent_tcga_variants <- recurrent_tcga_variants |>
+    dplyr::left_join(csq_all_fixed, by = "VAR_ID") |>
+  dplyr::left_join(
+    hotspots_fixed,
+    by = c("SYMBOL","PROTEIN_CHANGE","VAR_ID")) |>
+    dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
+      !is.na(MUTATION_HOTSPOT_FIXED),
+      as.character(MUTATION_HOTSPOT_FIXED),
+      as.character(MUTATION_HOTSPOT)
+    )) |>
+    dplyr::select(-MUTATION_HOTSPOT_FIXED) |>
+    dplyr::select(
+      SYMBOL, VAR_ID, CONSEQUENCE,
+      PROTEIN_CHANGE, MUTATION_HOTSPOT,
+      AMINO_ACID_START, PFAM_ID,
+      LOSS_OF_FUNCTION, ENSEMBL_TRANSCRIPT_ID,
+      COSMIC_MUTATION_ID, PRIMARY_SITE,
+      SITE_RECURRENCE, TOTAL_RECURRENCE,
+      VEP_ALL_CSQ
+    )
+
 
   ##TCGA co-expression data
   raw_coexpression <-
@@ -4115,7 +4205,6 @@ get_tcga_db <- function(
 
   gdc_projects <- as.data.frame(TCGAbiolinks::getGDCprojects()) |>
     dplyr::filter(is.na(dbgap_accession_number) & startsWith(id,"TCGA"))
-  tcga_release <- 'release32_20220329'
 
   all_tcga_mean_median_tpm <- data.frame()
 
@@ -4123,8 +4212,8 @@ get_tcga_db <- function(
     tumor_code <- gdc_projects[i,]$tumor
     rnaseq_rds_fname <-
       file.path("","Users","sigven", "project_data","analysis__tcga",
-                "tcga", "data", "rnaseq",
-                paste0("tcga_rnaseq_",tumor_code,"_",
+                "tcga", "output", "rnaseq",
+                paste0("rnaseq_",tumor_code,"_",
                        tcga_release,".rds"))
 
     cat(tumor_code, '\n')

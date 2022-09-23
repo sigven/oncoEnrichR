@@ -1077,11 +1077,11 @@ add_excel_sheet <- function(
               )
           ) |>
           dplyr::mutate(
-            targeted_cancer_drugs_lp =
+            drugs_late_phase =
               stringr::str_replace_all(
                 stringr::str_squish(
                   stringr::str_trim(
-                    textclean::replace_html(.data$targeted_cancer_drugs_lp)
+                    textclean::replace_html(.data$drugs_late_phase)
                   )
                 ),
                 " , ",
@@ -1089,11 +1089,11 @@ add_excel_sheet <- function(
               )
           ) |>
           dplyr::mutate(
-            targeted_cancer_drugs_ep =
+            drugs_early_phase =
               stringr::str_replace_all(
                 stringr::str_squish(
                   stringr::str_trim(
-                    textclean::replace_html(.data$targeted_cancer_drugs_ep)
+                    textclean::replace_html(.data$drugs_early_phase)
                   )
                 ),
                 " , ",
@@ -1418,6 +1418,78 @@ add_excel_sheet <- function(
       }
     }
 
+  }
+
+  if(analysis_output == "recurrent_variants"){
+
+    if(is.data.frame(report$data$tcga$recurrent_variants)){
+      if(NROW(report$data$tcga$recurrent_variants) > 0){
+        df <-
+          report$data$tcga$recurrent_variants
+
+        colnames(df) <- tolower(colnames(df))
+        df <- as.data.frame(
+          df |>
+            dplyr::mutate(
+              site_recurrence = as.numeric(.data$site_recurrence)
+            ) |>
+            dplyr::arrange(
+              dplyr::desc(.data$total_recurrence),
+              dplyr::desc(.data$site_recurrence)) |>
+            dplyr::mutate(
+              annotation_source = report$config$resources$tcga$name,
+              version = report$config$resources$tcga$version) |>
+            dplyr::mutate(
+              ensembl_gene_id =
+                stringr::str_trim(
+                  textclean::replace_html(.data$ensembl_gene_id)
+                )
+            ) |>
+            dplyr::mutate(
+              ensembl_transcript_id =
+                stringr::str_trim(
+                  textclean::replace_html(.data$ensembl_transcript_id)
+                )
+            ) |>
+            dplyr::mutate(
+              protein_domain =
+                stringr::str_trim(
+                  textclean::replace_html(.data$protein_domain)
+                )
+            ) |>
+            dplyr::mutate(
+              cosmic_mutation_id =
+                stringr::str_trim(
+                  textclean::replace_html(.data$cosmic_mutation_id)
+                )
+            ) |>
+            dplyr::mutate(
+              site_recurrence = paste(.data$primary_site,
+                                      .data$site_recurrence, sep=":")
+            ) |>
+            dplyr::group_by(
+              .data$symbol, .data$consequence,
+              .data$protein_change, .data$protein_domain,
+              .data$mutation_hotspot,
+              .data$loss_of_function,
+              .data$ensembl_gene_id,
+              .data$ensembl_transcript_id,
+              .data$total_recurrence,
+              .data$cosmic_mutation_id
+            ) |>
+            dplyr::summarise(site_recurrence = paste(
+              .data$site_recurrence, collapse=", "
+            ), .groups = "drop") |>
+            dplyr::arrange(
+              dplyr::desc(.data$total_recurrence)
+            )
+
+        )
+
+        target_df <- target_df |>
+          dplyr::bind_rows(df)
+      }
+    }
   }
 
   if(analysis_output == "aberration"){

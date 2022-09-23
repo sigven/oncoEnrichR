@@ -329,7 +329,11 @@ target_drug_associations <- function(qgenes,
                   .data$targeted_cancer_drugs_ep,
                   .data$approved_drugs) |>
     dplyr::filter(!is.na(.data$targeted_cancer_drugs_lp) |
-                    !is.na(.data$targeted_cancer_drugs_ep))
+                    !is.na(.data$targeted_cancer_drugs_ep)) |>
+    dplyr::rename(
+      drugs_late_phase = .data$targeted_cancer_drugs_lp,
+      drugs_early_phase = .data$targeted_cancer_drugs_ep
+    )
 
   lgr::lgr$info( paste0("Open Targets Platform: annotation of target tractabilities (druggability)"))
 
