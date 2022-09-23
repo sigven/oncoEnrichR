@@ -121,7 +121,7 @@ cat('<br><br>')
 
 #### Target priority scores
 
-* Promising candidate therapeutic targets are indicated through __[target priority scores](https://score.depmap.sanger.ac.uk/documentation#scores)__. Target priority scores are based on integration of CRISPR knockout gene fitness effects with genomic biomarker and patient data ([Behan et al., Nature, 2019](https://pubmed.ncbi.nlm.nih.gov/30971826/)). All genes are assigned a target priority score between 0 – 100 from lowest to highest priority. In the heatmap shown below, genes in the query set are ranked according to their respective priority scores across all cancers (i.e. _Pancancer_), limited to the top 100 candidates.
+* Promising candidate therapeutic targets are indicated through __[target priority scores](https://score.depmap.sanger.ac.uk/documentation#scores)__. Target priority scores are based on integration of CRISPR knockout gene fitness effects with genomic biomarker and patient data ([Behan et al., Nature, 2019](https://pubmed.ncbi.nlm.nih.gov/30971826/)). All genes are assigned a target priority score between 0 – 100 from lowest to highest priority. In the heatmap shown below, genes in the query set are ranked according to their respective priority scores across all cancers (i.e. _Pan-cancer_), limited to the top 100 candidates.
 
 
 <br>
