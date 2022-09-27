@@ -3,7 +3,7 @@
 <br>
 
 * Using recently published predictions on synthetic lethal interactions in human cancer cell lines ([De Kegel et al., Cell Syst., 2021](https://pubmed.ncbi.nlm.nih.gov/34529928/)), we here show whether members of the query set are found among these interactions.
-* Note that predictions in the study by *Kegel et al.* are provided for human gene paralogs only
+* Note that predictions in the study by *De Kegel et al.* are provided for human gene paralogs only
 * In the tables below, predictions below the 50% percentile are ignored (the complete set can be found in the Excel output of oncoEnrichR). Additional properties of each predicted pair of interactors are included for filtering, including:
   * Prediction score and percentile
   * Percent sequence identity between the genes

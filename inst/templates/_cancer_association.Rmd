@@ -2,7 +2,10 @@
 
 * Each target in the query set is annotated with:
    * Known associations to cancer phenotypes (_ontology terms_) established from [multiple data types](https://platform-docs.opentargets.org/associations#association-scores) through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and numerical rank scores
-   * Classification with respect to roles as tumor suppressors/proto-oncogenes, as supported by the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource, the [Network of Cancer Genes](http://ncg.kcl.ac.uk/), and the [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
+   * Classification with respect to roles as tumor suppressors, proto-oncogenes, and cancer driver genes
+        * Cancer driver genes need support from either [Network of Cancer Genes](http://ncg.kcl.ac.uk/) or [IntOGen](https://www.intogen.org)
+        * Tumor suppressor genes and proto-oncogenes require support from either the [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource (>= 15 citations), the [Network of Cancer Genes](http://ncg.kcl.ac.uk/), or the [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
+        * Classifications are ignored for genes found in a curated list of [false positive driver predictions](https://pubmed.ncbi.nlm.nih.gov/29625053/)
    * Gene function summary - retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
  
 <br><br>
@@ -18,7 +21,12 @@
 
 ```{r table_browse_targets, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['disease']][['target']]) > 0}
 
-targets_shared <- crosstalk::SharedData$new(onc_enrich_report[['data']][['disease']][['target']])
+target_assocs <- onc_enrich_report[['data']][['disease']][['target']] |>
+  dplyr::select(-c(.data$oncogene_evidence,
+                    .data$tumor_suppressor_evidence,
+                    .data$cancer_driver_evidence))
+
+targets_shared <- crosstalk::SharedData$new(target_assocs)
 
 crosstalk::bscols(
   list(
@@ -28,7 +36,8 @@ crosstalk::bscols(
   ),
   list(
     crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
-    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations)
+    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations),
+    crosstalk::filter_checkbox("cancer_driver", "Cancer driver gene", targets_shared, ~cancer_driver)
   )
 )
 

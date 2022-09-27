@@ -715,6 +715,9 @@ add_excel_sheet <- function(
 
   target_df <- data.frame()
 
+  lgr::lgr$info(
+    paste0("Adding Excel sheet to workbook - ", analysis_output))
+
   if(analysis_output == "settings"){
     target_df <- data.frame(
       category = 'CANCER_ASSOCIATION',
@@ -985,9 +988,10 @@ add_excel_sheet <- function(
       if(NROW(report$data$unknown_function$hits_df) > 0){
         target_df <- report$data$unknown_function$hits_df |>
           dplyr::mutate(
-            annotation_source = "GO (MsigDB 7.5.1)/NCBI Gene/UniProt (2022.01)",
+            annotation_source = "Gene Ontology (2022-09)/NCBI Gene/UniProt (2022_03)",
             version = NA) |>
-          dplyr::select(.data$annotation_source, .data$version,
+          dplyr::select(.data$annotation_source,
+                        .data$version,
                         dplyr::everything()) |>
           dplyr::mutate(
             genename =
@@ -1016,7 +1020,8 @@ add_excel_sheet <- function(
             version = report$config$resources$opentargets$version) |>
           dplyr::select(-c(.data$cancer_association_links,
                            .data$disease_association_links,
-                           .data$cancergene_evidence)) |>
+                           .data$cancergene_evidence,
+                           .data$gene_summary)) |>
           dplyr::select(.data$annotation_source, .data$version,
                         dplyr::everything()) |>
           dplyr::mutate(
@@ -1024,15 +1029,15 @@ add_excel_sheet <- function(
               stringr::str_trim(
                 textclean::replace_html(.data$genename)
               )
-          ) |>
-          dplyr::mutate(
-            gene_summary =
-              stringr::str_squish(
-                stringr::str_trim(
-                  textclean::replace_html(.data$gene_summary)
-                )
-              )
           )
+          # dplyr::mutate(
+          #   gene_summary =
+          #     stringr::str_squish(
+          #       stringr::str_trim(
+          #         textclean::replace_html(.data$gene_summary)
+          #       )
+          #     )
+          # )
       }
     }
   }
