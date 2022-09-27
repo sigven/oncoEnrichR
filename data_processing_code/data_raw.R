@@ -3,7 +3,7 @@ library(gganatogram)
 
 source('data_processing_code/data_utility_functions.R')
 
-msigdb_version <- '2022.1'
+msigdb_version <- 'v2022.1.Hs'
 wikipathways_version <- "20220910"
 netpath_version <- "2010"
 opentargets_version <- "2022.06"
@@ -14,17 +14,17 @@ uniprot_release <- "2022_03"
 ## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
 update_hpa <- F
-update_ncbi_gene_summary <- F
+update_ncbi_gene_summary <- T
 update_project_score <- F
 update_project_survival <- F
-update_tcga <- T
+update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
 update_gencode <- F
 update_ligand_receptor_db <- T
 
-oe_version <- "1.3.1"
+oe_version <- "1.3.2"
 
 data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
@@ -101,10 +101,17 @@ ts_oncogene_annotations <-
     gene_info = gene_info,
     version = "48") |>
   dplyr::select(
-    entrezgene, tumor_suppressor,
-    oncogene, citation_links_oncogene,
-    citation_links_tsgene, cancergene_support,
-    citation_links_cdriver, cancer_driver)
+    entrezgene,
+    tumor_suppressor,
+    oncogene,
+    cancer_driver,
+    tumor_suppressor_evidence,
+    oncogene_evidence,
+    cancer_driver_evidence,
+    citation_links_oncogene,
+    citation_links_tsgene,
+    citation_links_cdriver,
+    cancergene_evidence)
 
 ####--- OTP: Target-disease associations ----####
 opentarget_associations <-
@@ -367,68 +374,6 @@ for(elem in c('cancerdrugdb',
 }
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
-
-
-
-# for(n in c('cancerdrugdb',
-#            'genedb',
-#            'hpa',
-#            'ligandreceptordb',
-#            'otdb',
-#            'pfamdb',
-#            'pathwaydb',
-#            'projectscoredb',
-#            'projectsurvivaldb',
-#            'subcelldb',
-#            'slparalogdb',
-#            'tcgadb',
-#            'tftargetdb',
-#            'tissuecelldb',
-#            'release_notes')){
-#
-#
-#   checksum_db <- NA
-#   size <- NA
-#   hsize <- NA
-#   if(n != "subcelldb"){
-#     checksum_db <- R.cache::getChecksum(oedb[[n]])
-#     size <- utils::object.size(oedb[[n]])
-#     hsize <- R.utils::hsize.object_size(size)
-#   }else{
-#     checksum_db <- R.cache::getChecksum(oedb[[n]][['comppidb']])
-#     size <- utils::object.size(oedb[[n]][['comppidb']])
-#     hsize <- R.utils::hsize.object_size(size)
-#   }
-#
-#   db_entry <- data.frame('name' = n,
-#                           'size' = as.character(size),
-#                           'hsize' = as.character(hsize),
-#                           'checksum' = checksum_db,
-#                           'version' = oe_version,
-#                           'date' = Sys.Date(),
-#                          stringsAsFactors = F
-#                         )
-#   db_props <- db_props |>
-#     dplyr::bind_rows(db_entry)
-#
-#
-#   if(!dir.exists(
-#     file.path(data_output_dir, paste0("v",oe_version)))){
-#     system(paste0('mkdir ', file.path(
-#       data_output_dir,
-#       paste0("v",oe_version)))
-#     )
-#   }
-#
-#   saveRDS(
-#     oedb[[n]],
-#     file = file.path(
-#       data_output_dir,
-#       paste0("v",oe_version),
-#       paste0(n,'.rds'))
-#     )
-#
-# }
 
 save(oedb, file="inst/internal_db/oedb.rda")
 

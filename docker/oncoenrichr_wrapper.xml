@@ -1,7 +1,7 @@
-<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.3.1">
+<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.3.2">
   <description>Cancer-dedicated gene set interpretation</description>
     <requirements>
-        <container type="docker">sigven/oncoenrichr:1.3.1</container>
+        <container type="docker">sigven/oncoenrichr:1.3.2</container>
   </requirements>
   <command detect_errors="aggressive"><![CDATA[
       #if $query_set.query_choice.query_input == "text"
@@ -386,6 +386,6 @@ The contents of the gene set analysis report attempt to answer the following que
  <citations>
      <!-- Example of annotating a citation using a DOI. -->
      <citation type="doi">10.48550/arXiv.2107.13247</citation>
-     <!-- Example of annotating a citation using a BibTex entry. -->     
+     <!-- Example of annotating a citation using a BibTex entry. -->
   </citations>
 </tool>

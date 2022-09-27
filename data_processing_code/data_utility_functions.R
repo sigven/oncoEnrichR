@@ -454,14 +454,71 @@ get_msigdb_signatures <- function(
 }
 
 
+get_intogen_driver_genes <- function(raw_db_dir = NULL,
+                                     gene_info = NULL){
+
+  intogen_drivers <- as.data.frame(
+    read.table(file = file.path(
+      raw_db_dir, "intogen",
+      "Compendium_Cancer_Genes.tsv"),sep="\t",
+      header=T, quote=NULL, stringsAsFactors = F) |>
+      janitor::clean_names() |>
+      dplyr::group_by(symbol) |>
+      dplyr::mutate(role = dplyr::if_else(
+        role == "",as.character(NA),as.character(role))) |>
+      dplyr::mutate(role = dplyr::if_else(
+        role == "Act","Activating",as.character(role))) |>
+      dplyr::mutate(role = dplyr::if_else(
+        role == "LoF","Loss_of_Function",as.character(role))) |>
+      dplyr::summarise(
+        intogen_role = paste(unique(Hmisc::capitalize(role)),collapse="&"),
+        intogen_phenotype = paste(unique(cancer_type),collapse="&"),
+        .groups = "drop") |>
+      dplyr::mutate(intogen_role = dplyr::if_else(
+        is.na(intogen_role) | intogen_role == "NA",
+        "Unknown",
+        as.character(intogen_role)
+      )) |>
+      dplyr::mutate(symbol = dplyr::case_when(
+        symbol == "CARS" ~ "CARS1",
+        symbol == "FAM46C" ~ "TENT5C",
+        symbol == "H3F3A" ~ "H3-3A",
+        symbol == "HIST1H3B" ~ "H3C2",
+        symbol == "HIST1H4I" ~ "H4C9",
+        symbol == "SEPT9" ~ "SEPTIN9",
+        TRUE ~ as.character(symbol)
+      )) |>
+      dplyr::left_join(
+        dplyr::select(gene_info, symbol, entrezgene),
+        by = c("symbol")) |>
+      dplyr::filter(!is.na(entrezgene)) |>
+      dplyr::select(-symbol) |>
+      dplyr::distinct()
+  )
+  lgr::lgr$info(paste0("Parsed n = ", nrow(intogen_drivers),
+                       " predicted driver genes (Intogen)"))
+
+  return(intogen_drivers)
+}
+
+
+
 get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
-                                        version = "47",
+                                        version = "48",
                                         gene_info = NULL){
   lgr::lgr$info(
     paste0("Retrieving proto-oncogenes/tumor suppressor status ",
     "according to classifications form CancerMine & Network of Cancer Genes (NCG)"))
 
-  fp_cancer_drivers <- get_curated_fp_cancer_genes(raw_db_dir = raw_db_dir, gene_info = gene_info)
+  fp_cancer_drivers <- get_curated_fp_cancer_genes(
+    raw_db_dir = raw_db_dir,
+    gene_info = gene_info)
+
+  intogen <- get_intogen_driver_genes(
+    raw_db_dir = raw_db_dir,
+    gene_info = gene_info) |>
+    dplyr::anti_join(fp_cancer_drivers, by = "entrezgene") |>
+    dplyr::mutate(intogen_driver = T)
 
   ## Tumor suppressor annotations or oncogene annotations from Network of cancer genes (NCG)
   ncg <- read.table(
@@ -470,19 +527,55 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
     stringsAsFactors = F, sep = "\t",
     quote = "", comment.char = "") |>
     janitor::clean_names() |>
+    dplyr::mutate(ncg_driver = dplyr::if_else(
+      !is.na(type) & type == "\"Canonical Cancer Driver\"",
+      as.logical(TRUE), as.logical(FALSE)
+    )) |>
     dplyr::mutate(
-      ncg_tumor_suppressor = dplyr::if_else(
-        stringr::str_detect(cgc_annotation,"TSG") | ncg_tsg == 1,
+      ncg_tsg = dplyr::if_else(
+        stringr::str_detect(cgc_annotation,"TSG") |
+          ncg_tsg == 1,
         as.logical(TRUE),as.logical(FALSE))) |>
     dplyr::mutate(
       ncg_oncogene = dplyr::if_else(
-        stringr::str_detect(cgc_annotation,"oncogene") | ncg_oncogene == 1,
+        stringr::str_detect(cgc_annotation,"oncogene") |
+          ncg_oncogene == 1,
         as.logical(TRUE),as.logical(FALSE))) |>
-    dplyr::select(entrez, ncg_tumor_suppressor, ncg_oncogene) |>
+    dplyr::select(entrez, ncg_tsg,
+                  ncg_oncogene, ncg_driver) |>
     dplyr::rename(entrezgene = entrez) |>
-    dplyr::filter(!(ncg_tumor_suppressor == F & ncg_oncogene == F)) |>
-    dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
+    dplyr::filter(!(ncg_tsg == F &
+                      ncg_oncogene == F &
+                      ncg_driver == F)) |>
+    dplyr::distinct() |>
+    dplyr::group_by(entrezgene) |>
+    dplyr::summarise(
+      ncg_tsg = paste(
+        unique(ncg_tsg), collapse=","),
+      ncg_oncogene = paste(
+        unique(ncg_oncogene), collapse=","),
+      ncg_driver = paste(
+        unique(ncg_driver), collapse=",")) |>
+    dplyr::mutate(ncg_driver = dplyr::if_else(
+      stringr::str_detect(ncg_driver, ","),
+      as.logical(TRUE),
+      as.logical(ncg_driver)
+    )) |>
+    dplyr::mutate(
+      ncg_tsg = as.logical(ncg_tsg),
+      ncg_oncogene = as.logical(ncg_oncogene)
+    ) |>
+    dplyr::anti_join(
+      dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
     dplyr::distinct()
+
+  n_driver_ncg <- ncg |>
+    dplyr::filter(ncg_driver == T) |>
+    nrow()
+
+  lgr::lgr$info(paste0("Parsed n = ", n_driver_ncg,
+                       " canonical cancer driver genes (Network of Cancer Genes)"))
+
 
   cgc <- readr::read_csv(
     file = file.path(raw_db_dir, "cgc","cancer_gene_census_96.csv"),
@@ -496,11 +589,11 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
       !is.na(role_in_cancer) & stringr::str_detect(role_in_cancer,"oncogene"),
       TRUE,FALSE
     )) |>
-    dplyr::mutate(cgc_tumor_suppressor = dplyr::if_else(
+    dplyr::mutate(cgc_tsg = dplyr::if_else(
       !is.na(role_in_cancer) & stringr::str_detect(role_in_cancer,"TSG"),
       TRUE,FALSE
     )) |>
-    dplyr::select(entrezgene, cgc_oncogene, cgc_tumor_suppressor) |>
+    dplyr::select(entrezgene, cgc_oncogene, cgc_tsg) |>
     dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
     dplyr::distinct()
 
@@ -521,9 +614,11 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
         )
       ) |>
       dplyr::group_by(role, gene_entrez_id, pmid) |>
-      dplyr::summarise(doid = paste(unique(cancer_id), collapse=","), .groups = "drop") |>
+      dplyr::summarise(
+        doid = paste(unique(cancer_id), collapse=","), .groups = "drop") |>
       dplyr::rename(entrezgene = gene_entrez_id) |>
-      dplyr::anti_join(dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
+      dplyr::anti_join(
+        dplyr::select(fp_cancer_drivers, entrezgene), by = "entrezgene") |>
       dplyr::distinct()
   )
 
@@ -556,14 +651,14 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
         .groups = "drop") |>
       dplyr::mutate(n_citations_oncogene = as.integer(stringr::str_count(pmids_oncogene,", ")) + 1) |>
       dplyr::filter(n_citations_oncogene > 1) |>
-      dplyr::mutate(oncogene_cancermine = dplyr::if_else(
+      dplyr::mutate(cancermine_oncogene = dplyr::if_else(
         n_citations_oncogene >= 6,
         "MC",
         as.character("LC"))) |>
-      dplyr::mutate(oncogene_cancermine = dplyr::if_else(
+      dplyr::mutate(cancermine_oncogene = dplyr::if_else(
         n_citations_oncogene >= 15,
         "HC",
-        as.character(oncogene_cancermine)))
+        as.character(cancermine_oncogene)))
   )
 
   pmids_tsgene <- as.data.frame(
@@ -579,14 +674,14 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
       dplyr::ungroup() |>
       dplyr::mutate(n_citations_tsgene = as.integer(stringr::str_count(pmids_tsgene,", ")) + 1) |>
       dplyr::filter(n_citations_tsgene > 1) |>
-      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
+      dplyr::mutate(cancermine_tsg = dplyr::if_else(
         n_citations_tsgene >= 6,
         "MC",
         as.character("LC"))) |>
-      dplyr::mutate(tumor_suppressor_cancermine = dplyr::if_else(
+      dplyr::mutate(cancermine_tsg = dplyr::if_else(
         n_citations_tsgene >= 15,
         "HC",
-        as.character(tumor_suppressor_cancermine)))
+        as.character(cancermine_tsg)))
   )
 
   pmids_cdriver <- as.data.frame(
@@ -630,7 +725,7 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
       dplyr::distinct())
 
   n_hc_oncogene <- oncogene |>
-    dplyr::filter(oncogene_cancermine == "HC") |>
+    dplyr::filter(cancermine_oncogene == "HC") |>
     nrow()
 
 
@@ -650,8 +745,9 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
       dplyr::distinct()
   )
   n_hc_tsgene <- tsgene |>
-    dplyr::filter(tumor_suppressor_cancermine == "HC") |>
+    dplyr::filter(cancermine_tsg == "HC") |>
     nrow()
+
 
 
   cdriver <- as.data.frame(
@@ -674,21 +770,30 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
     nrow()
 
   tsgene_full <- dplyr::full_join(tsgene, oncogene, by = c("entrezgene")) |>
-    dplyr::full_join(cdriver, by="entrezgene") |>
+    dplyr::full_join(cdriver, by = "entrezgene") |>
+    dplyr::full_join(intogen, by = "entrezgene") |>
     dplyr::full_join(ncg, by = "entrezgene") |>
     dplyr::full_join(cgc, by = "entrezgene") |>
+    dplyr::left_join(
+      dplyr::select(gene_info, entrezgene, symbol),
+      by = "entrezgene") |>
+
     dplyr::mutate(cancermine_onco_ts_citation_ratio = dplyr::if_else(
       !is.na(n_citations_tsgene),
       as.numeric(n_citations_oncogene)/n_citations_tsgene,
       as.numeric(NA))) |>
     dplyr::mutate(ncg_oncogene = dplyr::if_else(
       is.na(ncg_oncogene) | ncg_oncogene == FALSE,FALSE,TRUE)) |>
-    dplyr::mutate(ncg_tumor_suppressor = dplyr::if_else(
-      is.na(ncg_tumor_suppressor) | ncg_tumor_suppressor == FALSE,FALSE,TRUE)) |>
+    dplyr::mutate(ncg_tsg = dplyr::if_else(
+      is.na(ncg_tsg) | ncg_tsg == FALSE,FALSE,TRUE)) |>
+    dplyr::mutate(ncg_driver = dplyr::if_else(
+      is.na(ncg_driver) | ncg_driver == FALSE,FALSE,TRUE)) |>
+    dplyr::mutate(intogen_driver = dplyr::if_else(
+      is.na(intogen_driver) | intogen_driver == FALSE,FALSE,TRUE)) |>
     dplyr::mutate(cgc_oncogene = dplyr::if_else(
       is.na(cgc_oncogene) | cgc_oncogene == FALSE,FALSE,TRUE)) |>
-    dplyr::mutate(cgc_tumor_suppressor = dplyr::if_else(
-      is.na(cgc_tumor_suppressor) | cgc_tumor_suppressor == FALSE,FALSE,TRUE)) |>
+    dplyr::mutate(cgc_tsg = dplyr::if_else(
+      is.na(cgc_tsg) | cgc_tsg == FALSE,FALSE,TRUE)) |>
     dplyr::mutate(n_citations_oncogene = dplyr::if_else(
       is.na(n_citations_oncogene),
       as.integer(0),as.integer(n_citations_oncogene))) |>
@@ -699,39 +804,58 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
 
     dplyr::mutate(oncogene = dplyr::if_else(
         ncg_oncogene == T | cgc_oncogene == T |
-         (!is.na(oncogene_cancermine) &
-        oncogene_cancermine == "HC"),
+         (!is.na(cancermine_oncogene) &
+        cancermine_oncogene == "HC"),
       TRUE, FALSE)) |>
     dplyr::mutate(oncogene = dplyr::if_else(
       is.na(oncogene), FALSE, as.logical(oncogene))) |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
-        ncg_tumor_suppressor == T | cgc_tumor_suppressor == T |
-         (!is.na(tumor_suppressor_cancermine) &
-        tumor_suppressor_cancermine == "HC"),
+        ncg_tsg == T | cgc_tsg == T |
+         (!is.na(cancermine_tsg) &
+        cancermine_tsg == "HC"),
       TRUE, FALSE)) |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
       is.na(tumor_suppressor),FALSE,as.logical(tumor_suppressor))) |>
+    # dplyr::mutate(cancer_driver = dplyr::if_else(
+    #   cancer_driver_cancermine == "HC",TRUE,FALSE)) |>
     dplyr::mutate(cancer_driver = dplyr::if_else(
-      cancer_driver_cancermine == "HC",TRUE,FALSE)) |>
-    dplyr::mutate(cancer_driver = dplyr::if_else(
-      is.na(cancer_driver), FALSE, as.logical(cancer_driver))) |>
-    #dplyr::filter(tumor_suppressor == T | oncogene == T | cancer_driver == T) |>
-
+      ncg_driver == T | intogen_driver == T,
+      as.logical(TRUE), as.logical(FALSE))) |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
       tumor_suppressor == T &
-        !is.na(cancermine_onco_ts_citation_ratio) & cancermine_onco_ts_citation_ratio > 3,
+        !is.na(cancermine_onco_ts_citation_ratio) &
+        cancermine_onco_ts_citation_ratio > 3,
       FALSE,
       as.logical(tumor_suppressor))) |>
 
     dplyr::mutate(oncogene = dplyr::if_else(
       oncogene == T &
-        !is.na(cancermine_onco_ts_citation_ratio) & cancermine_onco_ts_citation_ratio <= 0.33,
+        !is.na(cancermine_onco_ts_citation_ratio) &
+        cancermine_onco_ts_citation_ratio <= 0.33,
       FALSE,
       as.logical(oncogene))) |>
 
 
+    dplyr::mutate(ncg_links_driver = dplyr::if_else(
+      ncg_driver == T,
+      paste0("NCG-Driver: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",
+             symbol,"\" target=\"_blank\">YES</a>"),
+      as.character("NCG-Driver: Not defined"))) |>
+    dplyr::mutate(ncg_links_driver = dplyr::if_else(
+      is.na(ncg_links_driver),
+      as.character("NCG-Driver: Not defined"),
+      as.character(ncg_links_driver))) |>
+    dplyr::mutate(intogen_links_driver = dplyr::if_else(
+      intogen_driver == T,
+      paste0("IntOGen-Driver: <a href=\"https://www.intogen.org/search?gene=",
+             symbol,"\" target=\"_blank\">", intogen_role, "</a>"),
+      as.character("IntOGen-Driver: Not defined"))) |>
+    dplyr::mutate(intogen_links_driver = dplyr::if_else(
+      is.na(intogen_links_driver),
+      as.character("IntOGen-Driver: Not defined"),
+      as.character(intogen_links_driver))) |>
     dplyr::mutate(ncg_links_tsgene = dplyr::if_else(
-      ncg_tumor_suppressor == T,
+      ncg_tsg == T,
       paste0("NCG-TumorSuppressor: <a href=\"http://ncg.kcl.ac.uk/query.php?gene_name=",
              entrezgene,"\" target=\"_blank\">YES</a>"),
       as.character("NCG-TumorSuppressor: Not defined"))) |>
@@ -753,7 +877,7 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
                                    sep=", ")) |>
 
     dplyr::mutate(cgc_links_tsgene = dplyr::if_else(
-      cgc_tumor_suppressor == T,
+      cgc_tsg == T,
       paste0("CGC-TumorSuppressor: <a href='https://cancer.sanger.ac.uk/census'",
              " target='_blank'>YES</a>"),
       as.character("CGC-TumorSuppressor: Not defined"))) |>
@@ -770,47 +894,63 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
       is.na(cgc_links_oncogene),
       as.character("CGC-OncoGene: Not defined"),
       as.character(cgc_links_oncogene))) |>
-    dplyr::mutate(cgc_link = paste(cgc_links_tsgene,
-                                   cgc_links_oncogene,
-                                   sep=", ")) |>
-
-
-    dplyr::mutate(citation_links_cdriver = dplyr::if_else(
-      is.na(cancer_driver),as.character(NA),as.character(citation_links_cdriver)),
+    dplyr::mutate(
+      cgc_link = paste(cgc_links_tsgene,
+                       cgc_links_oncogene,
+                       sep=", ")) |>
+    dplyr::mutate(
+      citation_links_cdriver = dplyr::if_else(
+        !is.na(cancer_driver) & n_citations_cdriver > 0,
+        as.character(
+          paste0("Cancer driver role (CancerMine): ",
+                 citation_links_cdriver)),
+       as.character(
+         "Cancer driver role (CancerMine): No records")),
       citations_cdriver = dplyr::if_else(
-        is.na(cancer_driver), as.character(NA), as.character(citations_cdriver)),
+        is.na(cancer_driver),
+        as.character(NA),
+        as.character(citations_cdriver)),
       citation_links_oncogene = dplyr::if_else(
-        is.na(oncogene_cancermine),
+        is.na(cancermine_oncogene),
         "Oncogenic role (CancerMine): No records",
-        as.character(paste0("Oncogenic role (CancerMine): ",citation_links_oncogene))),
+        as.character(paste0("Oncogenic role (CancerMine): ",
+                            citation_links_oncogene))),
       citations_oncogene = dplyr::if_else(
         is.na(oncogene),
         as.character(NA),
         as.character(citations_oncogene)),
       citation_links_tsgene = dplyr::if_else(
-        is.na(tumor_suppressor_cancermine),
+        is.na(cancermine_tsg),
         "Tumor suppressive role (CancerMine): No records",
-        as.character(paste0("Tumor suppressor role (CancerMine): ",citation_links_tsgene))),
+        as.character(
+          paste0("Tumor suppressor role (CancerMine): ",
+                 citation_links_tsgene))),
       citations_tsgene = dplyr::if_else(
         is.na(tumor_suppressor),
         as.character(NA),
         as.character(citations_tsgene))) |>
-    dplyr::mutate(cancergene_support = stringr::str_replace(
+    dplyr::mutate(cancergene_evidence = stringr::str_replace(
       paste(citation_links_oncogene,
             citation_links_tsgene,
+            citation_links_cdriver,
+            intogen_links_driver,
+            ncg_links_driver,
             cgc_link,
             ncg_link, sep=", "),"^, ","")) |>
     dplyr::mutate(tumor_suppressor_evidence = paste0(
-      "NCG:",ncg_tumor_suppressor,
-      "CGC:", cgc_tumor_suppressor,
-      "&CancerMine:",tumor_suppressor_cancermine,":",n_citations_tsgene)) |>
+      "NCG:",ncg_tsg,
+      "&CGC:", cgc_tsg,
+      "&CancerMine:",n_citations_tsgene)) |>
+      #"&CancerMine:",cancermine_tsg,":",n_citations_tsgene)) |>
     dplyr::mutate(oncogene_evidence = paste0(
       "NCG:",ncg_oncogene,
-      "CGC:",cgc_oncogene,
-      "&CancerMine:",oncogene_cancermine,":",n_citations_oncogene)) |>
+      "&CGC:",cgc_oncogene,
+      "&CancerMine:",n_citations_oncogene)) |>
+      #"&CancerMine:",cancermine_oncogene,":",n_citations_oncogene)) |>
     dplyr::mutate(cancer_driver_evidence = paste0(
-      "CancerMine:",
-      cancer_driver,":",
+      "NCG:", ncg_driver,
+      "&IntOGen:", intogen_role,
+      "&CancerMine:",
       n_citations_cdriver)) |>
     dplyr::mutate(
       citation_links_oncogene =
@@ -819,12 +959,86 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
     dplyr::mutate(
       citation_links_tsgene =
         stringr::str_replace(
-          citation_links_tsgene,"(NA, ){1,}",""))
+          citation_links_tsgene,"(NA, ){1,}","")) |>
+    dplyr::select(-symbol) |>
+    dplyr::mutate(
+      oncogene_source = dplyr::case_when(
+        cgc_oncogene == T &
+          ncg_oncogene == F &
+          (is.na(cancermine_oncogene) |
+             (!is.na(cancermine_oncogene) &
+                cancermine_oncogene != "HC")) ~ "CGC",
+        cgc_oncogene == F &
+          ncg_oncogene == T &
+          (is.na(cancermine_oncogene) |
+             (!is.na(cancermine_oncogene) &
+                cancermine_oncogene != "HC")) ~ "NCG",
+        ncg_oncogene == T &
+          cgc_oncogene == T &
+          (is.na(cancermine_oncogene) |
+             (!is.na(cancermine_oncogene) &
+                cancermine_oncogene != "HC")) ~ "CGC|NCG",
+        ncg_oncogene == T &
+          cgc_oncogene == T &
+          (!is.na(cancermine_oncogene) &
+             cancermine_oncogene == "HC") ~ "CGC|NCG|CancerMine",
+        ncg_oncogene == F &
+          cgc_oncogene == T &
+          (!is.na(cancermine_oncogene) &
+             cancermine_oncogene == "HC") ~ "CGC|CancerMine",
+        ncg_oncogene == T &
+          cgc_oncogene == F &
+          (!is.na(cancermine_oncogene) &
+             cancermine_oncogene == "HC") ~ "NCG|CancerMine",
+        ncg_oncogene == F &
+          cgc_oncogene == F &
+          (!is.na(cancermine_oncogene) &
+             cancermine_oncogene == "HC") ~ "CancerMine",
+        TRUE ~ as.character("NA")
+      )
+    ) |>
+    dplyr::mutate(
+      tsg_source = dplyr::case_when(
+        cgc_tsg == T &
+          ncg_tsg == F &
+          (is.na(cancermine_tsg) |
+             (!is.na(cancermine_tsg) &
+                cancermine_tsg != "HC")) ~ "CGC",
+        cgc_tsg == F &
+          ncg_tsg == T &
+          (is.na(cancermine_tsg) |
+             (!is.na(cancermine_tsg) &
+                cancermine_tsg != "HC")) ~ "NCG",
+        ncg_tsg == T &
+          cgc_tsg == T &
+          (is.na(cancermine_tsg) |
+             (!is.na(cancermine_tsg) &
+                cancermine_tsg != "HC")) ~ "CGC|NCG",
+        ncg_tsg == T &
+          cgc_tsg == T &
+          (!is.na(cancermine_tsg) &
+             cancermine_tsg == "HC") ~ "CGC|NCG|CancerMine",
+        ncg_oncogene == F &
+          cgc_oncogene == T &
+          (!is.na(cancermine_tsg) &
+             cancermine_tsg == "HC") ~ "CGC|CancerMine",
+        ncg_tsg == T &
+          cgc_tsg == F &
+          (!is.na(cancermine_tsg) &
+             cancermine_tsg == "HC") ~ "NCG|CancerMine",
+        ncg_tsg == F &
+          cgc_tsg == F &
+          (!is.na(cancermine_tsg) &
+             cancermine_tsg == "HC") ~ "CancerMine",
+        TRUE ~ as.character("NA")
+      )
+    )
 
 
   n_onc_ts <- dplyr::filter(tsgene_full, oncogene == T & tumor_suppressor == T)
   n_ts <- dplyr::filter(tsgene_full, tumor_suppressor == T & oncogene == F)
   n_onc <- dplyr::filter(tsgene_full, oncogene == T & tumor_suppressor == F)
+  n_driver <- dplyr::filter(tsgene_full, cancer_driver == T)
 
   lgr::lgr$info(
     paste0("A total of n = ",nrow(n_onc)," classified proto-oncogenes were retrieved from CancerMine/NCG"))
@@ -832,6 +1046,9 @@ get_ts_oncogene_annotations <- function(raw_db_dir = NULL,
     paste0("A total of n = ",nrow(n_ts)," classified tumor suppressor genes were retrieved from CancerMine/NCG"))
   lgr::lgr$info(
     paste0("A total of n = ",nrow(n_onc_ts)," genes were annotated with dual roles as tumor suppressor genes and oncogenes from CancerMine/NCG"))
+  lgr::lgr$info(
+    paste0("A total of n = ",nrow(n_driver)," genes were annotated with roles as cancer drivers from IntOGen/NCG"))
+
 
   return(tsgene_full)
 
@@ -862,7 +1079,7 @@ get_opentarget_associations <-
   function(raw_db_dir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2022.04",
+           release = "2022.06",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -4169,42 +4386,52 @@ get_tcga_db <- function(
 
   ##TCGA co-expression data
   raw_coexpression <-
-    readr::read_tsv(coexpression_tsv,
-                    col_names = c("symbol_A","symbol_B",
-                                  "r","p_value","tumor"),
-                    show_col_types = F)
+    readr::read_tsv(
+      coexpression_tsv,
+      col_names = c("symbol_A","symbol_B",
+                    "r","p_value","tumor"),
+      show_col_types = F)
   coexpression_genes1 <- raw_coexpression |>
-    dplyr::rename(symbol = symbol_A, symbol_partner = symbol_B) |>
+    dplyr::rename(symbol = symbol_A,
+                  symbol_partner = symbol_B) |>
     dplyr::left_join(
-      dplyr::select(gene_xref, symbol, tumor_suppressor,
-                    oncogene, cancer_driver), by = "symbol") |>
-    dplyr::filter(tumor_suppressor == T |
-                    oncogene == T |
-                    cancer_driver == T)
+      dplyr::select(
+        gene_xref, symbol,
+        tumor_suppressor,
+        oncogene, cancer_driver),
+      by = "symbol") |>
+    dplyr::filter(
+      tumor_suppressor == T |
+        oncogene == T |
+        cancer_driver == T)
 
   coexpression_genes2 <- raw_coexpression |>
-    dplyr::rename(symbol = symbol_B, symbol_partner = symbol_A) |>
+    dplyr::rename(symbol = symbol_B,
+                  symbol_partner = symbol_A) |>
     dplyr::left_join(
-      dplyr::select(gene_xref, symbol, tumor_suppressor,
-                    oncogene, cancer_driver), by = "symbol") |>
-    dplyr::filter(tumor_suppressor == T |
-                    oncogene == T |
-                    cancer_driver == T)
+      dplyr::select(
+        gene_xref, symbol, tumor_suppressor,
+        oncogene, cancer_driver), by = "symbol") |>
+    dplyr::filter(
+      tumor_suppressor == T |
+        oncogene == T |
+        cancer_driver == T)
 
   rm(raw_coexpression)
 
-  tcga_coexp_db <- dplyr::bind_rows(coexpression_genes1,
-                                    coexpression_genes2) |>
+  tcga_coexp_db <- dplyr::bind_rows(
+    coexpression_genes1,
+    coexpression_genes2) |>
     dplyr::arrange(desc(r)) |>
-    dplyr::mutate(p_value = signif(p_value, digits = 4)) |>
+    dplyr::mutate(p_value = signif(
+      p_value, digits = 4)) |>
     dplyr::filter(p_value < 1e-6) |>
     dplyr::mutate(r = signif(r, digits = 3)) |>
     dplyr::filter((r <= -0.7 & r < 0) | (r >= 0.7))
 
-
-
   gdc_projects <- as.data.frame(TCGAbiolinks::getGDCprojects()) |>
-    dplyr::filter(is.na(dbgap_accession_number) & startsWith(id,"TCGA"))
+    dplyr::filter(is.na(dbgap_accession_number) &
+                    startsWith(id,"TCGA"))
 
   all_tcga_mean_median_tpm <- data.frame()
 

@@ -55,7 +55,7 @@ target_disease_associations <-
                     .data$ensembl_gene_id,
                     .data$oncogene,
                     .data$tumor_suppressor,
-                    .data$cancergene_support,
+                    .data$cancergene_evidence,
                     .data$ot_association_score,
                     .data$disease_efo_id,
                     .data$efo_name,
@@ -226,7 +226,8 @@ target_disease_associations <-
           as.numeric(0),
           as.numeric(.data$global_cancer_rank)
         )) |>
-      dplyr::arrange(dplyr::desc(.data$targetset_cancer_rank)) |>
+      dplyr::arrange(dplyr::desc(.data$targetset_cancer_rank),
+                     dplyr::desc(.data$global_cancer_rank)) |>
       dplyr::select(.data$symbol,
                     .data$genename,
                     .data$ensembl_gene_id,
@@ -235,15 +236,17 @@ target_disease_associations <-
                     .data$cancer_driver,
                     .data$targetset_cancer_rank,
                     .data$global_cancer_rank,
-                    .data$cancergene_support,
+                    .data$cancergene_evidence,
+                    .data$oncogene_evidence,
+                    .data$tumor_suppressor_evidence,
+                    .data$cancer_driver_evidence,
                     .data$ot_cancer_diseases,
                     .data$ot_cancer_links,
                     .data$targetset_disease_rank,
                     .data$ot_diseases,
                     .data$ot_links,
                     .data$gene_summary) |>
-      dplyr::rename(cancergene_evidence = .data$cancergene_support,
-                    disease_associations = .data$ot_diseases,
+      dplyr::rename(disease_associations = .data$ot_diseases,
                     disease_association_links = .data$ot_links,
                     cancer_associations = .data$ot_cancer_diseases,
                     cancer_association_links = .data$ot_cancer_links) |>
