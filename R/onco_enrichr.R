@@ -84,12 +84,14 @@ load_db <- function(cache_dir = NA,
       db_id_ref[db_id_ref$name == elem,]$md5Checksum
 
     #dat <- NULL
-    if(file.exists(fname_local) & force_download == F){
+    if(file.exists(fname_local) && force_download == F){
       oedb[[elem]] <- readRDS(fname_local)
       if(!is.null(oedb[[elem]])){
         lgr::lgr$info(paste0(
-          "Reading from cache_dir = '", cache_version_dir, "', argument force_download = F"))
-        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
+          "Reading from cache_dir = '",
+          cache_version_dir,
+          "', argument force_download = F"))
+        lgr::lgr$info(paste0("Object '",elem,"' successfully loaded"))
       }
 
     }else{
@@ -112,14 +114,20 @@ load_db <- function(cache_dir = NA,
         oedb[[elem]] <- readRDS(fname_local)
         if(!is.null(oedb[[elem]])){
           lgr::lgr$info(paste0(
-            "Reading from cache_dir = ' (", cache_version_dir, "'), argument force_download = F"))
-          lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
-          lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
+            "Reading from cache_dir = ' (",
+            cache_version_dir, "'), argument force_download = ",
+            force_download))
+          lgr::lgr$info(paste0(
+            "Object '", elem, "' successfully loaded"))
+          lgr::lgr$info(paste0(
+            "md5 checksum is valid: ", md5checksum_remote))
         }
       }else{
-        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
-                              ") is inconsistent with remote file (",
-                              md5checksum_remote,")"))
+        lgr::lgr$error(
+          paste0(
+            "md5 checksum of local file (", md5checksum_local,
+            ") is inconsistent with remote file (",
+            md5checksum_remote,")"))
         stop()
       }
 
