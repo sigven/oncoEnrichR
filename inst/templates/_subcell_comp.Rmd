@@ -2,16 +2,19 @@
 
 <br>
 
-* The query set is annotated with data from [ComPPI](http://comppi.linkgroup.hu/), a database of subcellular localization data for human proteins, and results are here presented in two different views:
+* The query set is annotated with data from [COMPARTMENTS](https://compartments.jensenlab.org/Search), a weekly updated database of subcellular localization data for human proteins, and results are here presented in two different views:
 
    1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the query set
        * Compartments are here limited to the key compartments (n = 24) defined within the [gganatogram package](https://github.com/jespermaag/gganatogram#cellular-structures)
        * An accompanying legend is also provided - depicting the locations of the various subcellular structures
    2. A subcellular _data browser_
-       * All subcellular compartment annotations pr. protein in the query set ("By Gene")
-       * All unique subcellular compartment annotations (unfiltered) and their target members ("By Compartment")
-       * Subcellular compartment annotations per gene are provided with a __confidence level__ - indicating the number of different sources that support the compartment annotation
-          * Minimum confidence level set by user: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
+       * Subcellular compartment annotations pr. protein in the query set ("By Gene")
+          * Here, a maximum of _n = 2,500_ annotations are shown (the complete set are listed in the Excel output of oncoEnrichR)
+       * All unique subcellular compartment annotations and their target members ("By Compartment")
+       * Subcellular compartment annotations per gene are provided with a __confidence score__ between 3 and 5 - indicating the quality/reliability of a given compartment annotation
+          * Minimum confidence score (pr. COMPARTMENTS channel) - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
+          * Minimum number of supporting COMPARTMENTS channels pr. annotation - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum__channels`__
+          * COMPARTMENTS annotation channels used - user-provided: __`r paste(onc_enrich_report$config$subcellcomp$channels, collapse = ", ")`__
           * Ignore cytosol as a subcellular location: __`r !onc_enrich_report$config$subcellcomp$show_cytosol`__
 
 <br><br>
@@ -118,15 +121,15 @@ crosstalk::bscols(
   list(
     crosstalk::filter_select("target_gene", "Target gene", 
                              subcell_comp_all,~symbol),
-    crosstalk::filter_select("annotation_type", "Annotation type", 
-                             subcell_comp_all, ~annotation_type)
+    crosstalk::filter_select("supporting_channels", "Supporting channels", 
+                             subcell_comp_all, ~supporting_channels)
   ),
   list(
-    crosstalk::filter_select("annotation_source", "Annotation source", 
-                             subcell_comp_all, ~annotation_source),
-    crosstalk::filter_slider("confidence", 
-                             "Confidence level (number of annotation soures)", 
-                             subcell_comp_all, ~confidence)
+    crosstalk::filter_select("supporting_sources", "Supporting sources", 
+                             subcell_comp_all, ~supporting_sources),
+    crosstalk::filter_slider("minimum_confidence", 
+                             "Minimum confidence level (across channels)", 
+                             subcell_comp_all, ~minimum_confidence)
   )
 )
 
@@ -142,7 +145,7 @@ DT::datatable(subcell_comp_all, escape = F,
 
 ##### By compartment
 
-* Genes listed per compartment are calculated using only compartment annotations with a minimum confidence level of: __`r onc_enrich_report$config$subcellcomp$minimum_confidence` (number of sources)__
+* Genes listed per compartment are calculated using only compartment annotations with a minimum confidence level (pr. channel) of: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
 
 <br>
 

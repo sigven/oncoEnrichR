@@ -29,6 +29,7 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `show_coexpression` = __`r onc_enrich_report[['config']][['show']][['coexpression']]`__
   * `show_aberration` = __`r onc_enrich_report[['config']][['show']][['aberration']]`__
   * `show_prognostic` = __`r onc_enrich_report[['config']][['show']][['cancer_prognosis']]`__
+  * `show_ppi` = __`r onc_enrich_report[['config']][['show']][['ppi']]`__
 
 * <i>Cancer associations:</i>
   * `show_top_diseases_only` = __`r onc_enrich_report[['config']][['disease']][['show_top_diseases']]`__
@@ -37,7 +38,9 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `min_confidence_reg_interaction` = __`r onc_enrich_report[['config']][['regulatory']][['min_confidence']]`__
 
 * <i>Subcellular compartments:</i>
-  * `min_subcellcomp_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
+  * `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
+  * `subcellcomp_min_channels` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_channels']]`__
+  * `subcellcomp_channel_types` = __`r onc_enrich_report[['config']][['subcellcomp']][['channels']]`__
   * `subcellcomp_show_cytosol` = __`r onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']]`__
 
 * <i>Gene fitness scores:</i>
@@ -53,10 +56,11 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `num_terms_enrichment_plot` = __`r onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]`__
 
 * <i>Protein-protein interactions:</i>
-  * `ppi_score_threshold` = __`r onc_enrich_report[['config']][['ppi']][['stringdb']][['minimum_score']]`__
-  * `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['stringdb']][['add_nodes']]`__
-  * `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['stringdb']][['visnetwork_shadow']]`__
-  * `show_drugs_in_ppi` = __`r onc_enrich_report[['config']][['ppi']][['stringdb']][['show_drugs']]`__
+  * `ppi_string_score_threshold` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
+  * `ppi_biogrid_evidence_threshold` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
+  * `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__
+  * `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['string']][['visnetwork_shadow']]`__
+  * `show_drugs_in_ppi` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
 
 <br>
 

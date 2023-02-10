@@ -466,7 +466,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_MF') |>
   dplyr::arrange(qvalue) |>
-  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  utils::head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>
@@ -538,7 +538,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_BP') |>
   dplyr::arrange(qvalue) |>
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>
@@ -610,7 +610,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_CC') |>
   dplyr::arrange(qvalue) |>
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>

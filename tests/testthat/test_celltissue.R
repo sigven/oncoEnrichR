@@ -17,7 +17,7 @@ test_that("Tissue/celltype enrichment categories ", {
     hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
     hpa_expr_db_df = oedb$tissuecelldb$tissue$expr_df))
   expect_error(oncoEnrichR:::gene_tissue_cell_spec_cat(
-    logger = log4r_logger,
+    #logger = log4r_logger,
     genedb = oedb$genedb$all,
     qgenes = c("BRAF","EGFR","KRAS"),
     resolution = "tissue",
@@ -193,7 +193,7 @@ test_that("Tissue/celltype gene enrichment ", {
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
         resolution = "tissue")$per_type),
-    as.integer(55))
+    as.integer(54))
 
   expect_identical(
     colnames(
@@ -215,7 +215,7 @@ test_that("Tissue/celltype gene enrichment ", {
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
         resolution = "single_cell")$per_type
     ),
-    as.integer(76)
+    as.integer(79)
   )
 
   expect_identical(

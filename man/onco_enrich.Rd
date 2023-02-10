@@ -23,13 +23,17 @@ onco_enrich(
   min_geneset_size = 10,
   max_geneset_size = 500,
   num_terms_enrichment_plot = 20,
-  min_subcellcomp_confidence = 1,
+  subcellcomp_min_confidence = 3,
+  subcellcomp_min_channels = 1,
+  subcellcomp_channel_types = c("Experimental", "Text mining", "Knowledge"),
   subcellcomp_show_cytosol = FALSE,
   min_confidence_reg_interaction = "D",
   max_fitness_score = -2,
   simplify_go = TRUE,
-  ppi_add_nodes = 50,
-  ppi_score_threshold = 900,
+  ppi_add_nodes = 30,
+  ppi_string_score_threshold = 900,
+  ppi_string_network_type = "functional",
+  ppi_biogrid_evidence_threshold = 3,
   ppi_node_shadow = TRUE,
   show_ppi = TRUE,
   show_drugs_in_ppi = TRUE,
@@ -93,7 +97,12 @@ onco_enrich(
 
 \item{num_terms_enrichment_plot}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
 
-\item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
+\item{subcellcomp_min_confidence}{minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)}
+
+\item{subcellcomp_min_channels}{minimum number of channels that support a subcellular compartment annotation in COMPARTMENTS}
+
+\item{subcellcomp_channel_types}{restrict subcellular annotations to specific channel types of COMPARTMENTS
+any selection of 'Knowledge','Text mining', or 'Experimental'}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
 
@@ -103,13 +112,17 @@ onco_enrich(
 
 \item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
 
-\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
+\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING/BioGRID)}
 
-\item{ppi_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+\item{ppi_string_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+
+\item{ppi_string_network_type}{type of network to show for interactions in STRING ('functional' or 'physical')}
+
+\item{ppi_biogrid_evidence_threshold}{minimum number of evidence items required for protein-protein interactions (BioGRID)}
 
 \item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
 
-\item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
+\item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING and BioGRID)}
 
 \item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
 

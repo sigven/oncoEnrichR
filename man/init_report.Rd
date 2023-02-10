@@ -13,8 +13,10 @@ init_report(
   query_id_type = "symbol",
   ignore_id_err = TRUE,
   project_description = "_Project description_",
-  ppi_min_string_score = 900,
-  ppi_add_nodes = 50,
+  ppi_string_min_score = 900,
+  ppi_string_network_type = "functional",
+  ppi_biogrid_min_evidence = 3,
+  ppi_add_nodes = 30,
   ppi_node_shadow = TRUE,
   bgset_description = "All annotated protein-coding genes",
   bgset_id_type = "symbol",
@@ -24,7 +26,9 @@ init_report(
   min_geneset_size = 10,
   max_geneset_size = 500,
   num_terms_enrichment_plot = 20,
-  min_subcellcomp_confidence = 1,
+  subcellcomp_min_confidence = 3,
+  subcellcomp_min_channels = 1,
+  subcellcomp_channel_types = c("Experimental", "Text mining", "Knowledge"),
   subcellcomp_show_cytosol = F,
   min_confidence_reg_interaction = "D",
   max_fitness_score = -2,
@@ -68,11 +72,15 @@ init_report(
 
 \item{project_description}{project background information}
 
-\item{ppi_min_string_score}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+\item{ppi_string_min_score}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
 
-\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
+\item{ppi_string_network_type}{STRING network type ('physical' or 'functional')}
 
-\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
+\item{ppi_biogrid_min_evidence}{minimum number of evidence items for protein-protein interactions shown (BIOGRID)}
+
+\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING/BIOGRID)}
+
+\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network (STRING/BIOGRID)}
 
 \item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
@@ -91,7 +99,12 @@ init_report(
 
 \item{num_terms_enrichment_plot}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
 
-\item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
+\item{subcellcomp_min_confidence}{minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)}
+
+\item{subcellcomp_min_channels}{minimum number of channels that support a subcellular annotation in COMPARTMENTS}
+
+\item{subcellcomp_channel_types}{restrict subcellular annotations to specific channel types of COMPARTMENTS
+any selection of 'Knowledge','Text mining', and 'Experimental'}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not}
 

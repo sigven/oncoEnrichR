@@ -1,5 +1,5 @@
 
-test_that("Protein complex annotations - testing input parameters ", {
+test_that("Subcellular compartment annotations - testing input parameters ", {
   expect_error(oncoEnrichR:::annotate_subcellular_compartments(
     query_entrez = as.integer(c(300,400))))
   expect_error(oncoEnrichR:::annotate_subcellular_compartments(
@@ -7,29 +7,25 @@ test_that("Protein complex annotations - testing input parameters ", {
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::annotate_subcellular_compartments(
     query_entrez = as.integer(c(300,400)),
-    transcript_xref = oedb$genedb$transcript_xref,
     genedb = oedb$genedb$all))
   expect_error(oncoEnrichR:::annotate_subcellular_compartments(
     query_entrez = as.integer(c(300,400)),
-    transcript_xref = oedb$genedb$transcript_xref,
     genedb = oedb$genedb$all,
-    comppidb = oedb$subcelldb$comppidb))
+    compartments = oedb$subcelldb$compartments))
 
   expect_error(oncoEnrichR:::annotate_subcellular_compartments(
     query_entrez = c("200","300"),
     genedb = oedb$genedb$all,
-    comppidb = oedb$subcelldb$comppidb,
-    go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-    transcript_xref = oedb$genedb$transcript_xref))
+    compartments = oedb$subcelldb$compartments,
+    go_gganatogram_map = oedb$subcelldb$go_gganatogram_map))
 
   expect_identical(
     typeof(
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)
       ),
     "list"
   )
@@ -39,9 +35,8 @@ test_that("Protein complex annotations - testing input parameters ", {
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)
     ),
     c("all","grouped","anatogram")
   )
@@ -51,9 +46,8 @@ test_that("Protein complex annotations - testing input parameters ", {
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)$anatogram
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$anatogram
     ),
     c("organ","type","colour","value")
   )
@@ -63,9 +57,8 @@ test_that("Protein complex annotations - testing input parameters ", {
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)$grouped
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$grouped
     ),
     c("compartment","targets","targetlinks","n")
   )
@@ -75,12 +68,13 @@ test_that("Protein complex annotations - testing input parameters ", {
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)$all
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$all
     ),
-    c("symbol","genename","compartment","uniprot_acc",
-      "annotation_source","annotation_type","confidence",
+    c("symbol","genename","compartment","minimum_confidence",
+      "supporting_channels","supporting_channels_confidence",
+      "supporting_sources",
+      "n_supporting_channels",
       "ggcompartment")
   )
 
@@ -90,18 +84,16 @@ test_that("Protein complex annotations - testing input parameters ", {
       oncoEnrichR:::annotate_subcellular_compartments(
         query_entrez = as.integer(1956),
         genedb = oedb$genedb$all,
-        comppidb = oedb$subcelldb$comppidb,
-        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-        transcript_xref = oedb$genedb$transcript_xref)$all
+        compartments = oedb$subcelldb$compartments,
+        go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$all
     ) -
       NROW(
         oncoEnrichR:::annotate_subcellular_compartments(
           query_entrez = as.integer(1956),
-          minimum_confidence = 2,
+          compartments_min_confidence = 3,
           genedb = oedb$genedb$all,
-          comppidb = oedb$subcelldb$comppidb,
-          go_gganatogram_map = oedb$subcelldb$go_gganatogram_map,
-          transcript_xref = oedb$genedb$transcript_xref)$all
+          compartments = oedb$subcelldb$compartments,
+          go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$all
       )),
     0
   )

@@ -12,7 +12,7 @@ test_that("oncoEnrichR - initialize report", {
         query_id_type = "symbol",
         ignore_id_err = TRUE,
         project_description = "Project description",
-        ppi_min_string_score = 900,
+        ppi_string_min_score = 900,
         ppi_add_nodes = 50,
         bgset_description =
           "All annotated protein-coding genes",
@@ -23,7 +23,8 @@ test_that("oncoEnrichR - initialize report", {
         min_geneset_size = 10,
         max_geneset_size = 500,
         num_terms_enrichment_plot = 20,
-        min_subcellcomp_confidence = 1,
+        subcellcomp_min_confidence = 2,
+        subcellcomp_channel_types = c("Experimental","Text mining", "Knowledge"),
         subcellcomp_show_cytosol = F,
         min_confidence_reg_interaction = "D",
         simplify_go = F,
@@ -194,7 +195,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      min_subcellcomp_confidence = 4.6,
+      subcellcomp_min_confidence = 3,
       oeDB = oedb
     ),
     regexp = "ERROR: "
