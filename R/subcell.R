@@ -81,8 +81,9 @@ annotate_subcellular_compartments <-
           .data$n_supporting_channels >= compartments_min_channels
         ) |>
         dplyr::arrange(
-          symbol, dplyr::desc(minimum_confidence),
-          dplyr::desc(n_supporting_channels)
+          .data$symbol,
+          dplyr::desc(.data$minimum_confidence),
+          dplyr::desc(.data$n_supporting_channels)
         )
     )
 
@@ -90,8 +91,8 @@ annotate_subcellular_compartments <-
       target_compartments_all <- as.data.frame(
         target_compartments_all |>
           dplyr::arrange(
-            dplyr::desc(minimum_confidence), symbol) |>
-          #dplyr::select(-c(go_ontology,uniprot_acc)) |>
+            dplyr::desc(.data$minimum_confidence),
+            .data$symbol) |>
           dplyr::left_join(
             go_gganatogram_map,
             by = "go_id", multiple = "all") |>
@@ -103,7 +104,7 @@ annotate_subcellular_compartments <-
             compartment =
               paste0("<a href='http://amigo.geneontology.org/amigo/term/",
                      .data$go_id,"' target='_blank'>", .data$go_term, "</a>")) |>
-          head(2500)
+          utils::head(2500)
       )
 
       target_compartments[["grouped"]] <- as.data.frame(

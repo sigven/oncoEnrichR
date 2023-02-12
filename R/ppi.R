@@ -20,9 +20,10 @@ get_network_hubs <- function(edges = NULL,
 
   ## hub score (Kleinberg"s hub centrality)
   hscore <- igraph::hub_score(d)
-  hub_scores <- data.frame(symbol = names(sort(hscore$vector,decreasing = T)),
-                           hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),
-                           stringsAsFactors = F) |>
+  hub_scores <- data.frame(
+    symbol = names(sort(hscore$vector,decreasing = T)),
+    hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),
+    stringsAsFactors = F) |>
     dplyr::left_join(
       dplyr::select(
         genedb, c("symbol", "name")),
@@ -59,7 +60,8 @@ get_network_communities <- function(edges = NULL, nodes = NULL) {
 
   d <- igraph::graph_from_data_frame(d = edges, directed = F)
 
-  ## communities, fast greedy modularity optimization algorithm for finding community structure,
+  ## communities, fast greedy modularity optimization algorithm
+  ## for finding community structure,
   cties <- igraph::fastgreedy.community(d)
   edges_communities <- data.frame()
   if (length(cties) > 0) {
@@ -96,6 +98,7 @@ get_biogrid_network_nodes_edges <-
   function(all_query_nodes = NULL,
            add_nodes = 50,
            minimum_evidence_items = 2,
+           show_isolated_nodes = FALSE,
            genedb = NULL,
            biogrid = NULL) {
 
@@ -113,7 +116,7 @@ get_biogrid_network_nodes_edges <-
         by = c("entrezgene_B" = "entrezgene"),
         multiple = "all"
       ) |>
-      dplyr::rename(symbol_B = symbol) |>
+      dplyr::rename(symbol_B = "symbol") |>
       dplyr::left_join(
         dplyr::select(
           genedb, c("entrezgene", "symbol")),
@@ -121,10 +124,15 @@ get_biogrid_network_nodes_edges <-
         multiple = "all"
       ) |>
       dplyr::rename(symbol_A = "symbol") |>
-      dplyr::arrange(symbol_A, symbol_B, dplyr::desc(pmid)) |>
+      dplyr::arrange(
+        .data$symbol_A,
+        .data$symbol_B,
+        dplyr::desc(.data$pmid)) |>
       dplyr::mutate(
         evidence = paste(
-          method, throughput, pmid, sep ="|"
+          .data$method,
+          .data$throughput,
+          .data$pmid, sep ="|"
         )
       )
 
@@ -143,10 +151,14 @@ get_biogrid_network_nodes_edges <-
         multiple = "all"
       ) |>
       dplyr::rename(symbol_B = "symbol") |>
-      dplyr::arrange(symbol_A, symbol_B, dplyr::desc(pmid)) |>
+      dplyr::arrange(.data$symbol_A,
+                     .data$symbol_B,
+                     dplyr::desc(.data$pmid)) |>
       dplyr::mutate(
         evidence = paste(
-          method, throughput, pmid, sep ="|"
+          .data$method,
+          .data$throughput,
+          .data$pmid, sep ="|"
         )
       )
 
@@ -155,14 +167,16 @@ get_biogrid_network_nodes_edges <-
         edges_part1,
         edges_part2) |>
         dplyr::distinct() |>
-        dplyr::filter(symbol_A != symbol_B) |>
-        dplyr::arrange(symbol_A, symbol_B) |>
+        dplyr::filter(.data$symbol_A != .data$symbol_B) |>
+        dplyr::arrange(.data$symbol_A, .data$symbol_B) |>
         dplyr::group_by(
-          entrezgene_A, entrezgene_B,
-          symbol_A, symbol_B) |>
+          .data$entrezgene_A,
+          .data$entrezgene_B,
+          .data$symbol_A,
+          .data$symbol_B) |>
         dplyr::summarise(
           evidence = paste(
-            unique(evidence), collapse = ","
+            unique(.data$evidence), collapse = ","
           ),
           num_evidence_items = dplyr::n(),
           .groups = "drop") |>
@@ -170,15 +184,15 @@ get_biogrid_network_nodes_edges <-
         ## only keep interactions with a minimum number
         ## of evidence items
         dplyr::filter(
-          num_evidence_items >= minimum_evidence_items) |>
+          .data$num_evidence_items >= minimum_evidence_items) |>
         dplyr::mutate(
           querynode_A = dplyr::if_else(
-            entrezgene_A %in% all_query_nodes$entrezgene,
+            .data$entrezgene_A %in% all_query_nodes$entrezgene,
             TRUE,
             FALSE
           ),
           querynode_B = dplyr::if_else(
-            entrezgene_B %in% all_query_nodes$entrezgene,
+            .data$entrezgene_B %in% all_query_nodes$entrezgene,
             TRUE,
             FALSE
           )
@@ -188,40 +202,42 @@ get_biogrid_network_nodes_edges <-
     ## network - query nodes only
     ppi_edges <- all_edges |>
       dplyr::filter(
-        querynode_A == T & querynode_B == T)
+        .data$querynode_A == T &
+          .data$querynode_B == T)
 
     if (add_nodes > 0) {
 
       ## attach non-query nodes with most interactions with query nodes
       edges_single_node_inqueryset <- all_edges |>
-        dplyr::filter(querynode_A == F | querynode_B == F)
+        dplyr::filter(.data$querynode_A == F |
+                        .data$querynode_B == F)
 
         if (NROW(edges_single_node_inqueryset) > 0) {
 
           set1 <- edges_single_node_inqueryset |>
-            dplyr::filter(querynode_A == F)
+            dplyr::filter(.data$querynode_A == F)
 
           if (NROW(set1) > 0) {
             set1 <- set1 |>
               dplyr::select(c("entrezgene_A", "entrezgene_B")) |>
               dplyr::distinct() |>
-              dplyr::group_by(entrezgene_A) |>
+              dplyr::group_by(.data$entrezgene_A) |>
               dplyr::summarise(num_interactions = dplyr::n()) |>
-              dplyr::arrange(dplyr::desc(num_interactions)) |>
-              dplyr::rename(entrezgene = entrezgene_A)
+              dplyr::arrange(dplyr::desc(.data$num_interactions)) |>
+              dplyr::rename(entrezgene = "entrezgene_A")
           }
 
           set2 <- edges_single_node_inqueryset |>
-            dplyr::filter(querynode_B == F)
+            dplyr::filter(.data$querynode_B == F)
 
           if (NROW(set2) > 0) {
             set2 <- set2 |>
             dplyr::select(c("entrezgene_A", "entrezgene_B")) |>
             dplyr::distinct() |>
-            dplyr::group_by(entrezgene_B) |>
+            dplyr::group_by(.data$entrezgene_B) |>
             dplyr::summarise(num_interactions = dplyr::n()) |>
-            dplyr::arrange(dplyr::desc(num_interactions)) |>
-            dplyr::rename(entrezgene = entrezgene_B)
+            dplyr::arrange(dplyr::desc(.data$num_interactions)) |>
+            dplyr::rename(entrezgene = "entrezgene_B")
           }
 
           if (NROW(set1) > 0 | NROW(set2) > 0) {
@@ -230,14 +246,14 @@ get_biogrid_network_nodes_edges <-
               dplyr::bind_rows(
                 set1, set2) |>
               dplyr::arrange(
-                dplyr::desc(num_interactions)) |>
-              head(add_nodes)
+                dplyr::desc(.data$num_interactions)) |>
+              utils::head(add_nodes)
 
             edges_added <-
               edges_single_node_inqueryset |>
               dplyr::filter(
-                entrezgene_A %in% all_non_querynodes_ranked$entrezgene |
-                  entrezgene_B %in% all_non_querynodes_ranked$entrezgene
+                .data$entrezgene_A %in% all_non_querynodes_ranked$entrezgene |
+                  .data$entrezgene_B %in% all_non_querynodes_ranked$entrezgene
               )
 
             if (NROW(edges_added) > 0) {
@@ -308,12 +324,21 @@ get_biogrid_network_nodes_edges <-
           by = "entrezgene", multiple = "all") |>
         dplyr::mutate(id = paste0("s", .data$entrezgene)) |>
         dplyr::distinct() |>
-        dplyr::bind_rows(all_query_nodes) |>
-        dplyr::distinct() |>
         dplyr::mutate(query_node = dplyr::if_else(
           is.na(.data$query_node),
           FALSE,
           as.logical(.data$query_node)))
+
+
+      if(show_isolated_nodes == T){
+        nodes <- nodes |>
+          dplyr::bind_rows(all_query_nodes) |>
+          dplyr::distinct() |>
+          dplyr::mutate(query_node = dplyr::if_else(
+            is.na(.data$query_node),
+            FALSE,
+            as.logical(.data$query_node)))
+      }
 
       network <- list()
       network$edges <- edges
@@ -332,6 +357,7 @@ get_string_network_nodes_edges <-
            query_type = "network",
            minimum_score = 0.9,
            add_nodes = 50,
+           show_isolated_nodes = FALSE,
            network_type = "physical",
            genedb = NULL) {
 
@@ -426,12 +452,21 @@ get_string_network_nodes_edges <-
         by = "symbol", multiple = "all") |>
       dplyr::mutate(id = paste0("s", .data$entrezgene)) |>
       dplyr::distinct() |>
-      dplyr::bind_rows(all_query_nodes) |>
-      dplyr::distinct() |>
       dplyr::mutate(query_node = dplyr::if_else(
         is.na(.data$query_node),
         FALSE,
         as.logical(.data$query_node)))
+
+
+    if(show_isolated_nodes == T){
+      nodes <- nodes |>
+        dplyr::bind_rows(all_query_nodes) |>
+        dplyr::distinct() |>
+        dplyr::mutate(query_node = dplyr::if_else(
+          is.na(.data$query_node),
+          FALSE,
+          as.logical(.data$query_node)))
+    }
 
     network <- list()
     network$edges <- edges
@@ -469,6 +504,8 @@ get_ppi_network <- function(qgenes = NULL,
   stopifnot(!is.null(cancerdrugdb[['network']]))
   stopifnot(ppi_source == "string" | ppi_source == "biogrid")
 
+  cat(names(settings[[ppi_source]]),"\n")
+
   if (ppi_source == "string") {
 
     stopifnot(identical(
@@ -479,7 +516,8 @@ get_ppi_network <- function(qgenes = NULL,
         "show_drugs",
         "add_nodes",
         "query_type",
-        "network_type"))
+        "network_type",
+        "show_isolated_nodes"))
     )
     stopifnot(settings[[ppi_source]]$query_type == "interaction_partners" |
                 settings[[ppi_source]]$query_type == "network")
@@ -496,7 +534,8 @@ get_ppi_network <- function(qgenes = NULL,
         "visnetwork_shape",
         "visnetwork_shadow",
         "show_drugs",
-        "add_nodes"))
+        "add_nodes",
+        "show_isolated_nodes"))
     )
   }
 
@@ -574,6 +613,7 @@ get_ppi_network <- function(qgenes = NULL,
       ": Settings -  required minimum score = ",
       settings[[ppi_source]]$minimum_score,
       ", add_nodes = ",settings[[ppi_source]]$add_nodes,
+      ", show_isolated_nodes = ",settings[[ppi_source]]$show_isolated_nodes,
       ", network_type = ", settings[[ppi_source]]$network_type))
 
     all_edges <- data.frame()
@@ -591,6 +631,7 @@ get_ppi_network <- function(qgenes = NULL,
           network_type = settings[[ppi_source]]$network_type,
           minimum_score = settings[[ppi_source]]$minimum_score,
           add_nodes = settings[[ppi_source]]$add_nodes,
+          show_isolated_nodes = settings[[ppi_source]]$show_isolated_nodes,
           genedb = genedb)
 
         all_edges <- all_edges |>
@@ -609,6 +650,7 @@ get_ppi_network <- function(qgenes = NULL,
         query_type = settings[[ppi_source]]$query_type,
         network_type = settings[[ppi_source]]$network_type,
         minimum_score = settings[[ppi_source]]$minimum_score,
+        show_isolated_nodes = settings[[ppi_source]]$show_isolated_nodes,
         add_nodes = settings[[ppi_source]]$add_nodes,
         genedb = genedb)
 
@@ -635,6 +677,7 @@ get_ppi_network <- function(qgenes = NULL,
       ppi_source_verbose,
       ": Settings -  minimum evidence = ",
       settings[[ppi_source]]$minimum_evidence,
+      ", show_isolated_nodes = ",settings[[ppi_source]]$show_isolated_nodes,
       ", add_nodes = ",settings[[ppi_source]]$add_nodes))
 
     all_edges <- data.frame()
@@ -644,6 +687,7 @@ get_ppi_network <- function(qgenes = NULL,
       all_query_nodes = query_nodes,
       minimum_evidence_items = settings[[ppi_source]]$minimum_evidence,
       add_nodes = settings[[ppi_source]]$add_nodes,
+      show_isolated_nodes = settings[[ppi_source]]$show_isolated_nodes,
       biogrid = biogrid,
       genedb = genedb)
 

@@ -1,5 +1,5 @@
 
-get_genes_unknown_function <- function(qgenes,
+get_genes_unknown_function <- function(qgenes = NULL,
                                        genedb = NULL) {
 
   lgr::lgr$appenders$console$set_layout(
@@ -29,7 +29,7 @@ get_genes_unknown_function <- function(qgenes,
       dplyr::inner_join(
         target_genes, by = "symbol", multiple = "all") |>
       dplyr::arrange(.data$unknown_function_rank) |>
-      dplyr::filter(.data$unknown_function_rank <= 5)
+      dplyr::filter(.data$unknown_function_rank <= 6)
 
     pct <- round(as.numeric(NROW(results) / NROW(target_genes)) * 100, digits = 2)
   }

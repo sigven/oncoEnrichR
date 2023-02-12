@@ -270,6 +270,7 @@ tcga_aberration_matrix <- function(qgenes,
     gene_aberrations_top |>
     dplyr::select(c("symbol", "primary_site",
                   "percent_mutated")) |>
+    dplyr::distinct() |>
     tidyr::pivot_wider(names_from = "primary_site",
                        values_from = "percent_mutated")
   )

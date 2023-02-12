@@ -12,24 +12,24 @@ test_that("oncoEnrichR - initialize report", {
         query_id_type = "symbol",
         ignore_id_err = TRUE,
         project_description = "Project description",
-        ppi_string_min_score = 900,
-        ppi_add_nodes = 50,
+        ppi_string_min_score = 0.9,
+        ppi_add_nodes = 30,
+        ppi_show_drugs = T,
         bgset_description =
           "All annotated protein-coding genes",
         bgset_id_type = "symbol",
-        p_value_cutoff_enrichment = 0.05,
-        p_value_adjustment_method = "BH",
-        q_value_cutoff_enrichment = 0.2,
-        min_geneset_size = 10,
-        max_geneset_size = 500,
-        num_terms_enrichment_plot = 20,
+        enrichment_p_value_cutoff = 0.05,
+        enrichment_p_value_adj = "BH",
+        enrichment_q_value_cutoff = 0.2,
+        enrichment_min_geneset_size = 10,
+        enrichment_max_geneset_size = 500,
+        enrichment_plot_num_terms = 20,
+        enrichment_simplify_go = F,
         subcellcomp_min_confidence = 2,
         subcellcomp_channel_types = c("Experimental","Text mining", "Knowledge"),
         subcellcomp_show_cytosol = F,
-        min_confidence_reg_interaction = "D",
-        simplify_go = F,
+        regulatory_min_confidence = "D",
         show_ppi = T,
-        show_drugs_in_ppi = T,
         show_disease = T,
         show_top_diseases_only = T,
         show_cancer_hallmarks = T,
@@ -44,7 +44,6 @@ test_that("oncoEnrichR - initialize report", {
         show_regulatory = T,
         show_unknown_function = T,
         show_prognostic = T,
-        #show_syn_leth_pairs = T,
         show_complex = T)
     ),
     "list"
@@ -112,7 +111,7 @@ test_that("oncoEnrichR - generate report", {
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
       oeDB = oedb,
-      p_value_adjustment_method = "UNKNOWN_ADJUSTMENT"
+      enrichment_p_value_adj = "UNKNOWN_ADJUSTMENT"
     ),
     regexp = "ERROR: "
   )
@@ -121,7 +120,7 @@ test_that("oncoEnrichR - generate report", {
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
       oeDB = oedb,
-      min_confidence_reg_interaction = "F"
+      regulatory_min_confidence = "F"
     ),
     regexp = "ERROR: "
   )
@@ -168,7 +167,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      ppi_score_threshold = 902.4,
+      ppi_string_min_score = 1.2,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -177,7 +176,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      num_terms_enrichment_plot = 10.7,
+      ppi_biogrid_min_evidence =  11,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -186,7 +185,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      num_terms_enrichment_plot = 35,
+      enrichment_plot_num_terms = 10.7,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -195,7 +194,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      subcellcomp_min_confidence = 3,
+      enrichment_plot_num_terms = 35,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -204,7 +203,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      p_value_cutoff_enrichment = 1.2,
+      subcellcomp_min_confidence = 6,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -213,7 +212,7 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      q_value_cutoff_enrichment = 1.2,
+      enrichment_p_value_cutoff = 1.2,
       oeDB = oedb
     ),
     regexp = "ERROR: "
@@ -222,7 +221,16 @@ test_that("oncoEnrichR - generate report", {
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
-      max_fitness_score = 1,
+      enrichment_q_value_cutoff = 1.2,
+      oeDB = oedb
+    ),
+    regexp = "ERROR: "
+  )
+
+  expect_output(
+    oncoEnrichR::onco_enrich(
+      query = myc_data$symbol,
+      fitness_max_score = 1,
       oeDB = oedb
     ),
     regexp = "ERROR: "

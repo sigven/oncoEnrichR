@@ -41,12 +41,20 @@ test_that("Protein-protein interaction network ", {
     qgenes = c("BRAF")
   ))
 
+  expect_error(oncoEnrichR:::get_ppi_network(
+    settings = ppi_settings,
+    genedb = oedb$genedb$all,
+    cancerdrugdb = oedb$cancerdrugdb,
+    qgenes = as.integer(25912),
+  ))
+
   expect_identical(
     names(
       oncoEnrichR:::get_ppi_network(
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )
     ),
@@ -60,6 +68,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     ),
@@ -72,6 +81,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     ),
@@ -86,6 +96,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
         )
       ),
@@ -100,6 +111,7 @@ test_that("Protein-protein interaction network ", {
           dplyr::sample_n(pc_genes, 300)$entrezgene),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )
     ),
@@ -113,6 +125,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network
     ),
@@ -126,6 +139,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     )
@@ -137,6 +151,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     )
@@ -148,6 +163,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     )
@@ -159,6 +175,7 @@ test_that("Protein-protein interaction network ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     ),

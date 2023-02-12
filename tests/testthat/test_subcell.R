@@ -90,7 +90,7 @@ test_that("Subcellular compartment annotations - testing input parameters ", {
       NROW(
         oncoEnrichR:::annotate_subcellular_compartments(
           query_entrez = as.integer(1956),
-          compartments_min_confidence = 3,
+          compartments_min_confidence = 4,
           genedb = oedb$genedb$all,
           compartments = oedb$subcelldb$compartments,
           go_gganatogram_map = oedb$subcelldb$go_gganatogram_map)$all

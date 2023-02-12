@@ -17,26 +17,27 @@ onco_enrich(
   bgset = NULL,
   bgset_id_type = "symbol",
   bgset_description = "All protein-coding genes",
-  p_value_cutoff_enrichment = 0.05,
-  p_value_adjustment_method = "BH",
-  q_value_cutoff_enrichment = 0.2,
-  min_geneset_size = 10,
-  max_geneset_size = 500,
-  num_terms_enrichment_plot = 20,
+  enrichment_p_value_cutoff = 0.05,
+  enrichment_p_value_adj = "BH",
+  enrichment_q_value_cutoff = 0.2,
+  enrichment_min_geneset_size = 10,
+  enrichment_max_geneset_size = 500,
+  enrichment_plot_num_terms = 20,
+  enrichment_simplify_go = TRUE,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
   subcellcomp_channel_types = c("Experimental", "Text mining", "Knowledge"),
   subcellcomp_show_cytosol = FALSE,
-  min_confidence_reg_interaction = "D",
-  max_fitness_score = -2,
-  simplify_go = TRUE,
+  regulatory_min_confidence = "D",
+  fitness_max_score = -2,
   ppi_add_nodes = 30,
-  ppi_string_score_threshold = 900,
+  ppi_string_min_score = 0.9,
   ppi_string_network_type = "functional",
-  ppi_biogrid_evidence_threshold = 3,
+  ppi_biogrid_min_evidence = 3,
   ppi_node_shadow = TRUE,
+  ppi_show_drugs = TRUE,
+  ppi_show_isolated_nodes = FALSE,
   show_ppi = TRUE,
-  show_drugs_in_ppi = TRUE,
   show_disease = TRUE,
   show_top_diseases_only = TRUE,
   show_cancer_hallmarks = TRUE,
@@ -62,15 +63,21 @@ onco_enrich(
 
 \item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 
-\item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
+\item{query_id_type}{character indicating source of query (one of
+"uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
+"refseq_mrna", "ensembl_protein", "refseq_protein")}
 
-\item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
+\item{ignore_id_err}{logical indicating if analysis should
+continue when uknown query identifiers are encountered}
 
-\item{html_floating_toc}{logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled}
+\item{html_floating_toc}{logical - float the table of contents to the left
+of the main document content (HTML report). The floating table of contents
+will always be visible even when the document is scrolled}
 
-\item{html_report_theme}{Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
-"flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")}
+\item{html_report_theme}{Bootswatch theme for HTML report (any of
+"bootstrap", "cerulean", "cosmo", "default",
+"flatly", "journal", "lumen", "paper", "sandstone", "simplex",
+"spacelab", "united", "yeti")}
 
 \item{project_title}{project title (title of report)}
 
@@ -78,88 +85,149 @@ onco_enrich(
 
 \item{project_description}{project background information}
 
-\item{bgset}{character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis}
+\item{bgset}{character vector with gene identifiers, used as
+reference/background for enrichment/over-representation analysis}
 
-\item{bgset_id_type}{character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
-"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")}
+\item{bgset_id_type}{character indicating source of background
+("uniprot_acc", "symbol", "entrezgene",
+"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein",
+"refseq_protein"), default: "symbol"}
 
-\item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
+\item{bgset_description}{character indicating type of background
+(e.g. "All lipid-binding proteins (n = 200)")}
 
-\item{p_value_cutoff_enrichment}{cutoff p-value for enrichment/over-representation analysis}
+\item{enrichment_p_value_cutoff}{cutoff p-value for enrichment/
+over-representation analysis (default: 0.05)}
 
-\item{p_value_adjustment_method}{one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"}
+\item{enrichment_p_value_adj}{one of "holm", "hochberg", "hommel",
+"bonferroni", "BH", "BY", "fdr", "none" (clusterProfiler, default: "BH")}
 
-\item{q_value_cutoff_enrichment}{cutoff q-value for enrichment analysis}
+\item{enrichment_q_value_cutoff}{cutoff q-value for enrichment
+analysis (clusterProfiler, default: 0.2)}
 
-\item{min_geneset_size}{minimal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+\item{enrichment_min_geneset_size}{minimal size of geneset annotated by term
+for testing in enrichment/over-representation analysis (clusterProfiler,
+default: 10)}
 
-\item{max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+\item{enrichment_max_geneset_size}{maximal size of geneset annotated by term
+for testing in enrichment/over-representation analysis (clusterProfiler,
+default: 500)}
 
-\item{num_terms_enrichment_plot}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
+\item{enrichment_plot_num_terms}{number of top enriched Gene Ontology terms
+(max) to show in enrichment barplot (default: 15)}
 
-\item{subcellcomp_min_confidence}{minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)}
+\item{enrichment_simplify_go}{remove highly similar GO terms in results from
+GO enrichment/over-representation analysis (default: TRUE)}
 
-\item{subcellcomp_min_channels}{minimum number of channels that support a subcellular compartment annotation in COMPARTMENTS}
+\item{subcellcomp_min_confidence}{minimum confidence level for subcellular
+compartment annotation in COMPARTMENTS (min = 3, max = 5, default: 3)}
 
-\item{subcellcomp_channel_types}{restrict subcellular annotations to specific channel types of COMPARTMENTS
+\item{subcellcomp_min_channels}{minimum number of channels that support a
+subcellular compartment annotation in COMPARTMENTS (min = 1,
+max = 3, default: 1)}
+
+\item{subcellcomp_channel_types}{restrict subcellular annotations to
+specific channel types of COMPARTMENTS
 any selection of 'Knowledge','Text mining', or 'Experimental'}
 
-\item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not}
+\item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap
+should show highlight proteins located in the cytosol or not (default: FALSE)}
 
-\item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
+\item{regulatory_min_confidence}{minimum confidence level for regulatory
+interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D',
+default: 'D')}
 
-\item{max_fitness_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
+\item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor
+from BAGEL) for genes retrieved from DepMap/Project Score, default:-2}
 
-\item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
+\item{ppi_add_nodes}{number of nodes to add to target set when computing the
+protein-protein interaction network (STRING/BioGRID, default: 30)}
 
-\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING/BioGRID)}
+\item{ppi_string_min_score}{minimum score (between 0 and 1) for confidence of
+retrieved protein-protein interactions (STRING, default: 0.9)}
 
-\item{ppi_string_score_threshold}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+\item{ppi_string_network_type}{type of network to show for interactions in
+STRING ('functional' or 'physical', default: 'functional')}
 
-\item{ppi_string_network_type}{type of network to show for interactions in STRING ('functional' or 'physical')}
+\item{ppi_biogrid_min_evidence}{minimum number of evidence items required
+for protein-protein interactions retrieved (BioGRID, default: 3)}
 
-\item{ppi_biogrid_evidence_threshold}{minimum number of evidence items required for protein-protein interactions (BioGRID)}
+\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI
+network (default: TRUE)}
 
-\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
+\item{ppi_show_drugs}{logical indicating if targeted drugs (>= phase 3)
+should be displayed in protein-protein interaction networks (default: TRUE)}
 
-\item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING and BioGRID)}
+\item{ppi_show_isolated_nodes}{logical indicating if targets/nodes without
+any interactions should be displayed in the protein-protein
+interaction networks (default: FALSE)}
 
-\item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
+\item{show_ppi}{logical indicating if report should contain protein-protein
+interaction views of the query set (STRING and BioGRID, default: TRUE)}
 
-\item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)}
+\item{show_disease}{logical indicating if report should contain disease
+associations (Open Targets Platform, association_score >= 0.05, support
+from at least two data types), and tumor suppressor/oncogene annotations (
+default: TRUE)}
 
-\item{show_top_diseases_only}{logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)}
+\item{show_top_diseases_only}{logical indicating if report should contain
+top (n = 20) disease associations only pr. query gene
+default: TRUE)}
 
-\item{show_cancer_hallmarks}{logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)}
+\item{show_cancer_hallmarks}{logical indicating if report should
+contain annotations/evidence of cancer hallmarks per query gene
+(COSMIC/Open Targets Platform, default: TRUE}
 
-\item{show_drug}{logical indicating if report should contain targeted cancer drug information}
+\item{show_drug}{logical indicating if report should contain targeted
+cancer drug information (default: TRUE)}
 
-\item{show_enrichment}{logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)}
+\item{show_enrichment}{logical indicating if report should contain functional
+enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME,
+NetPath, WikiPathways, default: TRUE)}
 
-\item{show_aberration}{logical indicating if report should contain TCGA aberration plots (amplifications/deletions)}
+\item{show_aberration}{logical indicating if report should contain TCGA
+aberration plots (amplifications/deletions, default: TRUE)}
 
-\item{show_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes}
+\item{show_coexpression}{logical indicating if report should contain TCGA
+co-expression data (RNAseq) of query set with oncogenes/tumor
+suppressor genes (default: TRUE)}
 
-\item{show_cell_tissue}{logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
-of target genes, using data from the Human Protein Atlas}
+\item{show_cell_tissue}{logical indicating if report should contain
+tissue-specificity and single cell-type specificity assessments
+(Human Protein Atlas) of target genes (default: FALSE)}
 
-\item{show_ligand_receptor}{logical indicating if report should contain ligand-receptor interactions (CellChatDB)}
+\item{show_ligand_receptor}{logical indicating if report should contain
+ligand-receptor interactions (CellChatDB, default: TRUE)}
 
-\item{show_regulatory}{logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)}
+\item{show_regulatory}{logical indicating if report should contain data on
+transcription factor (TF) - target interactions relevant for the
+query set (DoRothEA, default: TRUE)}
 
-\item{show_unknown_function}{logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)}
+\item{show_unknown_function}{logical indicating if report should highlight
+target genes with unknown or poorly defined functions
+(GO/Uniprot KB/NCBI, default: TRUE)}
 
-\item{show_prognostic}{logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)}
+\item{show_prognostic}{logical indicating if mRNA-based (single-gene)
+prognostic associations to cancer types should be listed
+(Human Protein Atlas/TCGA, default: TRUE}
 
-\item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
+\item{show_subcell_comp}{logical indicating if report should provide
+subcellular compartment annotations (COMPARTMENTS, default: TRUE)}
 
-\item{show_synleth}{logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)}
+\item{show_synleth}{logical indicating if report should list overlap with
+predicted synthetic lethality interactions (gene paralogs only,
+De Kegel et al., Cell Systems, 2021). Default: TRUE}
 
-\item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
+\item{show_fitness}{logical indicating if report should provide fitness
+scores and target priority scores from CRISPR/Cas9 loss-of-fitness
+screens (DepMap/Project Score, default: TRUE)}
 
-\item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
+\item{show_complex}{logical indicating if report should provide target
+memberships in known protein complexes
+(ComplexPortal/Compleat/hu.MAP2/PDB/CORUM, default: TRUE)}
 
-\item{show_domain}{logical indicating if report should provide target memberships in known protein domains (Pfam)}
+\item{show_domain}{logical indicating if report should provide target
+memberships in known protein domains (Pfam, default: TRUE)}
 
 \item{...}{arguments for Galaxy/web-based processing}
 }

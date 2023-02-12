@@ -208,12 +208,16 @@ annotate_protein_domain <- function(query_entrez,
     pfamdb |>
       dplyr::inner_join(
         uniprot_xref,
-        by = "uniprot_acc", multiple = "all")
+        by = "uniprot_acc", multiple = "all") |>
+      dplyr::distinct()
   )
 
   target_protein_domains <-
-    data.frame("entrezgene" = query_entrez, stringsAsFactors = F) |>
-    dplyr::left_join(all_protein_domains, by = "entrezgene", multiple = "all") |>
+    data.frame("entrezgene" = query_entrez,
+               stringsAsFactors = F) |>
+    dplyr::left_join(
+      all_protein_domains,
+      by = "entrezgene", multiple = "all") |>
     dplyr::distinct() |>
     dplyr::filter(!is.na(.data$uniprot_acc))
 
@@ -234,7 +238,7 @@ annotate_protein_domain <- function(query_entrez,
           dplyr::mutate(
             protein_domain =
               paste0(
-                "<a href=\"http://pfam.xfam.org/family/",
+                "<a href=\"https://www.ebi.ac.uk/interpro/entry/pfam/",
                 .data$pfam_id,
                 "\" target='_blank'>",
                 .data$pfam_long_name,
@@ -243,7 +247,7 @@ annotate_protein_domain <- function(query_entrez,
           dplyr::mutate(
             pfam_domain_gene =
               paste0(
-                "<a href=\"http://pfam.xfam.org/protein/",
+                "<a href=\"https://www.ebi.ac.uk/interpro/protein/UniProt/",
                 .data$uniprot_acc,
                 "\" target='_blank'>",
                 .data$symbol,

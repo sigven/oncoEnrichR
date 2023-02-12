@@ -30,7 +30,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 -   [ComplexPortal](https://www.ebi.ac.uk/complexportal/home) - manually curated, encyclopaedic resource of macro-molecular complexes
 -   [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex map
 -   [COMPARTMENTS](https://compartments.jensenlab.org/Search) - subcellular compartment database
--   [Project Score](https://score.depmap.sanger.ac.uk) - Database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+-   [DepMap/Project Score](https://score.depmap.sanger.ac.uk) - Databases on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
 -   [Genetic determinants of survival in cancer](http://survival.cshl.edu/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
 -   [Predicted synthetic lethality interactions](https://pubmed.ncbi.nlm.nih.gov/34529928/) - Resource on predicted synthetic lethality interactions between human gene paralogs (using human cancer cell lines)
 
@@ -65,36 +65,36 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
      - Entries that are found in the [curated list of false positive cancer drivers compiled by Bailey et al. (Cell, 2018)](https://www.ncbi.nlm.nih.gov/pubmed/30096302) have been excluded
      
 
-### Cancer hallmark evidence
+### Gene cancer hallmark associations
 
 * The [hallmarks of cancer](https://pubmed.ncbi.nlm.nih.gov/21376230/) comprise six biological capabilities acquired during the multistep development of human tumors. Genes attributed to the hallmarks of cancer have been retrieved from the [Open Targets Platform/COSMIC](https://targetvalidation.org)
 
-### Copy number amplifications/homozygous deletions
+### Gene copy number aberrations in tumors (somatic amplifications/homozygous deletions)
 
 * Somatic copy number amplifications and homozygous deletions have been retrieved from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/), focusing on gene-level calls processed with their [copy number variation analysis pipeline](https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/CNV_Pipeline/). Copy number events included in *oncoEnrichR* are limited to high-level amplifications (GISTIC2 CNA value: **2**) and homozygous deletions (GISTIC2 CNA value: **-2**)
 
-### Recurrent SNVs/InDels
+### Recurrent gene mutations in tumors (somatic SNVs/InDels)
 
 * Recurrent somatic SNVs/InDels (occurring in more than one tumor sample) have been retrieved from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/). SNVs/InDels have been annotated further with information on mutation hotspots in cancer ([cancerhotspots.org](https://cancerhotspots.org)), protein domains from [PFAM](https://pfam.xfam.org), and their predicted status as loss-of-function variants ([LOFTEE](https://github.com/konradjk/loftee)). Only protein-altering and canonical splice site mutations are included.
 
-### Co-expression (RNA-seq)
+### Gene co-expression in tumors (RNA-seq)
 
 * Co-expression correlation coefficients between genes in tumors have been pre-calculated, using RNAseq data available in [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/). We calculate separate correlation coefficients for each tumor type, and we further more limit pairs of co-expressed genes to those that include either a tumor suppressor, an oncogene, or a predicted cancer driver (using the classification outlined above). Only strong correlation coefficients (Spearman's rank  >= 0.7  or <= -0.7) are included
 
-### Molecular signatures / pathways
+### Molecular gene signatures / pathways
 
 * A comprehensive set of pathway annotations and molecular gene signatures form the basis for the functional enrichment module offered by *oncoEnrichR*. We include a diverse set of molecular signatures from [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/), annotations with respect to molecular function, biological processes and cellular components from [Gene Ontology (GO)](http://geneontology.org/), and pathway annotations from [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/), [NetPath](http://netpath.org), and [Reactome](https://reactome.org/)
 
-### Cell/tissue-specific expression patterns
+### Cell/tissue-specific gene expression patterns
 
-* We provide tissue- and cell-type specific gene expression annotations from the [Human Protein Atlas](https://proteinatlas.org). Tissue-specific patterns are derived from [The Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), where tissue specificity is derived from deep sequencing of RNA (RNA-seq) in 37 different normal tissue types. All putative protein -coding genes have been classified with respect to abundance (tissue enriched, tissue enhanced etc.) for different tissues. For cell type specificity, we utilize data from [The  Cell Type Atlas](https://www.proteinatlas.org/humanproteome/celltype). Here, classification of all protein-coding genes based on single cell type-specific expression in 13 different human tissues are performed; determining the types of genes elevated (cell type enriched, cell type enhanced etc.) in a particular cell type compared to all other cell types.
+* We provide tissue- and cell-type specific gene expression annotations from the [Human Protein Atlas](https://proteinatlas.org). Tissue-specific patterns are derived from [The Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), where tissue specificity is derived from deep sequencing of RNA (RNA-seq) in 54 different normal tissue types. All putative protein-coding genes have been classified with respect to abundance (tissue enriched, tissue enhanced etc.) for different tissues. For cell type specificity, we utilize data from [The  Cell Type Atlas](https://www.proteinatlas.org/humanproteome/celltype). Here, classification of all protein-coding genes based on single cell type-specific expression in 79 different cell types are performed; determining the types of genes elevated (cell type enriched, cell type enhanced etc.) in a particular cell type compared to all other cell types.
 
 
 ### Gene fitness effects
 
-* Gene fitness effects are retrieved from [Project Score](https://score.depmap.sanger.ac.uk/). We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).
+* Gene fitness effects are retrieved from an integration of data in [DepMap & Project Score](https://score.depmap.sanger.ac.uk/). We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).
 
-### Subcellular compartment localization
+### Subcellular compartment annotation
 
 * Subcellular localization/compartment annotations have been retrieved from [COMPARTMENTS](https://compartments.jensenlab.org/Search). When using oncoEnrichR, users have the possibility to configure the stringency with respect to the target compartment annotations retrieved:
   * Confidence score for each target compartment annotation (range from 3 to 5)
@@ -119,11 +119,11 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
      * The addition of proteins (maximum 50) that are not part of the query set, but that interacts most confidently with proteins in the query set
 
 
-### Regulatory interactions
+### Gene regulatory interactions
 
 * Regulatory interactions (TF-target) have been retrieved from the [DoRothEA](https://saezlab.github.io/dorothea/) resource. Two collections of interactions are subject to overlap against the query set in *oncoEnrichR*: a **global set** of regulatory interactions, many of which are inferred from gene expression patterns in normal tissues (GTEx), and a **cancer-focused set**, the latter inferred from gene expression patterns in tumors (TCGA).
 
-### Prognostic associations
+### Prognostic gene associations
 
 * Prognostic associations (gene expression versus survival) are collected from [The Human Pathology Atlas](https://www.proteinatlas.org/humanproteome/pathology), which have undertaken correlation analyses of mRNA expression levels of human genes in tumor tissue and the clinical outcome (survival) for ~8,000 cancer patients (underlying data from TCGA). Correlation analyses resulted in more than 10,000 prognostic genes. We show prognostic genes with regard to cancer type and whether they are favorable or unfavorable in terms of clinical outcome. Furthermore, we show prognostic associations established by [tcga-survival.com](https://tcga-survival.com), which relates various types of gene aberrations (expression or methylation levels, CNA/mutation status) in tumor samples to patient survival.
 

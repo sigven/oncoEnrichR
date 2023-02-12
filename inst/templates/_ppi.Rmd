@@ -33,6 +33,7 @@
   * Minimum STRING [interaction confidence score](https://string-db.org/cgi/info) required: __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__ (range 0-1)
     * This reflects the `required_score` parameter in the [STRING API](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions)
   * Drugs added to the STRING network: __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__ 
+  * Show isolated nodes in the STRING network: __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
 
 <br>
 
@@ -108,6 +109,8 @@ cat('<br><br>')
     * These targets are selected based on the number of interactions that they have with members of the query set
   * Minimum evidence support required for each BioGRID interaction: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__ 
   * Drugs added to the BioGRID network: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['show_drugs']]`__ 
+  * Show isolated nodes in the BioGRID network: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['show_isolated_nodes']]`__
+
   
 <br>
   

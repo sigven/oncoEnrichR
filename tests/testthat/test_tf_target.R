@@ -28,7 +28,7 @@ test_that("TF-target annotations - testing ", {
       oncoEnrichR:::annotate_tf_targets(
         qgenes = c("TP53"),
         genedb = oedb$genedb$all,
-        min_confidence_reg_interaction = "D",
+        regulatory_min_confidence = "D",
         tf_target_interactions  = oedb$tftargetdb,
         collection = "pancancer")
       ),
@@ -36,7 +36,7 @@ test_that("TF-target annotations - testing ", {
       oncoEnrichR:::annotate_tf_targets(
         qgenes = c("TP53"),
         genedb = oedb$genedb$all,
-        min_confidence_reg_interaction = "C",
+        regulatory_min_confidence = "C",
         tf_target_interactions  = oedb$tftargetdb,
         collection = "pancancer")
     )
@@ -47,7 +47,7 @@ test_that("TF-target annotations - testing ", {
       oncoEnrichR:::annotate_tf_targets(
         qgenes = c("TP53"),
         genedb = oedb$genedb$all,
-        min_confidence_reg_interaction = "B",
+        regulatory_min_confidence = "B",
         tf_target_interactions  = oedb$tftargetdb,
         collection = "pancancer")
     ),
@@ -55,7 +55,7 @@ test_that("TF-target annotations - testing ", {
       oncoEnrichR:::annotate_tf_targets(
         qgenes = c("TP53"),
         genedb = oedb$genedb$all,
-        min_confidence_reg_interaction = "A",
+        regulatory_min_confidence = "A",
         tf_target_interactions  = oedb$tftargetdb,
         collection = "pancancer")
     )

@@ -407,7 +407,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
   if (!(dbtype %in% dbtypes)) {
     stop(
       paste0("dbtype '",dbtype,
-             "' not recognized, possible values are: ",
+             "' not recognized, possible s are: ",
              paste(sort(dbtypes), collapse = ", ")))
   }
 
@@ -686,14 +686,6 @@ validate_db_df <- function(df, dbtype = "genedb") {
               'weight',
               'from',
               'to',
-              # 'fscore',
-              # 'tscore',
-              # 'score',
-              # 'ascore',
-              # 'pscore',
-              # 'nscore',
-              # 'dscore',
-              # 'escore',
               'interaction_symbol')
 
   }
@@ -717,7 +709,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
     assertthat::assert_that(
       identical(identifiers_expected, identifiers_found),
       msg = paste0("Identifier types present in 'transcript_xref' data frame",
-                   " ('property' column) does not have all necessary values")
+                   " ('property' column) does not have all necessary s")
     )
 
     assertthat::assert_that(
@@ -802,49 +794,49 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'p_value_adjustment_method',
+          configuration = 'enrichment_p_value_adj',
           value = as.character(report$config$enrichment$p_adjust_method),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'p_value_cutoff',
+          configuration = 'enrichment_p_value_cutoff',
           value = as.character(report$config$enrichment$p_value_cutoff),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'q_value_cutoff',
+          configuration = 'enrichment_q_value_cutoff',
           value = as.character(report$config$enrichment$q_value_cutoff),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'min_geneset_size',
+          configuration = 'enrichment_min_geneset_size',
           value = as.character(report$config$enrichment$min_gs_size),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'max_geneset_size',
+          configuration = 'enrichment_max_geneset_size',
           value = as.character(report$config$enrichment$max_gs_size),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'simplify_go',
+          configuration = 'enrichment_simplify_go',
           value = as.character(report$config$enrichment$simplify_go),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'background_set_description',
+          configuration = 'bgset_description',
           value = as.character(report$config$enrichment$bgset_description),
           stringsAsFactors = F
         ),
         data.frame(
           category = 'ENRICHMENT',
-          configuration = 'background_set_size',
+          configuration = 'bgset_size',
           value = as.character(report$config$enrichment$bgset_size),
           stringsAsFactors = F
         ),
@@ -856,7 +848,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'REGULATORY',
-          configuration = 'min_confidence_reg_interaction',
+          configuration = 'regulatory_min_confidence',
           value = as.character(report$config$regulatory$min_confidence),
           stringsAsFactors = F
         ),
@@ -907,7 +899,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'PPI',
-          configuration = 'ppi_string_score_threshold',
+          configuration = 'ppi_string_min_score',
           value = as.character(report$config$ppi$string$minimum_score),
           stringsAsFactors = F
         ),
@@ -925,7 +917,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'PPI',
-          configuration = 'show_drugs_in_ppi',
+          configuration = 'ppi_show_drugs',
           value = as.character(report$config$ppi$string$show_drugs),
           stringsAsFactors = F
         ),
@@ -936,6 +928,12 @@ add_excel_sheet <- function(
           stringsAsFactors = F
         ),
         data.frame(
+          category = 'PPI',
+          configuration = 'ppi_show_isolated_nodes',
+          value = as.character(report$config$ppi$string$show_isolated_nodes),
+          stringsAsFactors = F
+        ),
+        data.frame(
           category = 'FITNESS',
           configuration = 'show_fitness',
           value = as.character(report$config$show$fitness),
@@ -943,7 +941,7 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'FITNESS',
-          configuration = 'max_BF_score',
+          configuration = 'fitness_max_score',
           value = as.character(report$config$fitness$max_BF_score),
           stringsAsFactors = F
         ),
@@ -1044,7 +1042,7 @@ add_excel_sheet <- function(
     if (is.data.frame(report$data$unknown_function$hits_df)) {
       if (NROW(report$data$unknown_function$hits_df) > 0) {
         target_df <- report$data$unknown_function$hits_df |>
-          dplyr::rename(go_terms = go_term_link) |>
+          dplyr::rename(go_terms = .data$go_term_link) |>
           dplyr::mutate(
             annotation_source = "Gene Ontology (2022-12)/NCBI Gene/UniProt (2022_05)",
             version = NA) |>
@@ -1670,8 +1668,9 @@ add_excel_sheet <- function(
     if (is.data.frame(report$data$ppi$string$complete_network$edges)) {
       if (NROW(report$data$ppi$string$complete_network$edges) > 0) {
         target_df <- report$data$ppi$string$complete_network$edges |>
-          dplyr::filter(!is.na(entrezgene_A) & !is.na(entrezgene_B)) |>
-          dplyr::arrange(dplyr::desc(score)) |>
+          dplyr::filter(!is.na(.data$entrezgene_A) &
+                          !is.na(.data$entrezgene_B)) |>
+          dplyr::arrange(dplyr::desc(.data$score)) |>
           dplyr::rename(is_target_A = "querynode_A",
                         is_target_B = "querynode_B",
                         string_score = "score",
@@ -1711,7 +1710,8 @@ add_excel_sheet <- function(
     if (is.data.frame(report$data$ppi$biogrid$complete_network$edges)) {
       if (NROW(report$data$ppi$biogrid$complete_network$edges) > 0) {
         target_df <- report$data$ppi$biogrid$complete_network$edges |>
-          dplyr::filter(!is.na(entrezgene_A) & !is.na(entrezgene_B)) |>
+          dplyr::filter(!is.na(.data$entrezgene_A) &
+                          !is.na(.data$entrezgene_B)) |>
           dplyr::rename(is_target_A = "querynode_A",
                         is_target_B = "querynode_B",
                         biogrid_evidence = "evidence",
@@ -1723,7 +1723,8 @@ add_excel_sheet <- function(
                           "is_target_B",
                           "biogrid_evidence",
                           "biogrid_num_evidence")) |>
-          dplyr::arrange(dplyr::desc(biogrid_num_evidence)) |>
+          dplyr::arrange(
+            dplyr::desc(.data$biogrid_num_evidence)) |>
           dplyr::mutate(
             annotation_source = report$config$resources$biogrid$name,
             version = report$config$resources$biogrid$version) |>

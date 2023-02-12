@@ -35,7 +35,7 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `show_top_diseases_only` = __`r onc_enrich_report[['config']][['disease']][['show_top_diseases']]`__
 
 * <i>Regulatory interactions:</i>
-  * `min_confidence_reg_interaction` = __`r onc_enrich_report[['config']][['regulatory']][['min_confidence']]`__
+  * `regulatory_min_confidence` = __`r onc_enrich_report[['config']][['regulatory']][['min_confidence']]`__
 
 * <i>Subcellular compartments:</i>
   * `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
@@ -44,23 +44,25 @@ The configurations set for this oncoEnrichR report is outlined below, in additio
   * `subcellcomp_show_cytosol` = __`r onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']]`__
 
 * <i>Gene fitness scores:</i>
-  * `max_fitness_score` = __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
+  * `fitness_max_score` = __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
 
 * <i>Enrichment:</i>
-  * `p_value_cutoff_enrichment` = __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
-  * `q_value_cutoff_enrichment` = __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
-  * `p_value_adjustment_method` = __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
-  * `min_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
-  * `max_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
-  * `simplify_go` = __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
-  * `num_terms_enrichment_plot` = __`r onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]`__
+  * `enrichment_p_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
+  * `enrichment_q_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
+  * `enrichment_p_value_adj` = __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
+  * `enrichment_min_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
+  * `enrichment_max_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
+  * `enrichment_simplify_go` = __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
+  * `enrichment_plot_num_terms` = __`r onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]`__
 
 * <i>Protein-protein interactions:</i>
-  * `ppi_string_score_threshold` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
-  * `ppi_biogrid_evidence_threshold` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
+  * `ppi_string_min_score` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
+  * `ppi_string_network_type` = __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
+  * `ppi_biogrid_min_evidence` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
   * `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__
   * `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['string']][['visnetwork_shadow']]`__
-  * `show_drugs_in_ppi` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
+  * `ppi_show_drugs` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
+  * `ppi_show_isolated_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
 
 <br>
 

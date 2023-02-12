@@ -267,8 +267,8 @@ load_db <- function(cache_dir = NA,
 #       }
 #       checksum_db <- R.cache::getChecksum(oedb[[db]])
 #       if (db == 'subcelldb') {
-#         if ('comppidb' %in% names(oedb[[db]])) {
-#           checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+#         if ('COMPARTMENTSdb' %in% names(oedb[[db]])) {
+#           checksum_db <- R.cache::getChecksum(oedb[[db]][['COMPARTMENTSdb']])
 #         }
 #       }
 #       if (checksum_db ==
@@ -301,10 +301,10 @@ load_db <- function(cache_dir = NA,
 #       checksum_db <- R.cache::getChecksum(oedb[[db]])
 #
 #       ##subcelldb's checksum does not recover correctly with all
-#       ##list entries involved, choose comppi only
+#       ##list entries involved, choose COMPARTMENTS only
 #       if (db == 'subcelldb') {
-#         if ('comppidb' %in% names(oedb[[db]])) {
-#           checksum_db <- R.cache::getChecksum(oedb[[db]][['comppidb']])
+#         if ('COMPARTMENTSdb' %in% names(oedb[[db]])) {
+#           checksum_db <- R.cache::getChecksum(oedb[[db]][['COMPARTMENTSdb']])
 #         }
 #       }
 #
@@ -349,6 +349,8 @@ load_db <- function(cache_dir = NA,
 #' @param ppi_biogrid_min_evidence minimum number of evidence items for protein-protein interactions shown (BIOGRID)
 #' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING/BIOGRID)
 #' @param ppi_node_shadow show shadow for nodes in the displayed PPI network (STRING/BIOGRID)
+#' @param ppi_show_drugs logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network
+#' @param ppi_show_isolated_nodes logical indicating if targets/nodes without any interactions should be displayed in the protein-protein interaction network
 #' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param bgset_id_type character indicating source of query (one of "uniprot_acc", "symbol",
 #' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
@@ -358,6 +360,7 @@ load_db <- function(cache_dir = NA,
 #' @param enrichment_min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param enrichment_max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis
 #' @param enrichment_plot_num_terms number of top enriched Gene Ontology terms (max) to show in enrichment barplot
+#' @param enrichment_simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param subcellcomp_min_confidence minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)
 #' @param subcellcomp_min_channels minimum number of channels that support a subcellular annotation in COMPARTMENTS
 #' @param subcellcomp_channel_types restrict subcellular annotations to specific channel types of COMPARTMENTS
@@ -365,9 +368,7 @@ load_db <- function(cache_dir = NA,
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 #' @param regulatory_min_confidence minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
-#' @param enrichment_simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
-#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
 #' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
 #' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
@@ -381,7 +382,7 @@ load_db <- function(cache_dir = NA,
 #' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
 #' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
 #' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
-#' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
+#' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (COMPARTMENTS)
 #' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
 #' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
 #' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
@@ -402,7 +403,9 @@ init_report <- function(oeDB,
                         ppi_string_network_type = "functional",
                         ppi_biogrid_min_evidence = 3,
                         ppi_add_nodes = 30,
+                        ppi_show_isolated_nodes = FALSE,
                         ppi_node_shadow = TRUE,
+                        ppi_show_drugs = T,
                         bgset_description =
                           "All annotated protein-coding genes",
                         bgset_id_type = "symbol",
@@ -412,6 +415,7 @@ init_report <- function(oeDB,
                         enrichment_min_geneset_size = 10,
                         enrichment_max_geneset_size = 500,
                         enrichment_plot_num_terms = 20,
+                        enrichment_simplify_go = F,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
                         subcellcomp_channel_types =
@@ -419,9 +423,7 @@ init_report <- function(oeDB,
                         subcellcomp_show_cytosol = F,
                         regulatory_min_confidence = "D",
                         fitness_max_score = -2,
-                        enrichment_simplify_go = F,
                         show_ppi = T,
-                        show_drugs_in_ppi = T,
                         show_disease = T,
                         show_top_diseases_only = T,
                         show_cancer_hallmarks = T,
@@ -565,17 +567,20 @@ init_report <- function(oeDB,
   rep[["config"]][["ppi"]][["string"]][["minimum_score"]] <- ppi_string_min_score
   rep[["config"]][["ppi"]][["string"]][["visnetwork_shape"]] <- "dot"
   rep[["config"]][["ppi"]][["string"]][["visnetwork_shadow"]] <- ppi_node_shadow
-  rep[["config"]][["ppi"]][["string"]][["show_drugs"]] <- show_drugs_in_ppi
+  rep[["config"]][["ppi"]][["string"]][["show_drugs"]] <- ppi_show_drugs
   rep[["config"]][["ppi"]][["string"]][["add_nodes"]] <- ppi_add_nodes
   rep[["config"]][["ppi"]][["string"]][["query_type"]] <- "network"
   rep[["config"]][["ppi"]][["string"]][["network_type"]] <- ppi_string_network_type
+  rep[["config"]][["ppi"]][["string"]][["show_isolated_nodes"]] <- ppi_show_isolated_nodes
+
 
   rep[["config"]][["ppi"]][["biogrid"]] <- list()
   rep[["config"]][["ppi"]][["biogrid"]][['minimum_evidence']] <- ppi_biogrid_min_evidence
   rep[["config"]][["ppi"]][["biogrid"]][["visnetwork_shape"]] <- "dot"
   rep[["config"]][["ppi"]][["biogrid"]][["visnetwork_shadow"]] <- ppi_node_shadow
-  rep[["config"]][["ppi"]][["biogrid"]][["show_drugs"]] <- show_drugs_in_ppi
+  rep[["config"]][["ppi"]][["biogrid"]][["show_drugs"]] <- ppi_show_drugs
   rep[["config"]][["ppi"]][["biogrid"]][["add_nodes"]] <- ppi_add_nodes
+  rep[["config"]][["ppi"]][["biogrid"]][["show_isolated_nodes"]] <- ppi_show_isolated_nodes
 
   ## config/enrichment - general functional enrichment settings
   rep[["config"]][["enrichment"]] <- list()
@@ -662,7 +667,7 @@ init_report <- function(oeDB,
     oeDB[['genedb']]$all |>
     dplyr::filter(.data$gene_biotype == "protein-coding") |>
     dplyr::filter(!is.na(.data$unknown_function_rank)) |>
-    dplyr::filter(.data$unknown_function_rank <= 5) |>
+    dplyr::filter(.data$unknown_function_rank <= 6) |>
     nrow()
 
   rep[['config']][['subcellcomp']] <- list()
@@ -864,58 +869,124 @@ init_report <- function(oeDB,
 #'
 #' @param query character vector with gene/query identifiers
 #' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
-#' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
-#' "entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
-#' @param html_floating_toc logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled
-#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
-#' "flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")
-#' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
+#' @param query_id_type character indicating source of query (one of
+#' "uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
+#' "refseq_mrna", "ensembl_protein", "refseq_protein")
+#' @param html_floating_toc logical - float the table of contents to the left
+#' of the main document content (HTML report). The floating table of contents
+#' will always be visible even when the document is scrolled
+#' @param html_report_theme Bootswatch theme for HTML report (any of
+#' "bootstrap", "cerulean", "cosmo", "default",
+#' "flatly", "journal", "lumen", "paper", "sandstone", "simplex",
+#' "spacelab", "united", "yeti")
+#' @param ignore_id_err logical indicating if analysis should
+#' continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
 #' @param project_description project background information
-#' @param bgset character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis
-#' @param bgset_id_type character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
-#' "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")
-#' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
-#' @param enrichment_p_value_cutoff cutoff p-value for enrichment/over-representation analysis
-#' @param enrichment_p_value_adj one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none" (clusterProfiler)
-#' @param enrichment_q_value_cutoff cutoff q-value for enrichment analysis (clusterProfiler)
-#' @param enrichment_min_geneset_size minimal size of geneset annotated by term for testing in enrichment/over-representation analysis (clusterProfiler)
-#' @param enrichment_max_geneset_size maximal size of geneset annotated by term for testing in enrichment/over-representation analysis (clusterProfiler)
-#' @param enrichment_plot_num_terms number of top enriched Gene Ontology terms (max) to show in enrichment barplot
-#' @param subcellcomp_min_confidence minimum confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)
-#' @param subcellcomp_min_channels minimum number of channels that support a subcellular compartment annotation in COMPARTMENTS
-#' @param subcellcomp_channel_types restrict subcellular annotations to specific channel types of COMPARTMENTS
+#' @param bgset character vector with gene identifiers, used as
+#' reference/background for enrichment/over-representation analysis
+#' @param bgset_id_type character indicating source of background
+#' ("uniprot_acc", "symbol", "entrezgene",
+#' "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein",
+#' "refseq_protein"), default: "symbol"
+#' @param bgset_description character indicating type of background
+#' (e.g. "All lipid-binding proteins (n = 200)")
+#' @param enrichment_p_value_cutoff cutoff p-value for enrichment/
+#' over-representation analysis (default: 0.05)
+#' @param enrichment_p_value_adj one of "holm", "hochberg", "hommel",
+#' "bonferroni", "BH", "BY", "fdr", "none" (clusterProfiler, default: "BH")
+#' @param enrichment_q_value_cutoff cutoff q-value for enrichment
+#' analysis (clusterProfiler, default: 0.2)
+#' @param enrichment_min_geneset_size minimal size of geneset annotated by term
+#' for testing in enrichment/over-representation analysis (clusterProfiler,
+#' default: 10)
+#' @param enrichment_max_geneset_size maximal size of geneset annotated by term
+#' for testing in enrichment/over-representation analysis (clusterProfiler,
+#' default: 500)
+#' @param enrichment_plot_num_terms number of top enriched Gene Ontology terms
+#' (max) to show in enrichment barplot (default: 15)
+#' @param enrichment_simplify_go remove highly similar GO terms in results from
+#' GO enrichment/over-representation analysis (default: TRUE)
+#' @param subcellcomp_min_confidence minimum confidence level for subcellular
+#' compartment annotation in COMPARTMENTS (min = 3, max = 5, default: 3)
+#' @param subcellcomp_min_channels minimum number of channels that support a
+#' subcellular compartment annotation in COMPARTMENTS (min = 1,
+#' max = 3, default: 1)
+#' @param subcellcomp_channel_types restrict subcellular annotations to
+#' specific channel types of COMPARTMENTS
 #' any selection of 'Knowledge','Text mining', or 'Experimental'
-#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not
-#' @param regulatory_min_confidence minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
-#' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
-#' @param enrichment_simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
-#' @param ppi_add_nodes number of nodes to add to target set when computing the protein-protein interaction network (STRING/BioGRID)
-#' @param ppi_string_min_score minimum score (between 0 and 1) for confidence of retrieved protein-protein interactions (STRING)
-#' @param ppi_string_network_type type of network to show for interactions in STRING ('functional' or 'physical')
-#' @param ppi_biogrid_min_evidence minimum number of evidence items required for protein-protein interactions retrieved (BioGRID)
-#' @param ppi_node_shadow show shadow for nodes in the displayed PPI network
-#' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING and BioGRID)
-#' @param show_drugs_in_ppi logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)
-#' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
-#' @param show_top_diseases_only logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)
-#' @param show_cancer_hallmarks logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)
-#' @param show_drug logical indicating if report should contain targeted cancer drug information
-#' @param show_enrichment logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)
-#' @param show_aberration logical indicating if report should contain TCGA aberration plots (amplifications/deletions)
-#' @param show_coexpression logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes
-#' @param show_cell_tissue logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
-#' of target genes, using data from the Human Protein Atlas
-#' @param show_ligand_receptor logical indicating if report should contain ligand-receptor interactions (CellChatDB)
-#' @param show_regulatory logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)
-#' @param show_unknown_function logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)
-#' @param show_prognostic logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)
-#' @param show_subcell_comp logical indicating if report should provide subcellular compartment annotations (ComPPI)
-#' @param show_synleth logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)
-#' @param show_fitness logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)
-#' @param show_complex logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)
-#' @param show_domain logical indicating if report should provide target memberships in known protein domains (Pfam)
+#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap
+#' should show highlight proteins located in the cytosol or not (default: FALSE)
+#' @param regulatory_min_confidence minimum confidence level for regulatory
+#' interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D',
+#' default: 'D')
+#' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor
+#' from BAGEL) for genes retrieved from DepMap/Project Score, default:-2
+#' @param ppi_add_nodes number of nodes to add to target set when computing the
+#' protein-protein interaction network (STRING/BioGRID, default: 30)
+#' @param ppi_string_min_score minimum score (between 0 and 1) for confidence of
+#' retrieved protein-protein interactions (STRING, default: 0.9)
+#' @param ppi_string_network_type type of network to show for interactions in
+#' STRING ('functional' or 'physical', default: 'functional')
+#' @param ppi_biogrid_min_evidence minimum number of evidence items required
+#' for protein-protein interactions retrieved (BioGRID, default: 3)
+#' @param ppi_node_shadow show shadow for nodes in the displayed PPI
+#' network (default: TRUE)
+#' @param ppi_show_drugs logical indicating if targeted drugs (>= phase 3)
+#' should be displayed in protein-protein interaction networks (default: TRUE)
+#' @param ppi_show_isolated_nodes logical indicating if targets/nodes without
+#' any interactions should be displayed in the protein-protein
+#' interaction networks (default: FALSE)
+#' @param show_ppi logical indicating if report should contain protein-protein
+#' interaction views of the query set (STRING and BioGRID, default: TRUE)
+#' @param show_disease logical indicating if report should contain disease
+#' associations (Open Targets Platform, association_score >= 0.05, support
+#' from at least two data types), and tumor suppressor/oncogene annotations (
+#' default: TRUE)
+#' @param show_top_diseases_only logical indicating if report should contain
+#' top (n = 20) disease associations only pr. query gene
+#' default: TRUE)
+#' @param show_cancer_hallmarks logical indicating if report should
+#' contain annotations/evidence of cancer hallmarks per query gene
+#' (COSMIC/Open Targets Platform, default: TRUE
+#' @param show_drug logical indicating if report should contain targeted
+#' cancer drug information (default: TRUE)
+#' @param show_enrichment logical indicating if report should contain functional
+#' enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME,
+#' NetPath, WikiPathways, default: TRUE)
+#' @param show_aberration logical indicating if report should contain TCGA
+#' aberration plots (amplifications/deletions, default: TRUE)
+#' @param show_coexpression logical indicating if report should contain TCGA
+#' co-expression data (RNAseq) of query set with oncogenes/tumor
+#' suppressor genes (default: TRUE)
+#' @param show_cell_tissue logical indicating if report should contain
+#' tissue-specificity and single cell-type specificity assessments
+#' (Human Protein Atlas) of target genes (default: FALSE)
+#' @param show_ligand_receptor logical indicating if report should contain
+#' ligand-receptor interactions (CellChatDB, default: TRUE)
+#' @param show_regulatory logical indicating if report should contain data on
+#' transcription factor (TF) - target interactions relevant for the
+#' query set (DoRothEA, default: TRUE)
+#' @param show_unknown_function logical indicating if report should highlight
+#' target genes with unknown or poorly defined functions
+#' (GO/Uniprot KB/NCBI, default: TRUE)
+#' @param show_prognostic logical indicating if mRNA-based (single-gene)
+#' prognostic associations to cancer types should be listed
+#' (Human Protein Atlas/TCGA, default: TRUE
+#' @param show_subcell_comp logical indicating if report should provide
+#' subcellular compartment annotations (COMPARTMENTS, default: TRUE)
+#' @param show_synleth logical indicating if report should list overlap with
+#' predicted synthetic lethality interactions (gene paralogs only,
+#' De Kegel et al., Cell Systems, 2021). Default: TRUE
+#' @param show_fitness logical indicating if report should provide fitness
+#' scores and target priority scores from CRISPR/Cas9 loss-of-fitness
+#' screens (DepMap/Project Score, default: TRUE)
+#' @param show_complex logical indicating if report should provide target
+#' memberships in known protein complexes
+#' (ComplexPortal/Compleat/hu.MAP2/PDB/CORUM, default: TRUE)
+#' @param show_domain logical indicating if report should provide target
+#' memberships in known protein domains (Pfam, default: TRUE)
 
 #' @param ... arguments for Galaxy/web-based processing
 #'
@@ -945,6 +1016,7 @@ onco_enrich <- function(query = NULL,
                         enrichment_min_geneset_size = 10,
                         enrichment_max_geneset_size = 500,
                         enrichment_plot_num_terms = 20,
+                        enrichment_simplify_go = TRUE,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
                         subcellcomp_channel_types =
@@ -952,14 +1024,14 @@ onco_enrich <- function(query = NULL,
                         subcellcomp_show_cytosol = FALSE,
                         regulatory_min_confidence = "D",
                         fitness_max_score = -2,
-                        enrichment_simplify_go = TRUE,
                         ppi_add_nodes = 30,
                         ppi_string_min_score = 0.9,
                         ppi_string_network_type = "functional",
                         ppi_biogrid_min_evidence = 3,
                         ppi_node_shadow = TRUE,
+                        ppi_show_drugs = TRUE,
+                        ppi_show_isolated_nodes = FALSE,
                         show_ppi = TRUE,
-                        show_drugs_in_ppi = TRUE,
                         show_disease = TRUE,
                         show_top_diseases_only = TRUE,
                         show_cancer_hallmarks = TRUE,
@@ -1087,9 +1159,12 @@ onco_enrich <- function(query = NULL,
   }
 
   val <- assertthat::validate_that(
-    query_id_type %in% c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
-                         "refseq_protein", "ensembl_protein", "uniprot_acc",
-                         "ensembl_gene")
+    query_id_type %in%
+      c("symbol", "entrezgene",
+        "refseq_mrna", "ensembl_mrna",
+        "refseq_protein", "ensembl_protein",
+        "uniprot_acc",
+        "ensembl_gene")
   )
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
@@ -1101,9 +1176,10 @@ onco_enrich <- function(query = NULL,
   }
 
   val <- assertthat::validate_that(
-    bgset_id_type %in% c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
-                         "refseq_protein", "ensembl_protein", "uniprot_acc",
-                         "ensembl_gene")
+    bgset_id_type %in%
+      c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
+        "refseq_protein", "ensembl_protein", "uniprot_acc",
+        "ensembl_gene")
   )
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
@@ -1133,7 +1209,7 @@ onco_enrich <- function(query = NULL,
 
   if (val == F) {
     lgr::lgr$info( paste0(
-      "ERROR: 'ppi_string_min_score' must take a numeric value between 0 and 1 ",
+      "ERROR: 'ppi_string_min_score' must take a numeric value - greater than 0 and less than 1 ",
       "(current type and value: '",typeof(ppi_string_min_score),"' - ",
       ppi_string_min_score,")")
     )
@@ -1262,6 +1338,7 @@ onco_enrich <- function(query = NULL,
     ppi_string_network_type = ppi_string_network_type,
     ppi_biogrid_min_evidence = ppi_biogrid_min_evidence,
     ppi_add_nodes = ppi_add_nodes,
+    ppi_show_isolated_nodes = ppi_show_isolated_nodes,
     ppi_node_shadow = ppi_node_shadow,
     bgset_description =
       bgset_description,
@@ -1280,7 +1357,7 @@ onco_enrich <- function(query = NULL,
     regulatory_min_confidence = regulatory_min_confidence,
     fitness_max_score = fitness_max_score,
     show_ppi = show_ppi,
-    show_drugs_in_ppi = show_drugs_in_ppi,
+    ppi_show_drugs = ppi_show_drugs,
     show_disease = show_disease,
     show_top_diseases_only = show_top_diseases_only,
     show_cancer_hallmarks = show_cancer_hallmarks,
@@ -1848,8 +1925,10 @@ onco_enrich <- function(query = NULL,
         q_id_type = "symbol",
         resolution = "tissue",
         genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_expr_db_df = oeDB[['tissuecelldb']][['tissue']][['expr_df']])
+        hpa_enrichment_db_df =
+          oeDB[['tissuecelldb']][['tissue']][['te_df']],
+        hpa_expr_db_df =
+          oeDB[['tissuecelldb']][['tissue']][['expr_df']])
 
     onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
       gene_tissue_cell_enrichment(
@@ -1857,8 +1936,10 @@ onco_enrich <- function(query = NULL,
         resolution = "tissue",
         background_entrez = as.integer(background_entrezgene),
         genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['tissue']][['te_SE']])
+        hpa_enrichment_db_df =
+          oeDB[['tissuecelldb']][['tissue']][['te_df']],
+        hpa_enrichment_db_SE =
+          oeDB[['tissuecelldb']][['tissue']][['te_SE']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
       gene_tissue_cell_spec_cat(
@@ -1866,8 +1947,10 @@ onco_enrich <- function(query = NULL,
         q_id_type = "entrezgene",
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_expr_db_df = oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
+        hpa_enrichment_db_df =
+          oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+        hpa_expr_db_df =
+          oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
 
     onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
       gene_tissue_cell_enrichment(
@@ -1875,8 +1958,10 @@ onco_enrich <- function(query = NULL,
         background_entrez = as.integer(background_entrezgene),
         resolution = "single_cell",
         genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df = oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_enrichment_db_SE = oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
+        hpa_enrichment_db_df =
+          oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+        hpa_enrichment_db_SE =
+          oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
 
   }
 
