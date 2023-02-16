@@ -1850,7 +1850,7 @@ onco_enrich <- function(query = NULL,
 
   if (show_cancer_hallmarks == T) {
 
-    lgr::lgr$info( "Retrieving genes with evidence of cancer hallmark properties")
+    lgr::lgr$info( "Open Targets Platform: Retrieving genes with evidence of cancer hallmark properties")
     onc_rep[["data"]][["cancer_hallmark"]][["target"]] <-
       oeDB[['genedb']][["cancer_hallmark"]][["short"]] |>
       dplyr::inner_join(

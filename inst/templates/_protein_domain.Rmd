@@ -1,6 +1,6 @@
 ### Protein domains {.tabset}
 
-* Here we show the most frequent protein domains ([PFAM](https://pfam.xfam.org)) that occur within members of the query set
+* Here we show the most frequent protein domains ([PFAM](https://www.ebi.ac.uk/interpro/entry/pfam/#table)) that occur within members of the query set
    * Only domains occurring in more than one query target protein are shown in the table below
    
 <br><br>

@@ -5,7 +5,7 @@ get_genes_unknown_function <- function(qgenes = NULL,
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  lgr::lgr$info( "Retrieval of genes with unknown/poorly defined function in target set")
+  lgr::lgr$info( "GO/NCBI/UniProt: Retrieval of genes with unknown/poorly defined function in target set")
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
   validate_db_df(genedb, dbtype = "genedb")

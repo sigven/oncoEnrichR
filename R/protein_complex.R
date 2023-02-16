@@ -236,6 +236,11 @@ annotate_protein_domain <- function(query_entrez,
             .data$pfam_id,
             .data$symbol) |>
           dplyr::mutate(
+            pfam_id = stringr::str_replace(
+              .data$pfam_id, "\\.[0-9]{1,}",""
+            )
+          ) |>
+          dplyr::mutate(
             protein_domain =
               paste0(
                 "<a href=\"https://www.ebi.ac.uk/interpro/entry/pfam/",

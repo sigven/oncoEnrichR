@@ -7,7 +7,7 @@ hpa_prognostic_genes <- function(qgenes,
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   lgr::lgr$info(
-    paste0("Human Protein Atlas: retrieving prognostic ",
+    paste0("Human Protein Atlas (HPA): retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(hpadb))
@@ -140,7 +140,7 @@ km_cshl_survival_genes <- function(qgenes,
 
     dot_args <- list(...)
   lgr::lgr$info(
-             paste0("Project Survival_KM_CSHL: retrieval of ",
+             paste0("tcga-survival.com: retrieval of ",
                     "genetic determinants of cancer survival - ",
                     dot_args$genetic_feature
              ))

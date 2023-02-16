@@ -1,19 +1,20 @@
 ### Protein-protein interaction network
 
-* We here create dedicated protein-protein interaction networks for members of the query set, shown based on interaction data from the two largest resources of protein-protein interaction data:
+* We here create dedicated protein-protein interaction networks for members of the query set, shown using data from the two largest resources on protein-protein interactions:
   * [BioGRID](https://thebiogrid.org) - a biomedical interaction repository with data compiled through comprehensive curation efforts
   * [STRING](https://string-db.org/cgi/about?footer_active_subpage=content) - database of known and predicted protein-protein interactions, including direct (physical) and indirect (functional) associations
   * Three different views are shown for each resource:
     * Complete protein-protein interaction network, also showing proteins with no known interactions
     * Network community structures, as detected by the fast greedy modularity optimization algorithm by [Clauset et al.](http://www.arxiv.org/abs/cond-mat/0408187)
     * Network centrality/hub scores pr. node, as measured by [Kleinberg's score](https://dl.acm.org/citation.cfm?id=324140)
+  * All detailed evidence for each interaction (STRING scores and BioGRID evidence items) are provided in the Excel output of oncoEnrichR
   
 <br>
 
 * General network legend:
   * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
-  * Tumor suppressor genes (as classified from [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
-  * Proto-oncogenes (as classified from [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
+  * Tumor suppressor genes (with moderate or strong support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
+  * Proto-oncogenes (with moderate or strong support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
   * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
   * Targeted cancer drugs (from [Open Targets Platform](https://targetvalidation.org)):
      * Compounds in late (3-4) clinical development phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
@@ -42,7 +43,7 @@
 ```{r ppi_string_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height=13}
 visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes, 
                        onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$edges) |>
-  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
   visNetwork::visIgraphLayout(layout="layout_nicely")
 
 ```
@@ -64,7 +65,7 @@ cat('<br><br>')
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) |>
-  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
   visNetwork::visIgraphLayout(layout="layout_nicely")
 
 ```
@@ -120,7 +121,7 @@ cat('<br><br>')
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$edges) |>
-  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
   visNetwork::visIgraphLayout(layout="layout_nicely")
 
 ```
@@ -142,7 +143,7 @@ cat('<br><br>')
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) |>
-  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
   visNetwork::visIgraphLayout(layout="layout_nicely")
 
 ```

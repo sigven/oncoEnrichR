@@ -268,6 +268,21 @@ get_biogrid_network_nodes_edges <-
 
     network <- NULL
 
+    ## ignore proto-oncogenes/tumor-suppressors with weak
+    ## support/confidence in the protein-protein interaction network
+    genedb <- genedb |>
+      dplyr::mutate(oncogene = dplyr::if_else(
+        oncogene_confidence_level == "WEAK",
+        FALSE,
+        as.logical(oncogene)
+      )) |>
+      dplyr::mutate(tumor_suppressor = dplyr::if_else(
+        tsg_confidence_level == "WEAK",
+        FALSE,
+        as.logical(tumor_suppressor)
+      ))
+
+
     if(NROW(ppi_edges) > 0){
 
       edges <- ppi_edges |>
@@ -370,6 +385,21 @@ get_string_network_nodes_edges <-
            "&required_score=", as.integer(minimum_score * 1000),
            "&network_type=", network_type,
            "&add_nodes=", add_nodes))
+
+
+  ## ignore proto-oncogenes/tumor-suppressors with weak
+  ## support/confidence in the protein-protein interaction network
+  genedb <- genedb |>
+    dplyr::mutate(oncogene = dplyr::if_else(
+      oncogene_confidence_level == "WEAK",
+      FALSE,
+      as.logical(oncogene)
+    )) |>
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      tsg_confidence_level == "WEAK",
+      FALSE,
+      as.logical(tumor_suppressor)
+    ))
 
   if (NROW(edges) > 0) {
 
@@ -503,8 +533,6 @@ get_ppi_network <- function(qgenes = NULL,
   validate_db_df(biogrid, dbtype = "biogrid")
   stopifnot(!is.null(cancerdrugdb[['network']]))
   stopifnot(ppi_source == "string" | ppi_source == "biogrid")
-
-  cat(names(settings[[ppi_source]]),"\n")
 
   if (ppi_source == "string") {
 

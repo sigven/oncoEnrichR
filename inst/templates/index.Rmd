@@ -46,6 +46,8 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r target_fitness, child='_fitness_lof.Rmd', eval = onc_enrich_report[['config']][['show']][['fitness']]}
 ```
 
+<br>
+
 ```{r target_complex, child='_protein_complex.Rmd', eval = onc_enrich_report[['config']][['show']][['protein_complex']]}
 ```
 

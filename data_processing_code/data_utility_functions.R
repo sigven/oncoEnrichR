@@ -1937,6 +1937,15 @@ generate_gene_xref_df <- function(
       is.na(oncogene),
       FALSE,
       as.logical(oncogene))) |>
+
+    dplyr::mutate(tsg_confidence_level = dplyr::if_else(
+      tumor_suppressor == FALSE,
+      "NONE/LIMITED",
+      as.character(tsg_confidence_level))) |>
+    dplyr::mutate(oncogene_confidence_level = dplyr::if_else(
+      oncogene == FALSE,
+      "NONE/LIMITED",
+      as.character(oncogene_confidence_level))) |>
     dplyr::mutate(cancer_driver = dplyr::if_else(
       is.na(cancer_driver),
       FALSE,

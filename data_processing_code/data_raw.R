@@ -4,7 +4,7 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v2022.1.Hs'
-wikipathways_version <- "20230110"
+wikipathways_version <- "20230210"
 netpath_version <- "2010"
 opentargets_version <- "2022.11"
 kegg_version <- "20230101"
@@ -18,7 +18,7 @@ update_tcga <- F
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
-update_subcelldb <- T
+update_subcelldb <- F
 update_ligand_receptor_db <- F
 
 oe_version <- "1.4.0"
@@ -163,16 +163,17 @@ genedb[['cancer_hallmark']] <-
 
 ####----TSG/Oncogene/driver annotations---####
 ts_oncogene_annotations <-
-  geneOncoX:::assign_cancer_gene_evidence(
+  geneOncoX:::assign_cancer_gene_roles(
     gox_basic = gOncoX[['basic']],
-    min_sources_tsg = 2,
-    min_sources_driver = 2,
-    min_sources_oncogene = 2) |>
+    citation_cutoff_cancermine = 10,
+    min_sources_driver = 2) |>
   dplyr::select(
     entrezgene,
     tsg,
+    tsg_confidence_level,
     tsg_support,
     oncogene,
+    oncogene_confidence_level,
     oncogene_support,
     driver,
     driver_support,
@@ -407,7 +408,7 @@ for(elem in c('cancerdrugdb',
     size <- utils::object.size(oedb[[elem]])
     hsize <- R.utils::hsize.object_size(size)
   }else{
-    size <- utils::object.size(oedb[[elem]][['comppidb']])
+    size <- utils::object.size(oedb[[elem]][['compartments']])
     hsize <- R.utils::hsize.object_size(size)
   }
 

@@ -15,14 +15,14 @@ get_go_enrichment <- function(query_entrez,
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   lgr::lgr$info(
-    paste0("Enrichment - GO: performing gene enrichment analysis of target set (subontology ",ontology,")"))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: minGSSize = ",min_geneset_size))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: maxGSSize = ",max_geneset_size))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: remove redundancy of enriched GO terms = ",simplify))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: Background geneset: '",bgset_description,"'"))
-  lgr::lgr$info( paste0("Enrichment - GO: settings: Background geneset size = ",length(background_entrez)))
+    paste0("GO - Enrichment/ORA: performing gene enrichment analysis of target set (subontology ",ontology,")"))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: minGSSize = ",min_geneset_size))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: maxGSSize = ",max_geneset_size))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: remove redundancy of enriched GO terms = ",simplify))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: Background geneset: '",bgset_description,"'"))
+  lgr::lgr$info( paste0("GO - Enrichment/ORA: settings: Background geneset size = ",length(background_entrez)))
 
 
   stopifnot(p_value_adjustment_method %in%
@@ -188,13 +188,13 @@ get_universal_enrichment <- function(query_entrez,
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": performing gene enrichment analysis of target set"))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: p_value_adjustment_method = ",p_value_adjustment_method))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: minGSSize = ",min_geneset_size))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: maxGSSize = ",max_geneset_size))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: Background geneset: '",bgset_description,"'"))
-  lgr::lgr$info( paste0("Enrichment - ",dbsource,": settings: Background geneset size = ",length(background_entrez)))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: performing gene enrichment analysis of target set"))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: p_value_cutoff = ",p_value_cutoff,", q_value_cutoff = ",q_value_cutoff))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: p_value_adjustment_method = ",p_value_adjustment_method))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: minGSSize = ",min_geneset_size))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: maxGSSize = ",max_geneset_size))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: Background geneset: '",bgset_description,"'"))
+  lgr::lgr$info( paste0(dbsource, " - Enrichment/ORA: settings: Background geneset size = ",length(background_entrez)))
 
   stopifnot(is.character(query_entrez))
   stopifnot(!is.null(background_entrez))

@@ -37,7 +37,7 @@ gene_tissue_cell_spec_cat <-
         dplyr::distinct()
     }
     etype <- "tissue"
-    edb <- "GTex"
+    edb <- "GTEx"
     specificity_categories <-
       c('Group enriched',
         'Low tissue specificity',
@@ -65,9 +65,8 @@ gene_tissue_cell_spec_cat <-
                      dbtype = "enrichment_db_hpa_tissue")
     }
     lgr::lgr$info(
-      paste0("Retrieving ", etype,
-             " specificity (", edb,
-             ") category of target genes")
+      paste0(edb, ": retrieving ", etype,
+             " specificity category of target genes")
     )
 
     specificity_groups_target <- as.data.frame(
@@ -224,7 +223,7 @@ gene_tissue_cell_enrichment <-
     #}
 
     etype <- "tissues"
-    edb <- "GTex"
+    edb <- "GTEx"
     if (resolution != "tissue") {
       etype <- "cell types"
       edb <- "HPA"
@@ -235,9 +234,8 @@ gene_tissue_cell_enrichment <-
                      dbtype = "enrichment_db_hpa_tissue")
     }
     lgr::lgr$info(
-      paste0("Estimating enrichment of ", etype,
-             " (", edb,
-             ") in target set with TissueEnrich"))
+      paste0(edb, ": estimating enrichment of ", etype,
+             " in target set with TissueEnrich"))
 
     df <- data.frame('entrezgene' = as.integer(qgenes_entrez),
                      stringsAsFactors = F) |>
@@ -275,13 +273,15 @@ gene_tissue_cell_enrichment <-
 
     q <- bg |>
       dplyr::select("ensembl_gene_id") |>
-      dplyr::inner_join(df, by = "ensembl_gene_id", multiple = "all") |>
+      dplyr::inner_join(
+        df, by = "ensembl_gene_id", multiple = "all") |>
       dplyr::distinct()
     query_ensembl <- q$ensembl_gene_id
 
     specificities_per_gene <- bg |>
       dplyr::filter(!is.na(.data$ensembl_gene_id)) |>
-      dplyr::inner_join(df, by = "ensembl_gene_id", multiple = "all")
+      dplyr::inner_join(
+        df, by = "ensembl_gene_id", multiple = "all")
 
     if (nrow(specificities_per_gene) > 0) {
 
@@ -318,7 +318,8 @@ gene_tissue_cell_enrichment <-
           by = "entrezgene", multiple = "all"
         )
       bg <- bg |>
-        dplyr::inner_join(df, by = "ensembl_gene_id", multiple = "all") |>
+        dplyr::inner_join(
+          df, by = "ensembl_gene_id", multiple = "all") |>
         dplyr::distinct()
       background_ensembl <- bg$ensembl_gene_id
 

@@ -539,15 +539,18 @@ tcga_coexpression <- function(qgenes,
                   dplyr::everything())
 
   coexp_target_tcga_positive <-
-    dplyr::filter(coexp_target_tcga, .data$corrtype == "Positive")
+    dplyr::filter(coexp_target_tcga, .data$corrtype == "Positive") |>
+    utils::head(50000)
   coexp_target_tcga_negative <-
     dplyr::filter(coexp_target_tcga, .data$corrtype == "Negative") |>
-    dplyr::arrange(.data$r)
+    dplyr::arrange(.data$r) |>
+    utils::head(50000)
 
   coexp_target_tcga <- as.data.frame(
     dplyr::bind_rows(coexp_target_tcga_negative,
                      coexp_target_tcga_positive)
   )
+
 
   ### remove duplicates
   duplicated_recs <- coexp_target_tcga |>

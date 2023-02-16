@@ -6,7 +6,7 @@ get_fitness_lof_scores <- function(qgenes,
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  lgr::lgr$info( paste0("Project Score: retrieval of genes ",
+  lgr::lgr$info( paste0("DepMap/Project Score: retrieval of genes ",
                     "associated with loss-of-fitness in cancer cell lines"))
   stopifnot(!is.null(qgenes))
   stopifnot(is.character(qgenes))
@@ -99,7 +99,7 @@ get_target_priority_scores <-
     lgr::lgr$appenders$console$set_layout(
       lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-    lgr::lgr$info( paste0("Project Score: retrieval of ",
+    lgr::lgr$info( paste0("DepMap/Project Score: retrieval of ",
                       "prioritized targets from loss-of-fitness screens ",
                       "in cancer cell lines"))
     stopifnot(!is.null(qgenes))

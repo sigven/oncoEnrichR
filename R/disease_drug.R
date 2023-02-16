@@ -58,7 +58,9 @@ target_disease_associations <-
                       "genename",
                       "ensembl_gene_id",
                       "oncogene",
+                      "oncogene_confidence_level",
                       "tumor_suppressor",
+                      "tsg_confidence_level",
                       "cancergene_evidence",
                       "ot_association_score",
                       "disease_efo_id",
@@ -194,10 +196,6 @@ target_disease_associations <-
 
       if (nrow(result[['assoc_pr_gene']][['cancer']]) > 0) {
         result[['target']] <- result[['target']] |>
-          # dplyr::group_by(dplyr::across(-c("ensembl_gene_id"))) |>
-          # dplyr::summarise(ensembl_gene_id = paste(
-          #    ensembl_gene_id, collapse = ", "),
-          #    .groups = "drop") |>
           dplyr::left_join(
             result[['assoc_pr_gene']][['cancer']],
             by = "symbol", multiple = "all")
@@ -210,9 +208,6 @@ target_disease_associations <-
 
       if (nrow(result[['assoc_pr_gene']][['other']]) > 0) {
         result[['target']] <- result[['target']] |>
-          # dplyr::group_by(dplyr::across(-c("ensembl_gene_id"))) |>
-          # dplyr::summarise(ensembl_gene_id = paste(
-          #   ensembl_gene_id, collapse = ", ")) |>
           dplyr::left_join(
             result[['assoc_pr_gene']][['other']],
             by = "symbol", multiple = "all")
@@ -222,7 +217,8 @@ target_disease_associations <-
         result[['target']]$ot_diseases <- NA
       }
 
-      result[['target']] <- result[['target']] |>
+      result[['target']] <- as.data.frame(
+        result[['target']] |>
         dplyr::mutate(
           targetset_cancer_rank = dplyr::if_else(
             is.na(.data$targetset_cancer_rank),
@@ -245,7 +241,9 @@ target_disease_associations <-
                       "genename",
                       "targetset_cancer_rank",
                       "oncogene",
+                      "oncogene_confidence_level",
                       "tumor_suppressor",
+                      "tsg_confidence_level",
                       "cancer_driver",
                       "global_cancer_rank",
                       "cancergene_evidence",
@@ -260,7 +258,14 @@ target_disease_associations <-
                       disease_association_links = "ot_links",
                       cancer_associations = "ot_cancer_diseases",
                       cancer_association_links = "ot_cancer_links") |>
-        dplyr::distinct()
+        dplyr::distinct() |>
+        dplyr::group_by(dplyr::across(c(-.data$ensembl_gene_id))) |>
+        dplyr::summarise(ensembl_gene_id = paste(
+           ensembl_gene_id, collapse = ", "),
+           .groups = "drop") |>
+        dplyr::arrange(dplyr::desc(.data$targetset_cancer_rank),
+                       dplyr::desc(.data$global_cancer_rank))
+      )
 
 
       ttype_rank_df <- dplyr::select(target_genes,

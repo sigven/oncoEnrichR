@@ -49,20 +49,22 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 ### Tumor suppressor/proto-oncogene/cancer driver annotation
 
-* Classification of genes as proto-oncogenes and/or tumor suppressor genes _require support from at least two of the following sources_:
-     - Manually curated entry in the [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/)
-     - Manually curated entry in the [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census)
-     - Greater or equal to 15 publications in the biomedical literature that suggests an oncogenic/tumor suppressor role (as collected from the [CancerMine text-mining resource](http://bionlp.bcgsc.ca/cancermine/))
-     - Status as proto-oncogene is ignored if a given gene has three times as much (literature evidence) support for a role as a tumor suppressor gene (and _vice versa_)
-     - Proto-oncogenes/tumor suppressor candidates from CancerMine/NCG/CGC that are found in the [curated list of false positive cancer drivers compiled by Bailey et al. (Cell, 2018)](https://www.ncbi.nlm.nih.gov/pubmed/30096302) have been excluded
+* We assign three confidence levels with respect to genes having oncogenic and/or tumor suppressive roles
 
-* Classification of genes as cancer drivers *require support from at least two of the following sources*:
+     - **WEAK** - curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), with _no support_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
+     - **MODERATE** 
+         * Curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _limited support (< 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), **OR**
+         * _Significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), yet no curated entry in CGC/NCG
+     - **STRONG** - curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
+     - Literature support for a tumor suppressive role is ignored if the gene has three times as much literature support for an oncogenic role (and *vice versa*)
+    
+
+* Classification of genes as potential cancer drivers *require support from at least two of the following sources*:
      - [Network of Cancer Genes](http://ncg.kcl.ac.uk/) - canonical cancer drivers
      - [IntOGen](https://www.intogen.org) - predicted cancer driver genes
-     - [Cancer Gene Census](https://cancer.sanger.ac.uk/census) - curated cancer genes
+     - [Cancer Gene Census - TIER1/2](https://cancer.sanger.ac.uk/census) - curated cancer genes
      - [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-     - [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) - literature mining resource, considering only entries with support from >= 15 citations)
-     - Entries that are found in the [curated list of false positive cancer drivers compiled by Bailey et al. (Cell, 2018)](https://www.ncbi.nlm.nih.gov/pubmed/30096302) have been excluded
+     - [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) - literature mining resource, considering only entries with support from >= 10 citations)
      
 
 ### Gene cancer hallmark associations
@@ -113,10 +115,10 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
   1. [STRING](https://string-db.org/) - a database of known and predicted protein-protein interactions, including direct (physical) and indirect (functional) associations. In oncoEnrichR, the publicly available STRING [API](https://string-db.org/cgi/help?subpage=api) is utilized for network retrieval, and the users have the possibility to configure the following:
      * A required [minimum interaction score](https://string-db.org/cgi/info), limiting the interactions retrieved to those with an interaction score greater or equal than this threshold. Interaction scores are indicators of **confidence**, i.e. how likely STRING judges an interaction to be true.
      * The [type of network](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions) to retrieve, either __physical__ or __functional__ 
-     * The addition of proteins (maximum 50) that are not part of the query set, but that interacts most confidently with proteins in the query set
+     * The addition of proteins (maximum 50) that are not part of the query set, but that interact most confidently with proteins in the query set
   2. [BioGRID](https://thebiogrid.org/) - a biomedical interaction repository with data compiled through comprehensive curation efforts
      * A required *minimum number of evidence items* that support each interaction (i.e. from multiple types of low or high-throughput experiments, e.g. affinity capture-MS, or affinity capture-Western). Default: 3, maximum: 10
-     * The addition of proteins (maximum 50) that are not part of the query set, but that interacts most confidently with proteins in the query set
+     * The addition of proteins (maximum 50) that are not part of the query set, but that interact most confidently with proteins in the query set
 
 
 ### Gene regulatory interactions

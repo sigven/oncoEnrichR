@@ -3,8 +3,7 @@
 * Using RNA-seq data from ~9,500 primary tumor samples in TCGA, a co-expression correlation matrix (Pearson rank correlation coefficient) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
 * Here, we are showing, across the main primary tumor sites in TCGA:
   - Tumor suppressor genes, proto-oncogenes or cancer driver genes with a **strong/very strong** (_r_ >= 0.7 or _r_ <= -0.7 ) correlation to genes in the query set
-  - Here, a maximum of _*n = 2,500_ associations are shown per correlation direction (the
-complete set are listed in the Excel output of *oncoEnrichR*)
+  - Here, a maximum of _*n = 2,500_ top associations are shown per correlation direction (a more extensive set (maximum *n = 100,000* of top associations are listed in the Excel output of *oncoEnrichR*)
 
 
 <br><br>

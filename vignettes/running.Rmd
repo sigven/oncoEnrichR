@@ -63,6 +63,7 @@ it to a local cache directory. Utilizing the
       ppi_biogrid_min_evidence = 3,
       ppi_node_shadow = TRUE,
       ppi_show_drugs = TRUE,
+      ppi_show_isolated_nodes = FALSE,
       show_ppi = TRUE,
       show_disease = TRUE,
       show_top_diseases_only = TRUE,

@@ -1,20 +1,20 @@
 ### Cancer associations {.tabset}
 
 * Each target in the query set is annotated with:
-   * Known associations to cancer phenotypes (_ontology terms_) established from [multiple data types](https://platform-docs.opentargets.org/associations#association-scores) through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and numerical rank scores
-   * Classification with respect to roles as tumor suppressors, proto-oncogenes, and potential cancer driver genes
-        * Cancer driver genes need support from at least two of the following sources:
+   * Known associations to cancer phenotypes (_ontology terms_) established from multiple data types through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and [rank scores](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html)
+   * Evidence for roles of target genes as tumor suppressors, proto-oncogenes, and potential cancer driver genes
+        * Cancer driver genes need support from **at least two** of the following sources:
           * [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
           * [IntOGen](https://www.intogen.org)
-          * [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
+          * [Cancer Gene Census - TIER1/2](https://cancer.sanger.ac.uk/census)
           * [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-          * [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource (considering only entries with >= 15 citations)
-          * Genes found in a curated list of [false positive driver predictions](https://pubmed.ncbi.nlm.nih.gov/29625053/) are ignored as potential drivers
-        * Tumor suppressor genes and proto-oncogenes require support from at least two of the following sources:
-           * [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) literature mining resource (considering only entries with >= 15 citations), 
-           * [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
-           * [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
-        
+          * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource (considering only entries with >= 10 citations)
+        * Roles as tumor suppressors or oncogenes are each provided with three levels of confidence:
+           * <span style="background-color:#BBBBBB; padding:2x; color:white"><b>&nbsp;WEAK&nbsp;</b></span> - curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), with _no support_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
+           * <span style="background-color:#898989; padding:2x; color:white"><b>&nbsp;MODERATE&nbsp;</b></span> 
+              * Curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _limited support (< 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), **OR**
+              * _Significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), yet no curated entry in CGC/NCG
+           * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;STRONG&nbsp;</b></span> - curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
    * Gene function summary - retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
  
 <br><br>
@@ -24,38 +24,68 @@
 
 <br>
 
-* Query set genes are ranked according to their overall strength of association to cancer, visualized in varying shades of blue (from <span style="background-color:#b8b8ba; padding:2x; color:white"><b>&nbsp; weak associations &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; strong associations &nbsp; </b></span>). Specifically, ranking is based on the sum of [association scores](https://docs.targetvalidation.org/getting-started/scoring) pr. tumor type/tissue, and scaled as percent rank within the query set (column **targetset_cancer_rank**)
+* Query set genes are ranked according to their overall strength of association to cancer, visualized in varying shades of blue (from <span style="background-color:#b8b8ba; padding:2x; color:white"><b>&nbsp; weak associations &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; strong associations &nbsp; </b></span>). Specifically, ranking is based on the sum of [association scores](https://platform-docs.opentargets.org/associations#association-scores) pr. tumor type/tissue, and scaled as [percent rank within the query set](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html) (column **targetset_cancer_rank**)
 
 <br><br>
 
 ```{r table_browse_targets, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['disease']][['target']]) > 0}
 
 target_assocs <- onc_enrich_report[['data']][['disease']][['target']] |>
-  dplyr::mutate(targetset_cancer_rank = round(.data$targetset_cancer_rank, digits = 2)) |>
-  dplyr::mutate(global_cancer_rank = round(.data$global_cancer_rank, digits = 2))
+  dplyr::mutate(targetset_cancer_rank = round(
+    .data$targetset_cancer_rank, digits = 2)) |>
+  dplyr::mutate(global_cancer_rank = round(
+    .data$global_cancer_rank, digits = 2)) |>
+  dplyr::select(-c("tumor_suppressor","oncogene")) |>
+  dplyr::rename(tumor_suppressor = tsg_confidence_level,
+                oncogene = oncogene_confidence_level) |>
+  dplyr::mutate(tumor_suppressor = dplyr::if_else(
+    tumor_suppressor == "NONE/LIMITED",
+    "",
+    as.character(tumor_suppressor)
+  )) |>
+  dplyr::mutate(oncogene = dplyr::if_else(
+    oncogene == "NONE/LIMITED",
+    "",
+    as.character(oncogene)
+  ))
   
+tsg_confidence_levels <- levels(as.factor(
+  target_assocs$tumor_suppressor))
+
+oncogene_confidence_levels <- levels(as.factor(
+  target_assocs$oncogene))
+
 targets_shared <- crosstalk::SharedData$new(target_assocs)
 
 crosstalk::bscols(
   list(
     crosstalk::filter_select("symbol", "Target", targets_shared, ~symbol),
-    crosstalk::filter_checkbox("tumor_suppressor", "Tumor suppressor", targets_shared, ~tumor_suppressor),
-    crosstalk::filter_checkbox("oncogene", "Proto-oncogene", targets_shared, ~oncogene)
+    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor evidence", 
+                             targets_shared, ~tumor_suppressor),
+    crosstalk::filter_select("oncogene", "Oncogene evidence", 
+                             targets_shared, ~oncogene)
   ),
   list(
-    crosstalk::filter_select("cancer_associations", "Associated cancer types", targets_shared, ~cancer_associations),
-    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", targets_shared, ~disease_associations),
-    crosstalk::filter_checkbox("cancer_driver", "Cancer driver gene", targets_shared, ~cancer_driver)
+    crosstalk::filter_select("cancer_associations", "Associated cancer types", 
+                             targets_shared, ~cancer_associations),
+    crosstalk::filter_select("disease_associations", "Associated diseases (non-cancer)", 
+                             targets_shared, ~disease_associations),
+    crosstalk::filter_checkbox("cancer_driver", "Potential cancer driver", 
+                               targets_shared, ~cancer_driver)
   )
 )
 
 htmltools::br()
-DT::datatable(targets_shared, escape = F, 
-              extensions=c("Buttons","Responsive"), 
-              width = "100%",
-              options=list(buttons = c('csv','excel'),
-                           pageLength = 20,
-                           dom = 'Blfrtip')) |>
+dt <- DT::datatable(
+  targets_shared, escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  options=list(buttons = c('csv','excel'),
+               #columnDefs = list(list(className = 'dt-center', targets = 3:5)),
+               pageLength = 20,
+               dom = 'Blfrtip')) |>
+  DT::formatStyle('oncogene', textAlign = 'center') |>
+  DT::formatStyle('tumor_suppressor', textAlign = 'center') |>
   DT::formatStyle("symbol",
                   "targetset_cancer_rank", 
                   color = "white", 
@@ -64,6 +94,28 @@ DT::datatable(targets_shared, escape = F,
                     onc_enrich_report[['config']][['disease']][['colors']])
   )
 
+if(length(tsg_confidence_levels) > 0){
+  dt <- dt |>
+    DT::formatStyle(
+      "tumor_suppressor","tumor_suppressor",
+      color = "white", 
+      backgroundColor = DT::styleEqual(
+        c("STRONG", "MODERATE", "WEAK"),
+       c("#5A5A5A", "#898989", "#BBBBBB"))
+    )
+}
+
+if(length(oncogene_confidence_levels) > 0){
+  dt <- dt |>
+    DT::formatStyle(
+      "oncogene", "oncogene",
+      color = "white",
+      backgroundColor = DT::styleEqual(
+        c("STRONG", "MODERATE", "WEAK"),
+        c("#5A5A5A", "#898989", "#BBBBBB"))
+    )
+}
+dt
 
 ```
 

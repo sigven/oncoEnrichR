@@ -14,8 +14,8 @@ NetPath	http://www.netpath.org	Manually curated resource of signal transduction 
 EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.50.0	efo	db
 DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2023-01-31	do	db
 COMPARTMENTS	https://compartments.jensenlab.org/Search	Subcellular localization database	(January 2023)	compartments	db
-DepMap/ProjectScore	https://depmap.org	Integrated cancer dependency dataset from Wellcome Sanger Institute (release 1) and Broad Institute (20Q2), Pacini et al., Nat Commun., 2021	Sanger_V1/Broad_20Q2	depmap	db
-WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20230110	wikipathway	db
+DepMap/ProjectScore	https://depmap.org	Integrated cancer dependency dataset from Wellcome Sanger Institute and Broad Institute, Pacini et al., Nat Commun., 2021	Sanger_V1/Broad_20Q2	depmap	db
+WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20230210	wikipathway	db
 MSigDB	http://software.broadinstitute.org/gsea/msigdb/index.jsp	Molecular Signatures Database - collection of annotated gene sets	August 2022 (MSigDB v2022.1.Hs)	msigdb	db
 REACTOME	https://reactome.org	Manually curated and peer-reviewed pathway database	v81 (MSigDB v2022.1)	reactome	db
 CellChatDB	http://www.cellchat.org/cellchatdb/	Multimeric ligand-receptor complexes	v1 (2021)	cellchatdb	db
