@@ -179,7 +179,9 @@ test_that("TEST - Target disease associations", {
       'genename',
       'targetset_cancer_rank',
       'oncogene',
+      'oncogene_confidence_level',
       'tumor_suppressor',
+      'tsg_confidence_level',
       'cancer_driver',
       'global_cancer_rank',
       'cancergene_evidence',
@@ -188,8 +190,8 @@ test_that("TEST - Target disease associations", {
       'targetset_disease_rank',
       'disease_associations',
       'disease_association_links',
-      'ensembl_gene_id',
-      'gene_summary')
+      'gene_summary',
+      'ensembl_gene_id')
   )
 
   expect_identical(

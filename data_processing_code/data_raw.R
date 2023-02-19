@@ -165,7 +165,6 @@ genedb[['cancer_hallmark']] <-
 ts_oncogene_annotations <-
   geneOncoX:::assign_cancer_gene_roles(
     gox_basic = gOncoX[['basic']],
-    citation_cutoff_cancermine = 10,
     min_sources_driver = 2) |>
   dplyr::select(
     entrezgene,

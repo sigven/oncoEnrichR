@@ -13,9 +13,9 @@
 
 * General network legend:
   * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
-  * Tumor suppressor genes (with moderate or strong support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
-  * Proto-oncogenes (with moderate or strong support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation)) are <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
-  * Genes predicted to have a dual role as proto-oncogenes/tumor suppressors are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation) of having tumor suppressive function are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation) of having oncogenic function <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
+  * Genes with evidence of having dual roles (both oncogenic and tumor suppressive) are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
   * Targeted cancer drugs (from [Open Targets Platform](https://targetvalidation.org)):
      * Compounds in late (3-4) clinical development phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
      * Compounds in early (1-2) clinical development phases are <span style="color:purple"><b>HIGHLIGHTED IN PURPLE</b></span>
@@ -40,16 +40,17 @@
 
 ##### Complete network
 
-```{r ppi_string_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height=13}
-visNetwork::visNetwork(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes, 
-                       onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$edges) |>
+```{r ppi_string_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height = 13}
+visNetwork::visNetwork(
+  onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes, 
+  onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$edges) |>
   visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
   visNetwork::visIgraphLayout(layout="layout_nicely")
 
 ```
 
 
-```{r ppi_string_complete_network_missing, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) == 0}
+```{r ppi_string_complete_network_missing, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) == 0}
 cat('<br>')
 cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No protein-protein interactions from STRING were found among members in the query set (with the required association score). Lowering the assocation score threshold of for interactions in STRING may provide a network. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
@@ -61,7 +62,7 @@ cat('<br><br>')
 
 ##### Network communities
 
-```{r ppi_string_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) > 0, fig.width = 12, fig.height=13}
+```{r ppi_string_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) > 0, fig.width = 12, fig.height = 13}
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) |>
@@ -117,7 +118,7 @@ cat('<br><br>')
   
 ##### Complete network
 
-```{r ppi_biogrid_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height=13}
+```{r ppi_biogrid_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height = 13}
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$edges) |>
@@ -139,7 +140,7 @@ cat('<br><br>')
 
 ##### Network communities
 
-```{r ppi_biogrid_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) > 0, fig.width = 12, fig.height=13}
+```{r ppi_biogrid_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) > 0, fig.width = 12, fig.height = 13}
 visNetwork::visNetwork(
   onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes, 
   onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) |>

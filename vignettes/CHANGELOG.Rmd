@@ -9,7 +9,7 @@ vignette: >
 
 ## Version 1.4.0
 
-* Date: 2023-02-15
+* Date: 2023-02-20
 
 ### Changed
 
@@ -21,25 +21,25 @@ vignette: >
   * KEGG (20230101)
   * Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
     v0.5.6:
-    * Experimental Factor Ontology (v3.50.0)
-    * Human Disease Ontology (2023-01-31)
+     * Experimental Factor Ontology (v3.50.0)
+     * Human Disease Ontology (2023-01-31)
     
 * Functionality
   * *Protein-protein interactions* 
      * Users can opt to show isolated nodes (nodes with no interactions) or not -
        logical argument to `onco_enrich()`: `ppi_show_isolated_nodes` (default _FALSE_)
      * Added protein-protein interaction network based on interactions found in [BioGRID](https://thebiogrid.org)
-     * Users can set a minimum required threshold for the number of evidence items required for each interaction in BioGRID
-      - New numerical argument to `onco_enrich()`: `ppi_biogrid_min_evidence`
+         - Users can set a minimum required threshold for the number of evidence items required for each interaction in BioGRID
+         - New numerical argument to `onco_enrich()`: `ppi_biogrid_min_evidence`
      * Users can restrict the STRING network to _physical_ interactions only or an extended network also including indirect ( _functional_ ) interactions - [API network type](https://string-db.org/help/api/#getting-the-string-network-interactions)
-      - New character argument to `onco_enrich()`: `ppi_string_network_type` (_physical_ or _functional_)
+         - New character argument to `onco_enrich()`: `ppi_string_network_type` (_physical_ or _functional_)
      * Previous argument `ppi_score_threshold` is now named `ppi_string_min_score`, with a scale that goes from 0 to 1 (as opposed to 0-1000 in previous versions)
   * *Subcellular compartment annotations*
      * Now using the regularly updated [COMPARTMENTS](https://compartments.jensenlab.org/Search) resource as the underlying source for annotation
      * Users can set a minimum confidence score for each target compartment annotation (range from 3 (least confident) to 5 (most confident)), configure the type of **channels** that should be considered for annotations ( _Knowledge_, _Text mining_ or _Experimental_), as well as the required minimum number of channels that should support a given target compartment annotation
-      - New arguments to `onco_enrich()`: `subcellcomp_min_confidence`, `subcellcomp_channel_types`, `subcellcomp_min_channels`
-  * *Proto-oncogene/tumor suppressor annotation*
-    * A revised approach to assign roles as proto-oncogenes or tumor suppressors is implemented, in which we assign each role with a confidence level (*WEAK/MODERATE/STRONG*) pending upon support in manually curated resources (Network of Cancer Genes (NCG) or Cancer Gene Census (CGC)) or support in the biomedical literature (CancerMine)
+        - New arguments to `onco_enrich()`: `subcellcomp_min_confidence`, `subcellcomp_channel_types`, `subcellcomp_min_channels`
+  * *Annotation of oncogenic/tumor suppressive roles*
+    * A revised approach to assign roles as proto-oncogenes or tumor suppressors is implemented, in which we assign each role with a confidence level (*Moderate/Strong/Very strong*) pending upon support in manually curated resources (Network of Cancer Genes (NCG) or Cancer Gene Census (CGC)) or support in the biomedical literature (CancerMine)
   * *Cancer driver annotation*
     * A more conservative approach for driver gene status is implemented: requiring support from _at least two_ distinct resources (Network of Cancer Genes (NCG), Cancer Gene Census, TCGA, IntOGen, or CancerMine)
   

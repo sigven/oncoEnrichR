@@ -1,21 +1,25 @@
 ### Cancer associations {.tabset}
 
-* Each target in the query set is annotated with:
-   * Known associations to cancer phenotypes (_ontology terms_) established from multiple data types through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and [rank scores](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html)
-   * Evidence for roles of target genes as tumor suppressors, proto-oncogenes, and potential cancer driver genes
-        * Cancer driver genes need support from **at least two** of the following sources:
-          * [Network of Cancer Genes](http://ncg.kcl.ac.uk/)
-          * [IntOGen](https://www.intogen.org)
-          * [Cancer Gene Census - TIER1/2](https://cancer.sanger.ac.uk/census)
-          * [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-          * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource (considering only entries with >= 10 citations)
-        * Roles as tumor suppressors or oncogenes are each provided with three levels of confidence:
-           * <span style="background-color:#BBBBBB; padding:2x; color:white"><b>&nbsp;WEAK&nbsp;</b></span> - curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), with _no support_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
-           * <span style="background-color:#898989; padding:2x; color:white"><b>&nbsp;MODERATE&nbsp;</b></span> 
-              * Curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _limited support (< 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), **OR**
-              * _Significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), yet no curated entry in CGC/NCG
-           * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;STRONG&nbsp;</b></span> - curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
-   * Gene function summary - retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
+* Each target in the query set is annotated with known associations to cancer phenotypes (_ontology terms_) established from multiple data types through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and [rank scores](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html)
+
+* Indication of putative cancer driver genes require support from **at least two** of the following sources:
+    * [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/)
+    * [IntOGen](https://www.intogen.org)
+    * [Cancer Gene Census (CGC) - TIER1/2](https://cancer.sanger.ac.uk/census)
+    * [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
+    * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource (considering only entries with > 10 citations)
+* Evidence for genes harboring tumor suppressive or oncogenic functions are provided with three levels of confidence:
+    * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;Very Strong&nbsp;</b></span>
+        * Manually curated entry in NCG or CGC, and with _significant support (> 10 citations)_ in the biomedical literature (CancerMine), **OR**
+        * _Strong_support (> 20 citations)_ in the biomedical literature, no entry in NCG/CGC
+    * <span style="background-color:#898989; padding:2x; color:white"><b>&nbsp;Strong&nbsp;</b></span> 
+        * Curated entry in NCG or CGC, with _moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), **OR**
+        * _Significant support (> 10 citations, <= 20 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+    * <span style="background-color:#BBBBBB; padding:2x; color:white"><b>&nbsp;Moderate&nbsp;</b></span>
+        * Curated entry in NCG/CGC, with _no or weak support (<= 5 citations)_ in the biomedical literature (CancerMine), **OR**
+        * _Moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+          
+* Gene function summary is retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
  
 <br><br>
 
@@ -36,34 +40,46 @@ target_assocs <- onc_enrich_report[['data']][['disease']][['target']] |>
   dplyr::mutate(global_cancer_rank = round(
     .data$global_cancer_rank, digits = 2)) |>
   dplyr::select(-c("tumor_suppressor","oncogene")) |>
-  dplyr::rename(tumor_suppressor = tsg_confidence_level,
-                oncogene = oncogene_confidence_level) |>
-  dplyr::mutate(tumor_suppressor = dplyr::if_else(
-    tumor_suppressor == "NONE/LIMITED",
-    "",
-    as.character(tumor_suppressor)
+  dplyr::rename(tumor_suppressive = tsg_confidence_level,
+                oncogenic = oncogene_confidence_level) |>
+  dplyr::mutate(tumor_suppressive = dplyr::case_when(
+    tumor_suppressive == "VERY STRONG" ~ "Very Strong",
+    tumor_suppressive == "STRONG" ~ "Strong",
+    tumor_suppressive == "MODERATE" ~ "Moderate",
+    TRUE ~ as.character(tumor_suppressive)
   )) |>
-  dplyr::mutate(oncogene = dplyr::if_else(
-    oncogene == "NONE/LIMITED",
+   dplyr::mutate(oncogenic = dplyr::case_when(
+    oncogenic == "VERY STRONG" ~ "Very Strong",
+    oncogenic == "STRONG" ~ "Strong",
+    oncogenic == "MODERATE" ~ "Moderate",
+    TRUE ~ as.character(oncogenic)
+  )) |>
+  dplyr::mutate(tumor_suppressive = dplyr::if_else(
+    tumor_suppressive == "NONE/LIMITED",
     "",
-    as.character(oncogene)
+    as.character(tumor_suppressive)
+  )) |>
+  dplyr::mutate(oncogenic = dplyr::if_else(
+    oncogenic == "NONE/LIMITED",
+    "",
+    as.character(oncogenic)
   ))
   
 tsg_confidence_levels <- levels(as.factor(
-  target_assocs$tumor_suppressor))
+  target_assocs$tumor_suppressive))
 
 oncogene_confidence_levels <- levels(as.factor(
-  target_assocs$oncogene))
+  target_assocs$oncogenic))
 
 targets_shared <- crosstalk::SharedData$new(target_assocs)
 
 crosstalk::bscols(
   list(
     crosstalk::filter_select("symbol", "Target", targets_shared, ~symbol),
-    crosstalk::filter_select("tumor_suppressor", "Tumor suppressor evidence", 
-                             targets_shared, ~tumor_suppressor),
-    crosstalk::filter_select("oncogene", "Oncogene evidence", 
-                             targets_shared, ~oncogene)
+    crosstalk::filter_select("tumor_suppressive", "Tumor suppressor evidence", 
+                             targets_shared, ~tumor_suppressive),
+    crosstalk::filter_select("oncogenic", "Oncogene evidence", 
+                             targets_shared, ~oncogenic)
   ),
   list(
     crosstalk::filter_select("cancer_associations", "Associated cancer types", 
@@ -84,8 +100,8 @@ dt <- DT::datatable(
                #columnDefs = list(list(className = 'dt-center', targets = 3:5)),
                pageLength = 20,
                dom = 'Blfrtip')) |>
-  DT::formatStyle('oncogene', textAlign = 'center') |>
-  DT::formatStyle('tumor_suppressor', textAlign = 'center') |>
+  DT::formatStyle('oncogenic', textAlign = 'center') |>
+  DT::formatStyle('tumor_suppressive', textAlign = 'center') |>
   DT::formatStyle("symbol",
                   "targetset_cancer_rank", 
                   color = "white", 
@@ -97,10 +113,10 @@ dt <- DT::datatable(
 if(length(tsg_confidence_levels) > 0){
   dt <- dt |>
     DT::formatStyle(
-      "tumor_suppressor","tumor_suppressor",
+      "tumor_suppressive","tumor_suppressive",
       color = "white", 
       backgroundColor = DT::styleEqual(
-        c("STRONG", "MODERATE", "WEAK"),
+        c("Very Strong", "Strong", "Moderate"),
        c("#5A5A5A", "#898989", "#BBBBBB"))
     )
 }
@@ -108,10 +124,10 @@ if(length(tsg_confidence_levels) > 0){
 if(length(oncogene_confidence_levels) > 0){
   dt <- dt |>
     DT::formatStyle(
-      "oncogene", "oncogene",
+      "oncogenic", "oncogenic",
       color = "white",
       backgroundColor = DT::styleEqual(
-        c("STRONG", "MODERATE", "WEAK"),
+        c("Very Strong", "Strong", "Moderate"),
         c("#5A5A5A", "#898989", "#BBBBBB"))
     )
 }

@@ -1,6 +1,6 @@
 ### Documentation and settings
 
-The configurations set for this oncoEnrichR report is outlined below, in addition to an overview of knowledge resources used. 
+The configurations set for this oncoEnrichR report are outlined below, in addition to an overview of knowledge resources used. 
 
 #### Configuration values for `onco_enrich()` 
 

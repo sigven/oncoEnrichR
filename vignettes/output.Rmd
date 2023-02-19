@@ -70,7 +70,7 @@ various types of questions that can be answered with the tool.
 
 #### Drug associations
 
-* Are there available targeted cancer drugs for query set members? What are the target tractabilities of all query set members?
+* Are there available targeted cancer drugs for query set members? For which cancer indications are there approved drugs targeted towards query set members? What are the target tractabilities of all query set members?
 
 <br>
 <p align = "center">

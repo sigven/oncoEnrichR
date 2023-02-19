@@ -81,7 +81,8 @@ annotate_protein_complex <- function(query_entrez,
     dplyr::filter(
       .data$num_complex_members > 2) |>
     dplyr::arrange(
-      dplyr::desc(.data$complex_cancer_rank_score)) |>
+      dplyr::desc(.data$complex_cancer_rank_score),
+      dplyr::desc(.data$num_complex_members)) |>
     dplyr::rename(annotation_source = "sources")
 
   target_complex_genes <- list()
@@ -138,9 +139,34 @@ annotate_protein_complex <- function(query_entrez,
               dplyr::filter(!is.na(.data$complex_id)) |>
               dplyr::inner_join(all_protein_complexes,
                                 by = "complex_id", multiple = "all") |>
-              dplyr::arrange(dplyr::desc(.data$complex_cancer_rank_score),
-                             .data$confidence) |>
-              #dplyr::select(-.data$num_target_members) |>
+              dplyr::mutate(complex_cancer_rank_bin = dplyr::case_when(
+                .data$complex_cancer_rank_score > 0.9 &
+                  .data$complex_cancer_rank_score <= 1 ~ 1,
+                .data$complex_cancer_rank_score > 0.8 &
+                  .data$complex_cancer_rank_score <= 0.9 ~ 2,
+                .data$complex_cancer_rank_score > 0.7 &
+                  .data$complex_cancer_rank_score <= 0.8 ~ 3,
+                .data$complex_cancer_rank_score > 0.6 &
+                  .data$complex_cancer_rank_score <= 0.7 ~ 4,
+                .data$complex_cancer_rank_score > 0.5 &
+                  .data$complex_cancer_rank_score <= 0.6 ~ 5,
+                .data$complex_cancer_rank_score > 0.4 &
+                  .data$complex_cancer_rank_score <= 0.5 ~ 6,
+                .data$complex_cancer_rank_score > 0.3 &
+                  .data$complex_cancer_rank_score <= 0.4 ~ 7,
+                .data$complex_cancer_rank_score > 0.2 &
+                  .data$complex_cancer_rank_score <= 0.3 ~ 8,
+                .data$complex_cancer_rank_score > 0.1 &
+                  .data$complex_cancer_rank_score <= 0.2 ~ 9,
+                TRUE ~ as.numeric(10)
+              )) |>
+              dplyr::arrange(
+                .data$complex_cancer_rank_bin,
+                dplyr::desc(.data$num_target_members),
+                .data$confidence) |>
+                #dplyr::desc(.data$complex_cancer_rank_score),
+                #             .data$confidence) |>
+              dplyr::select(-c("complex_cancer_rank_bin")) |>
               dplyr::select(c("complex_name",
                             "target_genes",
                             "complex_literature_support",

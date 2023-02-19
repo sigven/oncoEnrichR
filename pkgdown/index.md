@@ -36,6 +36,9 @@ following scientific questions for a given gene list:
 
 -   Which diseases/tumor types are known to be associated with genes in
     the query set, and to what extent?
+-   Which genes in the query set are known to have oncogenic or tumor 
+    suppressive roles, using evidence from the biomedical literature and 
+    curated resources?
 -   Which genes in the query set are attributed with cancer hallmark
     evidence?
 -   Which proteins in the query sets are druggable in different cancer

@@ -10,6 +10,7 @@ ppi_settings[["string"]][["show_drugs"]] <- TRUE
 ppi_settings[["string"]][["add_nodes"]] <- 30
 ppi_settings[["string"]][["query_type"]] <- "network"
 ppi_settings[["string"]][["network_type"]] <- "physical"
+ppi_settings[["string"]][["show_isolated_nodes"]] <- F
 
 ppi_settings[["biogrid"]] <- list()
 ppi_settings[["biogrid"]][['minimum_evidence']] <- 2
@@ -17,6 +18,8 @@ ppi_settings[["biogrid"]][["visnetwork_shape"]] <- "dot"
 ppi_settings[["biogrid"]][["visnetwork_shadow"]] <- TRUE
 ppi_settings[["biogrid"]][["show_drugs"]] <- TRUE
 ppi_settings[["biogrid"]][["add_nodes"]] <- 30
+ppi_settings[["biogrid"]][["show_isolated_nodes"]] <- F
+
 
 pc_genes <-
   oedb$genedb$all[oedb$genedb$all$gene_biotype == "protein-coding",]

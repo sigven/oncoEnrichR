@@ -31,7 +31,7 @@ Data harvested from the following resources form the backbone of *oncoEnrichR*:
 -   [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex map
 -   [COMPARTMENTS](https://compartments.jensenlab.org/Search) - subcellular compartment database
 -   [DepMap/Project Score](https://score.depmap.sanger.ac.uk) - Databases on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
--   [Genetic determinants of survival in cancer](http://survival.cshl.edu/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
+-   [Genetic determinants of survival in cancer](https://www.tcga-survival.com/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
 -   [Predicted synthetic lethality interactions](https://pubmed.ncbi.nlm.nih.gov/34529928/) - Resource on predicted synthetic lethality interactions between human gene paralogs (using human cancer cell lines)
 
 
@@ -51,11 +51,18 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 * We assign three confidence levels with respect to genes having oncogenic and/or tumor suppressive roles
 
-     - **WEAK** - curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), with _no support_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
-     - **MODERATE** 
-         * Curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _limited support (< 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), **OR**
-         * _Significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), yet no curated entry in CGC/NCG
-     - **STRONG** - curated entry in [NCG](http://ncg.kcl.ac.uk/) or [CGC](https://cancer.sanger.ac.uk/census), with _significant support (>= 10 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/))
+     - **Very Strong**
+          * _Strong_support (> 20 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), no curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), **OR**
+          * Manually curated entry in NCG or CGC, and with _significant support (> 10 citations)_ in the biomedical literature (CancerMine)
+          
+     - **Strong** 
+         * Curated entry in NCG or CGC, with _moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), **OR**
+         * _Significant support (> 10 citations, <= 20 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+              
+     - **Moderate** 
+         * Curated entry in NCG/CGC, with _no or weak support (<= 5 citations)_ in the biomedical literature (CancerMine), **OR**
+         * _Moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+         
      - Literature support for a tumor suppressive role is ignored if the gene has three times as much literature support for an oncogenic role (and *vice versa*)
     
 
@@ -64,7 +71,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
      - [IntOGen](https://www.intogen.org) - predicted cancer driver genes
      - [Cancer Gene Census - TIER1/2](https://cancer.sanger.ac.uk/census) - curated cancer genes
      - [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-     - [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) - literature mining resource, considering only entries with support from >= 10 citations)
+     - [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) - literature mining resource, considering only entries with support from > 5 citations)
      
 
 ### Gene cancer hallmark associations

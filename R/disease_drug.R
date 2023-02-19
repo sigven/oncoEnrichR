@@ -259,9 +259,9 @@ target_disease_associations <-
                       cancer_associations = "ot_cancer_diseases",
                       cancer_association_links = "ot_cancer_links") |>
         dplyr::distinct() |>
-        dplyr::group_by(dplyr::across(c(-.data$ensembl_gene_id))) |>
+        dplyr::group_by(dplyr::across(c(-"ensembl_gene_id"))) |>
         dplyr::summarise(ensembl_gene_id = paste(
-           ensembl_gene_id, collapse = ", "),
+           .data$ensembl_gene_id, collapse = ", "),
            .groups = "drop") |>
         dplyr::arrange(dplyr::desc(.data$targetset_cancer_rank),
                        dplyr::desc(.data$global_cancer_rank))
