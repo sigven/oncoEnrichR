@@ -13,24 +13,28 @@ init_report(
   query_id_type = "symbol",
   ignore_id_err = TRUE,
   project_description = "_Project description_",
-  ppi_min_string_score = 900,
-  ppi_add_nodes = 50,
+  ppi_string_min_score = 0.9,
+  ppi_string_network_type = "functional",
+  ppi_biogrid_min_evidence = 3,
+  ppi_add_nodes = 30,
+  ppi_show_isolated_nodes = FALSE,
   ppi_node_shadow = TRUE,
+  ppi_show_drugs = T,
   bgset_description = "All annotated protein-coding genes",
   bgset_id_type = "symbol",
-  p_value_cutoff_enrichment = 0.05,
-  p_value_adjustment_method = "BH",
-  q_value_cutoff_enrichment = 0.2,
-  min_geneset_size = 10,
-  max_geneset_size = 500,
-  num_terms_enrichment_plot = 20,
-  min_subcellcomp_confidence = 1,
+  enrichment_p_value_cutoff = 0.05,
+  enrichment_p_value_adj = "BH",
+  enrichment_q_value_cutoff = 0.2,
+  enrichment_min_geneset_size = 10,
+  enrichment_max_geneset_size = 500,
+  enrichment_plot_num_terms = 20,
+  enrichment_simplify_go = F,
+  subcellcomp_min_confidence = 3,
+  subcellcomp_min_channels = 1,
   subcellcomp_show_cytosol = F,
-  min_confidence_reg_interaction = "D",
-  max_fitness_score = -2,
-  simplify_go = F,
+  regulatory_min_confidence = "D",
+  fitness_max_score = -2,
   show_ppi = T,
-  show_drugs_in_ppi = T,
   show_disease = T,
   show_top_diseases_only = T,
   show_cancer_hallmarks = T,
@@ -68,42 +72,50 @@ init_report(
 
 \item{project_description}{project background information}
 
-\item{ppi_min_string_score}{minimum score (0-1000) for retrieval of protein-protein interactions (STRING)}
+\item{ppi_string_min_score}{minimum score (between 0 and 1) for confidence of retrieved protein-protein interactions (STRING)}
 
-\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING)}
+\item{ppi_string_network_type}{STRING network type ('physical' or 'functional')}
 
-\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network}
+\item{ppi_biogrid_min_evidence}{minimum number of evidence items for protein-protein interactions shown (BIOGRID)}
+
+\item{ppi_add_nodes}{number of nodes to add to target set when computing the protein-protein interaction network (STRING/BIOGRID)}
+
+\item{ppi_show_isolated_nodes}{logical indicating if targets/nodes without any interactions should be displayed in the protein-protein interaction network}
+
+\item{ppi_node_shadow}{show shadow for nodes in the displayed PPI network (STRING/BIOGRID)}
+
+\item{ppi_show_drugs}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network}
 
 \item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
 \item{bgset_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
 "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
 
-\item{p_value_cutoff_enrichment}{cutoff p-value for enrichment/over-representation analysis}
+\item{enrichment_p_value_cutoff}{cutoff p-value for enrichment/over-representation analysis}
 
-\item{p_value_adjustment_method}{one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"}
+\item{enrichment_p_value_adj}{one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"}
 
-\item{q_value_cutoff_enrichment}{cutoff q-value for enrichment analysis}
+\item{enrichment_q_value_cutoff}{cutoff q-value for enrichment analysis}
 
-\item{min_geneset_size}{minimal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+\item{enrichment_min_geneset_size}{minimal size of geneset annotated by term for testing in enrichment/over-representation analysis}
 
-\item{max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
+\item{enrichment_max_geneset_size}{maximal size of geneset annotated by term for testing in enrichment/over-representation analysis}
 
-\item{num_terms_enrichment_plot}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
+\item{enrichment_plot_num_terms}{number of top enriched Gene Ontology terms (max) to show in enrichment barplot}
 
-\item{min_subcellcomp_confidence}{minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)}
+\item{enrichment_simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
+
+\item{subcellcomp_min_confidence}{minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)}
+
+\item{subcellcomp_min_channels}{minimum number of channels that support a subcellular annotation in COMPARTMENTS}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not}
 
-\item{min_confidence_reg_interaction}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
+\item{regulatory_min_confidence}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
 
-\item{max_fitness_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
-
-\item{simplify_go}{remove highly similar GO terms in results from GO enrichment/over-representation analysis}
+\item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
 
 \item{show_ppi}{logical indicating if report should contain protein-protein interaction data (STRING)}
-
-\item{show_drugs_in_ppi}{logical indicating if targeted drugs (> phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)}
 
 \item{show_disease}{logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)}
 
@@ -119,7 +131,7 @@ init_report(
 
 \item{show_coexpression}{logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes}
 
-\item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (ComPPI)}
+\item{show_subcell_comp}{logical indicating if report should provide subcellular compartment annotations (COMPARTMENTS)}
 
 \item{show_fitness}{logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)}
 

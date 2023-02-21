@@ -30,6 +30,8 @@ navbar:
         href: articles/output.html
       - text: Annotation resources
         href: articles/annotation_resources.html
+      - text: Cancer gene rank
+        href: articles/cancer_gene_rank.html
     # faq:
     #   text: FAQ
     #   href: articles/faq.html

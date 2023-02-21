@@ -28,10 +28,10 @@
 show_enrichment_filters <- list()
 eitems <- list()
 active_tab <- list()
-for(type in c('go','msigdb','kegg','wikipathway','netpath')){
+for(type in c('go','msigdb','kegg','wikipathway','netpath')) {
   show_enrichment_filters[[type]] <- F
   active_tab[[type]] <- F
-  if(NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0){
+  if (NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0) {
     show_enrichment_filters[[type]] <- T
   }
 }
@@ -44,22 +44,22 @@ subontology_plots[['BP']] <- T
 subontology_plots[['MF']] <- T
 subontology_plots[['CC']] <- T
 
-#for(ont in c('GO_BP','GO_CC','GO_MF')){
-if(show_enrichment_filters[['go']] == T){
+#for(ont in c('GO_BP','GO_CC','GO_MF')) {
+if (show_enrichment_filters[['go']] == T) {
   subont_bp <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_BP')
   
-  if(nrow(subont_bp) == 0){subontology_plots[['BP']] <- F}
+  if (nrow(subont_bp) <= 2) {subontology_plots[['BP']] <- F}
   
   subont_mf <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_MF')
   
-  if(nrow(subont_mf) == 0){subontology_plots[['MF']] <- F}
+  if (nrow(subont_mf) <= 2) {subontology_plots[['MF']] <- F}
   
   subont_cc <- onc_enrich_report[['data']][['enrichment']][['go']] |>
     dplyr::filter(db == 'GO_CC')
   
-  if(nrow(subont_cc) == 0){subontology_plots[['CC']] <- F}
+  if (nrow(subont_cc) <= 2) {subontology_plots[['CC']] <- F}
   
 }else{
   subontology_plots[['ALL']] <- F
@@ -70,22 +70,22 @@ if(show_enrichment_filters[['go']] == T){
 
 
 ## Set active tabs
-if(show_enrichment_filters[['go']] == T){
+if (show_enrichment_filters[['go']] == T) {
   active_tab[['go']] <- T
 }else{
-  if(show_enrichment_filters[['msigdb']] == T){
+  if (show_enrichment_filters[['msigdb']] == T) {
       active_tab[['msigdb']] <- T
   }
   else{
-    if(show_enrichment_filters[['kegg']] == T){
+    if (show_enrichment_filters[['kegg']] == T) {
       active_tab[['kegg']] <- T
     }
     else{
-      if(show_enrichment_filters[['wikipathway']] == T){
+      if (show_enrichment_filters[['wikipathway']] == T) {
         active_tab[['wikipathway']] <- T
       }
       else{
-        if(show_enrichment_filters[['netpath']] == T){
+        if (show_enrichment_filters[['netpath']] == T) {
           active_tab[['netpath']] <- T
         }
       }
@@ -94,9 +94,9 @@ if(show_enrichment_filters[['go']] == T){
 }
 
 ## If no content in enrichment tables, set GO to active tab
-if(active_tab[['go']] == F & active_tab[['msigdb']] == F &
+if (active_tab[['go']] == F & active_tab[['msigdb']] == F &
    active_tab[['kegg']] == F & active_tab[['wikipathway']] == F &
-   active_tab[['netpath']] == F){
+   active_tab[['netpath']] == F) {
   active_tab[['go']] <- T
 }
 
@@ -111,7 +111,7 @@ if(active_tab[['go']] == F & active_tab[['msigdb']] == F &
 <br>
 
 ```{r active_tab_go, echo = F, results = "asis"}
-if(active_tab[['go']] == T){
+if (active_tab[['go']] == T) {
   cat("")
   cat("##### Gene Ontology {.active}")
   cat("")
@@ -156,9 +156,13 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-DT::datatable(terms_go, escape = F, 
-              extensions=c("Buttons","Responsive"), width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+DT::datatable(
+  terms_go, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), 
+                 dom = 'Bfrtip')
 )
 rm(terms_go)
 rm(enrichment_go_display)
@@ -171,7 +175,7 @@ rm(enrichment_go_display)
 
 ```{r go_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['go']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -181,7 +185,7 @@ cat('<br><br>')
 <br><br>
 
 ```{r active_tab_msigdb, echo = F, results = "asis"}
-if(active_tab[['msigdb']] == T){
+if (active_tab[['msigdb']] == T) {
   cat("")
   cat("##### Molecular Signatures Database (MSigDB) {.active}")
   cat("")
@@ -247,7 +251,7 @@ cat('<br><br>')
 <br><br>
 
 ```{r active_tab_kegg, echo = F, results = "asis"}
-if(active_tab[['kegg']] == T){
+if (active_tab[['kegg']] == T) {
   cat("")
   cat("##### KEGG pathways {.active}")
   cat("")
@@ -305,7 +309,7 @@ rm(enrichment_keggdb_display)
 
 ```{r keggdb_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['kegg']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -315,7 +319,7 @@ cat('<br><br>')
 <br><br>
 
 ```{r active_tab_wikipathways, echo = F, results = "asis"}
-if(active_tab[['wikipathway']] == T){
+if (active_tab[['wikipathway']] == T) {
   cat("")
   cat("##### WikiPathways {.active}")
   cat("")
@@ -360,8 +364,11 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-DT::datatable(terms_wikipathway, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+DT::datatable(
+  terms_wikipathway, escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), dom = 'Bfrtip')
 )
 
 rm(terms_wikipathway)
@@ -375,7 +382,7 @@ rm(enrichment_wikidb_display)
 
 ```{r wiki_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['wikipathway']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -386,7 +393,7 @@ cat('<br><br>')
 <br><br>
 
 ```{r active_tab_netpath, echo = F, results = "asis"}
-if(active_tab[['netpath']] == T){
+if (active_tab[['netpath']] == T) {
   cat("")
   cat("##### NetPath {.active}")
   cat("")
@@ -431,8 +438,13 @@ crosstalk::bscols(
 )
 
 htmltools::br()
-DT::datatable(terms_netpath, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+DT::datatable(
+  terms_netpath, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), 
+                 dom = 'Bfrtip')
 )
 
 rm(terms_netpath)
@@ -444,7 +456,7 @@ rm(enrichment_netpath_display)
 
 ```{r netpath_missing, echo=F, results = 'asis', eval = !show_enrichment_filters[['netpath']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -466,7 +478,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_MF') |>
   dplyr::arrange(qvalue) |>
-  utils::head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  utils::head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>
@@ -503,10 +515,10 @@ p <- ggplot2::ggplot(
 rm(max_y)
 
 height_plot <- 500
-if(nrow(plot_data) <= 15){
+if (nrow(plot_data) <= 15) {
   height_plot <- 400
 }
-if(nrow(plot_data) <= 10){
+if (nrow(plot_data) <= 10) {
   height_plot <- 300
 }
 
@@ -521,7 +533,7 @@ rm(plot_data)
 
 ```{r go_plot_missing_mf, echo=F, results = 'asis', eval = !subontology_plots[['MF']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -538,7 +550,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_BP') |>
   dplyr::arrange(qvalue) |>
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>
@@ -564,7 +576,6 @@ p <- ggplot2::ggplot(
   ggplot2::theme_classic() +
   ggplot2::coord_flip() +
   ggplot2::theme(
-    #legend.position = "none",
     legend.title = ggplot2::element_blank(),
     axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
     axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
@@ -575,10 +586,10 @@ p <- ggplot2::ggplot(
 rm(max_y)
 
 height_plot <- 500
-if(nrow(plot_data) <= 15){
+if (nrow(plot_data) <= 15) {
   height_plot <- 400
 }
-if(nrow(plot_data) <= 10){
+if (nrow(plot_data) <= 10) {
   height_plot <- 300
 }
 
@@ -593,7 +604,7 @@ rm(plot_data)
 
 ```{r go_plot_missing_bp, echo=F, results = 'asis', eval = !subontology_plots[['BP']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
 cat('<br><br>')
 
@@ -610,7 +621,7 @@ plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::select(description, enrichment_factor, qvalue, db) |>
   dplyr::filter(db == 'GO_CC') |>
   dplyr::arrange(qvalue) |>
-  head(onc_enrich_report[['config']][['enrichment']][['num_terms_enrichment_plot']]) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
   ## reverse order (to show entries with lowest q-values at the top of the plot)
   dplyr::arrange(dplyr::desc(qvalue)) |>
   dplyr::rename(Subontology = db) |>
@@ -648,10 +659,10 @@ p <- ggplot2::ggplot(
 rm(max_y)
 
 height_plot <- 500
-if(nrow(plot_data) <= 15){
+if (nrow(plot_data) <= 15) {
   height_plot <- 400
 }
-if(nrow(plot_data) <= 10){
+if (nrow(plot_data) <= 10) {
   height_plot <- 300
 }
 
@@ -666,7 +677,7 @@ rm(plot_data)
 
 ```{r go_plot_missing_cc, echo=F, results = 'asis', eval = !subontology_plots[['CC']]}
 
-cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

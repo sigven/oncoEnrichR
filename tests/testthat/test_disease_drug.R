@@ -64,12 +64,12 @@ test_that("Target drug associations", {
 test_that("TEST - Genes of unknown function", {
   expect_error(oncoEnrichR:::get_genes_unknown_function())
   expect_error(oncoEnrichR:::get_genes_unknown_function(
-    qgenes = 'C1orf43',
+    qgenes = 'C22orf31',
   ))
 
   expect_identical(
     NROW(oncoEnrichR:::get_genes_unknown_function(
-      qgenes = 'C1orf43',
+      qgenes = 'C22orf31',
       genedb = oedb$genedb$all)),
     as.integer(1)
   )
@@ -82,11 +82,15 @@ test_that("TEST - Genes of unknown function", {
   expect_identical(
     colnames(
       oncoEnrichR:::get_genes_unknown_function(
-        qgenes = 'C1orf43',
+        qgenes = 'C22orf31',
         genedb = oedb$genedb$all)
     ),
-    c("symbol","genename","num_go_terms",
-      "gene_summary","unknown_function_rank",
+    c("symbol",
+      "genename",
+      "num_go_terms",
+      "go_term_link",
+      "gene_summary",
+      "unknown_function_rank",
       "has_gene_summary")
   )
 })
@@ -142,7 +146,7 @@ test_that("TEST - Target disease associations", {
   expect_identical(
     NROW(
       oncoEnrichR:::target_disease_associations(
-        qgenes = "C1orf43",
+        qgenes = "C22orf31",
         show_top_diseases_only = T,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
@@ -154,7 +158,7 @@ test_that("TEST - Target disease associations", {
   expect_identical(
     NROW(
       oncoEnrichR:::target_disease_associations(
-        qgenes = "C1orf43",
+        qgenes = "C22orf31",
         show_top_diseases_only = T,
         genedb = oedb$genedb$all,
         otdb_all = oedb$otdb$all,
@@ -173,11 +177,12 @@ test_that("TEST - Target disease associations", {
     ),
     c('symbol',
       'genename',
-      'ensembl_gene_id',
-      'oncogene',
-      'tumor_suppressor',
-      'cancer_driver',
       'targetset_cancer_rank',
+      'oncogene',
+      'oncogene_confidence_level',
+      'tumor_suppressor',
+      'tsg_confidence_level',
+      'cancer_driver',
       'global_cancer_rank',
       'cancergene_evidence',
       'cancer_associations',
@@ -185,7 +190,8 @@ test_that("TEST - Target disease associations", {
       'targetset_disease_rank',
       'disease_associations',
       'disease_association_links',
-      'gene_summary')
+      'gene_summary',
+      'ensembl_gene_id')
   )
 
   expect_identical(

@@ -756,9 +756,11 @@ dt <- DT::datatable(recurrent_vars_tcga, escape = F,
 
 if(length(mutation_hotspot_levels) > 0){
   dt <- dt |>
-    DT::formatStyle("MUTATION_HOTSPOT","MUTATION_HOTSPOT",
-                    color = "white", fontWeight = "bold",
-                    backgroundColor = DT::styleEqual(mutation_hotspot_levels, rep("black", length(mutation_hotspot_levels)))
+    DT::formatStyle(
+      "MUTATION_HOTSPOT","MUTATION_HOTSPOT",
+      color = "white", fontWeight = "bold",
+      backgroundColor = DT::styleEqual(
+        mutation_hotspot_levels, rep("black", length(mutation_hotspot_levels)))
     )
 }
 dt

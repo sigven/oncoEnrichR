@@ -46,7 +46,7 @@ test_that("Query gene validation routine - testing ", {
       )$not_found
     ),
     c("entrezgene", "name",
-      "ensembl_gene_id", "symbol")
+      "symbol")
   )
 
   expect_identical(
@@ -58,7 +58,7 @@ test_that("Query gene validation routine - testing ", {
         q_id_type = "symbol"
       )$found
     ),
-    c("entrezgene", "name", "ensembl_gene_id",
+    c("entrezgene", "name",
       "symbol", "alias", "status", "genename")
   )
 

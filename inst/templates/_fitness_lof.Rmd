@@ -1,9 +1,9 @@
 ### Gene fitness scores {.tabset}
 
-
-* In [Project Score](https://score.depmap.sanger.ac.uk/), systematic genome-scale CRISPR/Cas9 drop-out screens are performed in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
+* The [Cancer Dependency Map](https://depmap.org) and [Project Score](https://score.depmap.sanger.ac.uk/) have performed systematic genome-scale CRISPR/Cas9 drop-out screens in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
 * Here, we are showing, across the main human tissue types:
    * Genes in the query set that are annotated with a [statistically significant effect on cell fitness](https://score.depmap.sanger.ac.uk/documentation) in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
+   * The underlying cell viability data comes from the integration of data in n = 912 cell lines, using both [DepMap (2020_Q2)](https://score.depmap.sanger.ac.uk/downloads) and [Project Score (20210311)](https://score.depmap.sanger.ac.uk/downloads), as published in [Pacini et al., Nat Commun, 2021](https://pubmed.ncbi.nlm.nih.gov/33712601/)
 
 * Settings 
    * Maximum loss-of-fitness score pr. gene (BAGEL - scaled Bayes Factor): __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
@@ -56,7 +56,7 @@ rm(fitness_lof_oe_plot)
 
 ```{r fitness_missing_plot, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_targets']] == 0}
 
-cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in DepMap/Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -112,7 +112,7 @@ DT::datatable(
 
 ```{r fitness_lof_missing_data, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_targets']] == 0}
 
-cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set found with loss-of-fitness effect from CRISPR/Cas9 screens in DepMap/Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -177,7 +177,7 @@ oe_target_priority_fig
 
 ```{r fitness_missing_priority, echo=F, results = 'asis', eval = onc_enrich_report[['data']][['fitness']][['target_priority_scores']][['n_pri_targets']] < 5}
 
-cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO / LIMITED GENES</b> in the query set nominated as prioritized targets in Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('<br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO / LIMITED GENES</b> in the query set nominated as prioritized targets in DepMap/Project Score.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 
 ```

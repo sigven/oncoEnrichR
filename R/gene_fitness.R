@@ -1,18 +1,18 @@
 get_fitness_lof_scores <- function(qgenes,
                                   qsource = "symbol",
-                                  projectscoredb = NULL,
+                                  depmapdb = NULL,
                                   max_fitness_score = -2) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  lgr::lgr$info( paste0("Project Score: retrieval of genes ",
+  lgr::lgr$info( paste0("DepMap/Project Score: retrieval of genes ",
                     "associated with loss-of-fitness in cancer cell lines"))
   stopifnot(!is.null(qgenes))
   stopifnot(is.character(qgenes))
-  stopifnot(!is.null(projectscoredb))
-  stopifnot(!is.null(projectscoredb[['fitness_scores']]))
-  validate_db_df(projectscoredb[['fitness_scores']],
+  stopifnot(!is.null(depmapdb))
+  stopifnot(!is.null(depmapdb[['fitness_scores']]))
+  validate_db_df(depmapdb[['fitness_scores']],
                                dbtype = "fitness_scores")
 
   target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
@@ -23,7 +23,9 @@ get_fitness_lof_scores <- function(qgenes,
 
   fitness_lof_hits <- as.data.frame(
     target_genes |>
-    dplyr::inner_join(projectscoredb[['fitness_scores']], by = c("symbol")) |>
+    dplyr::inner_join(
+      depmapdb[['fitness_scores']],
+      by = c("symbol"), multiple = "all") |>
     dplyr::arrange(.data$scaled_BF)
   )
   if (nrow(fitness_lof_hits) > 0) {
@@ -34,20 +36,22 @@ get_fitness_lof_scores <- function(qgenes,
           model_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/model/",
             .data$model_id,"?&scoreMax=0' target='_blank'>",
-            stringr::str_replace_all(.data$model_name,"\\.","-"),"</a>")) |>
+            stringr::str_replace_all(
+              .data$model_name,"\\.","-"),"</a>")) |>
         dplyr::mutate(
           symbol_link_ps = paste0(
             "<a href='https://score.depmap.sanger.ac.uk/gene/",
-            .data$gene_id_project_score,"' target='_blank'>", .data$symbol,"</a>")) |>
-        dplyr::select(.data$symbol,
-                      .data$symbol_link_ps,
-                      .data$model_name,
-                      .data$tissue,
-                      .data$model_link_ps,
-                      .data$cancer_type,
-                      .data$sample_site,
-                      .data$tissue_status,
-                      .data$scaled_BF) |>
+            .data$gene_id_project_score,"' target='_blank'>",
+            .data$symbol,"</a>")) |>
+        dplyr::select(c("symbol",
+                      "symbol_link_ps",
+                      "model_name",
+                      "tissue",
+                      "model_link_ps",
+                      "cancer_type",
+                      "sample_site",
+                      "tissue_status",
+                      "scaled_BF")) |>
         dplyr::filter(.data$scaled_BF <= max_fitness_score)
     )
 
@@ -66,14 +70,20 @@ get_fitness_lof_scores <- function(qgenes,
     )
 
     fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] |>
-      dplyr::left_join(gene_pr_tissue_stats, by = c("symbol","tissue")) |>
-      dplyr::left_join(gene_stats, by = "symbol") |>
-      dplyr::select(.data$symbol, .data$symbol_link_ps,
-                    .data$model_name,
-                    .data$scaled_BF, .data$tissue,
-                    .data$model_link_ps, .data$cancer_type,
-                    .data$sample_site, .data$tissue_status,
-                    .data$n_gene_tissue, .data$n_gene)
+      dplyr::left_join(gene_pr_tissue_stats,
+                       by = c("symbol","tissue"), multiple = "all") |>
+      dplyr::left_join(gene_stats, by = "symbol", multiple = "all") |>
+      dplyr::select(c("symbol",
+                    "symbol_link_ps",
+                    "model_name",
+                    "scaled_BF",
+                    "tissue",
+                    "model_link_ps",
+                    "cancer_type",
+                    "sample_site",
+                    "tissue_status",
+                    "n_gene_tissue",
+                    "n_gene"))
 
     fitness_lof_results[["n_targets"]] <- nrow(gene_stats)
   }
@@ -84,19 +94,19 @@ get_fitness_lof_scores <- function(qgenes,
 get_target_priority_scores <-
   function(qgenes,
            qsource = "symbol",
-           projectscoredb = NULL){
+           depmapdb = NULL) {
 
     lgr::lgr$appenders$console$set_layout(
       lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-    lgr::lgr$info( paste0("Project Score: retrieval of ",
+    lgr::lgr$info( paste0("DepMap/Project Score: retrieval of ",
                       "prioritized targets from loss-of-fitness screens ",
                       "in cancer cell lines"))
     stopifnot(!is.null(qgenes))
     stopifnot(is.character(qgenes))
-    stopifnot(!is.null(projectscoredb))
-    stopifnot(!is.null(projectscoredb[['target_priority_scores']]))
-    validate_db_df(projectscoredb[['target_priority_scores']],
+    stopifnot(!is.null(depmapdb))
+    stopifnot(!is.null(depmapdb[['target_priority_scores']]))
+    validate_db_df(depmapdb[['target_priority_scores']],
                                  dbtype = "target_priority_scores")
 
     target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
@@ -106,23 +116,23 @@ get_target_priority_scores <-
     prioritized_targets[["n_pri_targets"]] <- 0
 
     targets_crispr_priority <- as.data.frame(
-      projectscoredb[['target_priority_scores']] |>
-        dplyr::inner_join(target_genes, by = c("symbol"))
+      depmapdb[['target_priority_scores']] |>
+        dplyr::inner_join(target_genes, by = c("symbol"), multiple = "all")
       )
 
     prioritized_targets[["n_pri_targets"]] <-
       length(unique(targets_crispr_priority$symbol))
 
-    if(nrow(targets_crispr_priority) > 0){
+    if (nrow(targets_crispr_priority) > 0) {
 
       prioritized_targets[["targets"]] <- as.data.frame(
         targets_crispr_priority |>
         dplyr::mutate(symbol = factor(.data$symbol, levels =
-                 levels(projectscoredb[['target_priority_scores']]$symbol))) |>
+                 levels(depmapdb[['target_priority_scores']]$symbol))) |>
         dplyr::arrange(dplyr::desc(.data$priority_score)) |>
-        dplyr::select(.data$symbol,
-                      .data$tumor_type,
-                      .data$priority_score) # |>
+        dplyr::select(c("symbol",
+                       "tumor_type",
+                       "priority_score"))
 
       )
     }

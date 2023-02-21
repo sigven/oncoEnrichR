@@ -59,14 +59,14 @@ test_that("Prognostic associations - CSHL - input check", {
     )
   expect_named(
     oncoEnrichR:::km_cshl_survival_genes(
-      projectsurvivaldb = oedb$projectsurvivaldb$cna,
+      survivaldb = oedb$survivaldb$cna,
       qgenes = c("BRAF","KRAS")),
     c("symbol","tcga_cohort","z_score")
     )
   expect_gt(
     NROW(
       oncoEnrichR:::km_cshl_survival_genes(
-        projectsurvivaldb = oedb$projectsurvivaldb$cna,
+        survivaldb = oedb$survivaldb$cna,
         qgenes = c("BRAF","KRAS"))),
     0)
 

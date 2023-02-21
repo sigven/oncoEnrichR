@@ -11,7 +11,8 @@ load(system.file("internal_db/oedb.rda", package = "oncoEnrichR"))
 myc_data <- read.csv(system.file("extdata","myc_data.csv",
                                  package = "oncoEnrichR"),
                      stringsAsFactors = F) %>%
-  dplyr::inner_join(oedb$genedb$all, by = "symbol") %>%
+  dplyr::inner_join(oedb$genedb$all, by = "symbol",
+                    multiple = "all") %>%
   dplyr::filter(!is.na(entrezgene))
 
 bg_set <-

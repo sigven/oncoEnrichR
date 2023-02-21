@@ -1,0 +1,22 @@
+---
+output: rmarkdown::html_vignette
+title: Cancer gene rank
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Cancer gene rank}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+In oncoEnrichR, associations between human genes and phenotypes/diseases are harvested from the Open Targets Platform (OTP v2022.11, https://platform.opentargets.org/downloads/data, considering _direct_ associations only). Associations are here quantified as numerical scores in the range 0-1, with larger values indicating a stronger association between the gene and the phenotype (https://platform-docs.opentargets.org/associations#overall). Phenotypes from OTP are provided as Experimental Factor Ontology (EFO) terms. For each OTP association, we integrate the underlying data type evidence, examples being genetic associations, text mining, pathway associations, or animal models. 
+
+In order to minimize the impact of associations with very weak underlying evidence, we consider only associations with support from at least two data types, and with an overall association score >= 0.05. Furthermore, in order to limit associations to cancer phenotypes, we have established a mapping between EFO terms and n = 32 primary tumor types/sites, using OncoTree as a starting point (the complete mapping is available in the R package https://github.com/sigven/phenOncoX). 
+
+In order to establish an overall ranking of genes with respect to cancer relevance, we summarize, for each tumor type/site, the potential multiple OTP association scores found per gene, and compute a scaled rank between 0 and 1 (i.e. gene-tumor type rank). Next, we compute a global (i.e. pancancer) gene-cancer rank per gene by summarizing the gene-tumor type rank found across tumor types, with all genes ultimately ranked and scaled between 0 and 1 (illustration below).
+
+<br>
+<p align="center">
+  <a href = "module_screenshots/oncoEnrichR_SuppFigure1.png"><img src="module_screenshots/oncoEnrichR_SuppFigure1.png" width = "750" height = "600" border = 0>
+  </a>
+</p>
+<br>
+

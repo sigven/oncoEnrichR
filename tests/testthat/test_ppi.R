@@ -1,19 +1,33 @@
 
+
 ppi_settings <- list()
-ppi_settings[["minimum_score"]] <- 900
-ppi_settings[["visnetwork_shape"]] <- "dot"
-ppi_settings[["visnetwork_shadow"]] <- T
-ppi_settings[["show_drugs"]] <- T
-ppi_settings[["add_nodes"]] <- 50
-ppi_settings[["query_type"]] <- "network"
+
+ppi_settings[["string"]] <- list()
+ppi_settings[["string"]][["minimum_score"]] <- 0.9
+ppi_settings[["string"]][["visnetwork_shape"]] <- "dot"
+ppi_settings[["string"]][["visnetwork_shadow"]] <- TRUE
+ppi_settings[["string"]][["show_drugs"]] <- TRUE
+ppi_settings[["string"]][["add_nodes"]] <- 30
+ppi_settings[["string"]][["query_type"]] <- "network"
+ppi_settings[["string"]][["network_type"]] <- "physical"
+ppi_settings[["string"]][["show_isolated_nodes"]] <- F
+
+ppi_settings[["biogrid"]] <- list()
+ppi_settings[["biogrid"]][['minimum_evidence']] <- 2
+ppi_settings[["biogrid"]][["visnetwork_shape"]] <- "dot"
+ppi_settings[["biogrid"]][["visnetwork_shadow"]] <- TRUE
+ppi_settings[["biogrid"]][["show_drugs"]] <- TRUE
+ppi_settings[["biogrid"]][["add_nodes"]] <- 30
+ppi_settings[["biogrid"]][["show_isolated_nodes"]] <- F
+
 
 pc_genes <-
   oedb$genedb$all[oedb$genedb$all$gene_biotype == "protein-coding",]
 
-test_that("Tissue/celltype enrichment categories ", {
+test_that("Protein-protein interaction network ", {
   expect_error(oncoEnrichR:::get_ppi_network(
-    settings = ppi_settings
-  ))
+    settings = ppi_settings[['string']]))
+
   expect_error(oncoEnrichR:::get_ppi_network(
     settings = ppi_settings,
     genedb = oedb$genedb$all
@@ -30,12 +44,20 @@ test_that("Tissue/celltype enrichment categories ", {
     qgenes = c("BRAF")
   ))
 
+  expect_error(oncoEnrichR:::get_ppi_network(
+    settings = ppi_settings,
+    genedb = oedb$genedb$all,
+    cancerdrugdb = oedb$cancerdrugdb,
+    qgenes = as.integer(25912),
+  ))
+
   expect_identical(
     names(
       oncoEnrichR:::get_ppi_network(
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )
     ),
@@ -49,6 +71,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     ),
@@ -61,13 +84,14 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(25912),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     ),
     as.integer(0)
   )
 
-  ppi_settings$minimum_score <- 700
+  ppi_settings$minimum_score <- 0.7
 
   expect_identical(
     names(
@@ -75,6 +99,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
         )
       ),
@@ -85,9 +110,11 @@ test_that("Tissue/celltype enrichment categories ", {
   expect_identical(
     names(
       oncoEnrichR:::get_ppi_network(
-        qgenes = as.integer(dplyr::sample_n(pc_genes, 300)$entrezgene),
+        qgenes = as.integer(
+          dplyr::sample_n(pc_genes, 300)$entrezgene),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )
     ),
@@ -101,6 +128,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network
     ),
@@ -114,6 +142,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$nodes
     )
@@ -125,6 +154,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$complete_network$edges
     )
@@ -136,6 +166,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     )
@@ -147,6 +178,7 @@ test_that("Tissue/celltype enrichment categories ", {
         qgenes = as.integer(c(1956, 673)),
         genedb = oedb$genedb$all,
         settings = ppi_settings,
+        biogrid = oedb$biogrid,
         cancerdrugdb = oedb$cancerdrugdb
       )$hubscores
     ),

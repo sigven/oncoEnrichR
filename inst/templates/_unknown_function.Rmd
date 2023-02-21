@@ -1,13 +1,13 @@
 ### Poorly characterized genes
 
-* The aim of this section is to highlight poorly characterized genes or genes with unknown function in the query set
+* The aim of this section is to highlight poorly characterized protein-coding genes or protein-coding genes with unknown function in the query set
 * A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r onc_enrich_report[['config']][['unknown_function']][['num_candidates']]`__) _ have been established based on
    1. Gene names specifically designated with _uncharacterized_ or _open reading frame_
    2. Missing gene function summary in [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene) AND function summary in [UniProt Knowledgebase](https://uniprot.org)
-   3. Missing or limited (<= 1) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) or biological process (BP)
+   3. Missing or limited (<= 2) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) or biological process (BP)
       * Ontology annotations attributed with an [electronic annotation evidence code (IEA)](http://geneontology.org/docs/guide-go-evidence-codes/) are not considered in this calculation (less reliable due to lack of manually review)
       
-* Query genes found within the set of poorly characterized genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
+* Query genes found within the set of poorly characterized protein-coding genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
    
 <br><br>
 
@@ -26,7 +26,9 @@ if(nrow(onc_enrich_report[['data']][['unknown_function']][['hits_df']]) > 0){
 
 ```{r table_browse_unknown, echo=F, results = "asis", eval = show_ufunction_genes}
 
-targets_unknown_function <- crosstalk::SharedData$new(onc_enrich_report[['data']][['unknown_function']][['hits_df']])
+targets_unknown_function <- crosstalk::SharedData$new(
+  onc_enrich_report[['data']][['unknown_function']][['hits_df']] |>
+    dplyr::rename(go_terms = go_term_link))
 
 crosstalk::bscols(
   list(

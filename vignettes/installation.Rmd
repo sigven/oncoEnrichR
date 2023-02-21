@@ -7,6 +7,12 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Requirements/dependencies
+
+* _oncoEnrichR_ requires R (>=4.1)
+
+## Installation of oncoEnrichR with R commands
+
 1.  `install.packages('devtools')`
 2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.3.2")`
 3.  `library(oncoEnrichR)`

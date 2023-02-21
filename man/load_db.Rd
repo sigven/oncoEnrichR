@@ -4,13 +4,16 @@
 \alias{load_db}
 \title{Load oncoEnrichR data repository}
 \usage{
-load_db(cache_dir = NA, force_download = F)
+load_db(cache_dir = NA, force_download = FALSE, googledrive = TRUE)
 }
 \arguments{
 \item{cache_dir}{Local directory for data download}
 
-\item{force_download}{Logical indicating if local cache should force downloaded
+\item{force_download}{Logical indicating if local cache should force download
 (i.e. set to TRUE to re-download even if data exists in cache)}
+
+\item{googledrive}{logical indicating to use googledrive or UiO server as
+host for downloading}
 }
 \value{
 A \code{list} object with oncoEnrichR datasets, to be used as

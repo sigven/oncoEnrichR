@@ -1,13 +1,13 @@
 hpa_prognostic_genes <- function(qgenes,
                                  q_id_type = "symbol",
                                 genedb = NULL,
-                                hpadb = NULL){
+                                hpadb = NULL) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   lgr::lgr$info(
-    paste0("Human Protein Atlas: retrieving prognostic ",
+    paste0("Human Protein Atlas (HPA): retrieving prognostic ",
            "associations (gene expression) to cancer"))
   stopifnot(!is.null(genedb))
   stopifnot(!is.null(hpadb))
@@ -18,43 +18,45 @@ hpa_prognostic_genes <- function(qgenes,
   stopifnot(!is.null(qgenes))
 
   query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
-  if(q_id_type == 'entrezgene'){
+  if (q_id_type == 'entrezgene') {
     stopifnot(is.integer(qgenes))
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F) |>
-      dplyr::inner_join(genedb, by = "entrezgene") |>
+      dplyr::inner_join(genedb, by = "entrezgene", multiple = "all") |>
       dplyr::distinct()
-  }else{
+  } else {
     stopifnot(is.character(qgenes))
     query_genes_df <- query_genes_df |>
-      dplyr::inner_join(genedb, by = "symbol") |>
+      dplyr::inner_join(genedb, by = "symbol", multiple = "all") |>
       dplyr::distinct()
   }
 
   prognostic_associations <- hpadb |>
     dplyr::filter(stringr::str_detect(.data$property,"pathology_prognostics")) |>
     tidyr::separate(.data$value, c("evidence_direction","is_prognostic","p_value"),
-                    sep="\\|") |>
+                    sep ="\\|") |>
     dplyr::mutate(p_value = as.numeric(.data$p_value)) |>
     dplyr::mutate(p_value = dplyr::if_else(.data$p_value == 0, 1e-16, .data$p_value)) |>
     dplyr::mutate(log10_p_value = round(-log10(.data$p_value), digits = 2)) |>
     dplyr::mutate(property = stringr::str_replace(.data$property,
                                                   "pathology_prognostics_","")) |>
-    dplyr::inner_join(dplyr::select(genedb,
-                                    .data$symbol,
-                                    .data$ensembl_gene_id),
-                      by=c("ensembl_gene_id")) |>
-    dplyr::mutate(hpa_link = paste0("<a href='https://www.proteinatlas.org/",
-                                    .data$ensembl_gene_id,
-                                    "-",
-                                    .data$symbol,
-                                    "/pathology/",
-                                    stringr::str_replace_all(.data$property,"_","+"),"'",
-                                    " target='_blank'>",
-                                    stringr::str_to_title(
-                                      stringr::str_replace_all(.data$property,"_"," ")
-                                    ),
-                                    "</a>")) |>
+    dplyr::inner_join(
+      dplyr::select(genedb,
+                    c("symbol",
+                    "ensembl_gene_id")),
+      by=c("ensembl_gene_id"), multiple = "all") |>
+    dplyr::mutate(hpa_link = paste0(
+      "<a href='https://www.proteinatlas.org/",
+      .data$ensembl_gene_id,
+      "-",
+      .data$symbol,
+      "/pathology/",
+      stringr::str_replace_all(.data$property,"_","+"),"'",
+      " target='_blank'>",
+      stringr::str_to_title(
+        stringr::str_replace_all(.data$property,"_"," ")
+      ),
+      "</a>")) |>
     dplyr::mutate(property = dplyr::case_when(
       stringr::str_detect(.data$property,"breast") ~ "Breast",
       stringr::str_detect(.data$property,"colorect") ~ "Colon/Rectum",
@@ -80,7 +82,7 @@ hpa_prognostic_genes <- function(qgenes,
 
   all_prog_assocs <- data.frame()
 
-  for(tissue in unique(prognostic_associations$property)){
+  for (tissue in unique(prognostic_associations$property)) {
     assocs <- dplyr::filter(prognostic_associations,
                             .data$property == tissue) |>
       dplyr::arrange(dplyr::desc(.data$log10_p_value)) |>
@@ -95,22 +97,24 @@ hpa_prognostic_genes <- function(qgenes,
   n_query_associations <- 0
   prognostoc_query_associations <- 0
 
-  if(nrow(all_prog_assocs) > 0){
+  if (nrow(all_prog_assocs) > 0) {
     prognostic_query_associations <- all_prog_assocs |>
-      dplyr::inner_join(dplyr::select(query_genes_df, .data$symbol,
-                                      .data$ensembl_gene_id, .data$name),
-                        by = c("symbol","ensembl_gene_id")) |>
-      dplyr::rename(primary_site = .data$property,
-                    tumor_types = .data$hpa_link) |>
-      dplyr::select(-.data$is_prognostic) |>
-      dplyr::select(.data$symbol,
-                    .data$primary_site,
-                    .data$evidence_direction,
-                    .data$tumor_types,
-                    .data$p_value,
-                    .data$percentile_rank_site,
-                    .data$percentile_rank_all,
-                    .data$log10_p_value) |>
+      dplyr::inner_join(
+        dplyr::select(
+          query_genes_df,
+          c("symbol", "ensembl_gene_id", "name")),
+        by = c("symbol","ensembl_gene_id"), multiple = "all") |>
+      dplyr::rename(primary_site = "property",
+                    tumor_types = "hpa_link") |>
+      dplyr::select(-c("is_prognostic")) |>
+      dplyr::select(c("symbol",
+                    "primary_site",
+                    "evidence_direction",
+                    "tumor_types",
+                    "p_value",
+                    "percentile_rank_site",
+                    "percentile_rank_all",
+                    "log10_p_value")) |>
       dplyr::arrange(dplyr::desc(.data$log10_p_value)) |>
       dplyr::distinct()
 
@@ -128,27 +132,27 @@ hpa_prognostic_genes <- function(qgenes,
 
 km_cshl_survival_genes <- function(qgenes,
                                    qsource = "symbol",
-                                   projectsurvivaldb = NULL,
-                                   ...){
+                                   survivaldb = NULL,
+                                   ...) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
     dot_args <- list(...)
   lgr::lgr$info(
-             paste0("Project Survival_KM_CSHL: retrieval of ",
+             paste0("tcga-survival.com: retrieval of ",
                     "genetic determinants of cancer survival - ",
                     dot_args$genetic_feature
              ))
   stopifnot(is.character(qgenes))
   km_survival_targets <- data.frame()
-  # if(unique(nchar(qgenes)) == 0){
+  # if (unique(nchar(qgenes)) == 0) {
   #   lgr::lgr$warn(paste0("Length of queryset is empty"))
   #   return(km_survival_targets)
   #
   # }
-  stopifnot(!is.null(projectsurvivaldb))
-  validate_db_df(projectsurvivaldb,
+  stopifnot(!is.null(survivaldb))
+  validate_db_df(survivaldb,
                  dbtype = "survival_km_cshl")
 
 
@@ -157,19 +161,19 @@ km_cshl_survival_genes <- function(qgenes,
 
 
   targets_survival <- as.data.frame(
-    projectsurvivaldb |>
-      dplyr::inner_join(target_genes, by = c("symbol"))
+    survivaldb |>
+      dplyr::inner_join(target_genes, by = c("symbol"), multiple = "all")
   )
 
-  symlevels <- levels(projectsurvivaldb$symbol)
+  symlevels <- levels(survivaldb$symbol)
 
-  if(nrow(targets_survival) > 0){
+  if (nrow(targets_survival) > 0) {
 
     km_survival_targets <- as.data.frame(
       targets_survival |>
-        dplyr::select(.data$symbol,
-                      .data$tcga_cohort,
-                      .data$z_score) |>
+        dplyr::select(c("symbol",
+                      "tcga_cohort",
+                      "z_score")) |>
         dplyr::mutate(
           symbol = factor(.data$symbol, levels = symlevels))
     )
