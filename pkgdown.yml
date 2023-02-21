@@ -1,14 +1,15 @@
-pandoc: 2.7.3
-pkgdown: 2.0.6
+pandoc: 2.19.2
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   CHANGELOG: CHANGELOG.html
   annotation_resources: annotation_resources.html
+  cancer_gene_rank: cancer_gene_rank.html
   input: input.html
   installation: installation.html
   output: output.html
   running: running.html
-last_built: 2022-09-27T20:12Z
+last_built: 2023-02-21T15:29Z
 urls:
   reference: https://sigven.github.io/oncoEnrichR/reference
   article: https://sigven.github.io/oncoEnrichR/articles

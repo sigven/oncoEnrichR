@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="oncoEnrichR performs annotation and prioritization of genesets 
     discovered from high-throughput experiments within cancer biology. The tool 
-    queries a number of high-quality resources, including Project Score 
+    queries a number of high-quality resources, including DepMap/Project Score 
     (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
     (comprehensive target-drug associations, cancer hallmark evidence and 
-    target-disease associations), TCGA (genetic aberrations and gene co-expression 
-    patterns in human tumor samples), STRING (protein-protein interaction networks), 
-    curated protein complexes (CORUM/Compleat), COMPPI (subcellular compartments), 
+    target-tumor type associations), TCGA (genetic aberrations and gene co-expression 
+    patterns in human tumor samples), STRING/BioGRID (protein-protein interaction networks), 
+    curated protein complexes (CORUM/Compleat/hu.MAP), COMPARTMENTS (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
     prognostic associations), CellChatDB (ligand-receptor interactions),
     DoRothEA (regulatory interactions), synthetic lethality predictions, 
@@ -29,18 +29,18 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Cancer-dedicated gene set interpretation">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Cancer-dedicated gene set interpretation">
 <meta property="og:description" content="oncoEnrichR performs annotation and prioritization of genesets 
     discovered from high-throughput experiments within cancer biology. The tool 
-    queries a number of high-quality resources, including Project Score 
+    queries a number of high-quality resources, including DepMap/Project Score 
     (cellular fitness in genome-scale drop-out screens), Open Targets Platform 
     (comprehensive target-drug associations, cancer hallmark evidence and 
-    target-disease associations), TCGA (genetic aberrations and gene co-expression 
-    patterns in human tumor samples), STRING (protein-protein interaction networks), 
-    curated protein complexes (CORUM/Compleat), COMPPI (subcellular compartments), 
+    target-tumor type associations), TCGA (genetic aberrations and gene co-expression 
+    patterns in human tumor samples), STRING/BioGRID (protein-protein interaction networks), 
+    curated protein complexes (CORUM/Compleat/hu.MAP), COMPARTMENTS (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
     prognostic associations), CellChatDB (ligand-receptor interactions),
     DoRothEA (regulatory interactions), synthetic lethality predictions, 
@@ -63,7 +63,7 @@
     
     <a class="navbar-brand me-2" href="index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,6 +87,7 @@
     <a class="dropdown-item" href="articles/input.html">Input</a>
     <a class="dropdown-item" href="articles/output.html">Output</a>
     <a class="dropdown-item" href="articles/annotation_resources.html">Annotation resources</a>
+    <a class="dropdown-item" href="articles/cancer_gene_rank.html">Cancer gene rank</a>
   </div>
 </li>
 <li class="nav-item">
@@ -123,7 +124,7 @@
 </div>
 <p><strong>oncoEnrichR</strong> is an R package for functional interrogation of human genesets in the context of cancer. It is primarily intended for exploratory analysis, interpretation, and prioritization of long gene lists, which represent a common output from many types of high-throughput cancer biology screens.</p>
 <p><strong>oncoEnrichR</strong> can be used to interrogate results from e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a variety of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).</p>
-<p>Web-based access to <strong>oncoEnrichR</strong> is available at <font size="4"> <a href="https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.3.2" class="external-link"><strong>https://oncotools.elixir.no</strong></a></font></p>
+<p>Web-based access to <strong>oncoEnrichR</strong> is available at <font size="4"> <a href="https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.4.0" class="external-link"><strong>https://oncotools.elixir.no</strong></a></font></p>
 <p><br></p>
 <p><img src="reference/figures/oncoenrichr_overview.png" align="center" border="0"></p>
 <p><br><br></p>
@@ -133,6 +134,7 @@
 <p>The contents of the analysis report provided by oncoEnrichR address the following scientific questions for a given gene list:</p>
 <ul>
 <li>Which diseases/tumor types are known to be associated with genes in the query set, and to what extent?</li>
+<li>Which genes in the query set are known to have oncogenic or tumor suppressive roles, using evidence from the biomedical literature and curated resources?</li>
 <li>Which genes in the query set are attributed with cancer hallmark evidence?</li>
 <li>Which proteins in the query sets are druggable in different cancer conditions (early and late clinical development phases)? For other proteins in the query set, what is their likelihood of being druggable?</li>
 <li>Which protein complexes involve proteins in the query set?</li>
@@ -154,6 +156,8 @@
 <h2 id="news">News<a class="anchor" aria-label="anchor" href="#news"></a>
 </h2>
 <ul>
+<li>February 21st 2023: <a href="articles/CHANGELOG.html#version-1-4-0"><strong>1.4.0 release</strong></a>
+</li>
 <li>September 27th 2022: <a href="articles/CHANGELOG.html#version-1-3-2"><strong>1.3.2 release</strong></a>
 </li>
 <li>September 2nd 2022: <a href="articles/CHANGELOG.html#version-1-2-2"><strong>1.2.2 release</strong></a>
@@ -165,9 +169,8 @@
 <div class="section level2">
 <h2 id="example-report">Example report<a class="anchor" aria-label="anchor" href="#example-report"></a>
 </h2>
-<p><a href="https://doi.org/10.5281/zenodo.7115745" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7115745.svg" alt="DOI"></a></p>
+<p><a href="https://doi.org/10.5281/zenodo.7657930" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7657930.svg" alt="DOI"></a></p>
 <p><br></p>
-<p><img src="reference/figures/oncoenrichr_slideshow.gif" align="center" width="560" height="750" border="2,"></p>
 </div>
 <div class="section level2">
 <h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
@@ -189,8 +192,10 @@
 </h2>
 <p>oncoEnrichR is supported by the <a href="https://www.med.uio.no/cancell/english/" class="external-link">Centre for Cancer Cell Reprogramming</a> at the <a href="https://www.uio.no" class="external-link">University of Oslo</a>/<a href="https://radium.no" class="external-link">Oslo University Hospital</a>, and <a href="https://elixir.no/organization/organisation/elixir-uio" class="external-link">Elixir Norway (Oslo node)</a>.</p>
 <p><br><br></p>
-<p float="left"></p>
+<p float="left">
+</p>
 <p><a href="https://www.med.uio.no/cancell/english/" class="external-link"> <img src="img/can-cell.png" width="150"></a>       <a href="https://elixir.no/organization/organisation/elixir-uio" class="external-link"> <img src="img/elixir_norway.png" width="200"></a></p>
+
 </div>
 </div>
 
@@ -246,7 +251,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer>

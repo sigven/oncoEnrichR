@@ -4,7 +4,7 @@ cancer relevance. Multiple perspectives are offered, including
 tumor aberration and co-expression patterns, druggability,
 protein-protein interactions, gene fitness effects, regulatory
 interactions, subcellular compartment enrichment, pathway enrichment,
-synthetic lethality interactions, prognostic associations, and more."><title>Interrogate a gene list for cancer relevance — onco_enrich • oncoEnrichR</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Interrogate a gene list for cancer relevance — onco_enrich"><meta property="og:description" content="Function that interrogates a list of human gene identifiers for
+synthetic lethality interactions, prognostic associations, and more."><title>Interrogate a gene list for cancer relevance — onco_enrich • oncoEnrichR</title><!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png"><link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png"><link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png"><link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png"><link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png"><link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png"><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Interrogate a gene list for cancer relevance — onco_enrich"><meta property="og:description" content="Function that interrogates a list of human gene identifiers for
 cancer relevance. Multiple perspectives are offered, including
 tumor aberration and co-expression patterns, druggability,
 protein-protein interactions, gene fitness effects, regulatory
@@ -20,7 +20,7 @@ synthetic lethality interactions, prognostic associations, and more."><meta prop
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,7 @@ synthetic lethality interactions, prognostic associations, and more."><meta prop
     <a class="dropdown-item" href="../articles/input.html">Input</a>
     <a class="dropdown-item" href="../articles/output.html">Output</a>
     <a class="dropdown-item" href="../articles/annotation_resources.html">Annotation resources</a>
+    <a class="dropdown-item" href="../articles/cancer_gene_rank.html">Cancer gene rank</a>
   </div>
 </li>
 <li class="nav-item">
@@ -96,22 +97,26 @@ synthetic lethality interactions, prognostic associations, and more.</p>
 <span>  bgset <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bgset_id_type <span class="op">=</span> <span class="st">"symbol"</span>,</span>
 <span>  bgset_description <span class="op">=</span> <span class="st">"All protein-coding genes"</span>,</span>
-<span>  p_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>  p_value_adjustment_method <span class="op">=</span> <span class="st">"BH"</span>,</span>
-<span>  q_value_cutoff_enrichment <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  min_geneset_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  max_geneset_size <span class="op">=</span> <span class="fl">500</span>,</span>
-<span>  num_terms_enrichment_plot <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>  min_subcellcomp_confidence <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  enrichment_p_value_cutoff <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  enrichment_p_value_adj <span class="op">=</span> <span class="st">"BH"</span>,</span>
+<span>  enrichment_q_value_cutoff <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  enrichment_min_geneset_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  enrichment_max_geneset_size <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  enrichment_plot_num_terms <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  enrichment_simplify_go <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  subcellcomp_min_confidence <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  subcellcomp_min_channels <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  subcellcomp_show_cytosol <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  min_confidence_reg_interaction <span class="op">=</span> <span class="st">"D"</span>,</span>
-<span>  max_fitness_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,</span>
-<span>  simplify_go <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  ppi_add_nodes <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  ppi_score_threshold <span class="op">=</span> <span class="fl">900</span>,</span>
+<span>  regulatory_min_confidence <span class="op">=</span> <span class="st">"D"</span>,</span>
+<span>  fitness_max_score <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>,</span>
+<span>  ppi_add_nodes <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>  ppi_string_min_score <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  ppi_string_network_type <span class="op">=</span> <span class="st">"functional"</span>,</span>
+<span>  ppi_biogrid_min_evidence <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  ppi_node_shadow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ppi_show_drugs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ppi_show_isolated_nodes <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_ppi <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  show_drugs_in_ppi <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_disease <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_top_diseases_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_cancer_hallmarks <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -144,21 +149,27 @@ synthetic lethality interactions, prognostic associations, and more.</p>
 
 
 <dt>query_id_type</dt>
-<dd><p>character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")</p></dd>
+<dd><p>character indicating source of query (one of
+"uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
+"refseq_mrna", "ensembl_protein", "refseq_protein")</p></dd>
 
 
 <dt>ignore_id_err</dt>
-<dd><p>logical indicating if analysis should continue when uknown query identifiers are encountered</p></dd>
+<dd><p>logical indicating if analysis should
+continue when uknown query identifiers are encountered</p></dd>
 
 
 <dt>html_floating_toc</dt>
-<dd><p>logical - float the table of contents to the left of the main document content (HTML report). The floating table of contents will always be visible even when the document is scrolled</p></dd>
+<dd><p>logical - float the table of contents to the left
+of the main document content (HTML report). The floating table of contents
+will always be visible even when the document is scrolled</p></dd>
 
 
 <dt>html_report_theme</dt>
-<dd><p>Bootswatch theme for HTML report (any of "bootstrap", "cerulean", "cosmo", "default",
-"flatly", "journal", "lumen", "paper", "sandstone", "simplex", "spacelab", "united", "yeti")</p></dd>
+<dd><p>Bootswatch theme for HTML report (any of
+"bootstrap", "cerulean", "cosmo", "default",
+"flatly", "journal", "lumen", "paper", "sandstone", "simplex",
+"spacelab", "united", "yeti")</p></dd>
 
 
 <dt>project_title</dt>
@@ -174,149 +185,223 @@ synthetic lethality interactions, prognostic associations, and more.</p>
 
 
 <dt>bgset</dt>
-<dd><p>character vector with gene identifiers, used as reference/background for enrichment/over-representation analysis</p></dd>
+<dd><p>character vector with gene identifiers, used as
+reference/background for enrichment/over-representation analysis</p></dd>
 
 
 <dt>bgset_id_type</dt>
-<dd><p>character indicating source of background ("uniprot_acc", "symbol", "entrezgene",
-"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein", "refseq_protein")</p></dd>
+<dd><p>character indicating source of background
+("uniprot_acc", "symbol", "entrezgene",
+"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein",
+"refseq_protein"), default: "symbol"</p></dd>
 
 
 <dt>bgset_description</dt>
-<dd><p>character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")</p></dd>
+<dd><p>character indicating type of background
+(e.g. "All lipid-binding proteins (n = 200)")</p></dd>
 
 
-<dt>p_value_cutoff_enrichment</dt>
-<dd><p>cutoff p-value for enrichment/over-representation analysis</p></dd>
+<dt>enrichment_p_value_cutoff</dt>
+<dd><p>cutoff p-value for enrichment/
+over-representation analysis (default: 0.05)</p></dd>
 
 
-<dt>p_value_adjustment_method</dt>
-<dd><p>one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"</p></dd>
+<dt>enrichment_p_value_adj</dt>
+<dd><p>one of "holm", "hochberg", "hommel",
+"bonferroni", "BH", "BY", "fdr", "none" (clusterProfiler, default: "BH")</p></dd>
 
 
-<dt>q_value_cutoff_enrichment</dt>
-<dd><p>cutoff q-value for enrichment analysis</p></dd>
+<dt>enrichment_q_value_cutoff</dt>
+<dd><p>cutoff q-value for enrichment
+analysis (clusterProfiler, default: 0.2)</p></dd>
 
 
-<dt>min_geneset_size</dt>
-<dd><p>minimal size of geneset annotated by term for testing in enrichment/over-representation analysis</p></dd>
+<dt>enrichment_min_geneset_size</dt>
+<dd><p>minimal size of geneset annotated by term
+for testing in enrichment/over-representation analysis (clusterProfiler,
+default: 10)</p></dd>
 
 
-<dt>max_geneset_size</dt>
-<dd><p>maximal size of geneset annotated by term for testing in enrichment/over-representation analysis</p></dd>
+<dt>enrichment_max_geneset_size</dt>
+<dd><p>maximal size of geneset annotated by term
+for testing in enrichment/over-representation analysis (clusterProfiler,
+default: 500)</p></dd>
 
 
-<dt>num_terms_enrichment_plot</dt>
-<dd><p>number of top enriched Gene Ontology terms (max) to show in enrichment barplot</p></dd>
+<dt>enrichment_plot_num_terms</dt>
+<dd><p>number of top enriched Gene Ontology terms
+(max) to show in enrichment barplot (default: 15)</p></dd>
 
 
-<dt>min_subcellcomp_confidence</dt>
-<dd><p>minimum confidence level of subcellular compartment annotations (range from 1 to 6, 6 is strongest)</p></dd>
+<dt>enrichment_simplify_go</dt>
+<dd><p>remove highly similar GO terms in results from
+GO enrichment/over-representation analysis (default: TRUE)</p></dd>
+
+
+<dt>subcellcomp_min_confidence</dt>
+<dd><p>minimum confidence level for subcellular
+compartment annotation in COMPARTMENTS (min = 3, max = 5, default: 3)</p></dd>
+
+
+<dt>subcellcomp_min_channels</dt>
+<dd><p>minimum number of channels that support a
+subcellular compartment annotation in COMPARTMENTS (min = 1,
+max = 3, default: 1)</p></dd>
 
 
 <dt>subcellcomp_show_cytosol</dt>
-<dd><p>logical indicating if subcellular heatmap should show highlight proteins located in the cytosol or not</p></dd>
+<dd><p>logical indicating if subcellular heatmap
+should show highlight proteins located in the cytosol or not (default: FALSE)</p></dd>
 
 
-<dt>min_confidence_reg_interaction</dt>
-<dd><p>minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')</p></dd>
+<dt>regulatory_min_confidence</dt>
+<dd><p>minimum confidence level for regulatory
+interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D',
+default: 'D')</p></dd>
 
 
-<dt>max_fitness_score</dt>
-<dd><p>maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score</p></dd>
-
-
-<dt>simplify_go</dt>
-<dd><p>remove highly similar GO terms in results from GO enrichment/over-representation analysis</p></dd>
+<dt>fitness_max_score</dt>
+<dd><p>maximum loss-of-fitness score (scaled Bayes factor
+from BAGEL) for genes retrieved from DepMap/Project Score, default:-2</p></dd>
 
 
 <dt>ppi_add_nodes</dt>
-<dd><p>number of nodes to add to target set when computing the protein-protein interaction network (STRING)</p></dd>
+<dd><p>number of nodes to add to target set when computing the
+protein-protein interaction network (STRING/BioGRID, default: 30)</p></dd>
 
 
-<dt>ppi_score_threshold</dt>
-<dd><p>minimum score (0-1000) for retrieval of protein-protein interactions (STRING)</p></dd>
+<dt>ppi_string_min_score</dt>
+<dd><p>minimum score (between 0 and 1) for confidence of
+retrieved protein-protein interactions (STRING, default: 0.9)</p></dd>
+
+
+<dt>ppi_string_network_type</dt>
+<dd><p>type of network to show for interactions in
+STRING ('functional' or 'physical', default: 'functional')</p></dd>
+
+
+<dt>ppi_biogrid_min_evidence</dt>
+<dd><p>minimum number of evidence items required
+for protein-protein interactions retrieved (BioGRID, default: 3)</p></dd>
 
 
 <dt>ppi_node_shadow</dt>
-<dd><p>show shadow for nodes in the displayed PPI network</p></dd>
+<dd><p>show shadow for nodes in the displayed PPI
+network (default: TRUE)</p></dd>
+
+
+<dt>ppi_show_drugs</dt>
+<dd><p>logical indicating if targeted drugs (&gt;= phase 3)
+should be displayed in protein-protein interaction networks (default: TRUE)</p></dd>
+
+
+<dt>ppi_show_isolated_nodes</dt>
+<dd><p>logical indicating if targets/nodes without
+any interactions should be displayed in the protein-protein
+interaction networks (default: FALSE)</p></dd>
 
 
 <dt>show_ppi</dt>
-<dd><p>logical indicating if report should contain protein-protein interaction data (STRING)</p></dd>
-
-
-<dt>show_drugs_in_ppi</dt>
-<dd><p>logical indicating if targeted drugs (&gt; phase 3) should be displayed in protein-protein interaction network (Open Targets Platform)</p></dd>
+<dd><p>logical indicating if report should contain protein-protein
+interaction views of the query set (STRING and BioGRID, default: TRUE)</p></dd>
 
 
 <dt>show_disease</dt>
-<dd><p>logical indicating if report should contain disease associations (Open Targets Platform, association_score &gt;= 0.05, support from at least two data types)</p></dd>
+<dd><p>logical indicating if report should contain disease
+associations (Open Targets Platform, association_score &gt;= 0.05, support
+from at least two data types), and tumor suppressor/oncogene annotations (
+default: TRUE)</p></dd>
 
 
 <dt>show_top_diseases_only</dt>
-<dd><p>logical indicating if report should contain top (n = 20) disease associations only pr. query gene (Open Targets Platform)</p></dd>
+<dd><p>logical indicating if report should contain
+top (n = 20) disease associations only pr. query gene
+default: TRUE)</p></dd>
 
 
 <dt>show_cancer_hallmarks</dt>
-<dd><p>logical indicating if report should contain annotations/evidence of cancer hallmarks per query gene (COSMIC/Open Targets Platform)</p></dd>
+<dd><p>logical indicating if report should
+contain annotations/evidence of cancer hallmarks per query gene
+(COSMIC/Open Targets Platform, default: TRUE</p></dd>
 
 
 <dt>show_drug</dt>
-<dd><p>logical indicating if report should contain targeted cancer drug information</p></dd>
+<dd><p>logical indicating if report should contain targeted
+cancer drug information (default: TRUE)</p></dd>
 
 
 <dt>show_enrichment</dt>
-<dd><p>logical indicating if report should contain functional enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME, NetPath, WikiPathways)</p></dd>
+<dd><p>logical indicating if report should contain functional
+enrichment/over-representation analysis (MSigDB, GO, KEGG, REACTOME,
+NetPath, WikiPathways, default: TRUE)</p></dd>
 
 
 <dt>show_aberration</dt>
-<dd><p>logical indicating if report should contain TCGA aberration plots (amplifications/deletions)</p></dd>
+<dd><p>logical indicating if report should contain TCGA
+aberration plots (amplifications/deletions, default: TRUE)</p></dd>
 
 
 <dt>show_coexpression</dt>
-<dd><p>logical indicating if report should contain TCGA co-expression data (RNAseq) of query set with oncogenes/tumor suppressor genes</p></dd>
+<dd><p>logical indicating if report should contain TCGA
+co-expression data (RNAseq) of query set with oncogenes/tumor
+suppressor genes (default: TRUE)</p></dd>
 
 
 <dt>show_cell_tissue</dt>
-<dd><p>logical indicating if report should contain tissue-specificity and single cell-type specificity assessments (Human Protein Atlas)
-of target genes, using data from the Human Protein Atlas</p></dd>
+<dd><p>logical indicating if report should contain
+tissue-specificity and single cell-type specificity assessments
+(Human Protein Atlas) of target genes (default: FALSE)</p></dd>
 
 
 <dt>show_ligand_receptor</dt>
-<dd><p>logical indicating if report should contain ligand-receptor interactions (CellChatDB)</p></dd>
+<dd><p>logical indicating if report should contain
+ligand-receptor interactions (CellChatDB, default: TRUE)</p></dd>
 
 
 <dt>show_regulatory</dt>
-<dd><p>logical indicating if report should contain data on transcription factor (TF) - target interactions relevant for the query set (DoRothEA)</p></dd>
+<dd><p>logical indicating if report should contain data on
+transcription factor (TF) - target interactions relevant for the
+query set (DoRothEA, default: TRUE)</p></dd>
 
 
 <dt>show_unknown_function</dt>
-<dd><p>logical indicating if report should highlight target genes with unknown or poorly defined functions (GO/Uniprot KB/NCBI)</p></dd>
+<dd><p>logical indicating if report should highlight
+target genes with unknown or poorly defined functions
+(GO/Uniprot KB/NCBI, default: TRUE)</p></dd>
 
 
 <dt>show_prognostic</dt>
-<dd><p>logical indicating if mRNA-based (single-gene) prognostic associations to cancer types should be listed (Human Protein Atlas/TCGA)</p></dd>
+<dd><p>logical indicating if mRNA-based (single-gene)
+prognostic associations to cancer types should be listed
+(Human Protein Atlas/TCGA, default: TRUE</p></dd>
 
 
 <dt>show_subcell_comp</dt>
-<dd><p>logical indicating if report should provide subcellular compartment annotations (ComPPI)</p></dd>
+<dd><p>logical indicating if report should provide
+subcellular compartment annotations (COMPARTMENTS, default: TRUE)</p></dd>
 
 
 <dt>show_synleth</dt>
-<dd><p>logical indicating if report should list overlap with predicted synthetic lethality interactions (gene paralogs only, De Kegel et al., Cell Systems, 2021)</p></dd>
+<dd><p>logical indicating if report should list overlap with
+predicted synthetic lethality interactions (gene paralogs only,
+De Kegel et al., Cell Systems, 2021). Default: TRUE</p></dd>
 
 
 <dt>show_fitness</dt>
-<dd><p>logical indicating if report should provide fitness scores and target priority scores from CRISPR/Cas9 loss-of-fitness screens (Project Score)</p></dd>
+<dd><p>logical indicating if report should provide fitness
+scores and target priority scores from CRISPR/Cas9 loss-of-fitness
+screens (DepMap/Project Score, default: TRUE)</p></dd>
 
 
 <dt>show_complex</dt>
-<dd><p>logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)</p></dd>
+<dd><p>logical indicating if report should provide target
+memberships in known protein complexes
+(ComplexPortal/Compleat/hu.MAP2/PDB/CORUM, default: TRUE)</p></dd>
 
 
 <dt>show_domain</dt>
-<dd><p>logical indicating if report should provide target memberships in known protein domains (Pfam)</p></dd>
+<dd><p>logical indicating if report should provide target
+memberships in known protein domains (Pfam, default: TRUE)</p></dd>
 
 
 <dt>...</dt>
@@ -342,7 +427,7 @@ metadata for annotation resources used.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer></div>
