@@ -26,7 +26,6 @@ onco_enrich(
   enrichment_simplify_go = TRUE,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
-  subcellcomp_channel_types = c("Experimental", "Text mining", "Knowledge"),
   subcellcomp_show_cytosol = FALSE,
   regulatory_min_confidence = "D",
   fitness_max_score = -2,
@@ -125,10 +124,6 @@ compartment annotation in COMPARTMENTS (min = 3, max = 5, default: 3)}
 \item{subcellcomp_min_channels}{minimum number of channels that support a
 subcellular compartment annotation in COMPARTMENTS (min = 1,
 max = 3, default: 1)}
-
-\item{subcellcomp_channel_types}{restrict subcellular annotations to
-specific channel types of COMPARTMENTS
-any selection of 'Knowledge','Text mining', or 'Experimental'}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap
 should show highlight proteins located in the cytosol or not (default: FALSE)}

@@ -14,7 +14,6 @@
        * Subcellular compartment annotations per gene are provided with a __confidence score__ between 3 and 5 - indicating the quality/reliability of a given compartment annotation
           * Minimum confidence score (pr. COMPARTMENTS channel) - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
           * Minimum number of supporting COMPARTMENTS channels pr. annotation - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_channels`__
-          * COMPARTMENTS annotation channels used - user-provided: __`r paste(onc_enrich_report$config$subcellcomp$channels, collapse = ", ")`__
           * Ignore cytosol as a subcellular location: __`r !onc_enrich_report$config$subcellcomp$show_cytosol`__
 
 <br><br>

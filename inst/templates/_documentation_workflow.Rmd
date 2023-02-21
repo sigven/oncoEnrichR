@@ -40,7 +40,6 @@ The configurations set for this oncoEnrichR report are outlined below, in additi
 * <i>Subcellular compartments:</i>
   * `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
   * `subcellcomp_min_channels` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_channels']]`__
-  * `subcellcomp_channel_types` = __`r onc_enrich_report[['config']][['subcellcomp']][['channels']]`__
   * `subcellcomp_show_cytosol` = __`r onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']]`__
 
 * <i>Gene fitness scores:</i>

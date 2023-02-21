@@ -9,7 +9,7 @@ vignette: >
 
 ## Version 1.4.0
 
-* Date: 2023-02-20
+* Date: 2023-02-21
 
 ### Changed
 
@@ -36,12 +36,12 @@ vignette: >
      * Previous argument `ppi_score_threshold` is now named `ppi_string_min_score`, with a scale that goes from 0 to 1 (as opposed to 0-1000 in previous versions)
   * *Subcellular compartment annotations*
      * Now using the regularly updated [COMPARTMENTS](https://compartments.jensenlab.org/Search) resource as the underlying source for annotation
-     * Users can set a minimum confidence score for each target compartment annotation (range from 3 (least confident) to 5 (most confident)), configure the type of **channels** that should be considered for annotations ( _Knowledge_, _Text mining_ or _Experimental_), as well as the required minimum number of channels that should support a given target compartment annotation
-        - New arguments to `onco_enrich()`: `subcellcomp_min_confidence`, `subcellcomp_channel_types`, `subcellcomp_min_channels`
+     * Users can set a minimum confidence score for each target compartment annotation (range from 3 (least confident) to 5 (most confident)), as well as the required minimum number of channels ( _Knowledge_, _Text mining_ or _Experimental_) that should support a given target compartment annotation
+          - New arguments to `onco_enrich()`: `subcellcomp_min_confidence`, `subcellcomp_min_channels`
   * *Annotation of oncogenic/tumor suppressive roles*
-    * A revised approach to assign roles as proto-oncogenes or tumor suppressors is implemented, in which we assign each role with a confidence level (*Moderate/Strong/Very strong*) pending upon support in manually curated resources (Network of Cancer Genes (NCG) or Cancer Gene Census (CGC)) or support in the biomedical literature (CancerMine)
+     * A revised approach to assign roles as proto-oncogenes or tumor suppressors is implemented, in which we assign each role with a confidence level (*Moderate/Strong/Very strong*) pending upon support in manually curated resources (Network of Cancer Genes (NCG) or Cancer Gene Census (CGC)) or support in the biomedical literature (CancerMine)
   * *Cancer driver annotation*
-    * A more conservative approach for driver gene status is implemented: requiring support from _at least two_ distinct resources (Network of Cancer Genes (NCG), Cancer Gene Census, TCGA, IntOGen, or CancerMine)
+     * A more conservative approach for driver gene status is implemented: requiring support from _at least two_ distinct resources (Network of Cancer Genes (NCG), Cancer Gene Census, TCGA, IntOGen, or CancerMine)
   
   * *Argument renaming* - Renamed arguments to `onco_enrich()` for improved naming consistency:
       * `ppi_string_min_score`
@@ -58,7 +58,6 @@ vignette: >
       * `enrichment_max_geneset_size`
       * `enrichment_min_geneset_size`
       * `subcellcomp_min_confidence`
-      * `subcellcomp_channel_types`
       * `subcellcomp_show_cytosol`
       * `subcellcomp_min_channels`
   * *Other*

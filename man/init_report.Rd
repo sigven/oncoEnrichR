@@ -31,7 +31,6 @@ init_report(
   enrichment_simplify_go = F,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
-  subcellcomp_channel_types = c("Experimental", "Text mining", "Knowledge"),
   subcellcomp_show_cytosol = F,
   regulatory_min_confidence = "D",
   fitness_max_score = -2,
@@ -109,9 +108,6 @@ init_report(
 \item{subcellcomp_min_confidence}{minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)}
 
 \item{subcellcomp_min_channels}{minimum number of channels that support a subcellular annotation in COMPARTMENTS}
-
-\item{subcellcomp_channel_types}{restrict subcellular annotations to specific channel types of COMPARTMENTS
-any selection of 'Knowledge','Text mining', and 'Experimental'}
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not}
 

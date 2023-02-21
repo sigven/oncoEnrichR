@@ -63,7 +63,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
          * Curated entry in NCG/CGC, with _no or weak support (<= 5 citations)_ in the biomedical literature (CancerMine), **OR**
          * _Moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
          
-     - Literature support for a tumor suppressive role is ignored if the gene has three times as much literature support for an oncogenic role (and *vice versa*)
+     - Literature support for a tumor suppressive role is ignored if the gene has 2.5 times as much literature support for an oncogenic role (and *vice versa*)
     
 
 * Classification of genes as potential cancer drivers *require support from at least two of the following sources*:

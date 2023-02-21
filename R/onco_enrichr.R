@@ -56,6 +56,7 @@ load_db <- function(cache_dir = NA,
   drug_datasets <- list()
   oe_datasets <- c("cancerdrugdb",
                    "genedb",
+                   "biogrid",
                    "hpa",
                    "ligandreceptordb",
                    "otdb",
@@ -85,6 +86,7 @@ load_db <- function(cache_dir = NA,
 
     #dat <- NULL
     if (file.exists(fname_local) & force_download == F) {
+      cat(fname_local, '\n')
       oedb[[elem]] <- readRDS(fname_local)
       if (!is.null(oedb[[elem]])) {
         lgr::lgr$info(paste0(
@@ -363,8 +365,6 @@ load_db <- function(cache_dir = NA,
 #' @param enrichment_simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param subcellcomp_min_confidence minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)
 #' @param subcellcomp_min_channels minimum number of channels that support a subcellular annotation in COMPARTMENTS
-#' @param subcellcomp_channel_types restrict subcellular annotations to specific channel types of COMPARTMENTS
-#' any selection of 'Knowledge','Text mining', and 'Experimental'
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
 #' @param regulatory_min_confidence minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
@@ -418,8 +418,6 @@ init_report <- function(oeDB,
                         enrichment_simplify_go = F,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
-                        subcellcomp_channel_types =
-                          c("Experimental","Text mining", "Knowledge"),
                         subcellcomp_show_cytosol = F,
                         regulatory_min_confidence = "D",
                         fitness_max_score = -2,
@@ -675,8 +673,6 @@ init_report <- function(oeDB,
     subcellcomp_min_confidence
   rep[['config']][['subcellcomp']][['minimum_channels']] <-
     subcellcomp_min_channels
-  rep[['config']][['subcellcomp']][['channels']] <-
-   subcellcomp_channel_types
   rep[['config']][['subcellcomp']][['show_cytosol']] <-
     subcellcomp_show_cytosol
   rep[['config']][['subcellcomp']][['gganatogram_legend']] <-
@@ -913,9 +909,6 @@ init_report <- function(oeDB,
 #' @param subcellcomp_min_channels minimum number of channels that support a
 #' subcellular compartment annotation in COMPARTMENTS (min = 1,
 #' max = 3, default: 1)
-#' @param subcellcomp_channel_types restrict subcellular annotations to
-#' specific channel types of COMPARTMENTS
-#' any selection of 'Knowledge','Text mining', or 'Experimental'
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap
 #' should show highlight proteins located in the cytosol or not (default: FALSE)
 #' @param regulatory_min_confidence minimum confidence level for regulatory
@@ -1019,8 +1012,6 @@ onco_enrich <- function(query = NULL,
                         enrichment_simplify_go = TRUE,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
-                        subcellcomp_channel_types =
-                          c("Experimental","Text mining", "Knowledge"),
                         subcellcomp_show_cytosol = FALSE,
                         regulatory_min_confidence = "D",
                         fitness_max_score = -2,
@@ -1258,31 +1249,31 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  val <- T
-  subcellcomp_num_channels_selected <- 0
-  for (e in subcellcomp_channel_types) {
-    if (!(e %in% c('Experimental', 'Text mining', 'Knowledge'))) {
-      val <- F
-    } else {
-      subcellcomp_num_channels_selected <-
-        subcellcomp_num_channels_selected + 1
-    }
-  }
-
-  if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'subcellcomp_channel_types' must be any selection of 'Knowledge' ",
-      ", 'Experimental', and 'Text mining', (current type and value: '",
-      typeof(subcellcomp_channel_types),"' - ",
-      paste(subcellcomp_channel_types, collapse = ', '),")"
-    ))
-    return()
-  }
+  # val <- T
+  # subcellcomp_num_channels_selected <- 0
+  # for (e in subcellcomp_channel_types) {
+  #   if (!(e %in% c('Experimental', 'Text mining', 'Knowledge'))) {
+  #     val <- F
+  #   } else {
+  #     subcellcomp_num_channels_selected <-
+  #       subcellcomp_num_channels_selected + 1
+  #   }
+  # }
+  #
+  # if (val == F) {
+  #   lgr::lgr$info( paste0(
+  #     "ERROR: 'subcellcomp_channel_types' must be any selection of 'Knowledge' ",
+  #     ", 'Experimental', and 'Text mining', (current type and value: '",
+  #     typeof(subcellcomp_channel_types),"' - ",
+  #     paste(subcellcomp_channel_types, collapse = ', '),")"
+  #   ))
+  #   return()
+  # }
 
   val <-
     subcellcomp_min_channels %% 1 == 0 &
     subcellcomp_min_channels > 0 &
-    subcellcomp_min_channels <= subcellcomp_num_channels_selected
+    subcellcomp_min_channels <= 3
 
   if (val == F) {
     lgr::lgr$info( paste0(
@@ -1353,7 +1344,6 @@ onco_enrich <- function(query = NULL,
     subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     subcellcomp_min_confidence = subcellcomp_min_confidence,
     subcellcomp_min_channels = subcellcomp_min_channels,
-    subcellcomp_channel_types = subcellcomp_channel_types,
     regulatory_min_confidence = regulatory_min_confidence,
     fitness_max_score = fitness_max_score,
     show_ppi = show_ppi,
@@ -1681,7 +1671,6 @@ onco_enrich <- function(query = NULL,
         query_entrez = as.integer(query_entrezgene),
         compartments_min_confidence = subcellcomp_min_confidence,
         compartments_min_channels = subcellcomp_min_channels,
-        compartments_channel_types = subcellcomp_channel_types,
         show_cytosol = subcellcomp_show_cytosol,
         genedb = oeDB[['genedb']][['all']],
         compartments = oeDB[['subcelldb']][['compartments']],
@@ -1710,7 +1699,8 @@ onco_enrich <- function(query = NULL,
     if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] >= 20) {
       onc_rep[["config"]][["fitness"]][["plot_height_fitness"]]  <-
         onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] +
-        as.integer((onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
+        as.integer((
+          onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
     }
 
     onc_rep[["data"]][["fitness"]][["target_priority_scores"]] <-

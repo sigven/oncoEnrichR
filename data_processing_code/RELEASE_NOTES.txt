@@ -1,5 +1,6 @@
-##ONCOENRICHR_DB_VERSION = 20230206
+##ONCOENRICHR_DB_VERSION = 20230220
 oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.4.0	oncoEnrichR	software
+clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler/	A universal enrichment tool for interpreting omics data (R package)	v4.6.0	clusterProfiler	software
 Omnipath	https://omnipathdb.org/	Database of molecular biology prior knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.6.0/OmnipathR	omnipath	db
 hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db
 dorothea	https://saezlab.github.io/dorothea/	Gene set resource containing signed transcription factor (TF) - target interactions	v1.10.0	dorothea	db

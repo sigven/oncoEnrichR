@@ -26,7 +26,6 @@ test_that("oncoEnrichR - initialize report", {
         enrichment_plot_num_terms = 20,
         enrichment_simplify_go = F,
         subcellcomp_min_confidence = 2,
-        subcellcomp_channel_types = c("Experimental","Text mining", "Knowledge"),
         subcellcomp_show_cytosol = F,
         regulatory_min_confidence = "D",
         show_ppi = T,

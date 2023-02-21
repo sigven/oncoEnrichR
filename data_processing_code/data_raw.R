@@ -23,13 +23,16 @@ update_ligand_receptor_db <- F
 
 oe_version <- "1.4.0"
 
-data_raw_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
-data_output_dir <- "/Users/sigven/project_data/package__oncoEnrichR/db/output"
+data_raw_dir <-
+  "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
+data_output_dir <-
+  "/Users/sigven/project_data/package__oncoEnrichR/db/output"
 
 software_db_version <-
-  read.table(file="data_processing_code/RELEASE_NOTES.txt",
-             skip = 1, sep = "\t", stringsAsFactors = F,
-             comment.char = "#",quote="")
+  read.table(
+    file = "data_processing_code/RELEASE_NOTES.txt",
+    skip = 1, sep = "\t", stringsAsFactors = F,
+    comment.char = "#",quote="")
 colnames(software_db_version) <-
   c('name','url','description',
     'version','key','resource_type')
@@ -66,7 +69,7 @@ gOncoX[['basic']]$records <-
     entrezgene
   ))
 
-
+####---GENCODE transcripts-----####
 gOncoX[['gencode']] <- geneOncoX::get_gencode(
   cache_dir = data_raw_dir
 )
@@ -298,11 +301,6 @@ slparalogdb <- get_paralog_SL_predictions(
   gene_info = gene_info
 )
 
-# synlethdb <- get_synthetic_lethality_pairs(
-#   raw_db_dir = data_raw_dir
-# )
-
-
 ####--- Human Protein Atlas ---####
 hpa <- get_hpa_associations(
   raw_db_dir = data_raw_dir,
@@ -481,6 +479,7 @@ db_packages <-
     'rWikiPathways',
     'ComplexHeatmap',
     'Rtsne',
+    'KEGGREST',
     'expm',
     'irlba',
     'pbapply',
@@ -501,8 +500,9 @@ db_packages <-
     'magrittr',
     'log4r',
     'keyring',
-    'pharmaOncoX',
-    'oncoPhenoMap')
+    'OmnipathR',
+    'pharmOncoX',
+    'phenOncoX')
 
 renv_packages <- jsonlite::fromJSON("renv.lock")
 for(c in db_packages){

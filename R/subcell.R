@@ -3,8 +3,6 @@ annotate_subcellular_compartments <-
   function(query_entrez,
            compartments_min_confidence = 3,
            compartments_min_channels = 1,
-           compartments_channel_types =
-             c("Experimental","Text mining","Knowledge"),
            show_cytosol = F,
            genedb = NULL,
            compartments = NULL,
@@ -43,9 +41,6 @@ annotate_subcellular_compartments <-
         compartments, target_genes, by = c("entrezgene"), multiple = "all") |>
         dplyr::filter(!is.na(.data$symbol)) |>
         dplyr::filter(.data$confidence >= compartments_min_confidence) |>
-        dplyr::filter(
-          .data$annotation_channel %in% compartments_channel_types
-        ) |>
         dplyr::mutate(
           channel_confidence = paste(
             .data$annotation_channel,

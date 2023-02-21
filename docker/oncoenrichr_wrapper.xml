@@ -1,7 +1,7 @@
-<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.3.2">
+<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.4.0">
   <description>Cancer-dedicated gene set interpretation</description>
     <requirements>
-        <container type="docker">sigven/oncoenrichr:1.3.2</container>
+        <container type="docker">sigven/oncoenrichr:1.4.0</container>
   </requirements>
   <command detect_errors="aggressive"><![CDATA[
       #if $query_set.query_choice.query_input == "text"
@@ -27,7 +27,7 @@
 
       R -e 'suppressPackageStartupMessages(library(oncoEnrichR));
       suppressWarnings(load(system.file("internal_db", "oedb.rda", package = "oncoEnrichR")));
-      gene_data <- read.csv("$input_file", stringsAsFactors = F, header = F);
+      gene_data <- read.csv("$input_file", strip.white = TRUE);
       oe_report <- oncoEnrichR::onco_enrich(
         query = gene_data[[1]],
         oeDB = oedb,
@@ -55,17 +55,17 @@
       show_coexpression = $modules.show_coexpression,
       show_subcell_comp = $modules.show_subcell_comp,
       show_complex = $modules.show_complex,
-	 show_domain = $modules.show_domain,
+	  show_domain = $modules.show_domain,
       show_fitness = $modules.show_fitness,
-	 show_cell_tissue = $modules.show_cell_tissue,
+	  show_cell_tissue = $modules.show_cell_tissue,
       show_ligand_receptor = $modules.show_ligand_receptor,
       show_regulatory = $modules.show_regulatory,
-	 show_prognostic = $modules.show_prognostic,
-	 show_unknown_function = $modules.show_unknown_function,
+	  show_prognostic = $modules.show_prognostic,
+	  show_unknown_function = $modules.show_unknown_function,
       show_synleth = $modules.show_synleth,
 
       #if $background_file
-          bgset = read.csv("$background_file", stringsAsFactors = F, header = F)[[1]],
+          bgset = read.csv("$background_file", strip.white = TRUE)[[1]],
 		#if $fun_enrich.custom_bgset.bg_enrich_id_type
             bgset_id_type = "$fun_enrich.custom_bgset.bg_enrich_id_type",
           #end if
@@ -76,45 +76,54 @@
           bgset = NULL,
       #end if
 
-      #if $fun_enrich.p_value_cutoff_enrichment
-          p_value_cutoff_enrichment = $fun_enrich.p_value_cutoff_enrichment,
+      #if $fun_enrich.enrichment_p_value_cutoff
+          enrichment_p_value_cutoff = $fun_enrich.enrichment_p_value_cutoff,
       #end if
-      #if $fun_enrich.p_value_adjustment_method
-          p_value_adjustment_method = "$fun_enrich.p_value_adjustment_method",
+      #if $fun_enrich.enrichment_p_value_adj
+          enrichment_p_value_adj = "$fun_enrich.enrichment_p_value_adj",
       #end if
-      #if $fun_enrich.q_value_cutoff_enrichment
-          q_value_cutoff_enrichment = $fun_enrich.q_value_cutoff_enrichment,
+      #if $fun_enrich.enrichment_q_value_cutoff
+          enrichment_q_value_cutoff = $fun_enrich.enrichment_q_value_cutoff,
       #end if
-      #if $fun_enrich.min_geneset_size
-          min_geneset_size = $fun_enrich.min_geneset_size,
+      #if $fun_enrich.enrichment_min_geneset_size
+          enrichment_min_geneset_size = $fun_enrich.enrichment_min_geneset_size,
       #end if
-      #if $fun_enrich.max_geneset_size
-          max_geneset_size = $fun_enrich.max_geneset_size,
+      #if $fun_enrich.enrichment_max_geneset_size
+          enrichment_max_geneset_size = $fun_enrich.enrichment_max_geneset_size,
       #end if
+      enrichment_plot_num_terms = $fun_enrich.enrichment_plot_num_terms,
+      enrichment_simplify_go = $fun_enrich.enrichment_simplify_go,
+
 
       #if $protein_interactions.ppi_add_nodes
           ppi_add_nodes = $protein_interactions.ppi_add_nodes,
       #end if
-      #if $protein_interactions.ppi_score_threshold
-          ppi_score_threshold = $protein_interactions.ppi_score_threshold,
+      #if $protein_interactions.ppi_string_min_score
+          ppi_string_min_score = $protein_interactions.ppi_string_min_score,
       #end if
-      show_drugs_in_ppi = $protein_interactions.show_drugs_in_ppi,
-	 ppi_node_shadow = $protein_interactions.ppi_node_shadow,
+      #if $protein_interactions.ppi_biogrid_min_evidence
+          ppi_biogrid_min_evidence = $protein_interactions.ppi_biogrid_min_evidence,
+      #end if
+      ppi_show_drugs = $protein_interactions.ppi_show_drugs,
+      ppi_show_isolated_nodes = $protein_interactions.ppi_show_isolated_nodes,
+	  ppi_node_shadow = $protein_interactions.ppi_node_shadow,
 
-	 #if $subcellular_compartments.min_subcellcomp_confidence
-          min_subcellcomp_confidence = $subcellular_compartments.min_subcellcomp_confidence,
+	  #if $subcellular_compartments.subcellcomp_min_confidence
+          subcellcomp_min_confidence = $subcellular_compartments.subcellcomp_min_confidence,
       #end if
-      #if $fitness.max_fitness_score
-          max_fitness_score = $fitness.max_fitness_score,
+      #if $subcellular_compartments.subcellcomp_min_channels
+          subcellcomp_min_channels = $subcellular_compartments.subcellcomp_min_channels,
       #end if
-      subcellcomp_show_cytosol = $subcellular_compartments.show_cytosol,
+      #if $fitness.fitness_max_score
+          fitness_max_score = $fitness.fitness_max_score,
+      #end if
+      subcellcomp_show_cytosol = $subcellular_compartments.subcellcomp_show_cytosol,
       #if $disease.show_top_diseases_only
           show_top_diseases_only = $disease.show_top_diseases_only,
       #end if
 
-      min_confidence_reg_interaction = "$regulatory.min_confidence_reg_interaction",
-      num_terms_enrichment_plot = $fun_enrich.num_terms_enrichment_plot,
-      simplify_go = $fun_enrich.simplify_go,
+      regulatory_min_confidence = "$regulatory.regulatory_min_confidence",
+      
       html_floating_toc = $report_metadata.html_floating_toc,
       html_report_theme = "$report_metadata.html_report_theme",
       galaxy = TRUE
@@ -160,7 +169,7 @@
           <param type="text" name="project_owner" label="Project owner" />
           <param type="text" name="project_description" label="Project description" area="true"/>
           <param name="html_floating_toc" type="boolean" label="HTML report - float the table of contents to the left of the main document content (always visible during scrolling)" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="html_report_theme" type="select" label="HTML report - bootswatch theme" expanded="true">
+          <param name="html_report_theme" type="select" label="HTML report - bootswatch theme">
               <option value="default">default</option>
               <option value="cerulean">cerulean</option>
               <option value="cosmo">cosmo</option>
@@ -177,9 +186,9 @@
 
       <section title="" name=""/>
       <section name="modules" title="Analysis modules included in the report" expanded="true">
-		<param name="show_disease" type="boolean" label="Gene-cancer associations" truevalue="T" falsevalue="F" checked="true"/>
+		  <param name="show_disease" type="boolean" label="Gene-cancer associations" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_enrichment" type="boolean" label="Gene functional enrichment" truevalue="T" falsevalue="F" checked="true"/>
-		<param name="show_cell_tissue" type="boolean" label="Tissue/cell-type enrichment" truevalue="T" falsevalue="F" checked="false"/>
+		  <param name="show_cell_tissue" type="boolean" label="Tissue/cell-type enrichment" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_ppi" type="boolean" label="Protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_regulatory" type="boolean" label="Regulatory (TF-target) interactions" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_ligand_receptor" type="boolean" label="Ligand-receptor interactions" truevalue="T" falsevalue="F" checked="true"/>
@@ -189,15 +198,15 @@
           <param name="show_coexpression" type="boolean" label="Tumor co-expression patterns" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_subcell_comp" type="boolean" label="Subcellular localizations" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_complex" type="boolean" label="Protein complex memberships" truevalue="T" falsevalue="F" checked="true"/>
-		<param name="show_domain" type="boolean" label="Protein domain frequencies" truevalue="T" falsevalue="F" checked="false"/>
+		  <param name="show_domain" type="boolean" label="Protein domain frequencies" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_fitness" type="boolean" label="Gene fitness effects" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_synleth" type="boolean" label="Predicted synthetic lethality interactions" truevalue="T" falsevalue="F" checked="true"/>
-		<param name="show_unknown_function" type="boolean" label="Genes of poorly defined function" truevalue="T" falsevalue="F" checked="true"/>
-		<param name="show_prognostic" type="boolean" label="Prognostic cancer associations" truevalue="T" falsevalue="F" checked="true"/>
+		  <param name="show_unknown_function" type="boolean" label="Genes of poorly defined function" truevalue="T" falsevalue="F" checked="true"/>
+		  <param name="show_prognostic" type="boolean" label="Prognostic cancer associations" truevalue="T" falsevalue="F" checked="true"/>
       </section>
 
       <section title="" name=""/>
-      <section name="fun_enrich" title="Options - gene functional enrichment" expanded="true">
+      <section name="fun_enrich" title="Options - gene functional enrichment">
 		 <conditional name="custom_bgset">
 			 <param name="def_background" type="boolean" label="Define custom background set (all annotated protein-coding genes by default)" truevalue="T" falsevalue="F" checked="false"/>
 			 <when value="T">
@@ -230,38 +239,44 @@
 			</when>
 		</conditional>
 
-          <param type="float" name="p_value_cutoff_enrichment" label="P-value cutoff for enrichment tests (clusterProfiler)" value="0.05"/>
-          <param type="select" name="p_value_adjustment_method" label="P-value adjustment method (clusterProfiler)">
-              <option value="holm">holm</option>
-              <option value="hochberg">hochberg</option>
-              <option value="hommel">hommel</option>
-              <option value="bonferroni">bonferroni</option>
-              <option value="BH">BH</option>
-              <option value="BY">BY</option>
+          <param name="enrichment_p_value_cutoff" type="float" label="P-value cutoff for enrichment tests (clusterProfiler)" value="0.05"/>
+          <param name="enrichment_p_value_adj" type="select" label="P-value adjustment method (clusterProfiler)">
+              <option value="BH">Benjamini-Hochberg</option>
+              <option value="holm">Holm</option>
+              <option value="hochberg">Hochberg</option>
+              <option value="hommel">Hommel</option>
+              <option value="bonferroni">Bonferroni</option>
+              <option value="BY">Benjamini-Yekutieli</option>
               <option value="fdr">fdr</option>
               <option value="none">none</option>
           </param>
-          <param type="float" name="q_value_cutoff_enrichment" label="Q-value cutoff for enrichment tests to report as significant (clusterProfiler)" value="0.2"/>
-          <param type="integer" name="min_geneset_size" label="Minimum number of genes annotated by ontology term for testing (clusterProfiler)" value="10"/>
-          <param type="integer" name="max_geneset_size" label="Maximum number of genes annotated by ontology term for testing (clusterProfiler)" value="500"/>
-          <param name="simplify_go" type="boolean" label="Simplify GO enrichment results by removal of redundant terms (recommended)" truevalue="T" falsevalue="F" checked="true"/>
-          <param type="integer" name="num_terms_enrichment_plot" label="Number of top enriched Gene Ontology terms (max) to show in enrichment barplot" min="10" max="30" value="20"/>
+          <param name="enrichment_q_value_cutoff" type="float" label="Q-value cutoff for enrichment tests to report as significant (clusterProfiler)" value="0.2"/>
+          <param name="enrichment_min_geneset_size" type="integer" label="Minimum number of genes annotated by ontology term for testing (clusterProfiler)" value="10"/>
+          <param name="enrichment_max_geneset_size" type="integer" label="Maximum number of genes annotated by ontology term for testing (clusterProfiler)" value="500"/>
+          <param name="enrichment_simplify_go" type="boolean" label="Simplify GO enrichment results by removal of redundant terms (recommended)" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="enrichment_plot_num_terms" type="integer" label="Number of top enriched Gene Ontology terms (max) to show in enrichment barplot" min="10" max="30" value="20"/>
       </section>
 
       <section title="" name=""/>
-      <section name="fitness" title="Options - gene fitness scores" expanded="true">
-          <param type="float" name="max_fitness_score" label="Maximum loss-of-fitness score (Bayes Factor from BAGEL) for genes retrieved from Project Score" value="-2" min="-5" max="0"/>
+      <section name="fitness" title="Options - gene fitness scores">
+          <param  name="fitness_max_score" type="float" label="Maximum loss-of-fitness score (Bayes Factor from BAGEL) for genes retrieved from Project Score" value="-2" min="-5" max="0"/>
       </section>
       <section title="" name=""/>
-      <section name="protein_interactions" title="Options - protein-protein interaction network" expanded="true">
-          <param type="integer" name="ppi_add_nodes" label="Addition of interacting non-queryset proteins to the protein-protein interaction network (maximum number)" value="50" min="0" max="50"/>
-          <param type="integer" name="ppi_score_threshold" label="Minimum confidence score for interactions to be included in the network (STRING confidence: 0-1000)" value="900" min="400" max="1000"/>
-          <param name="show_drugs_in_ppi" type="boolean" label="Show anti-cancer drugs in protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
-		<param name="ppi_node_shadow" type="boolean" label="Add shadow to nodes in protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
+      <section name="protein_interactions" title="Options - protein-protein interaction network">
+          <param name="ppi_network_type" type = "select" label="STRING: type of retrieved network interactions">
+              <option value="functional">functional</option>
+              <option value="physical">physical</option>
+          </param>
+          <param name="ppi_string_min_score" type="float" label="STRING: minimum confidence score for interactions to be included in network" value="0.9" min="0.4" max="1"/>
+          <param name="ppi_biogrid_min_evidence" type="integer" label="BioGRID: Minimum number of evidence support for interactions to be included in network" value="3" min="2" max="10"/>
+          <param name="ppi_add_nodes" type="integer" label="Addition of interacting non-queryset proteins to the protein-protein interaction network (STRING/BioGRID)" value="30" min="0" max="50"/>
+          <param name="ppi_show_drugs" type="boolean" label="Attach anti-cancer drugs in protein-protein interaction network (STRING/BioGRID)" truevalue="T" falsevalue="F" checked="false"/>
+          <param name="ppi_show_isolated_nodes" type="boolean" label="Show isolated nodes in protein-protein interaction network (STRING/BioGRID)" truevalue="T" falsevalue="F" checked="false"/>
+		  <param name="ppi_node_shadow" type="boolean" label="Add shadow to nodes in protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
       </section>
       <section title="" name=""/>
-      <section name="regulatory" title="Options - regulatory interactions" expanded="true">
-         <param type="select" name="min_confidence_reg_interaction" label = "Minimum confidence level of regulatory interactions included (DoRothEA - A:highest, D:lowest)">
+      <section name="regulatory" title="Options - regulatory interactions">
+         <param name="regulatory_min_confidence" type="select" label = "Minimum confidence level of regulatory interactions included (DoRothEA - A:highest, D:lowest)">
             <option value="D">D</option>
             <option value="C">C</option>
             <option value="B">B</option>
@@ -270,13 +285,14 @@
       </section>
      <section title="" name=""/>
 
-	 <section name="subcellular_compartments" title="Options - Subcellular localizations" expanded="true">
-           <param type="integer" name="min_subcellcomp_confidence" label="Minimum confidence level for subcellular localization annotations" value="1" min="1" max="6"/>
-          <param name="show_cytosol" type="boolean" label="Show cytosol annotations (very common localization) in subcellular heatmap " truevalue="T" falsevalue="F" checked="false"/>
+	 <section name="subcellular_compartments" title="Options - Subcellular compartment annotations">
+        <param name="subcellcomp_min_confidence" type="integer" label="Minimum confidence level for subcellular compartment annotations" value="3" min="3" max="5"/>
+        <param name="subcellcomp_min_channels" type="integer" label="Minimum number of channel (Text Mining, Experimental, Knowledge) support for annotations" value="1" min="1" max="3"/>
+        <param name="subcellcomp_show_cytosol" type="boolean" label="Show cytosol annotations (very common localization) in subcellular heatmap " truevalue="T" falsevalue="F" checked="false"/>
       </section>
       <section title="" name=""/>
 
-      <section name="disease" title="Options - Disease associations" expanded="true">
+      <section name="disease" title="Options - Disease associations">
           <param type="boolean" name="show_top_diseases_only" label="Show top disease assocations only" truevalue="T" falsevalue="F" checked="true"/>
       </section>
 
@@ -290,7 +306,7 @@
   <help><![CDATA[
 .. class:: infomark
 
-The query gene set is limited to n = 500 identifiers. A limited query gene set (e.g. n < 5) will in general reduce the relevance and significance of many oncoEnrichR report modules.
+The query gene set is limited to n = 1000 identifiers. A limited query gene set (e.g. n < 5) will in general reduce the relevance and significance of many oncoEnrichR report modules.
 
 -----
 
@@ -333,7 +349,7 @@ The results from the various analysis modules are provided in an interactive HTM
 
 -  `hu.MAP2 <http://humap2.proteincomplexes.org/>`_ - human protein complex map
 
--  `ComPPI <http://comppi.linkgroup.hu/>`_ - subcellular compartment database
+-  `COMPARTMENTS <https://compartments.jensenlab.org/Search/>`_ - subcellular compartment annotation database
 
 -  `CancerMine <http://bionlp.bcgsc.ca/cancermine/>`_ - literature-mined resource on cancer drivers, oncogenes and tumor suppressor genes
 
@@ -347,7 +363,7 @@ The results from the various analysis modules are provided in an interactive HTM
 
 The contents of the gene set analysis report attempt to answer the following questions related to the query set:
 
--  Which diseases/tumor types are known to be associated with genes in the query set, and to what extent? Which genes are a classified as proto-oncogenes, tumor suppressors or cancer driver genes?
+-  Which diseases/tumor types are known to be associated with genes in the query set, and to what extent? Which genes show evidence of oncogenic and/or tumor suppressive roles?
 
 -  Which query genes have been linked (through literature) to the various hallmarks of cancer?
 
