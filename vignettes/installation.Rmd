@@ -14,7 +14,7 @@ vignette: >
 ## Installation of oncoEnrichR with R commands
 
 1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.4.0")`
+2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.3.2")`
 3.  `library(oncoEnrichR)`
 
 <br>
