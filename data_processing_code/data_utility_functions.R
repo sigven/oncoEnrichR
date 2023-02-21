@@ -2909,12 +2909,16 @@ get_tcga_db <- function(
   tcga_release = "release36_20221212",
   update = F){
 
-  #tcga_release <- 'release34_20220727'
 
   rds_fname <- file.path(
     raw_db_dir,
     "tcga",
     "tcgadb.rds")
+
+
+  ## NOTE: The processed data from Genomic Data Commons
+  ## linked to here is retrieved with
+  ## https://github.com/sigven/GDComics
 
   rnaseq_path <- file.path(
     raw_db_dir,

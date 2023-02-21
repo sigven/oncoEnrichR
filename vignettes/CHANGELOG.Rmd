@@ -25,6 +25,11 @@ vignette: >
      * Human Disease Ontology (2023-01-31)
     
 * Functionality
+  * *Loading of databases*
+     * Downloading through Google Drive can somethis cause trouble due to downloading
+       limitations issued by Google. As an alternative approach, one can now download datasets
+       using another host (server hosted by the University of Oslo), through the argument 
+       `googledrive = FALSE` in `oncoEnrichR::load_db()`
   * *Protein-protein interactions* 
      * Users can opt to show isolated nodes (nodes with no interactions) or not -
        logical argument to `onco_enrich()`: `ppi_show_isolated_nodes` (default _FALSE_)

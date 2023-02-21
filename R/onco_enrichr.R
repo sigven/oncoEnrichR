@@ -4,8 +4,10 @@
 #' repository from Google Drive
 #'
 #' @param cache_dir Local directory for data download
-#' @param force_download Logical indicating if local cache should force downloaded
+#' @param force_download Logical indicating if local cache should force download
 #' (i.e. set to TRUE to re-download even if data exists in cache)
+#' @param googledrive logical indicating to use googledrive or UiO server as
+#' host for downloading
 #'
 #' @returns
 #' A `list` object with oncoEnrichR datasets, to be used as
@@ -15,7 +17,8 @@
 #'
 #'
 load_db <- function(cache_dir = NA,
-                    force_download = F) {
+                    force_download = FALSE,
+                    googledrive = TRUE) {
 
 
   lgr::lgr$appenders$console$set_layout(
@@ -96,17 +99,35 @@ load_db <- function(cache_dir = NA,
 
     } else {
 
-      googledrive::drive_deauth()
+      md5checksum_remote <- md5checksum_package
 
-      lgr::lgr$info("Downloading remote oncoEnrichR dataset from Google Drive to cache_dir")
-      dl <- googledrive::with_drive_quiet(
-        googledrive::drive_download(
-          fname_gd,
-          path = fname_local,
-          overwrite = TRUE)
-      )
+      if(googledrive == T){
+        lgr::lgr$info("Downloading remote oncoEnrichR dataset from Google Drive to cache_dir")
+        dl <- googledrive::with_drive_quiet(
+          googledrive::drive_download(
+            fname_gd,
+            path = fname_local,
+            overwrite = TRUE)
+        )
 
-      md5checksum_remote <- dl$drive_resource[[1]]$md5Checksum
+        md5checksum_remote <- dl$drive_resource[[1]]$md5Checksum
+      }else{
+
+        fname_uio <- file.path(
+          "http://insilico.hpc.uio.no/oncoEnrichR",
+          paste0("v", oe_version),
+          db_id_ref[db_id_ref$name == elem,]$filename
+        )
+
+        lgr::lgr$info("Downloading remote oncoEnrichR dataset from UiO server to cache_dir")
+        download.file(
+          url = fname_uio,
+          destfile = fname_local,
+          quiet = T
+        )
+
+      }
+
       md5checksum_local <- tools::md5sum(fname_local)
       names(md5checksum_local) <- NULL
 

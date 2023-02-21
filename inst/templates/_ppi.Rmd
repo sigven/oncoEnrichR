@@ -13,8 +13,8 @@
 
 * General network legend:
   * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
-  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation) of having tumor suppressive function are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
-  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressoroncogenedriver-annotation) of having oncogenic function <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressorproto-oncogenecancer-driver-annotation) of having tumor suppressive function are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressorproto-oncogenecancer-driver-annotation) of having oncogenic function <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
   * Genes with evidence of having dual roles (both oncogenic and tumor suppressive) are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
   * Targeted cancer drugs (from [Open Targets Platform](https://targetvalidation.org)):
      * Compounds in late (3-4) clinical development phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>

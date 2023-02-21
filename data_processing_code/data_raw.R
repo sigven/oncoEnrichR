@@ -501,6 +501,7 @@ db_packages <-
     'log4r',
     'keyring',
     'OmnipathR',
+    'geneOncoX',
     'pharmOncoX',
     'phenOncoX')
 

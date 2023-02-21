@@ -1415,6 +1415,30 @@
         "withr"
       ]
     },
+    "geneOncoX": {
+      "Package": "geneOncoX",
+      "Version": "0.6.9",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "geneOncoX",
+      "RemoteUsername": "sigven",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "8f8efe5682be08437d248f168813d26bce606462",
+      "Hash": "6eda7e08c3f5e9710d9fc274be5c091d",
+      "Requirements": [
+        "DT",
+        "assertable",
+        "dplyr",
+        "googledrive",
+        "lgr",
+        "plyr",
+        "purrr",
+        "readr",
+        "rlang",
+        "stringr"
+      ]
+    },
     "generics": {
       "Package": "generics",
       "Version": "0.1.3",
@@ -2323,6 +2347,47 @@
         "dplyr",
         "lme4",
         "numDeriv"
+      ]
+    },
+    "pharmOncoX": {
+      "Package": "pharmOncoX",
+      "Version": "1.1.8",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "pharmOncoX",
+      "RemoteUsername": "sigven",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "e82dbd0c5131c9448d35cc599581d781d7d0110e",
+      "Hash": "92dbb00bdefbafaab1e79f91dec96d09",
+      "Requirements": [
+        "DT",
+        "assertthat",
+        "dplyr",
+        "googledrive",
+        "lgr",
+        "rlang",
+        "stringr",
+        "tidyr"
+      ]
+    },
+    "phenOncoX": {
+      "Package": "phenOncoX",
+      "Version": "0.5.6",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "phenOncoX",
+      "RemoteUsername": "sigven",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "358f9c553e89e915617ccc3709a23cd162ac2d52",
+      "Hash": "9597163304c212bf6d1ed67eb0ab0a1b",
+      "Requirements": [
+        "DT",
+        "dplyr",
+        "googledrive",
+        "lgr",
+        "readr"
       ]
     },
     "pillar": {
