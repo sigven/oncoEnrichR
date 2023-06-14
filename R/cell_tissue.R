@@ -65,8 +65,9 @@ gene_tissue_cell_spec_cat <-
                      dbtype = "enrichment_db_hpa_tissue")
     }
     lgr::lgr$info(
-      paste0(edb, ": retrieving ", etype,
-             " specificity category of target genes")
+      glue::glue(
+        "{edb} : retrieving {etype} specificity category",
+        "of target genes")
     )
 
     specificity_groups_target <- as.data.frame(
@@ -84,22 +85,19 @@ gene_tissue_cell_spec_cat <-
       specificity_groups_target <-
         specificity_groups_target |>
         dplyr::mutate(
-          genename = paste0(
+          genename = glue::glue(
             "<a href='https://gtexportal.org/home/gene/",
-            .data$ensembl_gene_id,"' target='_blank'>",
-            .data$name,"</a>")
+            "{.data$ensembl_gene_id},' target='_blank'>",
+            "{.data$name}</a>")
         )
     } else {
       specificity_groups_target <-
         specificity_groups_target |>
         dplyr::mutate(
-          genename = paste0(
+          genename = glue::glue(
             "<a href='https://www.proteinatlas.org/",
-            .data$ensembl_gene_id,
-            "-",
-            .data$symbol,
-            "/celltype' target='_blank'>",
-            .data$name,"</a>")
+            "{.data$ensembl_gene_id}-{.data$symbol}",
+            "/celltype' target='_blank'>{.data$name}</a>")
         )
     }
     specificity_groups_target <- as.data.frame(
@@ -122,9 +120,10 @@ gene_tissue_cell_spec_cat <-
         'pct' = 0,
         'n' = 0,
         'tot' = 0,
-        group = paste0("Target set (n = ",
-                       formatC(tot, format="f",
-                               big.mark = ",", digits=0),")"))
+        group = paste0(
+          "Target set (n = ",
+          formatC(tot, format="f",
+                  big.mark = ",", digits=0),")"))
       if (nrow(dplyr::inner_join(
         df,
         specificity_groups_target,
@@ -234,8 +233,9 @@ gene_tissue_cell_enrichment <-
                      dbtype = "enrichment_db_hpa_tissue")
     }
     lgr::lgr$info(
-      paste0(edb, ": estimating enrichment of ", etype,
-             " in target set with TissueEnrich"))
+      glue::glue(
+        "{edb}: Estimating enrichment of {etype}",
+        " in target set with TissueEnrich"))
 
     df <- data.frame('entrezgene' = as.integer(qgenes_entrez),
                      stringsAsFactors = F) |>
@@ -251,21 +251,18 @@ gene_tissue_cell_enrichment <-
     if (resolution == "tissue") {
       df <- df |>
         dplyr::mutate(
-          genename = paste0(
+          genename = glue::glue(
             "<a href='https://gtexportal.org/home/gene/",
-            .data$ensembl_gene_id,"' target='_blank'>",
-            .data$name,"</a>")
+            "{.data$ensembl_gene_id}' target='_blank'>",
+            "{.data$name}</a>")
         )
     } else {
       df <- df |>
         dplyr::mutate(
-          genename = paste0(
+          genename = glue::glue(
             "<a href='https://www.proteinatlas.org/",
-            .data$ensembl_gene_id,
-            "-",
-            .data$symbol,
-            "/celltype' target='_blank'>",
-            .data$name,"</a>")
+            "{.data$ensembl_gene_id}-{.data$symbol}",
+            "/celltype' target='_blank'>{.data$name}</a>")
         )
     }
 

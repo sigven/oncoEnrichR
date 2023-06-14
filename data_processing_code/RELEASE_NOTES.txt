@@ -1,33 +1,37 @@
-##ONCOENRICHR_DB_VERSION = 20230220
-oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.4.0	oncoEnrichR	software
-clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler/	A universal enrichment tool for interpreting omics data (R package)	v4.6.0	clusterProfiler	software
-Omnipath	https://omnipathdb.org/	Database of molecular biology prior knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.6.0/OmnipathR	omnipath	db
-hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db
-dorothea	https://saezlab.github.io/dorothea/	Gene set resource containing signed transcription factor (TF) - target interactions	v1.10.0	dorothea	db
-tissueEnrich	https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html	 R package used to calculate enrichment of tissue-specific genes in a set of input genes	v1.18.0	tissueenrich	software
-phenOncoX	https://github.com/sigven/phenOncoX	Crossmapped phenotype ontologies for the oncology domain	v0.5.6	phenOncoX	software
-STRING	https://string-db.org	Protein-protein interaction database	v11.5	string	db
-BIOGRID	https://thebiogrid.org/	Database of Protein, Genetic and Chemical Interactions	v4.4.218	biogrid	db
-GENCODE	https://www.gencodegenes.org/	High quality reference gene annotation and experimental validation	v43	gencode	db
-TCGA	https://cancergenome.nih.gov	The Cancer Genome Atlas - Tumor gene expression and somatic DNA aberrations	v36.0 (Dec 12th 2022)	tcga	db
-UniProtKB	http://www.uniprot.org	Comprehensive resource of protein sequence and functional information	v2022_05	uniprot	db
-NetPath	http://www.netpath.org	Manually curated resource of signal transduction pathways in humans	v1 (2010)	netpath	db
-EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.50.0	efo	db
-DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2023-01-31	do	db
-COMPARTMENTS	https://compartments.jensenlab.org/Search	Subcellular localization database	(January 2023)	compartments	db
-DepMap/ProjectScore	https://depmap.org	Integrated cancer dependency dataset from Wellcome Sanger Institute and Broad Institute, Pacini et al., Nat Commun., 2021	Sanger_V1/Broad_20Q2	depmap	db
-WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20230210	wikipathway	db
-MSigDB	http://software.broadinstitute.org/gsea/msigdb/index.jsp	Molecular Signatures Database - collection of annotated gene sets	August 2022 (MSigDB v2022.1.Hs)	msigdb	db
-REACTOME	https://reactome.org	Manually curated and peer-reviewed pathway database	v81 (MSigDB v2022.1)	reactome	db
-CellChatDB	http://www.cellchat.org/cellchatdb/	Multimeric ligand-receptor complexes	v1 (2021)	cellchatdb	db
-CellTalkDB	http://tcm.zju.edu.cn/celltalkdb/	A manually curated database of literature-supported ligand-receptor interactions in human and mouse	Nov 2020	celltalkdb	db
-GeneOntology	https://geneontology.org	Knowledgebase that contains the largest structural source of information on the functions of genes	August 2022 (MSigDB v2022.1)	go	db
-KEGG	https://www.genome.jp/kegg/pathway.html	Collection of manually drawn pathway maps representing our knowledge on the molecular interaction, reaction and relation networks	20230101	kegg	db
-IntOGen	https://www.intogen.org/search	A compendium of mutational cancer driver genes	2020-02-01	intogen	db
-CancerMine	http://bionlp.bcgsc.ca/cancermine/	Literature-mined database of tumor suppressor genes/proto-oncogenes	v49 - 20230114	cancermine	db
-NCG	http://ncg.kcl.ac.uk/index.php	Network of cancer genes - a web resource to analyze duplicability, orthology and network properties of cancer genes	v7.0	ncg	db
-CGC	https://cancer.sanger.ac.uk/census	Cancer Gene Census	v97	cgc	db
-Pfam	http://pfam.xfam.org	Collection of protein families/domains	2021_11 (v35.0)	pfam	db
-Human Protein Atlas	https://proteinatlas.org	Knowledge resource on human proteins in relation to tissue/cell type specificity and cancer prognosis	v22.0 - 20221207	hpa	db
-Genotype-Tissue Expression (GTEx) project	https://gtexportal.org	Ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation	v8	gtex	db
-Open Targets Platform	https://www.targetvalidation.org	Comprehensive and robust data integration for target-disease associations	2022.11	opentargets	db
+##ONCOENRICHR_DB_VERSION = 20230610
+name	url	description	version	key	resource_type	license
+oncoEnrichR	https://gihtub.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.4.1	oncoEnrichR	software	MIT
+clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler/	A universal enrichment tool for interpreting omics data (R package)	v4.6.2	clusterProfiler	software	Artistic-2.0
+OmnipathR	https://omnipathdb.org/	Access to datasets on prior molecular knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.9.3	omnipathr	software	MIT
+hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db	CC0 1.0
+CORUM	http://mips.helmholtz-muenchen.de/corum/	Largest and most comprehensive publicly available dataset of manually curated mammalian protein complexes	v4.0	corum	db	CC-BY 4.0
+Compleat	https://fgr.hms.harvard.edu/compleat	Protein complex resource	v1.0	compleat	db	Open Access
+ComplexPortal	https://www.ebi.ac.uk/complexportal/home	Manually curated, encyclopaedic resource of macromolecular complexes	v1.0.2	complexportal	db	CC0 1.0
+dorothea	https://saezlab.github.io/dorothea/	Gene set resource containing signed transcription factor (TF) - target interactions	v1.10.0	dorothea	db	GPL v3.0
+tissueEnrich	https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html	 R package used to calculate enrichment of tissue-specific genes in a set of input genes	v1.18.0	tissueenrich	software	MIT
+phenOncoX	https://github.com/sigven/phenOncoX	Crossmapped phenotype ontologies for the oncology domain	v0.6.1	phenOncoX	software	MIT
+STRING	https://string-db.org	Protein-protein interaction database	v11.5	string	db	CC-BY 4.0
+BIOGRID	https://thebiogrid.org/	Database of Protein, Genetic and Chemical Interactions	v4.4.222	biogrid	db	MIT
+GENCODE	https://www.gencodegenes.org/	High quality reference gene annotation and experimental validation	v43	gencode	db	Open Access
+The Cancer Genome Atlas (TCGA)	https://cancergenome.nih.gov	Tumor gene expression and somatic DNA aberrationsacross a large cohort of tumor samples	v37.0 (March 29th 2023)	tcga	db	Open Access
+UniProt	http://www.uniprot.org	Comprehensive resource of protein sequence and functional information	v2023_02	uniprot	db	CC-BY 4.0
+NetPath	http://www.netpath.org	Manually curated resource of signal transduction pathways in humans	v1 (2010)	netpath	db	Open Access
+EFO	https://github.com/EBISPOT/efo	Experimental Factor Ontology	v3.54.0	efo	db	Apache 2.0
+DiseaseOntology	https://github.com/DiseaseOntology	Human Disease Ontology	2023-05-31	do	db	CC0 1.0
+COMPARTMENTS	https://compartments.jensenlab.org/Search	Subcellular localization database	May 2023	compartments	db	CC-BY 4.0
+DepMap/ProjectScore	https://depmap.org	Integrated cancer dependency dataset from Wellcome Sanger Institute and Broad Institute, Pacini et al., Nat Commun., 2021	Sanger_V1/Broad_20Q2	depmap	db	CC-BY 4.0
+WikiPathways	https://www.wikipathways.org	A database of biological pathways maintained by and for the scientific community	20230610	wikipathway	db	CC0 1.0
+MSigDB	http://software.broadinstitute.org/gsea/msigdb/index.jsp	Molecular Signatures Database - collection of annotated gene sets	March 2023 (MSigDB v2023.1.Hs)	msigdb	db	CC-BY 4.0
+REACTOME	https://reactome.org	Manually curated and peer-reviewed pathway database	v83 (MSigDB v2023.1.Hs)	reactome	db	CC-BY 4.0
+CellChatDB	http://www.cellchat.org/cellchatdb/	Multimeric ligand-receptor complexes	v1 (2021)	cellchatdb	db	GPL v3.0
+CellTalkDB	http://tcm.zju.edu.cn/celltalkdb/	A manually curated database of literature-supported ligand-receptor interactions in human and mouse	Nov 2020	celltalkdb	db	GPL v3.0
+GeneOntology	https://geneontology.org	Knowledgebase that contains the largest structural source of information on the functions of genes	March 2023 (MSigDB v2023.1.Hs)	go	db	CC-BY 4.0
+KEGG	https://www.genome.jp/kegg/pathway.html	Collection of manually drawn pathway maps representing our knowledge on the molecular interaction, reaction and relation networks	20230330	kegg	db	.
+IntOGen	https://www.intogen.org/search	A compendium of mutational cancer driver genes	2020-02-01	intogen	db	CC0 1.0
+CancerMine	http://bionlp.bcgsc.ca/cancermine/	Literature-mined database of tumor suppressor genes/proto-oncogenes	v50 - 20230301	cancermine	db	CC0 1.0
+Network of cancer genes (NCG)	http://ncg.kcl.ac.uk/index.php	A web resource to analyze duplicability, orthology and network properties of cancer genes	v7.1	ncg	db	Open Access
+Cancer Gene Census (CGC)	https://cancer.sanger.ac.uk/census	Curated high-confidence list of genes with substantial published evidence in oncology	v98	cgc	db	.
+InterPro/PFAM	http://pfam.xfam.org	Collection of protein families/domains	2021_11 (v35.0)	pfam	db	CC0 1.0
+Human Protein Atlas	https://proteinatlas.org	Knowledge resource on human proteins in relation to tissue/cell type specificity and cancer prognosis	v22.0 - 20221207	hpa	db	CC-BY-SA 3.0
+Genotype-Tissue Expression (GTEx) project	https://gtexportal.org	Ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation	v8	gtex	db	CC-BY 4.0
+Open Targets Platform	https://www.targetvalidation.org	Comprehensive and robust data integration for target-disease associations	2023.02	opentargets	db	CC0 1.0

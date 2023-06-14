@@ -120,7 +120,7 @@ load_db <- function(cache_dir = NA,
         )
 
         lgr::lgr$info("Downloading remote oncoEnrichR dataset from UiO server to cache_dir")
-        download.file(
+        utils::download.file(
           url = fname_uio,
           destfile = fname_local,
           quiet = T
@@ -1789,7 +1789,7 @@ onco_enrich <- function(query = NULL,
           dplyr::left_join(
             cosmic_variants,
             by = c("VAR_ID"),
-            multiple = "all")
+            relationship = "many-to-many")
       }
 
       onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
@@ -1833,12 +1833,32 @@ onco_enrich <- function(query = NULL,
               .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
         dplyr::select(-c("VAR_ID")) |>
         dplyr::rename(CONSEQUENCE_ALTERNATE = "VEP_ALL_CSQ") |>
+        dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
+          stringr::str_detect(.data$MUTATION_HOTSPOT, "exonic") &
+            stringr::str_detect(.data$MUTATION_HOTSPOT, "[0-9]-[0-9]"),
+          as.character(NA),
+          as.character(.data$MUTATION_HOTSPOT)
+        )) |>
+        tidyr::separate(
+          MUTATION_HOTSPOT,
+          c("tmp1","tmp2","tmp3","tmp4","tmp5","tmp6"),
+          sep = "\\|", remove = T, fill = "right") |>
+        dplyr::mutate(MUTATION_HOTSPOT = paste(
+          .data$tmp2, .data$tmp4, .data$tmp5, .data$tmp6, sep="|"
+        )) |>
+        dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
+          !is.na(.data$MUTATION_HOTSPOT) &
+            stringr::str_detect(.data$MUTATION_HOTSPOT, "NA\\|NA"),
+          as.character(NA),
+          as.character(.data$MUTATION_HOTSPOT)
+        )) |>
         dplyr::select(c("SYMBOL",
                       "CONSEQUENCE",
                       "PROTEIN_CHANGE",
                       "MUTATION_HOTSPOT",
                       "PROTEIN_DOMAIN",
                       "LOSS_OF_FUNCTION",
+                      "MUTATION_HOTSPOT_MATCH",
                       "ENSEMBL_GENE_ID",
                       "ENSEMBL_TRANSCRIPT_ID",
                       "PRIMARY_SITE",
@@ -2120,12 +2140,9 @@ write <- function(report,
   ## Assign to env
   pos <- 1
   envir = as.environment(pos)
-  #for (e in export) assign(e, get(e), envir = envir)
 
   ## TODO: check that report parameter is a valid oncoEnrichR result object
   if (!is.null(report)) {
-    # assign("onc_enrich_report",
-    #        report, envir = .GlobalEnv)
     assign("onc_enrich_report",
            report,
            envir = envir)
@@ -2138,8 +2155,6 @@ write <- function(report,
 
 
   if (!is.null(oeDB[['tcgadb']][['maf']])) {
-    # assign("tcga_maf_datasets",
-    #        oeDB[['tcgadb']][['maf']], envir = .GlobalEnv)
     assign("tcga_maf_datasets",
            oeDB[['tcgadb']][['maf']],
            envir = envir)
@@ -2170,7 +2185,6 @@ write <- function(report,
           )
         )
       dir.create(tmpdir)
-      #system(paste0('mkdir ', tmpdir))
       system(paste0('cp ',
                     oe_rmarkdown_template_dir,
                     .Platform$file.sep,
@@ -2242,10 +2256,6 @@ write <- function(report,
             quiet = T
           )
         )
-
-        # target_html <- file.path(output_directory, paste0(
-        #   file_basename_prefix, ".html")
-        # )
 
         if (file.exists(rmdown_html) & dir.exists(rmdown_supporting1) &
            dir.exists(rmdown_supporting2)) {

@@ -1296,11 +1296,15 @@ add_excel_sheet <- function(
       if (is.data.frame(report$data$protein_complex[[c]])) {
         if (NROW(report$data$protein_complex[[c]]) > 0) {
 
+          res_name <- c
+          if(c == 'omnipath'){
+            res_name <- 'omnipathr'
+          }
 
           df <- report$data$protein_complex[[c]] |>
             dplyr::mutate(
-              annotation_source = report$config$resources[[c]]$name,
-              version = report$config$resources[[c]]$version) |>
+              annotation_source = report$config$resources[[res_name]]$name,
+              version = report$config$resources[[res_name]]$version) |>
             dplyr::select(c("annotation_source",
                             "version"),
                           dplyr::everything()) |>

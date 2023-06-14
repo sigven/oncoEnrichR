@@ -321,3 +321,17 @@ htmltools::br()
 #         panel.grid.major= ggplot2::element_blank(),
 #         panel.grid.minor = ggplot2::element_blank())
 ```
+
+<br><br>
+
+### {.unlisted .unnumbered .toc-ignore}
+
+<span style="font-size: 100%; padding: 2px; background-color:#014587; color:white">&nbsp;&nbsp;<b>Citation Note</b>&nbsp;&nbsp;</span> : If you use the output of the *Tissue and cell type enrichment* module of oncoEnrichR in your research, please cite the following resources and tools:
+
+ * **[Nakken et al., arXiv, 2022](https://arxiv.org/abs/2107.13247)** - *oncoEnrichR*
+ * **[Jain et al., Bioinformatics, 2019](https://pubmed.ncbi.nlm.nih.gov/30346488/)** - *TissueEnrich* 
+ * [Uhlen et al., Science, 2015](https://pubmed.ncbi.nlm.nih.gov/25613900/) - *Human Protein Atlas*
+ * [GTEx Consortium, Nat Genetics, 2013](https://pubmed.ncbi.nlm.nih.gov/23715323/) - *Genotype-Tissue Expression (GTEx) Project*
+
+
+<br><br>
