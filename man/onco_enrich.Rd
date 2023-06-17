@@ -58,7 +58,7 @@ onco_enrich(
 )
 }
 \arguments{
-\item{query}{character vector with gene/query identifiers}
+\item{query}{character vector with gene/query identifiers (minimum 2, maximum 1000)}
 
 \item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 
