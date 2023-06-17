@@ -884,7 +884,7 @@ init_report <- function(oeDB,
 #' interactions, subcellular compartment enrichment, pathway enrichment,
 #' synthetic lethality interactions, prognostic associations, and more.
 #'
-#' @param query character vector with gene/query identifiers
+#' @param query character vector with gene/query identifiers (minimum 2, maximum 1000)
 #' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
 #' @param query_id_type character indicating source of query (one of
 #' "uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",

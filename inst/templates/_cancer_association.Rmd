@@ -169,12 +169,12 @@ if(NROW(oe_ttype_matrix) < 20){
   n_percent_ticks <- 5
 }
 
-#plotly_colors <- "Blues"
-
 target_ttype_rank_fig <- plotly::plot_ly(
   colors = "Blues",
   width = 800,
   height = 400 + (14.67 * NROW(oe_ttype_matrix))) |>
+  #width = 1040,
+  #height = 520 + (19.071 * NROW(oe_ttype_matrix))) |>
   plotly::add_heatmap(
     y = rownames(oe_ttype_matrix),
     x = colnames(oe_ttype_matrix),

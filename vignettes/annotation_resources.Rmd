@@ -9,7 +9,7 @@ vignette: >
 
 ## Resources - overview 
 
-Data harvested from the following resources form the backbone of *oncoEnrichR*:
+Data harvested and integrated from the following resources form the backbone of *oncoEnrichR*:
 
 -   [Open Targets Platform](https://targetvalidation.org) - human drug-target associations and comprehensive disease-target associations
 -   [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined database of drivers, oncogenes and tumor suppressors in cancer

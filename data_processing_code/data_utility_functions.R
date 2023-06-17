@@ -711,6 +711,12 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
         .groups = "drop")
   )
 
+  black_list <- data.frame(
+    'drug_name' = c('8h9 131i','Abc-294640',
+                  'Axl-1717','Azd-3759',
+                  'Apg115','Bay-1161909',
+                  'Sndx-5613 Free Base'))
+
   cancer_drugs[['late_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
@@ -727,6 +733,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
                   primary_site,
                   molecule_chembl_id,
                   drug_max_ct_phase) |>
+    dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::distinct() |>
     dplyr::rename(entrezgene = target_entrezgene) |>
     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
@@ -750,9 +757,26 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
                   primary_site,
                   molecule_chembl_id,
                   drug_max_ct_phase) |>
+    dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::rename(entrezgene = target_entrezgene) |>
     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
     dplyr::distinct()
+
+  ## check for duplicate chembl IDs
+  dups <- cancer_drugs$early_phase |>
+    dplyr::bind_rows(cancer_drugs$late_phase) |>
+    dplyr::group_by(molecule_chembl_id) |>
+    dplyr::summarise(
+      drug_name = paste(unique(drug_name),
+                        collapse="@")) |>
+    dplyr::filter(
+      stringr::str_detect(drug_name, "@")
+    )
+
+  if(NROW(dups) > 0){
+    lgr::lgr$error("ERROR: duplicate chembl IDs")
+    return(NULL)
+  }
 
   for(p in c('early_phase','late_phase')){
 

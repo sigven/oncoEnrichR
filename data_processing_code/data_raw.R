@@ -44,7 +44,14 @@ software_db_version <-
     license == "Artistic-2.0" ~ "https://opensource.org/license/artistic-2-0/",
     license == "Open Access" ~ "Open Access",
     TRUE ~ as.character(".")
-  ))
+  )) |>
+  dplyr::filter(
+    name != "EFO" &
+      name != "DiseaseOntology" &
+      name != "CellTalkDB" &
+      name != "GENCODE"
+  )
+
 
 i <- 1
 while(i <= nrow(software_db_version)){

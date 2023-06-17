@@ -66,7 +66,7 @@ gene_tissue_cell_spec_cat <-
     }
     lgr::lgr$info(
       glue::glue(
-        "{edb} : retrieving {etype} specificity category",
+        "{edb}: Retrieving {etype} specificity category ",
         "of target genes")
     )
 
