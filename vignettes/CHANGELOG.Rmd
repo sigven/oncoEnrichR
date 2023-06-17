@@ -9,7 +9,7 @@ vignette: >
 
 ## Version 1.4.1
 
-* Date: 2023-06-19
+* Date: 2023-06-18
 
 ### Changed
 
@@ -28,6 +28,10 @@ vignette: >
     v0.6.1:
      * Experimental Factor Ontology (v3.54.0)
      * Human Disease Ontology (2023-05-31)
+
+* Functionality
+  * Added *Citation Note* section for each output module - key citations
+  * Added data licensing terms in *Documentation & Settings* module
 
 ## Version 1.4.0
 
