@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.4.0
-Date: 2023-02-21
+Date: 2023-06-17
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -16,7 +16,8 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     (comprehensive target-drug associations, cancer hallmark evidence and 
     target-tumor type associations), TCGA (genetic aberrations and gene co-expression 
     patterns in human tumor samples), STRING/BioGRID (protein-protein interaction networks), 
-    curated protein complexes (CORUM/Compleat/hu.MAP), COMPARTMENTS (subcellular compartments), 
+    curated protein complexes (CORUM/Compleat/ComplexPortal/hu.MAP2), 
+    COMPARTMENTS (subcellular compartments), 
     Human Protein Atlas (tissue and cell-type specific expression patterns and 
     prognostic associations), CellChatDB (ligand-receptor interactions),
     DoRothEA (regulatory interactions), synthetic lethality predictions, 
@@ -35,6 +36,7 @@ Imports: dplyr,
          stringi,
          stringr,
          tidyr,
+         glue,
          googledrive,
          visNetwork (>= 2.0.9), 
          SummarizedExperiment (>= 1.22.0),

@@ -1296,11 +1296,15 @@ add_excel_sheet <- function(
       if (is.data.frame(report$data$protein_complex[[c]])) {
         if (NROW(report$data$protein_complex[[c]]) > 0) {
 
+          res_name <- c
+          if(c == 'omnipath'){
+            res_name <- 'omnipathr'
+          }
 
           df <- report$data$protein_complex[[c]] |>
             dplyr::mutate(
-              annotation_source = report$config$resources[[c]]$name,
-              version = report$config$resources[[c]]$version) |>
+              annotation_source = report$config$resources[[res_name]]$name,
+              version = report$config$resources[[res_name]]$version) |>
             dplyr::select(c("annotation_source",
                             "version"),
                           dplyr::everything()) |>
@@ -1406,8 +1410,8 @@ add_excel_sheet <- function(
         if (NROW(report$data$cancer_prognosis$km_cshl$assocs[[t]]) > 0) {
           df <- report$data$cancer_prognosis$km_cshl$assocs[[t]] |>
             dplyr::mutate(
-              annotation_source = "Smith et al., Cell Reports, 2022 (tcga-survival.com)",
-              version = "v2") |>
+              annotation_source = report$config$resources$tcga_survival$name,
+              version = report$config$resources$tcga_survival$version) |>
             dplyr::mutate(feature_type = t) |>
             dplyr::arrange(.data$feature_type, .data$z_score) |>
             dplyr::select(c("annotation_source", "version"),

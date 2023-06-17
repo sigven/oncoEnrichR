@@ -4,14 +4,15 @@ date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 bibliography: '`r system.file("bibliography.bib", package = "oncoEnrichR")`'
 nocite: |
   @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, 
-  @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, 
+  @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Ochoa2021-jc, 
   @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, 
   @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, 
-  @Lever2019-xn, @Binder2014-py,
+  @Lever2019-xp, @Binder2014-py, @Repana2019-dd, @Sondka2018-wf,
+  @Meldal2018-pg, @Vinayagam2013-aq,
   @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, 
   @Turei2016-wq, @Drew2021-kd, @Garcia-Alonso2019-mr, @Jin2021-tf, 
   @De_Kegel2021-xo, @Smith2022-mk, @Martinez-Jimenez2020-qx, 
-  @Pacini2021-xm
+  @Pacini2021-xm, @GTEx_Consortium2013-fz
 ---
 
 

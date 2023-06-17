@@ -6,27 +6,36 @@ chunk <- function(x,n) split(x, factor(sort(rank(x)%%n)))
 #'
 #' @param pmid An array of Pubmed IDs
 #' @param chunk_size Size of PMID chunks
+#'
+#' @export
+#'
 #' @return citation PubMed citation, with first author, journal and year
 #'
 get_citations_pubmed <- function(
     pmid,
     chunk_size = 100){
 
+
+  ## set logging layout
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
   ## make chunk of maximal 400 PMIDs from input array (limit by EUtils)
-  pmid_chunks <- chunk(pmid, ceiling(length(pmid)/chunk_size))
+  pmid_chunks <- chunk(
+    pmid, ceiling(length(pmid)/chunk_size))
   j <- 0
   all_citations <- data.frame()
-  cat('Retrieving PubMed citations for PMID list, total length', length(pmid))
-  cat('\n')
-  while(j < length(pmid_chunks)){
-    #cat(unlist(pmid_chunks),"\n")
+  lgr::lgr$info(
+    paste0('Retrieving PubMed citations for PMID list, total length: ',
+           length(pmid)))
+  while (j < length(pmid_chunks)) {
     pmid_chunk <- pmid_chunks[[as.character(j)]]
-    cat(unlist(pmid_chunk),"\n")
-    cat('Processing chunk ',j,' with ',length(pmid_chunk),'PMIDS')
-    cat('\n')
+    lgr::lgr$info(
+      paste0('Processing chunk ',j,' with ',length(pmid_chunk),' PMIDS'))
     pmid_string <- paste(pmid_chunk,collapse = " ")
     res <- RISmed::EUtilsGet(
-      RISmed::EUtilsSummary(pmid_string, type="esearch", db="pubmed", retmax = 5000)
+      RISmed::EUtilsSummary(
+        pmid_string, type = "esearch", db = "pubmed", retmax = 5000)
     )
 
 
@@ -35,19 +44,32 @@ get_citations_pubmed <- function(
     pmid_list <- RISmed::PMID(res)
     i <- 1
     first_author <- c()
-    while(i <= length(authorlist)){
+    while (i <= length(authorlist)) {
 
-      first_author <- c(first_author,paste(authorlist[[i]][1,]$LastName," et al.",sep=""))
+
+      if (length(authorlist[[i]]) == 5) {
+        first_author <- c(
+          first_author,
+          paste(authorlist[[i]][1,]$LastName," et al.",sep = ""))
+      } else{
+        first_author <- c(
+          first_author, as.character("Unknown et al.")
+        )
+      }
       i <- i + 1
     }
     journal <- RISmed::ISOAbbreviation(res)
-    citations <- data.frame('pmid' = as.integer(pmid_list),
-                            'citation' = paste(first_author,year,journal,sep=", "),
-                            stringsAsFactors = F)
-    citations$link <- paste0('<a href=\'https://www.ncbi.nlm.nih.gov/pubmed/',
-                             citations$pmid,'\' target=\'_blank\'>',
-                             citations$citation,'</a>')
-    all_citations <- dplyr::bind_rows(all_citations, citations)
+    citations <- data.frame(
+      'pmid' = as.integer(pmid_list),
+      'citation' = paste(
+        first_author, year, journal, sep = ", "),
+      stringsAsFactors = F)
+    citations$link <- paste0(
+      '<a href=\'https://www.ncbi.nlm.nih.gov/pubmed/',
+      citations$pmid,'\' target=\'_blank\'>',
+      citations$citation,'</a>')
+    all_citations <- dplyr::bind_rows(
+      all_citations, citations)
     j <- j + 1
   }
 
@@ -183,7 +205,7 @@ get_citations_pubmed2 <- function(
 
 get_msigdb_signatures <- function(
     raw_db_dir = NULL,
-    db_version = 'v7.5.1 (January 2022)'){
+    db_version = 'v2023.1.Hs (March 2023)'){
 
   ## get full dataset: Broad Institute's Molecular Signatures Database (v7.1)
   invisible(assertthat::assert_that(
@@ -247,7 +269,7 @@ get_msigdb_signatures <- function(
   msigdb_complete <- as.data.frame(all_msigdb |>
     dplyr::left_join(msigdb_category_description,
                      by = c("category_code", "subcategory_code"),
-                     multiple = "all") |>
+                     relationship = "many-to-many") |>
     dplyr::mutate(db = "MSigDB", db_version = db_version) |>
     dplyr::select(db, db_version, category_code, category_description,
                   subcategory_code, subcategory_description,
@@ -360,7 +382,7 @@ get_opentarget_associations <-
   function(raw_db_dir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2022.11",
+           release = "2023.02",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -406,7 +428,7 @@ get_opentarget_associations <-
       dplyr::left_join(
         opentarget_datatype_support,
         by = c("disease_id", "target_ensembl_gene_id"),
-        multiple = "all")
+        relationship = "many-to-many")
 
 
     opentarget_associations <- as.data.frame(
@@ -432,7 +454,7 @@ get_opentarget_associations <-
     ot_associations <- opentarget_targets |>
       dplyr::left_join(opentarget_associations,
                        by = "ensembl_gene_id",
-                       multiple = "all")
+                       relationship = "many-to-many")
 
 
     return(ot_associations)
@@ -442,7 +464,7 @@ get_opentarget_associations <-
 
 get_cancer_hallmarks <- function(raw_db_dir = NULL,
                                  gene_info = NULL,
-                                 opentargets_version = "2022.11",
+                                 opentargets_version = "2023.02",
                                  update = T){
 
   rds_fname <-
@@ -486,7 +508,7 @@ get_cancer_hallmarks <- function(raw_db_dir = NULL,
 
 
   hallmark_data_long <- hallmark_data_long |>
-    dplyr::left_join(pmid_data, by = "pmid",  multiple = "all")
+    dplyr::left_join(pmid_data, by = "pmid",  relationship = "many-to-many")
 
   hallmark_data_short <- as.data.frame(
     hallmark_data_long |>
@@ -501,7 +523,7 @@ get_cancer_hallmarks <- function(raw_db_dir = NULL,
         .groups = "drop") |>
       dplyr::left_join(dplyr::select(gene_info, hgnc_id,
                                      symbol, entrezgene),
-                       by = "hgnc_id",  multiple = "all") |>
+                       by = "hgnc_id",  relationship = "many-to-many") |>
       dplyr::mutate(symbol =
                       paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
                              entrezgene,"' target='_blank'>",symbol,"</a>")) |>
@@ -570,14 +592,14 @@ get_tf_target_interactions <- function(
 
   tf_target_citations <- get_citations_pubmed(
     pmid = unique(tf_target_pmids$references),
-    chunk_size = 100)
+    chunk_size = 200)
 
   tf_target_pmids <- as.data.frame(
     tf_target_pmids |>
       dplyr::mutate(references = as.integer(references)) |>
       dplyr::left_join(
         tf_target_citations, by = c("references" = "pmid"),
-        multiple = "all") |>
+        relationship = "many-to-many") |>
       dplyr::group_by(source_genesymbol, target_genesymbol) |>
       dplyr::summarise(
         tf_target_literature_support = paste(
@@ -593,7 +615,7 @@ get_tf_target_interactions <- function(
     dplyr::left_join(tf_target_pmids,
                      by = c("source_genesymbol",
                             "target_genesymbol"),
-                     multiple = "all") |>
+                     relationship = "many-to-many") |>
     dplyr::rename(regulator = source_genesymbol,
                   target = target_genesymbol) |>
     dplyr::select(-references) |>
@@ -654,8 +676,9 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   approved_inhibitors <- as.data.frame(
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_is_targeted = T,
-      inhibitor_only = T,
+      drug_targeted_agent = T,
+      drug_action_inhibition = T,
+      drug_cancer_indication = T,
       drug_is_approved = T)$records |>
       dplyr::filter(!is.na(primary_site)) |>
       dplyr::filter(
@@ -688,18 +711,29 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
         .groups = "drop")
   )
 
+  black_list <- data.frame(
+    'drug_name' = c('8h9 131i','Abc-294640',
+                  'Axl-1717','Azd-3759',
+                  'Apg115','Bay-1161909',
+                  'Sndx-5613 Free Base'))
+
   cancer_drugs[['late_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_is_targeted = T,
-      inhibitor_only = T,
+      drug_targeted_agent = T,
+      drug_action_inhibition = T,
+      drug_cancer_indication = F,
+      drug_classified_cancer = F,
       drug_minimum_phase_any_indication = 3)$records |>
     dplyr::filter(!is.na(molecule_chembl_id)) |>
+    dplyr::filter(drug_cancer_relevance != "by_other_condition_otp" &
+                    drug_cancer_relevance != "by_cancer_target_otp") |>
     dplyr::select(target_entrezgene,
                   drug_name,
                   primary_site,
                   molecule_chembl_id,
                   drug_max_ct_phase) |>
+    dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::distinct() |>
     dplyr::rename(entrezgene = target_entrezgene) |>
     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
@@ -708,10 +742,14 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   cancer_drugs[['early_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_is_targeted = T,
-      inhibitor_only = T,
+      drug_targeted_agent = T,
+      drug_action_inhibition = F,
+      drug_cancer_indication = F,
+      drug_classified_cancer = F,
       drug_minimum_phase_any_indication = 0)$records |>
     dplyr::filter(!is.na(molecule_chembl_id)) |>
+    dplyr::filter(drug_cancer_relevance != "by_other_condition_otp" &
+                    drug_cancer_relevance != "by_cancer_target_otp") |>
     dplyr::anti_join(
       cancer_drugs[['late_phase']], by = "molecule_chembl_id") |>
     dplyr::select(target_entrezgene,
@@ -719,9 +757,26 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
                   primary_site,
                   molecule_chembl_id,
                   drug_max_ct_phase) |>
+    dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::rename(entrezgene = target_entrezgene) |>
     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
     dplyr::distinct()
+
+  ## check for duplicate chembl IDs
+  dups <- cancer_drugs$early_phase |>
+    dplyr::bind_rows(cancer_drugs$late_phase) |>
+    dplyr::group_by(molecule_chembl_id) |>
+    dplyr::summarise(
+      drug_name = paste(unique(drug_name),
+                        collapse="@")) |>
+    dplyr::filter(
+      stringr::str_detect(drug_name, "@")
+    )
+
+  if(NROW(dups) > 0){
+    lgr::lgr$error("ERROR: duplicate chembl IDs")
+    return(NULL)
+  }
 
   for(p in c('early_phase','late_phase')){
 
@@ -904,12 +959,12 @@ get_pathway_annotations <- function(
       dplyr::filter(source == "NetPath") |>
       dplyr::select(genesymbol, value) |>
       dplyr::rename(name = value, symbol = genesymbol) |>
-      dplyr::left_join(netpath_idmapping, by = "name",  multiple = "all") |>
+      dplyr::left_join(netpath_idmapping, by = "name",  relationship = "many-to-many") |>
       dplyr::mutate(name = paste0(name," signaling pathway")) |>
       dplyr::arrange(name, standard_name, symbol) |>
       dplyr::left_join(dplyr::select(
         gene_info, entrezgene, symbol),
-        by = "symbol",  multiple = "all") |>
+        by = "symbol",  relationship = "many-to-many") |>
       dplyr::rename(entrez_gene = entrezgene) |>
       dplyr::mutate(entrez_gene = as.character(entrez_gene)) |>
       dplyr::select(standard_name, name, entrez_gene)
@@ -1051,7 +1106,7 @@ get_protein_complexes <- function(
 
      pmid2complex <- pmid2complex |>
        dplyr::mutate(pmid = as.integer(pmid)) |>
-       dplyr::left_join(protein_complex_citations, by = "pmid", multiple = "all") |>
+       dplyr::left_join(protein_complex_citations, by = "pmid", relationship = "many-to-many") |>
        dplyr::group_by(complex_id) |>
        dplyr::summarise(
          complex_literature_support = paste(
@@ -1064,7 +1119,8 @@ get_protein_complexes <- function(
      protein_complexes[['OmniPath']] <-
        protein_complexes[['OmniPath']] |>
        dplyr::left_join(pmid2complex,
-                       by = "complex_id",  multiple = "all")
+                       by = "complex_id",
+                       relationship = "many-to-many")
 
     ## CORUM annotations (complex comments, disease comments, purification methods)
     protein_complexes[['CORUM']] <- as.data.frame(
@@ -1129,7 +1185,9 @@ get_protein_complexes <- function(
     protein_complexes[['OmniPath']] <-
       protein_complexes[['OmniPath']] |>
       dplyr::left_join(
-        protein_complexes[['CORUM']], by = "complex_name",  multiple = "all") |>
+        protein_complexes[['CORUM']],
+        by = "complex_name",
+        relationship = "many-to-many") |>
       #dplyr::select(-pmid) |>
       dplyr::mutate(confidence = NA) |>
       dplyr::mutate(complex_id = as.character(complex_id))
@@ -1264,8 +1322,10 @@ get_fitness_data_crispr <- function(
                     entrezgene = entrez_id) |>
       dplyr::filter(!is.na(entrezgene)) |>
       dplyr::left_join(
-        dplyr::select(gene_info, symbol,
-                      entrezgene), by = "entrezgene",  multiple = "all") |>
+        dplyr::select(
+          gene_info, symbol,
+          entrezgene), by = "entrezgene",
+        relationship = "many-to-many") |>
       dplyr::select(gene_id_project_score, entrezgene, symbol)
 
     bayes_factors <- as.matrix(
@@ -1307,13 +1367,13 @@ get_fitness_data_crispr <- function(
       dplyr::left_join(
         dplyr::select(cell_lines, model_id, model_name, tissue,
                       cancer_type, sample_site, tissue_status),
-        by = c("model_id"),  multiple = "all") |>
+        by = c("model_id"),  relationship = "many-to-many") |>
       dplyr::filter(!is.na(model_name)) |>
-      dplyr::left_join(gene_identifiers,by=c("symbol"),  multiple = "all") |>
+      dplyr::left_join(gene_identifiers,by=c("symbol"),  relationship = "many-to-many") |>
       dplyr::filter(!is.na(gene_id_project_score)) |>
       dplyr::left_join(
         bayes_factors, by =
-          c("symbol", "model_id"),  multiple = "all") |>
+          c("symbol", "model_id"),  relationship = "many-to-many") |>
       dplyr::arrange(symbol, scaled_BF)
 
     ## Target priority scores
@@ -1363,8 +1423,8 @@ get_fitness_data_crispr <- function(
 
 
 get_survival_associations <- function(
-  gene_info = NULL,
-  raw_db_dir = NULL){
+  raw_db_dir = NULL,
+  gene_info = NULL){
 
   for(feature_type in
       c('CNAs','Mutations','Gene expression','Methylation',
@@ -1427,7 +1487,7 @@ get_survival_associations <- function(
       dplyr::filter(!stringr::str_detect(tcga_cohort,"^Stouffer")) |>
       dplyr::left_join(dplyr::select(gene_info,
                                      symbol, gene_biotype),
-                       by = "symbol",  multiple = "all") |>
+                       by = "symbol",  relationship = "many-to-many") |>
       ## limit associations to protein-coding genes
       dplyr::filter(gene_biotype == "protein-coding") |>
       dplyr::select(-gene_biotype)
@@ -1636,7 +1696,7 @@ get_gene_go_terms <- function(
     dplyr::select(-go_annotation_date) |>
     dplyr::distinct() |>
     dplyr::left_join(
-      go_terms, by = "go_id", multiple = "all"
+      go_terms, by = "go_id", relationship = "many-to-many"
     ) |>
     dplyr::mutate(
       go_term_link =
@@ -1669,7 +1729,7 @@ get_gene_go_terms <- function(
   go_terms <- as.data.frame(
     dplyr::full_join(go_function_terms_prgene,
                      go_process_terms_prgene,
-                     by = "symbol",  multiple = "all") |>
+                     by = "symbol",  relationship = "many-to-many") |>
       dplyr::filter(symbol != "") |>
       dplyr::mutate(
         num_ids_process = dplyr::if_else(
@@ -1835,7 +1895,7 @@ generate_gene_xref_df <- function(
   go2entrez <- transcript_xref_db |>
     dplyr::filter(property == "symbol") |>
     dplyr::rename(symbol = value) |>
-    dplyr::left_join(go_terms_pr_gene, by = "symbol", multiple = "all") |>
+    dplyr::left_join(go_terms_pr_gene, by = "symbol", relationship = "many-to-many") |>
     dplyr::filter(!is.na(num_go_terms)) |>
     dplyr::select(-c(property, symbol)) |>
     dplyr::distinct() |>
@@ -1894,15 +1954,15 @@ generate_gene_xref_df <- function(
     dplyr::inner_join(
       dplyr::select(opentargetEns2Entrez, entrezgene),
       by = "entrezgene",
-      multiple = "all")
+      relationship = "many-to-many")
 
   gene_xref <- gene_info |>
     dplyr::select(symbol, hgnc_id, entrezgene,
                   name, gene_biotype) |>
     dplyr::left_join(
-      ensembl2entrez, by = "entrezgene", multiple = "all") |>
+      ensembl2entrez, by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(
-      go2entrez, by = "entrezgene", multiple = "all") |>
+      go2entrez, by = "entrezgene", relationship = "many-to-many") |>
     dplyr::filter(!is.na(entrezgene) & !is.na(symbol)) |>
     dplyr::distinct() |>
     dplyr::mutate(
@@ -1911,24 +1971,24 @@ generate_gene_xref_df <- function(
                entrezgene,
                "' target='_blank'>",name,"</a>")) |>
     dplyr::left_join(opentarget_associations,
-                     by = "ensembl_gene_id", multiple = "all") |>
+                     by = "ensembl_gene_id", relationship = "many-to-many") |>
     dplyr::anti_join(
       dplyr::select(
         ensembl2ignore, c("ensembl_gene_id", "entrezgene")),
       by = c("ensembl_gene_id", "entrezgene")
     ) |>
     dplyr::left_join(ts_oncogene_annotations,
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(upsummary2entrez,
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(ncbisummary2entrez,
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(cancerdrugdb[['drug_per_target']][['early_phase']],
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(cancerdrugdb[['drug_per_target']][['late_phase']],
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::left_join(cancerdrugdb[['approved_per_target']],
-                     by = "entrezgene", multiple = "all") |>
+                     by = "entrezgene", relationship = "many-to-many") |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
       is.na(tumor_suppressor),
       FALSE,
@@ -1974,7 +2034,7 @@ generate_gene_xref_df <- function(
       !is.na(gene_summary),TRUE,FALSE
     )) |>
     dplyr::left_join(otdb$max_site_rank,
-                     by = "ensembl_gene_id", multiple = "all") |>
+                     by = "ensembl_gene_id", relationship = "many-to-many") |>
     dplyr::mutate(cancer_max_rank = dplyr::if_else(
       is.na(cancer_max_rank), 0, as.numeric(cancer_max_rank)
     )) |>
@@ -2190,7 +2250,8 @@ quantify_gene_cancer_relevance <- function(
       dplyr::select(phenotype_cancer_map,
                     efo_id, cui,
                     cui_name, primary_site),
-      by = c("cui", "cui_name"), multiple = "all") |>
+      by = c("cui", "cui_name"), multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::rename(disease_efo_id = efo_id) |>
     dplyr::filter(!is.na(disease_efo_id)) |>
     dplyr::mutate(cancer_phenotype = TRUE) |>
@@ -2203,7 +2264,8 @@ quantify_gene_cancer_relevance <- function(
     dplyr::filter(!is.na(primary_site))
 
   phenotypes_non_primary <- phenotypes_non_primary |>
-    dplyr::anti_join(phenotypes_primary, by = c("disease_efo_id","cui")) |>
+    dplyr::anti_join(
+      phenotypes_primary, by = c("disease_efo_id","cui")) |>
     dplyr::select(-primary_site)
 
   ### Hereditary breast/ovarian cancer syndrome
@@ -2211,7 +2273,8 @@ quantify_gene_cancer_relevance <- function(
   df <- dplyr::bind_rows(df, data.frame(primary_site = 'Ovary/Fallopian Tube', cui = 'C0677776', stringsAsFactors = F))
 
   phenotypes_hered_brca_ov <- phenotypes_non_primary |>
-    dplyr::left_join(df, by = "cui", multiple = "all") |>
+    dplyr::left_join(df, by = "cui", multiple = "all",
+                     relationship = "many-to-many") |>
     dplyr::filter(!is.na(primary_site))
   ###
 
@@ -2262,7 +2325,9 @@ quantify_gene_cancer_relevance <- function(
       dplyr::left_join(
         dplyr::select(efo_name_map,
                       efo_id, efo_name),
-        by = c("disease_efo_id" = "efo_id"), multiple = "all") |>
+        by = c("disease_efo_id" = "efo_id"),
+        multiple = "all",
+        relationship = "many-to-many") |>
       ## exclude non-specific cancer associations
       dplyr::filter(
         !stringr::str_detect(
@@ -2279,7 +2344,9 @@ quantify_gene_cancer_relevance <- function(
                       disease_efo_id,
                       primary_site,
                       cancer_phenotype),
-        by=c("disease_efo_id"), multiple = "all") |>
+        by=c("disease_efo_id"),
+        multiple = "all",
+        relationship = "many-to-many") |>
       dplyr::mutate(
         cancer_phenotype =
           dplyr::if_else(
@@ -2322,7 +2389,9 @@ quantify_gene_cancer_relevance <- function(
     dplyr::inner_join(
       dplyr::select(efo_name_map,
                     efo_id, efo_name, primary_site),
-      by = c("disease_efo_id" = "efo_id"), multiple = "all") |>
+      by = c("disease_efo_id" = "efo_id"),
+      multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::filter(!is.na(primary_site))
 
@@ -2338,6 +2407,11 @@ quantify_gene_cancer_relevance <- function(
     dplyr::bind_rows(set3) |>
     dplyr::arrange(primary_site, ensembl_gene_id,
                    desc(ot_association_score))
+
+  lgr::lgr$info(
+    glue::glue(
+      "Found {NROW(otdb_all[otdb_all$cancer_phenotype == T,])} ",
+      "gene-cancer associations"))
 
   otdb_tissue_scores <- as.data.frame(
     otdb_all |>
@@ -2395,7 +2469,9 @@ quantify_gene_cancer_relevance <- function(
   otdb$all <- otdb_all
   otdb$gene_rank <- otdb_site_rank |>
     dplyr::left_join(
-      otdb_global_rank, by = "ensembl_gene_id", multiple = "all")
+      otdb_global_rank,
+      by = "ensembl_gene_id", multiple = "all",
+      relationship = "many-to-many")
 
   #otdb$site_rank <- otdb_site_rank
   otdb$max_site_rank <- otdb_max_site_rank
@@ -2469,7 +2545,7 @@ get_ligand_receptors <- function(
           evidence, "KEGG:",""
         )) |>
         dplyr::left_join(keggdb$TERM2NAME,
-                         by = c("evidence" = "standard_name"), multiple = "all") |>
+                         by = c("evidence" = "standard_name"), relationship = "many-to-many") |>
         dplyr::mutate(ligand_receptor_kegg_support = paste0(
           "<a href='https://www.genome.jp/pathway/",
           stringr::str_replace(evidence,"hsa","map"),
@@ -2501,7 +2577,7 @@ get_ligand_receptors <- function(
         ligand_receptor_literature |>
           dplyr::mutate(pmid = as.integer(pmid)) |>
           dplyr::left_join(ligand_receptor_citations,
-                           by = c("pmid" = "pmid"), multiple = "all") |>
+                           by = c("pmid" = "pmid"), relationship = "many-to-many") |>
           dplyr::filter(!is.na(link)) |>
           dplyr::group_by(interaction_id) |>
           dplyr::summarise(
@@ -2516,10 +2592,10 @@ get_ligand_receptors <- function(
       ligand_receptor_db_final <- ligand_receptor_db |>
         dplyr::left_join(dplyr::select(
           ligand_receptor_kegg_support, interaction_id,
-          ligand_receptor_kegg_support), by = "interaction_id", multiple = "all") |>
+          ligand_receptor_kegg_support), by = "interaction_id", relationship = "many-to-many") |>
         dplyr::left_join(dplyr::select(
           ligand_receptor_literature, interaction_id,
-          ligand_receptor_literature_support), multiple = "all") |>
+          ligand_receptor_literature_support), relationship = "many-to-many") |>
         dplyr::mutate(literature_support = dplyr::if_else(
           is.na(ligand_receptor_kegg_support),
           as.character(ligand_receptor_literature_support),
@@ -2617,7 +2693,7 @@ get_ligand_receptors <- function(
         celltalkdb_literature |>
           dplyr::mutate(pmid = as.integer(pmid)) |>
           dplyr::left_join(ligand_receptor_citations,
-                           by = c("pmid" = "pmid"), multiple = "all") |>
+                           by = c("pmid" = "pmid"), relationship = "many-to-many") |>
           dplyr::filter(!is.na(link)) |>
           dplyr::group_by(interaction_id) |>
           dplyr::summarise(
@@ -2640,7 +2716,7 @@ get_ligand_receptors <- function(
               interaction_id,
               ligand_receptor_literature_support,
               ligand_receptor_literature),
-            by = "interaction_id", multiple = "all") |>
+            by = "interaction_id", relationship = "many-to-many") |>
           dplyr::rename(
             literature_support = ligand_receptor_literature_support) |>
           dplyr::select(
@@ -2906,7 +2982,7 @@ get_mean_median_tpm <- function(
 get_tcga_db <- function(
   raw_db_dir = NULL,
   gene_xref = NULL,
-  tcga_release = "release36_20221212",
+  tcga_release = "release37_20230329",
   update = F){
 
 
@@ -2967,17 +3043,21 @@ get_tcga_db <- function(
     "tcga",
     "current_release",
     "vcf",
-    "tcga_recurrent_coding_gvanno_grch38.tsv.gz"
+    "tcga_recurrent_coding_gvanno.grch38.tsv.gz"
   )
 
-  # recurrent_variants_tsv <-
-  #   "~/project_data/analysis__tcga/tcga/output/release36_20221212/vcf/tcga_recurrent_coding_gvanno_grch38.tsv.gz"
+  gene_xref <- gene_xref |>
+    dplyr::mutate(oncogene = dplyr::if_else(
+      .data$oncogene_confidence_level == "MODERATE",
+      FALSE,
+      as.logical(.data$oncogene)
+    )) |>
+    dplyr::mutate(tumor_suppressor = dplyr::if_else(
+      .data$tsg_confidence_level == "MODERATE",
+      FALSE,
+      as.logical(.data$tumor_suppressor)
+    ))
 
-  pfam_domains_tsv <- file.path(
-    raw_db_dir,
-    "pfam",
-    "pfam.domains.tsv.gz"
-  )
 
   if(update == F & file.exists(rds_fname)){
     tcgadb <- readRDS(file = rds_fname)
@@ -3022,16 +3102,23 @@ get_tcga_db <- function(
 
 
   tcga_aberration_stats <- tcga_aberration_stats |>
-    dplyr::rename(primary_diagnosis = primary_diagnosis_very_simplified) |>
-    dplyr::left_join(clinical_strata_code, by = "clinical_strata",
-                     multiple = "all") |>
-    dplyr::left_join(diagnosis_code, by = "primary_diagnosis",  multiple = "all") |>
-    dplyr::left_join(site_code, by = "primary_site",  multiple = "all") |>
+    dplyr::rename(
+      primary_diagnosis = primary_diagnosis_very_simplified) |>
+    dplyr::left_join(
+      clinical_strata_code, by = "clinical_strata",
+      relationship = "many-to-many") |>
+    dplyr::left_join(
+      diagnosis_code, by = "primary_diagnosis",
+      relationship = "many-to-many") |>
+    dplyr::left_join(
+      site_code, by = "primary_site",
+      relationship = "many-to-many") |>
     dplyr::select(-c(primary_site, primary_diagnosis,
                      clinical_strata))
 
-  maf_codes <- read.table(file = maf_codes_tsv,
-                          header = T, sep = "\t", quote ="")
+  maf_codes <- read.table(
+    file = maf_codes_tsv,
+    header = T, sep = "\t", quote ="")
 
   maf_datasets <- list()
   i <- 1
@@ -3060,14 +3147,15 @@ get_tcga_db <- function(
         dplyr::rename(Diagnosis = primary_diagnosis_very_simplified,
                       Tumor_Sample_Barcode = bcr_patient_barcode,
                       PanCancer_subtype = pancan_subtype_selected) |>
-        dplyr::semi_join(tmp, by = "Tumor_Sample_Barcode",  multiple = "all")
+        dplyr::semi_join(
+          tmp, by = "Tumor_Sample_Barcode")
 
       write.table(tmp, file="tmp.maf", quote=F, row.names = F,
                   col.names = T, sep ="\t")
       system('gzip -f tmp.maf', intern = T)
-      maf <- maftools::read.maf("tmp.maf.gz", verbose = F, clinicalData = clinical)
+      maf <- maftools::read.maf(
+        "tmp.maf.gz", verbose = F, clinicalData = clinical)
       maf_datasets[[maf_code]] <- maf
-      #saveRDS(maf, file = file.path(raw_db_dir, "data-raw", "maf", paste0(maf_code,".maf.rds")))
     }
     i <- i + 1
     cat(primary_site,'\n')
@@ -3076,18 +3164,10 @@ get_tcga_db <- function(
   system('rm -f tmp.maf.gz')
 
 
-  pfam_domains <- as.data.frame(
-    readr::read_tsv(
-      pfam_domains_tsv,
-
-      show_col_types = F
-    )) |>
-    dplyr::rename(PFAM_ID = pfam_id, PROTEIN_DOMAIN = url) |>
-    dplyr::rename(PFAM_DOMAIN_NAME = name) |>
-    dplyr::select(PFAM_ID, PFAM_DOMAIN_NAME) |>
-    dplyr::mutate(PFAM_ID = stringr::str_replace(
-      PFAM_ID,"\\.[0-9]{1,}$","")
-    )
+  pfam_domains <-
+    as.data.frame(PFAM.db::PFAMDE) |>
+    dplyr::rename(PFAM_ID = ac,
+                  PFAM_DOMAIN_NAME = de)
 
   ##TCGA recurrent SNVs/InDels
   recurrent_tcga_variants <- as.data.frame(readr::read_tsv(
@@ -3098,10 +3178,10 @@ get_tcga_db <- function(
                     TCGA_TOTAL_RECURRENCE,
                     PFAM_DOMAIN, HGVSc, LoF,
                     MUTATION_HOTSPOT,
-                    #MUTATION_HOTSPOT_NEW,
-                    #MUTATION_HOTSPOT_TTYPE_NEW,
                     MUTATION_HOTSPOT_MATCH,
                     HGVSp_short,
+                    ONCOGENICITY_CLASSIFICATION,
+                    ONCOGENICITY_SCORE,
                     ENSEMBL_TRANSCRIPT_ID,
                     SYMBOL,
                     COSMIC_MUTATION_ID,
@@ -3129,9 +3209,9 @@ get_tcga_db <- function(
                     PFAM_ID,
                     HGVSc,
                     MUTATION_HOTSPOT,
-                    #MUTATION_HOTSPOT_NEW,
-                    #MUTATION_HOTSPOT_TTYPE_NEW,
                     MUTATION_HOTSPOT_MATCH,
+                    ONCOGENICITY_CLASSIFICATION,
+                    ONCOGENICITY_SCORE,
                     LOSS_OF_FUNCTION,
                     ENSEMBL_TRANSCRIPT_ID,
                     COSMIC_MUTATION_ID,
@@ -3181,10 +3261,14 @@ get_tcga_db <- function(
 
   recurrent_tcga_variants$VEP_ALL_CSQ <- NULL
   recurrent_tcga_variants <- recurrent_tcga_variants |>
-    dplyr::left_join(csq_all_slim, by = "VAR_ID",  multiple = "all") |>
+    dplyr::left_join(
+      csq_all_slim, by = "VAR_ID",
+      relationship = "many-to-many") |>
     dplyr::select(
       SYMBOL, VAR_ID, CONSEQUENCE,
       PROTEIN_CHANGE, MUTATION_HOTSPOT,
+      ONCOGENICITY_CLASSIFICATION,
+      ONCOGENICITY_SCORE,
       AMINO_ACID_START, PFAM_ID,
       LOSS_OF_FUNCTION, ENSEMBL_TRANSCRIPT_ID,
       MUTATION_HOTSPOT_MATCH,
@@ -3209,7 +3293,7 @@ get_tcga_db <- function(
         gene_xref, symbol,
         tumor_suppressor,
         oncogene, cancer_driver),
-      by = "symbol",  multiple = "all") |>
+      by = "symbol",  relationship = "many-to-many") |>
     dplyr::filter(
       tumor_suppressor == T |
         oncogene == T |
@@ -3222,7 +3306,7 @@ get_tcga_db <- function(
       dplyr::select(
         gene_xref, symbol, tumor_suppressor,
         oncogene, cancer_driver),
-      by = "symbol",  multiple = "all") |>
+      by = "symbol",  relationship = "many-to-many") |>
     dplyr::filter(
       tumor_suppressor == T |
         oncogene == T |
@@ -3255,10 +3339,6 @@ get_tcga_db <- function(
                tumor_code,
                ".rds")
       )
-      # file.path("","Users","sigven", "project_data","analysis__tcga",
-      #           "tcga", "output", "rnaseq",
-      #           paste0("rnaseq_",tumor_code,"_",
-      #                  tcga_release,".rds"))
 
     cat(tumor_code, '\n')
     if(file.exists(rnaseq_rds_fname)){
@@ -3322,7 +3402,9 @@ get_tcga_db <- function(
         )
       )) |>
     dplyr::left_join(
-      dplyr::select(gene_xref, symbol, gene_biotype),  multiple = "all"
+      dplyr::select(
+        gene_xref, symbol, gene_biotype),
+      relationship = "many-to-many"
     ) |>
     dplyr::filter(gene_biotype == "protein-coding")
 
@@ -3370,13 +3452,13 @@ get_paralog_SL_predictions <- function(
     ) |>
     dplyr::left_join(
       dplyr::select(gene_info, symbol, entrezgene),
-      by = c("A1_entrez" = "entrezgene"),  multiple = "all"
+      by = c("A1_entrez" = "entrezgene"),  relationship = "many-to-many"
     ) |>
     dplyr::rename(ppi_overlap = fet_ppi_overlap) |>
     dplyr::rename(symbol_A1 = symbol) |>
     dplyr::left_join(
       dplyr::select(gene_info, symbol, entrezgene),
-      by = c("A2_entrez" = "entrezgene"),  multiple = "all"
+      by = c("A2_entrez" = "entrezgene"),  relationship = "many-to-many"
     ) |>
     dplyr::rename(symbol_A2 = symbol) |>
     dplyr::mutate(
@@ -3455,7 +3537,7 @@ get_synthetic_lethality_pairs <- function(
 
   sl_pairs_data <- as.data.frame(
     sl_pairs_data_raw |>
-      dplyr::left_join(pmid_data, by = "pmid",  multiple = "all") |>
+      dplyr::left_join(pmid_data, by = "pmid",  relationship = "many-to-many") |>
       dplyr::group_by(
         sl_id, entrezgene_a, entrezgene_b,
         sl_source, sl_cell_line, sl_statistic_score) |>
@@ -3512,7 +3594,7 @@ get_subcellular_annotations <- function(
     janitor::clean_names() |>
     dplyr::select(organ, go_id) |>
     dplyr::mutate(organ = stringr::str_trim(organ)) |>
-    dplyr::left_join(gganatogram::cell_key$cell, by = "organ",  multiple = "all") |>
+    dplyr::left_join(gganatogram::cell_key$cell, by = "organ",  relationship = "many-to-many") |>
     dplyr::select(-c(type,value,colour)) |>
     dplyr::rename(ggcompartment = organ)
 
@@ -3652,10 +3734,10 @@ get_subcellular_annotations <- function(
       dplyr::select(
         go_terms, go_id, go_term
       ),
-      by = "go_id",  multiple = "all") |>
+      by = "go_id",  relationship = "many-to-many") |>
     dplyr::left_join(
       ensembl_protein_xref,
-      by = "ensembl_protein_id",  multiple = "all"
+      by = "ensembl_protein_id",  relationship = "many-to-many"
     ) |>
     dplyr::rename(
       annotation_source = source,

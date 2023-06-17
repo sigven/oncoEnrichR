@@ -73,7 +73,23 @@ The analysis performed in the _oncoEnrichR report_ is based on the following mai
 ```{r list_software, echo=F,results='asis'}
 for(n in names(onc_enrich_report[['config']][['resources']])){
   if(onc_enrich_report[['config']][['resources']][[n]]$resource_type == 'software'){
-    s <- paste0('    * [',onc_enrich_report[['config']][['resources']][[n]]$name,'](',onc_enrich_report[['config']][['resources']][[n]]$url,') - ',onc_enrich_report[['config']][['resources']][[n]]$description, ' (',onc_enrich_report[['config']][['resources']][[n]]$version,')')
+    license <- onc_enrich_report[['config']][['resources']][[n]]$license
+    s <- glue::glue(
+      "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+      "[{onc_enrich_report[['config']][['resources']][[n]]$license}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$license_url})")
+    if(license == "."){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "**See below for licensing requirements**")
+    }else if(license == "Open Access"){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "*Open Access*")
+    }
     cat(s,sep="\n")
   }
 }
@@ -85,9 +101,36 @@ for(n in names(onc_enrich_report[['config']][['resources']])){
 ```{r list_db, echo=F,results='asis'}
 for(n in names(onc_enrich_report[['config']][['resources']])){
   if(onc_enrich_report[['config']][['resources']][[n]]$resource_type != 'software'){
-      s <- paste0('    * [',onc_enrich_report[['config']][['resources']][[n]]$name,'](',onc_enrich_report[['config']][['resources']][[n]]$url,') - ',onc_enrich_report[['config']][['resources']][[n]]$description, ' (',onc_enrich_report[['config']][['resources']][[n]]$version,')')
-      cat(s,sep="\n")
+    license <- onc_enrich_report[['config']][['resources']][[n]]$license
+    
+    s <- glue::glue(
+      "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+      "[{onc_enrich_report[['config']][['resources']][[n]]$license}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$license_url})")
+    if(license == "."){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "**<sup>\\*</sup>See below for licensing requirements**")
+    }else if(license == "Open Access"){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "*Open Access*")
+    }
+    cat(s,sep="\n")
+    
   }
 }
 
+cat(glue::glue(
+  " <br><br><sup>\\*</sup>*[KEGG]({onc_enrich_report[['config']][['resources']][['kegg']]$url})",
+  " and [CGC]({onc_enrich_report[['config']][['resources']][['cgc']]$url}) are freely",
+  " available for academic, non-commercial",
+  " use. For commercial usage, end users need to consult [https://www.pathway.jp](https://www.pathway.jp/)",
+  " and [https://cancer.sanger.ac.uk/cosmic/license](https://cancer.sanger.ac.uk/cosmic/license)",
+  " for licensing inquiries.*<br><br>"), sep="\n")
+
 ```
+

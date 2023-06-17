@@ -3,13 +3,13 @@ library(gganatogram)
 
 source('data_processing_code/data_utility_functions.R')
 
-msigdb_version <- 'v2022.1.Hs'
-wikipathways_version <- "20230210"
+msigdb_version <- 'v2023.1.Hs'
+wikipathways_version <- "20230610"
 netpath_version <- "2010"
-opentargets_version <- "2022.11"
-kegg_version <- "20230101"
-gencode_version <- "42"
-uniprot_release <- "2022_05"
+opentargets_version <- "2023.02"
+kegg_version <- "20230330"
+gencode_version <- "43"
+uniprot_release <- "2023_02"
 
 ## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
@@ -21,22 +21,37 @@ update_omnipath_complexdb <- F
 update_subcelldb <- F
 update_ligand_receptor_db <- F
 
-oe_version <- "1.4.0"
+oe_version <- "1.4.1"
 
 data_raw_dir <-
   "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
 data_output_dir <-
   "/Users/sigven/project_data/package__oncoEnrichR/db/output"
 
-software_db_version <-
-  read.table(
-    file = "data_processing_code/RELEASE_NOTES.txt",
-    skip = 1, sep = "\t", stringsAsFactors = F,
-    comment.char = "#",quote="")
-colnames(software_db_version) <-
-  c('name','url','description',
-    'version','key','resource_type')
 release_notes <- list()
+software_db_version <-
+  readr::read_tsv(
+    file = "data_processing_code/RELEASE_NOTES.txt",
+    skip = 1, col_names = T, show_col_types = F,
+    comment = "#") |>
+  dplyr::mutate(license_url = dplyr::case_when(
+    license == "CC-BY 4.0" ~ "https://creativecommons.org/licenses/by/4.0/",
+    license == "CC0 1.0" ~ "https://creativecommons.org/publicdomain/zero/1.0/",
+    license == "MIT" ~ "https://en.wikipedia.org/wiki/MIT_License",
+    license == "Apache 2.0" ~ "https://www.apache.org/licenses/LICENSE-2.0",
+    license == "GPL v3.0" ~ "https://www.gnu.org/licenses/gpl-3.0.en.html",
+    license == "CC-BY-SA 3.0" ~ "https://creativecommons.org/licenses/by-sa/3.0/",
+    license == "Artistic-2.0" ~ "https://opensource.org/license/artistic-2-0/",
+    license == "Open Access" ~ "Open Access",
+    TRUE ~ as.character(".")
+  )) |>
+  dplyr::filter(
+    name != "EFO" &
+      name != "DiseaseOntology" &
+      name != "CellTalkDB" &
+      name != "GENCODE"
+  )
+
 
 i <- 1
 while(i <= nrow(software_db_version)){
@@ -49,7 +64,11 @@ while(i <= nrow(software_db_version)){
          'name' =
            software_db_version[i,]$name,
          'resource_type' =
-           software_db_version[i,]$resource_type)
+           software_db_version[i,]$resource_type,
+         'license' =
+           software_db_version[i,]$license,
+         'license_url' =
+           software_db_version[i,]$license_url)
   i <- i + 1
 }
 rm(software_db_version)
@@ -434,7 +453,6 @@ rm(genedb)
 rm(gene_info)
 rm(depmapdb)
 rm(survivaldb)
-rm(tcga_maf_datasets)
 rm(opentarget_associations)
 rm(ts_oncogene_annotations)
 rm(subcelldb)
@@ -446,7 +464,8 @@ rm(slparalogdb)
 rm(gOncoX)
 rm(biogrid)
 
-rm(oedb)
+
+#rm(oedb)
 
 ####---Zenodo upload ----####
 

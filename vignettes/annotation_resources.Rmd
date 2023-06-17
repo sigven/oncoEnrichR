@@ -9,12 +9,13 @@ vignette: >
 
 ## Resources - overview 
 
-Data harvested from the following resources form the backbone of *oncoEnrichR*:
+Data harvested and integrated from the following resources form the backbone of *oncoEnrichR*:
 
 -   [Open Targets Platform](https://targetvalidation.org) - human drug-target associations and comprehensive disease-target associations
 -   [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined database of drivers, oncogenes and tumor suppressors in cancer
 -   [Network of Cancer Genes](http://ncg.kcl.ac.uk/index.php) - Network of cancer genes - a web resource to analyze duplicability, orthology and network properties of cancer genes
 -   [IntOGen](https://www.intogen.org) - Compendium of mutational driver genes in cancer
+-   [UniProt](https://uniprot.org)
 -   [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
 -   [DoRothEA](https://saezlab.github.io/dorothea/index.html) - gene set resource containing signed transcription factor (TF) - target (regulatory) interactions
 -   [CellChatDB](http://www.cellchat.org/) - ligand-receptor interaction resource

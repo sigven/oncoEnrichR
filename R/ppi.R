@@ -272,12 +272,12 @@ get_biogrid_network_nodes_edges <-
     ## support/confidence in the protein-protein interaction network
     genedb <- genedb |>
       dplyr::mutate(oncogene = dplyr::if_else(
-        .data$oncogene_confidence_level == "WEAK",
+        .data$oncogene_confidence_level == "MODERATE",
         FALSE,
         as.logical(.data$oncogene)
       )) |>
       dplyr::mutate(tumor_suppressor = dplyr::if_else(
-        .data$tsg_confidence_level == "WEAK",
+        .data$tsg_confidence_level == "MODERATE",
         FALSE,
         as.logical(.data$tumor_suppressor)
       ))
@@ -391,12 +391,12 @@ get_string_network_nodes_edges <-
   ## support/confidence in the protein-protein interaction network
   genedb <- genedb |>
     dplyr::mutate(oncogene = dplyr::if_else(
-      .data$oncogene_confidence_level == "WEAK",
+      .data$oncogene_confidence_level == "MODERATE",
       FALSE,
       as.logical(.data$oncogene)
     )) |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
-      .data$tsg_confidence_level == "WEAK",
+      .data$tsg_confidence_level == "MODERATE",
       FALSE,
       as.logical(.data$tumor_suppressor)
     ))
