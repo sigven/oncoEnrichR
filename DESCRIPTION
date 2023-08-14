@@ -27,26 +27,26 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     report and an Excel workbook in which the user can interrogate the various 
     types of annotations and analyses performed with the query geneset. 
 Depends: 
-    R (>= 4.1), GSEABase (>= 1.54.0)
+    R (>= 4.1), GSEABase
 biocViews: 
 Imports: dplyr,
          assertthat,
          assertable,
          clusterProfiler,
-         DT (>= 0.18), 
+         DT, 
          gganatogram, 
-         ggpubr (>= 0.4.0),
+         ggpubr,
          openxlsx,
          stringr,
          googledrive,
-         visNetwork (>= 2.0.9), 
-         SummarizedExperiment (>= 1.22.0),
+         visNetwork, 
+         SummarizedExperiment,
          plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
          igraph (>= 1.2.6), 
          lgr,
-         maftools (>= 2.8.0), 
+         maftools, 
          rlang,
          TissueEnrich, 
          textclean (>= 0.9.3)
