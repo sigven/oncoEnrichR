@@ -2803,7 +2803,7 @@ get_hpa_associations <- function(
       )
     ) |>
     dplyr::filter(
-      !is.na(value)
+      !is.na(value) & nchar(value) > 0
     ) |>
     dplyr::mutate(
       value = dplyr::if_else(
@@ -2833,6 +2833,7 @@ get_hpa_associations <- function(
       value, "orable \\(","orable|"
     ))
 
+  saveRDS(hpa, file = rds_fname)
   return(hpa)
 
 }

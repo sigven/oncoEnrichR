@@ -7,6 +7,28 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.4.2
+
+* Date: 2023-08-15
+
+### Changed
+
+* Data updates
+  * WikiPathways (20230810)
+  * COMPARTMENTS (2023-08)
+  * KEGG (20230710)
+  * BioGRID (v4.4.224)
+  * Open Targets Platform (2023.06)
+  * Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.6.3:
+     * Experimental Factor Ontology (v3.56.0)
+     * Human Disease Ontology (2023-07-20)
+  * A limited set of TCGA amplifications/deletions were erroneously left out in v1.4.1 (gene alias matching) - fixed in v1.4.2
+
+* Functionality
+  * Updated *Citation Note* sections in report
+  * Fixed some typos in the report template
+
 ## Version 1.4.1
 
 * Date: 2023-06-18

@@ -88,14 +88,21 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   August 15th 2023: [**1.4.2 release**](articles/CHANGELOG.html#version-1-4-2)
 -   June 18th 2023: [**1.4.1 release**](articles/CHANGELOG.html#version-1-4-1)
 -   February 21st 2023: [**1.4.0 release**](articles/CHANGELOG.html#version-1-4-0)
 -   September 27th 2022: [**1.3.2 release**](articles/CHANGELOG.html#version-1-3-2)
 
+## Citation
+
+If you use oncoEnrichR, please cite the following publication:
+
+Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos, Eivind Hovig, and Jørgen Wesche. **Comprehensive interrogation of gene lists from genome-scale cancer screens with oncoEnrichR** (2023). Int J Cancer. [doi:10.1002/ijc.34666](https://doi.org/10.1002/ijc.34666)
+
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.8051153"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8051153.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.8247877"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8247877.svg" alt="DOI"/></a>
 
 <br>
 

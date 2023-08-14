@@ -13,7 +13,7 @@ uniprot_release <- "2023_03"
 
 ## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
-update_hpa <- T
+update_hpa <- F
 update_tcga <- T
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
@@ -338,8 +338,6 @@ tissuecelldb <- get_tissue_celltype_specificity(
   raw_db_dir = data_raw_dir
 )
 
-#db_props <- data.frame()
-
 oedb <- list()
 oedb[['cancerdrugdb']] <- cancerdrugdb
 oedb[['release_notes']] <- release_notes
@@ -357,9 +355,33 @@ oedb[['tcgadb']] <- tcgadb
 oedb[['pathwaydb']] <- pathwaydb
 oedb[['slparalogdb']] <- slparalogdb
 oedb[['biogrid']] <- biogrid
-#oedb[['synlethdb']] <- synlethdb
 
 save(oedb, file="inst/internal_db/oedb.rda")
+
+####--- Clean-up ----####
+rm(pfamdb)
+rm(tcgadb)
+rm(hpa)
+rm(omnipathdb)
+rm(otdb)
+rm(pathwaydb)
+rm(release_notes)
+rm(cancerdrugdb)
+rm(genedb)
+rm(gene_info)
+rm(depmapdb)
+rm(survivaldb)
+rm(opentarget_associations)
+rm(ts_oncogene_annotations)
+rm(subcelldb)
+rm(tf_target_interactions)
+rm(ligandreceptordb)
+rm(tissuecelldb)
+rm(go_terms_pr_gene)
+rm(slparalogdb)
+rm(gOncoX)
+rm(biogrid)
+
 
 #googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
 gd_records <- list()
@@ -439,34 +461,6 @@ for(elem in c('cancerdrugdb',
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
 
-
-####--- Clean-up ----####
-rm(pfamdb)
-rm(tcgadb)
-rm(hpa)
-rm(omnipathdb)
-rm(otdb)
-rm(pathwaydb)
-rm(release_notes)
-rm(cancerdrugdb)
-rm(genedb)
-rm(gene_info)
-rm(depmapdb)
-rm(survivaldb)
-rm(opentarget_associations)
-rm(ts_oncogene_annotations)
-rm(subcelldb)
-rm(tf_target_interactions)
-rm(ligandreceptordb)
-rm(tissuecelldb)
-rm(go_terms_pr_gene)
-rm(slparalogdb)
-rm(gOncoX)
-rm(biogrid)
-
-
-#rm(oedb)
-
 ####---Zenodo upload ----####
 
 # zenodo_files_for_upload <-
@@ -502,7 +496,6 @@ db_packages <-
     'expm',
     'irlba',
     'pbapply',
-    'cowplot',
     'reticulate',
     'RSpectra',
     'sna',

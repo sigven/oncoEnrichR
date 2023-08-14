@@ -1,7 +1,7 @@
-<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.4.0">
+<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.4.2">
   <description>Cancer-dedicated gene set interpretation</description>
     <requirements>
-        <container type="docker">sigven/oncoenrichr:1.4.0</container>
+        <container type="docker">sigven/oncoenrichr:1.4.2</container>
   </requirements>
   <command detect_errors="aggressive"><![CDATA[
       #if $query_set.query_choice.query_input == "text"
@@ -123,7 +123,7 @@
       #end if
 
       regulatory_min_confidence = "$regulatory.regulatory_min_confidence",
-      
+
       html_floating_toc = $report_metadata.html_floating_toc,
       html_report_theme = "$report_metadata.html_report_theme",
       galaxy = TRUE
@@ -335,7 +335,13 @@ The results from the various analysis modules are provided in an interactive HTM
 
 -  `NetPath <http://www.netpath.org/>`_ - manually curated resource of signal transduction pathways in humans
 
+-  `UniProt <https://uniprot.org>`_ - Comprehensive resource of protein sequence and functional information
+
 -  `STRING <https://string-db.org/>`_ - protein-protein interaction database
+
+-  `InterPro/PFAM <https://www.ebi.ac.uk/interpro/>`_ - Collection of protein families/domains`
+
+-  `BIOGRID <http://thebiogrid.org>`_ - Database of Protein, Genetic and Chemical Interactions
 
 -  `CellChatDB <http://www.cellchat.org/>`_ - database on ligand-receptor interactions
 
@@ -353,9 +359,11 @@ The results from the various analysis modules are provided in an interactive HTM
 
 -  `CancerMine <http://bionlp.bcgsc.ca/cancermine/>`_ - literature-mined resource on cancer drivers, oncogenes and tumor suppressor genes
 
+-  `Cancer Gene Census <https://cancer.sanger.ac.uk/census/>`_ - Curated high-confidence list of genes with substantial published evidence in oncology
+
 -  `Network of Cancer Genes <http://ncg.kcl.ac.uk/>`_ - manually curated collection of cancer genes, healthy drivers and their properties
 
--  `Project Score <https://score.depmap.sanger.ac.uk/>`_ - database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+-  `DepMap/Project Score <https://score.depmap.sanger.ac.uk/>`_ - database on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
 
 -  `Genetic determinants of survival in cancer <http://survival.cshl.edu/>`_ - resource on the prognostic impact of genetic aberrations (methylation, CNA, mutation, expression) in human cancers (TCGA)
 
@@ -401,7 +409,7 @@ The contents of the gene set analysis report attempt to answer the following que
 
  <citations>
      <!-- Example of annotating a citation using a DOI. -->
-     <citation type="doi">10.48550/arXiv.2107.13247</citation>
+     <citation type="doi">10.1002/ijc.34666</citation>
      <!-- Example of annotating a citation using a BibTex entry. -->
   </citations>
 </tool>
