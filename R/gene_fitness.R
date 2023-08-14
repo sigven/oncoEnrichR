@@ -25,7 +25,7 @@ get_fitness_lof_scores <- function(qgenes,
     target_genes |>
     dplyr::inner_join(
       depmapdb[['fitness_scores']],
-      by = c("symbol"), multiple = "all") |>
+      by = c("symbol"), relationship = "many-to-many") |>
     dplyr::arrange(.data$scaled_BF)
   )
   if (nrow(fitness_lof_hits) > 0) {
@@ -71,8 +71,8 @@ get_fitness_lof_scores <- function(qgenes,
 
     fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] |>
       dplyr::left_join(gene_pr_tissue_stats,
-                       by = c("symbol","tissue"), multiple = "all") |>
-      dplyr::left_join(gene_stats, by = "symbol", multiple = "all") |>
+                       by = c("symbol","tissue"), relationship = "many-to-many") |>
+      dplyr::left_join(gene_stats, by = "symbol", relationship = "many-to-many") |>
       dplyr::select(c("symbol",
                     "symbol_link_ps",
                     "model_name",
@@ -117,7 +117,7 @@ get_target_priority_scores <-
 
     targets_crispr_priority <- as.data.frame(
       depmapdb[['target_priority_scores']] |>
-        dplyr::inner_join(target_genes, by = c("symbol"), multiple = "all")
+        dplyr::inner_join(target_genes, by = c("symbol"), relationship = "many-to-many")
       )
 
     prioritized_targets[["n_pri_targets"]] <-

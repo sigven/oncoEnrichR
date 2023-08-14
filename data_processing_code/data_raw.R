@@ -4,24 +4,24 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v2023.1.Hs'
-wikipathways_version <- "20230610"
+wikipathways_version <- "20230810"
 netpath_version <- "2010"
-opentargets_version <- "2023.02"
-kegg_version <- "20230330"
-gencode_version <- "43"
-uniprot_release <- "2023_02"
+opentargets_version <- "2023.06"
+kegg_version <- "20230710"
+gencode_version <- "44"
+uniprot_release <- "2023_03"
 
 ## Which databases to update or retrieve from last updated state
 update_omnipathdb <- F
-update_hpa <- F
-update_tcga <- F
+update_hpa <- T
+update_tcga <- T
 update_cancer_hallmarks <- F
 update_omnipath_regulatory <- F
 update_omnipath_complexdb <- F
-update_subcelldb <- F
+update_subcelldb <- T
 update_ligand_receptor_db <- F
 
-oe_version <- "1.4.1"
+oe_version <- "1.4.2"
 
 data_raw_dir <-
   "/Users/sigven/project_data/package__oncoEnrichR/db/raw"

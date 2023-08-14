@@ -153,209 +153,6 @@ load_db <- function(cache_dir = NA,
 }
 
 
-
-#' Load oncoEnrichR annotation database
-#'
-#' @param remote If TRUE (default), load database from version-tagged Zenodo repository
-#' @param cache_dir path to local cache for more efficient subsequent loads
-#'
-#' @keywords internal
-#'
-# load_db_zenodo <- function(remote = T,
-#                            cache_dir = NA) {
-#
-#   lgr::lgr$appenders$console$set_layout(
-#     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
-#
-#   lgr::lgr$info( paste0("Loading oncoEnrichR annotation databases"))
-#
-#   ## check that either remote is TRUE or cache_dir is provided
-#   val <- remote == T | !is.na(cache_dir)
-#   if (val == F) {
-#     lgr::lgr$info(
-#       "ERROR: Pull database either remotely from zenodo.org ('remote' = T), or provide a cache directory ('cache_dir') with pre-loaded data")
-#       return(-1)
-#   }
-#
-#   if (!is.na(cache_dir)) {
-#     val <- assertthat::validate_that(
-#       dir.exists(cache_dir)
-#     )
-#     if (!is.logical(val)) {
-#       lgr::lgr$info( paste0("ERROR: Cache directory '",cache_dir, "' does not exist"))
-#       return(-1)
-#     }
-#
-#   }
-#
-#
-#   ## if remote is TRUE
-#   ## load from Zenodo (tagged)
-#
-#   read_dest <- NULL
-#   write_dest <- NULL
-#   oe_version <- paste0("v", utils::packageVersion("oncoEnrichR"))
-#
-#   write_to_cache <- T
-#   zenodo_record_files <- data.frame()
-#
-#   if (remote == T) {
-#
-#     lgr::lgr$info(
-#       paste0("Loading oncoEnrichR annotation datasets for version '",
-#              oe_version,"' from Zenodo (https://zenodo.org/api/files/)"))
-#     lgr::lgr$info("This may take several minutes depending on your connection/bandwidth")
-#
-#     zenodo <- zen4R::ZenodoManager$new()
-#     zenodo_doi <- unique(oncoEnrichR::db_props$zenodo_doi)
-#     oedb_rec <- zenodo$getRecordByDOI(zenodo_doi)
-#     zenodo_record_files <- oedb_rec$listFiles(pretty = TRUE)
-#
-#     if (!is.null(cache_dir)) {
-#
-#       cache_version_dir <- file.path(cache_dir, oe_version)
-#       write_dest <- cache_version_dir
-#
-#       if (!dir.exists(cache_version_dir)) {
-#         system(paste0('mkdir ', cache_version_dir),
-#                intern = F)
-#         lgr::lgr$info( paste0("Data will be cached in ", cache_dir))
-#
-#       } else {
-#         lgr::lgr$warn(paste0("An existing cache for '",oe_version, "' was found in ",
-#                    cache_dir, " - will be overwritten (set 'remote' = FALSE to read from cache only)"))
-#
-#       }
-#     } else {
-#       write_to_cache <- F
-#     }
-#
-#   } else {
-#
-#     write_to_cache <- F
-#
-#     if (!is.null(cache_dir)) {
-#
-#       cache_version_dir <- file.path(cache_dir, oe_version)
-#
-#       if (!dir.exists(cache_version_dir)) {
-#         lgr::lgr$info( paste0("ERROR: No cache for 'v", oe_version, "' was found in ",cache_dir))
-#         lgr::lgr$info( paste0("Set 'remote' = TRUE to reload data from zenodo.org and write to ", cache_dir))
-#         return(-1)
-#       } else {
-#         read_dest <- cache_version_dir
-#         lgr::lgr$info( paste0("Loading oncoEnrichR annotation datasets locally (cached) from: ",read_dest))
-#       }
-#
-#     }
-#   }
-#
-#   oedb <- list()
-#   cache_in_use_log_printed <- 0
-#
-#   for (db in c("cancerdrugdb",
-#               "genedb",
-#               "hpa",
-#               "ligandreceptordb",
-#               "otdb",
-#               "pfamdb",
-#               "pathwaydb",
-#               "depmapdb",
-#               "survivaldb",
-#               "release_notes",
-#               "subcelldb",
-#               "slparalogdb",
-#               "tcgadb",
-#               "tissuecelldb",
-#               "tftargetdb")) {
-#
-#
-#
-#     if (remote == T & NROW(zenodo_record_files) > 0) {
-#       zenodo_download_entry <-
-#         zenodo_record_files[zenodo_record_files$filename == paste0(db,".rds"),]$download
-#       read_dest <- stringr::str_replace(
-#         zenodo_download_entry,
-#         paste0(.Platform$file.sep , db, ".rds"),"")
-#     }
-#
-#     db_dest <- file.path(read_dest, paste0(db,".rds"))
-#     options(timeout=9999999)
-#     if (remote == T) {
-#       if (RCurl::url.exists(db_dest)) {
-#         oedb[[db]] <- readRDS(url(db_dest,"rb"))
-#       } else {
-#         lgr::lgr$error(paste0("Could not retrieve data from ", db_dest))
-#         return(-1)
-#       }
-#       checksum_db <- R.cache::getChecksum(oedb[[db]])
-#       if (db == 'subcelldb') {
-#         if ('COMPARTMENTSdb' %in% names(oedb[[db]])) {
-#           checksum_db <- R.cache::getChecksum(oedb[[db]][['COMPARTMENTSdb']])
-#         }
-#       }
-#       if (checksum_db ==
-#          oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]) {
-#         lgr::lgr$info( paste0("'",
-#                               db, "' - ",
-#                               oe_version, " - ",
-#                               checksum_db,
-#                               " - verifies correctly"))
-#       } else {
-#         lgr::lgr$error(paste0("'",
-#                               db, "' - ",
-#                               oe_version, " - ",
-#                               checksum_db,
-#                               " - does not verify correctly"))
-#       }
-#       if (write_to_cache == T) {
-#         cache_db_dest = file.path(write_dest, paste0(db,".rds"))
-#         saveRDS(oedb[[db]], file = cache_db_dest)
-#       }
-#     } else {
-#       if (file.exists(db_dest)) {
-#         oedb[[db]] <- readRDS(file = db_dest)
-#       } else {
-#         lgr::lgr$error(paste0("Could not retrieve data from ", db_dest))
-#         return()
-#       }
-#
-#
-#       checksum_db <- R.cache::getChecksum(oedb[[db]])
-#
-#       ##subcelldb's checksum does not recover correctly with all
-#       ##list entries involved, choose COMPARTMENTS only
-#       if (db == 'subcelldb') {
-#         if ('COMPARTMENTSdb' %in% names(oedb[[db]])) {
-#           checksum_db <- R.cache::getChecksum(oedb[[db]][['COMPARTMENTSdb']])
-#         }
-#       }
-#
-#
-#       if (checksum_db ==
-#          oncoEnrichR::db_props[oncoEnrichR::db_props$name == db,"checksum"]) {
-#         lgr::lgr$info( paste0("'",
-#                               db, "' - ",
-#                               oe_version, " - ",
-#                               checksum_db,
-#                               " - verifies correctly"))
-#       } else {
-#         lgr::lgr$error(paste0("'",
-#                               db, "' - ",
-#                               oe_version, " - ",
-#                               checksum_db,
-#                               " - does not verify correctly"))
-#       }
-#
-#     }
-#   }
-#
-#
-#   return(oedb)
-#
-# }
-
-
 #' Function that initiates oncoEnrichR report structure
 #'
 #' @param oeDB oncoEnrichR annotation database object
@@ -1753,7 +1550,7 @@ onco_enrich <- function(query = NULL,
       oeDB$tcgadb[["recurrent_variants"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, c("symbol")),
-        by = c("SYMBOL" = "symbol"), multiple = "all") |>
+        by = c("SYMBOL" = "symbol"), relationship = "many-to-many") |>
       dplyr::distinct()
 
     if (nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0) {
@@ -1797,7 +1594,7 @@ onco_enrich <- function(query = NULL,
         dplyr::left_join(
           oeDB[['tcgadb']][['pfam']],
           by = "PFAM_ID",
-          multiple = "all") |>
+          relationship = "many-to-many") |>
         dplyr::mutate(
           PROTEIN_DOMAIN = dplyr::if_else(
             !is.na(.data$PFAM_ID),
@@ -1816,7 +1613,7 @@ onco_enrich <- function(query = NULL,
           dplyr::select(oeDB[['genedb']][['all']],
                         c("symbol", "ensembl_gene_id")),
           by = c("SYMBOL" = "symbol"),
-          multiple = "all") |>
+          relationship = "many-to-many") |>
         dplyr::mutate(
           ENSEMBL_GENE_ID =
             paste0(
@@ -1886,7 +1683,7 @@ onco_enrich <- function(query = NULL,
       oeDB[['genedb']][["cancer_hallmark"]][["short"]] |>
       dplyr::inner_join(
         dplyr::select(qgenes_match$found, c("entrezgene")),
-        by = "entrezgene", multiple = "all") |>
+        by = "entrezgene", relationship = "many-to-many") |>
       dplyr::select(-c("ensembl_gene_id","entrezgene")) |>
       dplyr::distinct()
 

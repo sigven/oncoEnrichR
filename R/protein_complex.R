@@ -36,7 +36,8 @@ annotate_protein_complex <- function(query_entrez,
     complex_up_xref |>
       dplyr::inner_join(
         uniprot_xref,
-        by = "uniprot_acc", multiple = "all")
+        by = "uniprot_acc",
+        relationship = "many-to-many")
   )
 
   if(NROW(all_protein_complexes) == 0){
@@ -50,12 +51,14 @@ annotate_protein_complex <- function(query_entrez,
                       c("entrezgene",
                       "symbol",
                       "ensembl_gene_id")),
-        by = "entrezgene", multiple = "all") |>
+        by = "entrezgene",
+        relationship = "many-to-many") |>
       dplyr::left_join(
         dplyr::select(otdb_gene_rank,
                       c("ensembl_gene_id",
                       "global_assoc_rank")),
-        by = "ensembl_gene_id", multiple = "all") |>
+        by = "ensembl_gene_id",
+        relationship = "many-to-many") |>
       dplyr::mutate(global_assoc_rank = dplyr::if_else(
         is.na(.data$global_assoc_rank),
         as.numeric(0),
@@ -77,7 +80,9 @@ annotate_protein_complex <- function(query_entrez,
         complex_cancer_rank_score = round(mean(
           .data$global_assoc_rank), digits = 3),
         .groups = "drop")) |>
-    dplyr::left_join(complex_db, by = "complex_id", multiple = "all") |>
+    dplyr::left_join(
+      complex_db, by = "complex_id",
+      relationship = "many-to-many") |>
     dplyr::filter(
       .data$num_complex_members > 2) |>
     dplyr::arrange(
@@ -90,7 +95,7 @@ annotate_protein_complex <- function(query_entrez,
 
   target_complex_genes[['omnipath']] <-
     data.frame("entrezgene" = query_entrez, stringsAsFactors = F) |>
-    dplyr::left_join(uniprot_xref, by = "entrezgene", multiple = "all") |>
+    dplyr::left_join(uniprot_xref, by = "entrezgene", relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::filter(!is.na(.data$uniprot_acc))
 
@@ -105,7 +110,7 @@ annotate_protein_complex <- function(query_entrez,
       target_complex_overlap[[class]] <- as.data.frame(
         complex_up_xref |>
           dplyr::inner_join(target_complex_genes[[class]],
-                            by = "uniprot_acc", multiple = "all")
+                            by = "uniprot_acc", relationship = "many-to-many")
       )
 
       if (nrow(target_complex_overlap[[class]]) > 0) {
@@ -115,7 +120,7 @@ annotate_protein_complex <- function(query_entrez,
             dplyr::select(genedb,
                           c("entrezgene",
                           "symbol")),
-            by = "entrezgene", multiple = "all")
+            by = "entrezgene", relationship = "many-to-many")
 
         if (class == "humap2") {
           target_complex_overlap[[class]] <- target_complex_overlap[[class]] |>
@@ -138,7 +143,7 @@ annotate_protein_complex <- function(query_entrez,
               #dplyr::arrange(dplyr::desc(.data$num_target_members)) |>
               dplyr::filter(!is.na(.data$complex_id)) |>
               dplyr::inner_join(all_protein_complexes,
-                                by = "complex_id", multiple = "all") |>
+                                by = "complex_id", relationship = "many-to-many") |>
               dplyr::mutate(complex_cancer_rank_bin = dplyr::case_when(
                 .data$complex_cancer_rank_score > 0.9 &
                   .data$complex_cancer_rank_score <= 1 ~ 1,
@@ -234,7 +239,7 @@ annotate_protein_domain <- function(query_entrez,
     pfamdb |>
       dplyr::inner_join(
         uniprot_xref,
-        by = "uniprot_acc", multiple = "all") |>
+        by = "uniprot_acc", relationship = "many-to-many") |>
       dplyr::distinct()
   )
 
@@ -243,7 +248,7 @@ annotate_protein_domain <- function(query_entrez,
                stringsAsFactors = F) |>
     dplyr::left_join(
       all_protein_domains,
-      by = "entrezgene", multiple = "all") |>
+      by = "entrezgene", relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::filter(!is.na(.data$uniprot_acc))
 
@@ -257,7 +262,7 @@ annotate_protein_domain <- function(query_entrez,
               genedb,
               c("entrezgene",
               "symbol")),
-            by = "entrezgene", multiple = "all") |>
+            by = "entrezgene", relationship = "many-to-many") |>
           dplyr::arrange(
             .data$pfam_id,
             .data$symbol) |>

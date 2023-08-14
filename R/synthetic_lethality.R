@@ -23,16 +23,16 @@ annotate_synleth_paralog_pairs <- function(
   targetA_interactions <- as.data.frame(
     data.frame("target" = qgenes, stringsAsFactors = F) |>
       dplyr::inner_join(slparalogdb,
-                        by = c("target" = "symbol_A1"), multiple = "all") |>
+                        by = c("target" = "symbol_A1"), relationship = "many-to-many") |>
       dplyr::rename(gene_A = "target") |>
       dplyr::left_join(
         dplyr::select(genedb, c("entrezgene", "genename")),
-        by = c("entrezgene_A1" = "entrezgene"), multiple = "all"
+        by = c("entrezgene_A1" = "entrezgene"), relationship = "many-to-many"
       ) |>
       dplyr::rename(genename_A = "genename") |>
       dplyr::left_join(
         dplyr::select(genedb, c("entrezgene", "genename")),
-        by = c("entrezgene_A2" = "entrezgene"), multiple = "all"
+        by = c("entrezgene_A2" = "entrezgene"), relationship = "many-to-many"
       ) |>
       dplyr::rename(genename_B = "genename",
                     gene_B = "symbol_A2") |>
@@ -48,16 +48,16 @@ annotate_synleth_paralog_pairs <- function(
   targetB_interactions <- as.data.frame(
     data.frame("target" = qgenes, stringsAsFactors = F) |>
       dplyr::inner_join(slparalogdb,
-                        by = c("target" = "symbol_A2"), multiple = "all") |>
+                        by = c("target" = "symbol_A2"), relationship = "many-to-many") |>
       dplyr::rename(gene_B = "target") |>
       dplyr::left_join(
         dplyr::select(genedb, c("entrezgene", "genename")),
-        by = c("entrezgene_A2" = "entrezgene"), multiple = "all"
+        by = c("entrezgene_A2" = "entrezgene"), relationship = "many-to-many"
       ) |>
       dplyr::rename(genename_B = "genename") |>
       dplyr::left_join(
         dplyr::select(genedb, c("entrezgene", "genename")),
-        by = c("entrezgene_A1" = "entrezgene"), multiple = "all"
+        by = c("entrezgene_A1" = "entrezgene"), relationship = "many-to-many"
       ) |>
       dplyr::rename(genename_A = "genename",
                     gene_A = "symbol_A1") |>
@@ -77,7 +77,7 @@ annotate_synleth_paralog_pairs <- function(
                     c("gene_A",
                     "gene_B")) |>
         dplyr::inner_join(targetB_interactions,
-                          by = c("gene_A","gene_B"), multiple = "all")
+                          by = c("gene_A","gene_B"), relationship = "many-to-many")
     )
 
     if (NROW(paralog_synleth_interactions[['both_in_pair']]) > 0) {

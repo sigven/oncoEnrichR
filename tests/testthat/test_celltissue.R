@@ -193,7 +193,7 @@ test_that("Tissue/celltype gene enrichment ", {
         hpa_enrichment_db_df = oedb$tissuecelldb$tissue$te_df,
         hpa_enrichment_db_SE = oedb$tissuecelldb$tissue$te_SE,
         resolution = "tissue")$per_type),
-    as.integer(54))
+    as.integer(50))
 
   expect_identical(
     colnames(
@@ -215,7 +215,7 @@ test_that("Tissue/celltype gene enrichment ", {
         hpa_enrichment_db_SE = oedb$tissuecelldb$single_cell$te_SE,
         resolution = "single_cell")$per_type
     ),
-    as.integer(79)
+    as.integer(81)
   )
 
   expect_identical(

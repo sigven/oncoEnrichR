@@ -73,7 +73,7 @@ validate_query_genes <- function(qgenes,
 
     target_genes <- target_genes |>
       dplyr::left_join(gdb,
-                       by = c("qid" = qtype_id), multiple = "all") |>
+                       by = c("qid" = qtype_id), relationship = "many-to-many") |>
       dplyr::mutate(!!rlang::sym(qtype_id) := qid) |>
       dplyr::distinct()
 
@@ -105,10 +105,10 @@ validate_query_genes <- function(qgenes,
         ## map query to entrezgene
         dplyr::left_join(
           gene_xref_map,
-          by = c("qid" = qtype_id), multiple = "all") |>
+          by = c("qid" = qtype_id), relationship = "many-to-many") |>
         dplyr::mutate(!!rlang::sym(qtype_id) := qid) |>
         ## append other gene annotations
-        dplyr::left_join(gdb, by = c("entrezgene"), multiple = "all") |>
+        dplyr::left_join(gdb, by = c("entrezgene"), relationship = "many-to-many") |>
         dplyr::distinct() |>
         dplyr::group_by(
           .data$symbol,
@@ -144,7 +144,7 @@ validate_query_genes <- function(qgenes,
           dplyr::inner_join(
             dplyr::select(queryset[['not_found']], c("qid")),
             alias2entrez,
-            by = c("qid" = "alias"), multiple = "all")
+            by = c("qid" = "alias"), relationship = "many-to-many")
 
         ## Check that alias is not an alias for existing query entries (found)
         ## anti_join against found entries
@@ -161,7 +161,7 @@ validate_query_genes <- function(qgenes,
 
             query_as_alias <- query_as_alias |>
               dplyr::left_join(gdb,
-                               by = "entrezgene", multiple = "all") |>
+                               by = "entrezgene", relationship = "many-to-many") |>
               dplyr::distinct() |>
               dplyr::mutate(alias = T)
 
@@ -209,12 +209,12 @@ validate_query_genes <- function(qgenes,
           dplyr::inner_join(
             dplyr::select(queryset[['not_found']], c("qid")),
             alias2entrez,
-            by = c("qid" = "alias"), multiple = "all")
+            by = c("qid" = "alias"), relationship = "many-to-many")
 
         if (nrow(query_as_alias) > 0) {
           query_as_alias <- query_as_alias |>
             dplyr::left_join(gdb,
-                             by = "entrezgene", multiple = "all") |>
+                             by = "entrezgene", relationship = "many-to-many") |>
             dplyr::distinct() |>
           dplyr::mutate(alias = T)
 
@@ -1818,16 +1818,6 @@ file_is_writable <- function(path) {
     file.exists(path) &&
     assertthat::is.writeable(path)
 }
-
-
-#' RCurl url.exists
-#'
-#' @name url_exists
-#' @rdname url_exists
-#' @keywords internal
-#' @importFrom RCurl url.exists
-NULL
-
 
 #' Tidy eval helpers
 #'

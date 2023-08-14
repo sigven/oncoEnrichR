@@ -26,14 +26,14 @@ gene_tissue_cell_spec_cat <-
       query_genes_df <-
         data.frame('entrezgene' = qgenes, stringsAsFactors = F) |>
         dplyr::inner_join(genedb, by = "entrezgene",
-                          multiple = "all") |>
+                          relationship = "many-to-many") |>
         dplyr::distinct()
 
     } else {
       stopifnot(is.character(qgenes))
       query_genes_df <- query_genes_df |>
         dplyr::inner_join(genedb, by = "symbol",
-                          multiple = "all") |>
+                          relationship = "many-to-many") |>
         dplyr::distinct()
     }
     etype <- "tissue"
@@ -77,7 +77,7 @@ gene_tissue_cell_spec_cat <-
                         c("symbol",
                         "ensembl_gene_id",
                         "name")),
-          by = "ensembl_gene_id", multiple = "all")
+          by = "ensembl_gene_id", relationship = "many-to-many")
     )
 
 
@@ -127,7 +127,7 @@ gene_tissue_cell_spec_cat <-
       if (nrow(dplyr::inner_join(
         df,
         specificity_groups_target,
-        by = "category", multiple = "all")) == 0) {
+        by = "category", relationship = "many-to-many")) == 0) {
         specificity_groups_target <-
           specificity_groups_target |>
           dplyr::bind_rows(df)
@@ -171,7 +171,7 @@ gene_tissue_cell_spec_cat <-
               query_genes_df,
               c("symbol",
                 "ensembl_gene_id")),
-            by = "ensembl_gene_id", multiple = "all") |>
+            by = "ensembl_gene_id", relationship = "many-to-many") |>
           dplyr::mutate(exp = round(log2(.data$nTPM + 1), digits = 3)) |>
           dplyr::mutate(exp_measure = "log2(nTPM + 1)")
       )
@@ -186,7 +186,7 @@ gene_tissue_cell_spec_cat <-
               query_genes_df,
               c("symbol",
                 "ensembl_gene_id")),
-            by = "ensembl_gene_id", multiple = "all") |>
+            by = "ensembl_gene_id", relationship = "many-to-many") |>
           dplyr::mutate(exp = round(log2(.data$nTPM + 1), digits = 3)) |>
           dplyr::mutate(exp_measure = "log2(nTPM  + 1)")
       )
@@ -246,7 +246,7 @@ gene_tissue_cell_enrichment <-
                       "symbol",
                       "name",
                       "cancer_max_rank")),
-        by = "entrezgene", multiple = "all")
+        by = "entrezgene", relationship = "many-to-many")
 
     if (resolution == "tissue") {
       df <- df |>
@@ -271,14 +271,14 @@ gene_tissue_cell_enrichment <-
     q <- bg |>
       dplyr::select("ensembl_gene_id") |>
       dplyr::inner_join(
-        df, by = "ensembl_gene_id", multiple = "all") |>
+        df, by = "ensembl_gene_id", relationship = "many-to-many") |>
       dplyr::distinct()
     query_ensembl <- q$ensembl_gene_id
 
     specificities_per_gene <- bg |>
       dplyr::filter(!is.na(.data$ensembl_gene_id)) |>
       dplyr::inner_join(
-        df, by = "ensembl_gene_id", multiple = "all")
+        df, by = "ensembl_gene_id", relationship = "many-to-many")
 
     if (nrow(specificities_per_gene) > 0) {
 
@@ -312,11 +312,11 @@ gene_tissue_cell_enrichment <-
         dplyr::inner_join(
           dplyr::select(
             genedb, c("ensembl_gene_id", "entrezgene")),
-          by = "entrezgene", multiple = "all"
+          by = "entrezgene", relationship = "many-to-many"
         )
       bg <- bg |>
         dplyr::inner_join(
-          df, by = "ensembl_gene_id", multiple = "all") |>
+          df, by = "ensembl_gene_id", relationship = "many-to-many") |>
         dplyr::distinct()
       background_ensembl <- bg$ensembl_gene_id
 

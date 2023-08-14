@@ -28,6 +28,12 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 <a href="https://doi.org/10.5281/zenodo.8051153"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8051153.svg" alt="DOI"/></a>
 
+## Citation
+
+If you use oncoEnrichR, please cite the following publication:
+
+Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos, Eivind Hovig, and Jørgen Wesche. **Comprehensive interrogation of gene lists from genome-scale cancer screens with oncoEnrichR** (2023). Int J Cancer. [doi:10.1002/ijc.34666](https://doi.org/10.1002/ijc.34666)
+
 ### Contact
 
 sigven AT ifi.uio.no

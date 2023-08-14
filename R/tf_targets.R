@@ -35,7 +35,7 @@ annotate_tf_targets <- function(qgenes,
 
   target_genes <- data.frame("target" = qgenes, stringsAsFactors = F) |>
     dplyr::left_join(tf_target_interactions[[collection]],
-                     by = c("target"), multiple = "all") |>
+                     by = c("target"), relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::filter(!is.na(.data$confidence_level)) |>
     dplyr::filter(!stringr::str_detect(
@@ -50,7 +50,7 @@ annotate_tf_targets <- function(qgenes,
 
   tf_genes <- data.frame("regulator" = qgenes, stringsAsFactors = F) |>
     dplyr::left_join(tf_target_interactions[[collection]],
-                     by = c("regulator"), multiple = "all") |>
+                     by = c("regulator"), relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::filter(!stringr::str_detect(
       .data$confidence_level, exclude_level_regex))
@@ -75,14 +75,14 @@ annotate_tf_targets <- function(qgenes,
           dplyr::select(genedb,
                         c("symbol", "genename",
                         "cancer_max_rank")),
-          by = c("regulator" = "symbol"), multiple = "all") |>
+          by = c("regulator" = "symbol"), relationship = "many-to-many") |>
         dplyr::rename(regulator_name = "genename",
                       regulator_cancer_max_rank = "cancer_max_rank") |>
         dplyr::left_join(
           dplyr::select(genedb,
                         c("symbol", "genename",
                           "cancer_max_rank")),
-          by = c("target" = "symbol"), multiple = "all") |>
+          by = c("target" = "symbol"), relationship = "many-to-many") |>
         dplyr::rename(target_name = "genename",
                       target_cancer_max_rank = "cancer_max_rank") |>
         dplyr::mutate(queryset_overlap = stringr::str_replace(
@@ -176,13 +176,13 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
       nodeset1 <- all_nodes |>
         dplyr::inner_join(
           dplyr::select(tf_target_network[['edges']], c("from")),
-          by = c("id" = "from"), multiple = "all") |>
+          by = c("id" = "from"), relationship = "many-to-many") |>
         dplyr::distinct()
 
       nodeset2 <- all_nodes |>
         dplyr::inner_join(
           dplyr::select(tf_target_network[['edges']], c("to")),
-          by = c("id" = "to"), multiple = "all") |>
+          by = c("id" = "to"), relationship = "many-to-many") |>
         dplyr::distinct()
 
       tf_target_network[['nodes']] <-
@@ -195,7 +195,7 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
         dplyr::select(c("from")) |>
         dplyr::inner_join(
           dplyr::select(tf_target_network[['nodes']], c("id")),
-          by = c("from" = "id"), multiple = "all") |>
+          by = c("from" = "id"), relationship = "many-to-many") |>
         dplyr::rename(id = "from") |>
         dplyr::distinct()
 
@@ -203,12 +203,12 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
         dplyr::select(c("to")) |>
         dplyr::inner_join(
           dplyr::select(tf_target_network[['nodes']], c("id")),
-          by = c("to" = "id"), multiple = "all") |>
+          by = c("to" = "id"), relationship = "many-to-many") |>
         dplyr::rename(id = "to") |>
         dplyr::distinct()
 
       target_and_regulator <- targets |>
-        dplyr::inner_join(regulators, by = "id", multiple = "all")
+        dplyr::inner_join(regulators, by = "id", relationship = "many-to-many")
 
       if (nrow(target_and_regulator) > 0) {
         regulators <- regulators |>
@@ -234,7 +234,7 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
         dplyr::bind_rows(target_and_regulator)
 
       tf_target_network[['nodes']] <- tf_target_network[['nodes']] |>
-        dplyr::left_join(all_shapes, by = "id", multiple = "all")
+        dplyr::left_join(all_shapes, by = "id", relationship = "many-to-many")
 
     }
 

@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.4.1
-Date: 2023-06-17
+Date: 2023-08-14
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -31,29 +31,23 @@ Depends:
 biocViews: 
 Imports: dplyr,
          assertthat,
-         jsonlite,
+         assertable,
+         clusterProfiler,
+         DT (>= 0.18), 
+         gganatogram, 
+         ggpubr (>= 0.4.0),
          openxlsx,
-         stringi,
          stringr,
-         tidyr,
-         glue,
          googledrive,
          visNetwork (>= 2.0.9), 
          SummarizedExperiment (>= 1.22.0),
-         DT (>= 0.18), 
          plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
-         clusterProfiler, 
          igraph (>= 1.2.6), 
          lgr,
-         gganatogram, 
-         RCurl,
-         R.cache,
-         rlang,
          maftools (>= 2.8.0), 
-         ggpubr (>= 0.4.0), 
-         assertable, 
+         rlang,
          TissueEnrich, 
          textclean (>= 0.9.3)
 Suggests: 
