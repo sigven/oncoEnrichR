@@ -9,12 +9,12 @@ vignette: >
 
 ## Requirements/dependencies
 
-* _oncoEnrichR_ requires R (>=4.1)
+* _oncoEnrichR_ requires R (>= version 4.1)
 
 ## Installation of oncoEnrichR with R commands
 
-1.  `install.packages('devtools')`
-2.  `devtools::install_github('sigven/oncoEnrichR', ref = "v1.4.1")`
+1.  `install.packages('remotes')`
+2.  `remotes::install_github('sigven/oncoEnrichR', ref = "v1.4.1")`
 3.  `library(oncoEnrichR)`
 
 <br>

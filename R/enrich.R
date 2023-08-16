@@ -128,7 +128,7 @@ get_go_enrichment <- function(query_entrez,
                           c("entrezgene",
                           "symbol")),
             by=c("gene_id" = "entrezgene"),
-            multiple = "all") |>
+            relationship = "many-to-many") |>
           dplyr::mutate(
             entrez_url =
               paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
@@ -148,7 +148,7 @@ get_go_enrichment <- function(query_entrez,
                         c("go_id",
                         "gene_symbol_link",
                         "gene_symbol")),
-          by="go_id", multiple = "all") |>
+          by="go_id", relationship = "many-to-many") |>
         dplyr::rename(exact_source = "go_id",
                       description = "go_description",
                       description_link = "go_description_link") |>
@@ -215,7 +215,7 @@ get_universal_enrichment <- function(query_entrez,
   stopifnot(is.character(TERM2GENE$entrez_gene))
 
   stopifnot(NROW(
-    dplyr::inner_join(TERM2NAME, TERM2GENE, by = "standard_name", multiple = "all")
+    dplyr::inner_join(TERM2NAME, TERM2GENE, by = "standard_name", relationship = "many-to-many")
   ) > 0)
 
   enr <-
@@ -290,7 +290,7 @@ get_universal_enrichment <- function(query_entrez,
       stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
       stopifnot("standard_name" %in% colnames(TERM2SOURCE))
       df <- df |>
-        dplyr::left_join(TERM2SOURCE, by="standard_name", multiple = "all") |>
+        dplyr::left_join(TERM2SOURCE, by="standard_name", relationship = "many-to-many") |>
         dplyr::mutate(
           description_link =
             dplyr::if_else(
@@ -354,7 +354,7 @@ get_universal_enrichment <- function(query_entrez,
           dplyr::mutate(gene_id = as.integer(.data$gene_id)) |>
           dplyr::left_join(
             dplyr::select(genedb, c("entrezgene", "symbol")),
-            by = c("gene_id" = "entrezgene"), multiple = "all") |>
+            by = c("gene_id" = "entrezgene"), relationship = "many-to-many") |>
           dplyr::mutate(
             entrez_url =
               paste0("<a href='https://www.ncbi.nlm.nih.gov/gene/",
@@ -373,7 +373,7 @@ get_universal_enrichment <- function(query_entrez,
                         c("standard_name",
                         "gene_symbol_link",
                         "gene_symbol")),
-          by = "standard_name", multiple = "all")
+          by = "standard_name", relationship = "many-to-many")
     }
     if (!is.null(df)) {
       df$setting_p_value_cutoff <- p_value_cutoff

@@ -43,9 +43,9 @@ RUN cd cmake-3.20.0 && ./bootstrap && make && make install
 
 ## oncoEnrichR dependencies: restore all R package versions and dependencies with renv package
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
-RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_0.17.3.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_1.0.1.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.4.1.tar.gz /
+COPY oncoEnrichR_1.4.2.tar.gz /
 
 #RUN R -e "library(renv)"
 
@@ -53,7 +53,7 @@ RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.4.1.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.4.2.tar.gz', lib = '/usr/lib/R/library/')"
 
 ## PINNED VERSION: pandoc (for HTML report generation)
 RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd64.deb && \
@@ -62,5 +62,5 @@ RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd6
   apt-get clean
 
 RUN rm -rf /root/.cache
-RUN rm -rf /oncoEnrichR_1.4.1.tar.gz
+RUN rm -rf /oncoEnrichR_1.4.2.tar.gz
 RUN rm -rf /cmake-3.20.0*

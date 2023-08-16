@@ -27,7 +27,7 @@ get_genes_unknown_function <- function(qgenes = NULL,
   if (nrow(target_genes) > 0) {
     results <- poorly_defined_genes |>
       dplyr::inner_join(
-        target_genes, by = "symbol", multiple = "all") |>
+        target_genes, by = "symbol", relationship = "many-to-many") |>
       dplyr::arrange(.data$unknown_function_rank) |>
       dplyr::filter(.data$unknown_function_rank <= 6)
 

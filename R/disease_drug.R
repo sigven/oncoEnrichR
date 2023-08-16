@@ -22,7 +22,7 @@ target_disease_associations <-
     validate_db_df(otdb_gene_rank, dbtype = "opentarget_disease_site_rank")
 
     target_genes <- data.frame('symbol' = qgenes, stringsAsFactors = F) |>
-      dplyr::inner_join(genedb, by = "symbol", multiple = "all") |>
+      dplyr::inner_join(genedb, by = "symbol", relationship = "many-to-many") |>
       dplyr::distinct()
 
 
@@ -32,7 +32,7 @@ target_disease_associations <-
 
     target_assocs <- target_genes |>
       dplyr::inner_join(otdb_all, by=c("ensembl_gene_id"),
-                       multiple = "all")
+                       relationship = "many-to-many")
 
     result <- list()
     result[['target']] <- target_genes
@@ -93,7 +93,7 @@ target_disease_associations <-
           tmp[['cancer_assocs']] |>
             dplyr::left_join(
               otdb_global_cancer_rank, by = "ensembl_gene_id",
-              multiple = "all") |>
+              relationship = "many-to-many") |>
             dplyr::select(c("symbol", "global_assoc_rank")) |>
             dplyr::distinct() |>
             dplyr::arrange(dplyr::desc(.data$global_assoc_rank)) |>
@@ -109,7 +109,7 @@ target_disease_associations <-
         result[['assoc_pr_gene']][['cancer']] <- as.data.frame(
           tmp[['cancer_assocs']] |>
             dplyr::left_join(gene_targetset_cancer_rank,
-                             by = "symbol", multiple = "all") |>
+                             by = "symbol", relationship = "many-to-many") |>
             dplyr::arrange(dplyr::desc(.data$targetset_cancer_rank),
                            dplyr::desc(.data$ot_association_score)) |>
             dplyr::select(-c("primary_site")) |>
@@ -173,7 +173,7 @@ target_disease_associations <-
         result[['assoc_pr_gene']][['other']] <- as.data.frame(
           tmp[['disease_assocs']] |>
             dplyr::left_join(gene_targetset_disease_rank,
-                             by = "symbol", multiple = "all") |>
+                             by = "symbol", relationship = "many-to-many") |>
             dplyr::arrange(dplyr::desc(.data$targetset_disease_rank),
                            dplyr::desc(.data$ot_association_score)) |>
 
@@ -198,7 +198,7 @@ target_disease_associations <-
         result[['target']] <- result[['target']] |>
           dplyr::left_join(
             result[['assoc_pr_gene']][['cancer']],
-            by = "symbol", multiple = "all")
+            by = "symbol", relationship = "many-to-many")
       } else {
         result[['target']]$targetset_cancer_rank <- NA
         result[['target']]$global_cancer_rank <- NA
@@ -210,7 +210,7 @@ target_disease_associations <-
         result[['target']] <- result[['target']] |>
           dplyr::left_join(
             result[['assoc_pr_gene']][['other']],
-            by = "symbol", multiple = "all")
+            by = "symbol", relationship = "many-to-many")
       } else {
         result[['target']]$targetset_disease_rank <- NA
         result[['target']]$ot_links <- NA
@@ -276,7 +276,7 @@ target_disease_associations <-
                         c("primary_site",
                         "ensembl_gene_id",
                         "tissue_assoc_rank")),
-          by = "ensembl_gene_id", multiple = "all"
+          by = "ensembl_gene_id", relationship = "many-to-many"
         ) |>
         dplyr::select(-c("ensembl_gene_id")) |>
         dplyr::distinct()

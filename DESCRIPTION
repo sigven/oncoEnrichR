@@ -2,7 +2,7 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.4.1
-Date: 2023-06-17
+Date: 2023-08-16
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -27,33 +27,27 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     report and an Excel workbook in which the user can interrogate the various 
     types of annotations and analyses performed with the query geneset. 
 Depends: 
-    R (>= 4.1), GSEABase (>= 1.54.0)
+    R (>= 4.1), GSEABase
 biocViews: 
 Imports: dplyr,
          assertthat,
-         jsonlite,
+         assertable,
+         clusterProfiler,
+         DT, 
+         gganatogram, 
+         ggpubr,
          openxlsx,
-         stringi,
          stringr,
-         tidyr,
-         glue,
          googledrive,
-         visNetwork (>= 2.0.9), 
-         SummarizedExperiment (>= 1.22.0),
-         DT (>= 0.18), 
+         visNetwork, 
+         SummarizedExperiment,
          plotly, 
          pals (>= 1.7), 
          org.Hs.eg.db, 
-         clusterProfiler, 
          igraph (>= 1.2.6), 
          lgr,
-         gganatogram, 
-         RCurl,
-         R.cache,
+         maftools, 
          rlang,
-         maftools (>= 2.8.0), 
-         ggpubr (>= 0.4.0), 
-         assertable, 
          TissueEnrich, 
          textclean (>= 0.9.3)
 Suggests: 

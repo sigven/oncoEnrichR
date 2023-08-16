@@ -382,7 +382,7 @@ get_opentarget_associations <-
   function(raw_db_dir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2023.02",
+           release = "2023.06",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -464,7 +464,7 @@ get_opentarget_associations <-
 
 get_cancer_hallmarks <- function(raw_db_dir = NULL,
                                  gene_info = NULL,
-                                 opentargets_version = "2023.02",
+                                 opentargets_version = "2023.06",
                                  update = T){
 
   rds_fname <-
@@ -503,7 +503,7 @@ get_cancer_hallmarks <- function(raw_db_dir = NULL,
 
   pmid_data <- get_citations_pubmed(
     unique(hallmark_data_long$pmid),
-    chunk_size = 50) |>
+    chunk_size = 15) |>
     dplyr::mutate(pmid = as.character(pmid))
 
 
@@ -2147,15 +2147,18 @@ get_tissue_celltype_specificity <- function(
           as.data.frame(
             as.data.frame(
               SummarizedExperiment::assay(
-                tissue_cell_expr[['tissue']][['te_SE']])
-            ) |>
+                tissue_cell_expr[['tissue']][['te_SE']])) |>
               dplyr::rename(ensembl_gene_id = Gene,
                             category = Group) |>
               dplyr::group_by(ensembl_gene_id,
                               category) |>
               dplyr::summarise(
-                tissue = paste(unique(Tissue), collapse=", "),
+                tissue = paste(
+                  sort(unique(Tissue)), collapse=", "),
                 .groups = "drop")
+          ) |>
+          dplyr::mutate(
+            tissue = stringr::str_to_title(tissue)
           ) |>
           dplyr::mutate(
             category = dplyr::case_when(
@@ -2167,13 +2170,14 @@ get_tissue_celltype_specificity <- function(
               TRUE ~ as.character("Mixed"))
           ) |>
           dplyr::mutate(
-            category = factor(category,
-                              levels = c("Tissue enriched",
-                                         "Group enriched",
-                                         "Tissue enhanced",
-                                         "Mixed",
-                                         "Low tissue specificity",
-                                         "Not detected"))
+            category = factor(
+              category,
+              levels = c("Tissue enriched",
+                         "Group enriched",
+                         "Tissue enhanced",
+                         "Mixed",
+                         "Low tissue specificity",
+                         "Not detected"))
           )
 
 
@@ -2193,8 +2197,11 @@ get_tissue_celltype_specificity <- function(
               dplyr::group_by(ensembl_gene_id,
                               category) |>
               dplyr::summarise(
-                cell_type = paste(unique(Tissue), collapse=", "),
+                cell_type = paste(sort(unique(Tissue)), collapse=", "),
                 .groups = "drop")
+          ) |>
+          dplyr::mutate(
+            cell_type = stringr::str_to_title(cell_type)
           ) |>
           dplyr::mutate(
             category = dplyr::case_when(
@@ -2759,187 +2766,260 @@ get_hpa_associations <- function(
     return(hpa)
   }
 
-  variables_json <- c('RNA tissue specificity',
-                      'RNA tissue distribution',
-                      'RNA tissue specific nTPM',
-                      'RNA single cell type specificity',
-                      'RNA single cell type distribution',
-                      'RNA single cell type specific nTPM',
-                      'RNA cancer specificity',
-                      'RNA cancer distribution',
-                      'RNA cancer specific FPKM',
-                      'RNA cell line specificity',
-                      'RNA cell line distribution',
-                      'RNA cell line specific nTPM',
-                      'Pathology prognostics - Breast cancer',
-                      'Pathology prognostics - Cervical cancer',
-                      'Pathology prognostics - Colorectal cancer',
-                      'Pathology prognostics - Endometrial cancer',
-                      'Pathology prognostics - Glioma',
-                      'Pathology prognostics - Head and neck cancer',
-                      'Pathology prognostics - Liver cancer',
-                      'Pathology prognostics - Lung cancer',
-                      'Pathology prognostics - Melanoma',
-                      'Pathology prognostics - Ovarian cancer',
-                      'Pathology prognostics - Pancreatic cancer',
-                      'Pathology prognostics - Prostate cancer',
-                      'Pathology prognostics - Renal cancer',
-                      'Pathology prognostics - Stomach cancer',
-                      'Pathology prognostics - Testis cancer',
-                      'Pathology prognostics - Thyroid cancer',
-                      'Pathology prognostics - Urothelial cancer',
-                      'Antibody RRID')
-
-  variables_df <- c('rna_tissue_specificity',
-                    'rna_tissue_distribution',
-                    'rna_tissue_specific_nTPM',
-                    'rna_single_cell_type_specificity',
-                    'rna_single_cell_type_distribution',
-                    'rna_single_cell_type_specificity_nTPM',
-                    'rna_cancer_specificity',
-                    'rna_cancer_distribution',
-                    'rna_cancer_specific_FPKM',
-                    'rna_cell_line_specificity',
-                    'rna_cell_line_distribution',
-                    'rna_cell_line_specific_nTPM',
-                    'pathology_prognostics_breast_cancer',
-                    'pathology_prognostics_cervical_cancer',
-                    'pathology_prognostics_colorectal_cancer',
-                    'pathology_prognostics_endometrial_cancer',
-                    'pathology_prognostics_glioma',
-                    'pathology_prognostics_head_and_neck_cancer',
-                    'pathology_prognostics_liver_cancer',
-                    'pathology_prognostics_lung_cancer',
-                    'pathology_prognostics_melanoma',
-                    'pathology_prognostics_ovarian_cancer',
-                    'pathology_prognostics_pancreatic_cancer',
-                    'pathology_prognostics_prostate_cancer',
-                    'pathology_prognostics_renal_cancer',
-                    'pathology_prognostics_stomach_cancer',
-                    'pathology_prognostics_testis_cancer',
-                    'pathology_prognostics_thyroid_cancer',
-                    'pathology_prognostics_urothelial_cancer',
-                    'antibody_rrid')
-
-  hpa <- data.frame()
-  k <- 1
-
-  for (i in 1:nrow(gene_xref)) {
-    g <- gene_xref[i,]
-
-    if(g$gene_biotype != "protein-coding"){
-      next
-    }
-    if(is.na(g$ensembl_gene_id)){
-      next
-    }
-
-    if(!startsWith(g$ensembl_gene_id, "ENSG") |
-       stringr::str_detect(g$ensembl_gene_id, "PAR")){
-      next
-    }
-
-    local_json <-
-      file.path(
-        raw_db_dir,
-        "hpa",
-        "json",
-        paste0(g$ensembl_gene_id,".json"))
-
-    # if(!file.exists(local_json)){
-    #   protein_atlas_url <-
-    #     paste0("https://www.proteinatlas.org/search/",
-    #            g$ensembl_gene_id,"?format=json")
-    #
-    #   if(RCurl::url.exists(protein_atlas_url) == TRUE){
-    #     cat(k, ' - ', protein_atlas_url, '\n')
-    #     k <- k + 1
-    #
-    #     download.file(
-    #       protein_atlas_url,
-    #       destfile = local_json,
-    #       quiet = T)
-    #     Sys.sleep(4)
-    #   }
-    # }
-
-
-    if(file.exists(local_json)){
-      pa_data <- jsonlite::fromJSON(txt = local_json)
-
-      for(j in 1:length(variables_json)){
-        var_name_json <- variables_json[j]
-        var_name_df <- variables_df[j]
-        if(!is.null(pa_data[[var_name_json]])){
-          if(!startsWith(var_name_df, "pathology") &
-             !stringr::str_detect(var_name_df,"(TPM|FPKM|rrid)$")){
-            df <- data.frame(
-              'ensembl_gene_id' = g$ensembl_gene_id,
-              'property' = var_name_df,
-              'value' = pa_data[[var_name_json]],
-              stringsAsFactors = F)
-
-          }else{
-            if(startsWith(var_name_df, "pathology")
-               | endsWith(var_name_df,"rrid")){
-              value <- paste(unlist(pa_data[[var_name_json]]),
-                             collapse="|")
-              if(stringr::str_detect(value,"TRUE") |
-                 var_name_df == "antibody_rrid"){
-                df <- data.frame(
-                  'ensembl_gene_id' = g$ensembl_gene_id,
-                  'property' = var_name_df,
-                  'value' = value,
-                  stringsAsFactors = F)
-              }
-            }else{
-              df <- data.frame(
-                'ensembl_gene_id' = g$ensembl_gene_id,
-                'property' = var_name_df,
-                'value' = paste(sort(names(pa_data[[var_name_json]])),
-                                collapse=", "),
-                stringsAsFactors = F)
-            }
-          }
-          if(NROW(df) > 0){
-            hpa <- dplyr::bind_rows(hpa, df)
-            df <- data.frame()
-          }
-        }
-      }
-    }
-
-  }
-
-  hpa <- hpa |>
-    dplyr::mutate(
-      value =  dplyr::if_else(
-        property == "antibody_rrid",
-        stringr::str_replace_all(value, "^(NA\\|){1,}|(\\|NA){1,}$",""),
-        as.character(value)
+  hpa <- readr::read_tsv(
+    file = file.path(
+      raw_db_dir,
+      "hpa",
+      "proteinatlas.tsv.gz"
+    ),
+    show_col_types = F) |>
+    janitor::clean_names() |>
+    dplyr::select(
+      dplyr::matches(
+        paste0(
+          "ensembl|pathology|antibody|rna_cancer",
+          "|rna_tissue|rna_single_cell"))) |>
+    dplyr::select(
+      !dplyr::matches(
+        "_score"
       )
     ) |>
+    dplyr::rename(
+      ensembl_gene_id = ensembl,
+    ) |>
+    tidyr::pivot_longer(
+      !ensembl_gene_id,
+      names_to = "property",
+      values_to = "value") |>
     dplyr::mutate(
-      value =  dplyr::if_else(
-        property == "antibody_rrid",
-        stringr::str_replace_all(value, "(\\|NA\\|)","|"),
-        as.character(value)
+      property = dplyr::case_when(
+        property == "rna_cancer_specific_fpkm" ~
+          "rna_cancer_specific_FPKM",
+        property == "rna_single_cell_type_specific_n_tpm" ~
+          "rna_single_cell_type_specific_nTPM",
+        property == "rna_tissue_specific_n_tpm" ~
+          "rna_tissue_specific_nTPM",
+        TRUE ~ as.character(property)
       )
     ) |>
+    dplyr::filter(
+      !is.na(value) & nchar(value) > 0
+    ) |>
     dplyr::mutate(
-      value =  dplyr::if_else(
-        property == "antibody_rrid" & value == "NA",
-        as.character(''),
+      value = dplyr::if_else(
+        property == "antibody_rrid",
+        stringr::str_replace_all(
+          stringr::str_trim(
+            stringr::str_replace_all(
+              stringr::str_replace_all(
+              value,
+              "((HPA|CAB)[0-9]{6}:( )?)",
+              ""),
+              "(, ){1,}","|")
+            ),
+          "^\\||\\|$",""),
         as.character(value)
+      )) |>
+    dplyr::filter(property != "antibody") |>
+    dplyr::filter(
+      !stringr::str_detect(
+        value, "unprognostic"
       )
-    )
-
+    ) |>
+    dplyr::mutate(value = stringr::str_replace_all(
+     value, "prognostic |\\)",""
+    )) |>
+    dplyr::mutate(value = stringr::str_replace(
+      value, "orable \\(","orable|"
+    ))
 
   saveRDS(hpa, file = rds_fname)
   return(hpa)
 
-
 }
+#
+#   variables_json <- c('RNA tissue specificity',
+#                       'RNA tissue distribution',
+#                       'RNA tissue specific nTPM',
+#                       'RNA single cell type specificity',
+#                       'RNA single cell type distribution',
+#                       'RNA single cell type specific nTPM',
+#                       'RNA cancer specificity',
+#                       'RNA cancer distribution',
+#                       'RNA cancer specific FPKM',
+#                       'RNA cell line specificity',
+#                       'RNA cell line distribution',
+#                       'RNA cell line specific nTPM',
+#                       'Pathology prognostics - Breast cancer',
+#                       'Pathology prognostics - Cervical cancer',
+#                       'Pathology prognostics - Colorectal cancer',
+#                       'Pathology prognostics - Endometrial cancer',
+#                       'Pathology prognostics - Glioma',
+#                       'Pathology prognostics - Head and neck cancer',
+#                       'Pathology prognostics - Liver cancer',
+#                       'Pathology prognostics - Lung cancer',
+#                       'Pathology prognostics - Melanoma',
+#                       'Pathology prognostics - Ovarian cancer',
+#                       'Pathology prognostics - Pancreatic cancer',
+#                       'Pathology prognostics - Prostate cancer',
+#                       'Pathology prognostics - Renal cancer',
+#                       'Pathology prognostics - Stomach cancer',
+#                       'Pathology prognostics - Testis cancer',
+#                       'Pathology prognostics - Thyroid cancer',
+#                       'Pathology prognostics - Urothelial cancer',
+#                       'Antibody RRID')
+#
+#   variables_df <- c('rna_tissue_specificity',
+#                     'rna_tissue_distribution',
+#                     'rna_tissue_specific_nTPM',
+#                     'rna_single_cell_type_specificity',
+#                     'rna_single_cell_type_distribution',
+#                     'rna_single_cell_type_specificity_nTPM',
+#                     'rna_cancer_specificity',
+#                     'rna_cancer_distribution',
+#                     'rna_cancer_specific_FPKM',
+#                     'rna_cell_line_specificity',
+#                     'rna_cell_line_distribution',
+#                     'rna_cell_line_specific_nTPM',
+#                     'pathology_prognostics_breast_cancer',
+#                     'pathology_prognostics_cervical_cancer',
+#                     'pathology_prognostics_colorectal_cancer',
+#                     'pathology_prognostics_endometrial_cancer',
+#                     'pathology_prognostics_glioma',
+#                     'pathology_prognostics_head_and_neck_cancer',
+#                     'pathology_prognostics_liver_cancer',
+#                     'pathology_prognostics_lung_cancer',
+#                     'pathology_prognostics_melanoma',
+#                     'pathology_prognostics_ovarian_cancer',
+#                     'pathology_prognostics_pancreatic_cancer',
+#                     'pathology_prognostics_prostate_cancer',
+#                     'pathology_prognostics_renal_cancer',
+#                     'pathology_prognostics_stomach_cancer',
+#                     'pathology_prognostics_testis_cancer',
+#                     'pathology_prognostics_thyroid_cancer',
+#                     'pathology_prognostics_urothelial_cancer',
+#                     'antibody_rrid')
+#
+#   hpa <- data.frame()
+#   k <- 1
+#
+#   for (i in 1:nrow(gene_xref_hpa)) {
+#     g <- gene_xref_hpa[i,]
+#
+#     # if(g$gene_biotype != "protein-coding"){
+#     #   next
+#     # }
+#     # if(is.na(g$ensembl_gene_id)){
+#     #   next
+#     # }
+#
+#     if(!startsWith(g$ensembl_gene_id, "ENSG") |
+#        stringr::str_detect(g$ensembl_gene_id, "PAR")){
+#       next
+#     }
+#
+#     local_json <-
+#       file.path(
+#         raw_db_dir,
+#         "hpa",
+#         "json2",
+#         paste0(g$ensembl_gene_id,".json"))
+#
+#     if(!file.exists(local_json)){
+#       protein_atlas_url <-
+#         paste0("https://www.proteinatlas.org/search/",
+#                g$ensembl_gene_id,"?format=json")
+#
+#       if(RCurl::url.exists(protein_atlas_url) == TRUE){
+#         cat(k, ' - ', protein_atlas_url, '\n')
+#         k <- k + 1
+#
+#         download.file(
+#           protein_atlas_url,
+#           destfile = local_json,
+#           quiet = T)
+#         Sys.sleep(1)
+#       }
+#     }
+#   }
+#
+#
+#     if(file.exists(local_json)){
+#       pa_data <- jsonlite::fromJSON(txt = local_json)
+#
+#       for(j in 1:length(variables_json)){
+#         var_name_json <- variables_json[j]
+#         var_name_df <- variables_df[j]
+#         if(!is.null(pa_data[[var_name_json]])){
+#           if(!startsWith(var_name_df, "pathology") &
+#              !stringr::str_detect(var_name_df,"(TPM|FPKM|rrid)$")){
+#             df <- data.frame(
+#               'ensembl_gene_id' = g$ensembl_gene_id,
+#               'property' = var_name_df,
+#               'value' = pa_data[[var_name_json]],
+#               stringsAsFactors = F)
+#
+#           }else{
+#             if(startsWith(var_name_df, "pathology")
+#                | endsWith(var_name_df,"rrid")){
+#               value <- paste(unlist(pa_data[[var_name_json]]),
+#                              collapse="|")
+#               if(stringr::str_detect(value,"TRUE") |
+#                  var_name_df == "antibody_rrid"){
+#                 df <- data.frame(
+#                   'ensembl_gene_id' = g$ensembl_gene_id,
+#                   'property' = var_name_df,
+#                   'value' = value,
+#                   stringsAsFactors = F)
+#               }
+#             }else{
+#               df <- data.frame(
+#                 'ensembl_gene_id' = g$ensembl_gene_id,
+#                 'property' = var_name_df,
+#                 'value' = paste(sort(names(pa_data[[var_name_json]])),
+#                                 collapse=", "),
+#                 stringsAsFactors = F)
+#             }
+#           }
+#           if(NROW(df) > 0){
+#             hpa <- dplyr::bind_rows(hpa, df)
+#             df <- data.frame()
+#           }
+#         }
+#       }
+#     }
+#
+#   }
+#
+#   hpa <- hpa |>
+#     dplyr::mutate(
+#       value =  dplyr::if_else(
+#         property == "antibody_rrid",
+#         stringr::str_replace_all(value, "^(NA\\|){1,}|(\\|NA){1,}$",""),
+#         as.character(value)
+#       )
+#     ) |>
+#     dplyr::mutate(
+#       value =  dplyr::if_else(
+#         property == "antibody_rrid",
+#         stringr::str_replace_all(value, "(\\|NA\\|)","|"),
+#         as.character(value)
+#       )
+#     ) |>
+#     dplyr::mutate(
+#       value =  dplyr::if_else(
+#         property == "antibody_rrid" & value == "NA",
+#         as.character(''),
+#         as.character(value)
+#       )
+#     )
+#
+#
+#   saveRDS(hpa, file = rds_fname)
+#   return(hpa)
+#
+#
+# }
 
 
 get_mean_median_tpm <- function(
@@ -3506,11 +3586,15 @@ get_synthetic_lethality_pairs <- function(
     readr::read_csv(
       sl_pairs_csv, show_col_types = F) |>
       janitor::clean_names() |>
-      dplyr::mutate(entrezgene_a = as.integer(gene_a_identifier)) |>
-      dplyr::mutate(entrezgene_b = as.integer(gene_b_identifier)) |>
+      dplyr::mutate(
+        entrezgene_a = as.integer(gene_a_identifier)) |>
+      dplyr::mutate(
+        entrezgene_b = as.integer(gene_b_identifier)) |>
       dplyr::rename(pmid = sl_pubmed_id) |>
-      dplyr::select(entrezgene_a, entrezgene_b,
-                    pmid, sl_source, sl_cell_line, sl_statistic_score) |>
+      dplyr::select(
+        entrezgene_a, entrezgene_b,
+        pmid, sl_source, sl_cell_line,
+        sl_statistic_score) |>
       dplyr::mutate(sl_id = dplyr::row_number()) |>
       tidyr::separate_rows(pmid, sep=";") |>
       tidyr::separate_rows(pmid, sep="/") |>
@@ -3537,14 +3621,17 @@ get_synthetic_lethality_pairs <- function(
 
   sl_pairs_data <- as.data.frame(
     sl_pairs_data_raw |>
-      dplyr::left_join(pmid_data, by = "pmid",  relationship = "many-to-many") |>
+      dplyr::left_join(
+        pmid_data, by = "pmid",
+        relationship = "many-to-many") |>
       dplyr::group_by(
         sl_id, entrezgene_a, entrezgene_b,
         sl_source, sl_cell_line, sl_statistic_score) |>
       dplyr::summarise(
         sl_pmid = paste(pmid, collapse=";"),
         sl_citation = paste(sl_citation, collapse="; "),
-        sl_citation_link = paste(sl_citation_link, collapse= ", "),
+        sl_citation_link = paste(
+          sl_citation_link, collapse= ", "),
         .groups = "drop")
   )
 

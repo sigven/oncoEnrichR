@@ -944,7 +944,7 @@ cat('\n')
 
 <span style="font-size: 100%; padding: 2px; background-color:#014587; color:white">&nbsp;&nbsp;<b>Citation Note</b>&nbsp;&nbsp;</span> : If you use the output of the *Tumor aberration frequencies* module of oncoEnrichR in your research, please cite the following resources and tools:
 
- * [Nakken et al., arXiv, 2022](https://arxiv.org/abs/2107.13247) - *oncoEnrichR*
+ * [Nakken et al., Int J Cancer, 2023](https://doi.org/10.1002/ijc.34666) - *oncoEnrichR*
  * [Weinstein et al., Nat Genet, 2013](https://pubmed.ncbi.nlm.nih.gov/24071849/) - *TCGA*
 
 

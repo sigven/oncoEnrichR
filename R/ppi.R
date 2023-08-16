@@ -27,11 +27,11 @@ get_network_hubs <- function(edges = NULL,
     dplyr::left_join(
       dplyr::select(
         genedb, c("symbol", "name")),
-      by = c("symbol"), multiple = "all") |>
+      by = c("symbol"), relationship = "many-to-many") |>
     dplyr::left_join(
       dplyr::select(
         nodes, c("symbol", "query_node")),
-      by = c("symbol"), multiple = "all") |>
+      by = c("symbol"), relationship = "many-to-many") |>
     dplyr::filter(.data$query_node == T) |>
     dplyr::select(c("symbol", "name", "hub_score")) |>
     dplyr::distinct()
@@ -83,7 +83,7 @@ get_network_communities <- function(edges = NULL, nodes = NULL) {
     "id" = unique(c(unique(edges_communities$from),
                     unique(edges_communities$to))),
     stringsAsFactors = F) |>
-    dplyr::inner_join(nodes, by = c("id"), multiple = "all") |>
+    dplyr::inner_join(nodes, by = c("id"), relationship = "many-to-many") |>
     dplyr::distinct()
 
   community_structure <- list()
@@ -114,14 +114,14 @@ get_biogrid_network_nodes_edges <-
       dplyr::inner_join(
         dplyr::select(all_query_nodes, c("entrezgene","symbol")),
         by = c("entrezgene_B" = "entrezgene"),
-        multiple = "all"
+        relationship = "many-to-many"
       ) |>
       dplyr::rename(symbol_B = "symbol") |>
       dplyr::left_join(
         dplyr::select(
           genedb, c("entrezgene", "symbol")),
         by = c("entrezgene_A" = "entrezgene"),
-        multiple = "all"
+        relationship = "many-to-many"
       ) |>
       dplyr::rename(symbol_A = "symbol") |>
       dplyr::arrange(
@@ -141,14 +141,14 @@ get_biogrid_network_nodes_edges <-
       dplyr::inner_join(
         dplyr::select(all_query_nodes, c("entrezgene","symbol")),
         by = c("entrezgene_A" = "entrezgene"),
-        multiple = "all"
+        relationship = "many-to-many"
       ) |>
       dplyr::rename(symbol_A = "symbol") |>
       dplyr::left_join(
         dplyr::select(
           genedb, c("entrezgene", "symbol")),
         by = c("entrezgene_B" = "entrezgene"),
-        multiple = "all"
+        relationship = "many-to-many"
       ) |>
       dplyr::rename(symbol_B = "symbol") |>
       dplyr::arrange(.data$symbol_A,
@@ -293,7 +293,7 @@ get_biogrid_network_nodes_edges <-
             c("entrezgene","oncogene",
               "tumor_suppressor",
               "cancer_driver")),
-          by = c("entrezgene_A" = "entrezgene"), multiple = "all") |>
+          by = c("entrezgene_A" = "entrezgene"), relationship = "many-to-many") |>
         dplyr::rename(oncogene_A = "oncogene",
                       tsgene_A = "tumor_suppressor",
                       cdriver_A = "cancer_driver") |>
@@ -302,7 +302,7 @@ get_biogrid_network_nodes_edges <-
           dplyr::select(genedb,
                         c("entrezgene", "oncogene",
                           "tumor_suppressor","cancer_driver")),
-          by = c("entrezgene_B" = "entrezgene"), multiple = "all") |>
+          by = c("entrezgene_B" = "entrezgene"), relationship = "many-to-many") |>
         dplyr::rename(oncogene_B = "oncogene",
                       tsgene_B = "tumor_suppressor",
                       cdriver_B = "cancer_driver") |>
@@ -331,12 +331,12 @@ get_biogrid_network_nodes_edges <-
             "cancer_driver","genename",
             "targeted_cancer_drugs_ep",
             "targeted_cancer_drugs_lp")),
-          by = "entrezgene", multiple = "all") |>
+          by = "entrezgene", relationship = "many-to-many") |>
         dplyr::filter(!is.na(.data$entrezgene)) |>
         dplyr::left_join(
           dplyr::select(all_query_nodes,
                         c("entrezgene","query_node")),
-          by = "entrezgene", multiple = "all") |>
+          by = "entrezgene", relationship = "many-to-many") |>
         dplyr::mutate(id = paste0("s", .data$entrezgene)) |>
         dplyr::distinct() |>
         dplyr::mutate(query_node = dplyr::if_else(
@@ -408,7 +408,7 @@ get_string_network_nodes_edges <-
                     symbol_B = "preferredName_B") |>
       dplyr::left_join(
         dplyr::select(genedb, c("entrezgene", "symbol")),
-        by = c("symbol_A" = "symbol"), multiple = "all") |>
+        by = c("symbol_A" = "symbol"), relationship = "many-to-many") |>
       dplyr::filter(!is.na(.data$entrezgene)) |>
       dplyr::rename(entrezgene_A = "entrezgene") |>
       dplyr::mutate(from = paste0("s", .data$entrezgene_A)) |>
@@ -418,12 +418,12 @@ get_string_network_nodes_edges <-
           c("entrezgene","oncogene",
             "tumor_suppressor",
             "cancer_driver")),
-        by = c("entrezgene_A" = "entrezgene"), multiple = "all") |>
+        by = c("entrezgene_A" = "entrezgene"), relationship = "many-to-many") |>
       dplyr::rename(oncogene_A = "oncogene",
                     tsgene_A = "tumor_suppressor",
                     cdriver_A = "cancer_driver") |>
       dplyr::left_join(dplyr::select(genedb, c("entrezgene", "symbol")),
-                       by = c("symbol_B" = "symbol"), multiple = "all") |>
+                       by = c("symbol_B" = "symbol"), relationship = "many-to-many") |>
       dplyr::filter(!is.na(.data$entrezgene)) |>
       dplyr::rename(entrezgene_B = "entrezgene") |>
       dplyr::mutate(to = paste0("s", .data$entrezgene_B)) |>
@@ -431,7 +431,7 @@ get_string_network_nodes_edges <-
         dplyr::select(genedb,
                       c("entrezgene", "oncogene",
                         "tumor_suppressor","cancer_driver")),
-        by = c("entrezgene_B" = "entrezgene"), multiple = "all") |>
+        by = c("entrezgene_B" = "entrezgene"), relationship = "many-to-many") |>
       dplyr::rename(oncogene_B = "oncogene",
                     tsgene_B = "tumor_suppressor",
                     cdriver_B = "cancer_driver") |>
@@ -440,11 +440,11 @@ get_string_network_nodes_edges <-
                              .data$symbol_B)) |>
       dplyr::left_join(
         dplyr::select(all_query_nodes, c("symbol","query_node")),
-        by = c("symbol_A" = "symbol"), multiple = "all") |>
+        by = c("symbol_A" = "symbol"), relationship = "many-to-many") |>
       dplyr::rename(querynode_A = "query_node") |>
       dplyr::left_join(
         dplyr::select(all_query_nodes, c("symbol","query_node")),
-        by = c("symbol_B" = "symbol"), multiple = "all") |>
+        by = c("symbol_B" = "symbol"), relationship = "many-to-many") |>
       dplyr::rename(querynode_B = "query_node") |>
       dplyr::mutate(
         querynode_A = dplyr::if_else(
@@ -474,12 +474,12 @@ get_string_network_nodes_edges <-
           "cancer_driver","genename",
           "targeted_cancer_drugs_ep",
           "targeted_cancer_drugs_lp")),
-        by = "symbol", multiple = "all") |>
+        by = "symbol", relationship = "many-to-many") |>
       dplyr::filter(!is.na(.data$entrezgene)) |>
       dplyr::left_join(
         dplyr::select(all_query_nodes,
                       c("symbol","query_node")),
-        by = "symbol", multiple = "all") |>
+        by = "symbol", relationship = "many-to-many") |>
       dplyr::mutate(id = paste0("s", .data$entrezgene)) |>
       dplyr::distinct() |>
       dplyr::mutate(query_node = dplyr::if_else(
@@ -576,7 +576,7 @@ get_ppi_network <- function(qgenes = NULL,
         "cancer_driver", "oncogene", "genename",
         "targeted_cancer_drugs_ep",
         "targeted_cancer_drugs_lp")),
-      by = c("entrezgene" = "entrezgene"), multiple = "all") |>
+      by = c("entrezgene" = "entrezgene"), relationship = "many-to-many") |>
     dplyr::mutate(id = paste0("s", .data$entrezgene)) |>
     dplyr::mutate(query_node = T) |>
     dplyr::distinct()
@@ -783,7 +783,7 @@ get_ppi_network <- function(qgenes = NULL,
         dplyr::inner_join(
           dplyr::select(all_nodes, c("id")),
           dplyr::select(cancerdrugdb[['network']]$edges, c("from")),
-          by = c("id" = "from"), multiple = "all") |>
+          by = c("id" = "from"), relationship = "many-to-many") |>
         dplyr::distinct()
 
       if (nrow(drug_target_ids) > 0) {
@@ -793,7 +793,7 @@ get_ppi_network <- function(qgenes = NULL,
         drug_nodes <- drug_edges |>
           dplyr::select(-c("from")) |>
           dplyr::inner_join(cancerdrugdb[['network']]$nodes,
-                            by = c("to" = "id"), multiple = "all") |>
+                            by = c("to" = "id"), relationship = "many-to-many") |>
           dplyr::rename(id = "to") |>
           dplyr::distinct()
 

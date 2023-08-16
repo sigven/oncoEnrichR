@@ -17,34 +17,47 @@ hpa_prognostic_genes <- function(qgenes,
   stopifnot(is.data.frame(hpadb))
   stopifnot(!is.null(qgenes))
 
-  query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+  query_genes_df <- data.frame(
+    'symbol' = qgenes, stringsAsFactors = F)
   if (q_id_type == 'entrezgene') {
     stopifnot(is.integer(qgenes))
     query_genes_df <-
-      data.frame('entrezgene' = qgenes, stringsAsFactors = F) |>
-      dplyr::inner_join(genedb, by = "entrezgene", multiple = "all") |>
+      data.frame('entrezgene' = qgenes,
+                 stringsAsFactors = F) |>
+      dplyr::inner_join(
+        genedb, by = "entrezgene",
+        relationship = "many-to-many") |>
       dplyr::distinct()
   } else {
     stopifnot(is.character(qgenes))
     query_genes_df <- query_genes_df |>
-      dplyr::inner_join(genedb, by = "symbol", multiple = "all") |>
+      dplyr::inner_join(
+        genedb, by = "symbol",
+        relationship = "many-to-many") |>
       dplyr::distinct()
   }
 
   prognostic_associations <- hpadb |>
-    dplyr::filter(stringr::str_detect(.data$property,"pathology_prognostics")) |>
-    tidyr::separate(.data$value, c("evidence_direction","is_prognostic","p_value"),
+    dplyr::filter(
+      stringr::str_detect(.data$property,"pathology_prognostics")) |>
+    tidyr::separate(.data$value, c("evidence_direction","p_value"),
                     sep ="\\|") |>
-    dplyr::mutate(p_value = as.numeric(.data$p_value)) |>
-    dplyr::mutate(p_value = dplyr::if_else(.data$p_value == 0, 1e-16, .data$p_value)) |>
-    dplyr::mutate(log10_p_value = round(-log10(.data$p_value), digits = 2)) |>
-    dplyr::mutate(property = stringr::str_replace(.data$property,
-                                                  "pathology_prognostics_","")) |>
+    dplyr::mutate(
+      p_value = as.numeric(.data$p_value)) |>
+    dplyr::mutate(
+      p_value = dplyr::if_else(
+        .data$p_value == 0, 1e-16, .data$p_value)) |>
+    dplyr::mutate(
+      log10_p_value = round(-log10(.data$p_value), digits = 2)) |>
+    dplyr::mutate(property = stringr::str_replace(
+      .data$property,
+      "pathology_prognostics_","")) |>
     dplyr::inner_join(
       dplyr::select(genedb,
                     c("symbol",
                     "ensembl_gene_id")),
-      by=c("ensembl_gene_id"), multiple = "all") |>
+      by=c("ensembl_gene_id"),
+      relationship = "many-to-many") |>
     dplyr::mutate(hpa_link = paste0(
       "<a href='https://www.proteinatlas.org/",
       .data$ensembl_gene_id,
@@ -92,8 +105,6 @@ hpa_prognostic_genes <- function(qgenes,
     all_prog_assocs <- dplyr::bind_rows(all_prog_assocs, assocs)
   }
 
-
-
   n_query_associations <- 0
   prognostoc_query_associations <- 0
 
@@ -103,10 +114,11 @@ hpa_prognostic_genes <- function(qgenes,
         dplyr::select(
           query_genes_df,
           c("symbol", "ensembl_gene_id", "name")),
-        by = c("symbol","ensembl_gene_id"), multiple = "all") |>
+        by = c("symbol","ensembl_gene_id"),
+        relationship = "many-to-many") |>
       dplyr::rename(primary_site = "property",
                     tumor_types = "hpa_link") |>
-      dplyr::select(-c("is_prognostic")) |>
+      #dplyr::select(-c("is_prognostic")) |>
       dplyr::select(c("symbol",
                     "primary_site",
                     "evidence_direction",
@@ -155,14 +167,14 @@ km_cshl_survival_genes <- function(qgenes,
   validate_db_df(survivaldb,
                  dbtype = "survival_km_cshl")
 
-
   target_genes <- data.frame(
     "symbol" = qgenes, stringsAsFactors = F)
 
-
   targets_survival <- as.data.frame(
     survivaldb |>
-      dplyr::inner_join(target_genes, by = c("symbol"), multiple = "all")
+      dplyr::inner_join(
+        target_genes, by = c("symbol"),
+        relationship = "many-to-many")
   )
 
   symlevels <- levels(survivaldb$symbol)
@@ -175,7 +187,8 @@ km_cshl_survival_genes <- function(qgenes,
                       "tcga_cohort",
                       "z_score")) |>
         dplyr::mutate(
-          symbol = factor(.data$symbol, levels = symlevels))
+          symbol = factor(
+            .data$symbol, levels = symlevels))
     )
 
 

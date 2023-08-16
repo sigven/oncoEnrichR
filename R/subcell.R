@@ -30,7 +30,7 @@ annotate_subcellular_compartments <-
                       c("symbol",
                       "entrezgene",
                       "genename")),
-        by = c("entrezgene"), multiple = "all")
+        by = c("entrezgene"), relationship = "many-to-many")
 
     target_compartments <- list()
     target_compartments[["all"]] <- data.frame()
@@ -38,7 +38,7 @@ annotate_subcellular_compartments <-
 
     target_compartments_all <- as.data.frame(
       dplyr::inner_join(
-        compartments, target_genes, by = c("entrezgene"), multiple = "all") |>
+        compartments, target_genes, by = c("entrezgene"), relationship = "many-to-many") |>
         dplyr::filter(!is.na(.data$symbol)) |>
         dplyr::filter(.data$confidence >= compartments_min_confidence) |>
         dplyr::mutate(
@@ -90,7 +90,7 @@ annotate_subcellular_compartments <-
             .data$symbol) |>
           dplyr::left_join(
             go_gganatogram_map,
-            by = "go_id", multiple = "all") |>
+            by = "go_id", relationship = "many-to-many") |>
           dplyr::mutate(
             genelink =
               paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
@@ -144,7 +144,7 @@ annotate_subcellular_compartments <-
 
       target_compartments[["anatogram"]] <-
         target_compartments[["anatogram"]] |>
-        dplyr::left_join(anatogram_values, by = "organ", multiple = "all") |>
+        dplyr::left_join(anatogram_values, by = "organ", relationship = "many-to-many") |>
         dplyr::mutate(value = dplyr::if_else(
           is.na(.data$value), 0 , as.numeric(.data$value)))
 

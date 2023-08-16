@@ -38,25 +38,25 @@ tcga_oncoplot_genes <-
       stopifnot(is.integer(qgenes))
       query_genes_df <- data.frame('entrezgene' = qgenes, stringsAsFactors = F)
       query_genes_df <- dplyr::inner_join(
-        genedb, query_genes_df, by = "entrezgene", multiple = "all") |>
+        genedb, query_genes_df, by = "entrezgene", relationship = "many-to-many") |>
         dplyr::distinct()
     } else {
       stopifnot(is.character(qgenes))
       query_genes_df <- dplyr::inner_join(
-        genedb, query_genes_df, by = "symbol", multiple = "all") |>
+        genedb, query_genes_df, by = "symbol", relationship = "many-to-many") |>
         dplyr::distinct()
     }
 
     top_mutated_genes <- tcgadb[['aberration']] |>
       dplyr::inner_join(
         dplyr::select(query_genes_df, "symbol"),
-        by = c("symbol"), multiple = "all") |>
+        by = c("symbol"), relationship = "many-to-many") |>
       dplyr::left_join(tcgadb[['site_code']],
-                       by = "site_code", multiple = "all") |>
+                       by = "site_code", relationship = "many-to-many") |>
       dplyr::left_join(tcgadb[['diagnosis_code']],
-                       by = "diagnosis_code", multiple = "all") |>
+                       by = "diagnosis_code", relationship = "many-to-many") |>
       dplyr::left_join(tcgadb[['clinical_strata_code']],
-                       by = "clinical_strata_code", multiple = "all") |>
+                       by = "clinical_strata_code", relationship = "many-to-many") |>
       dplyr::select(-c("site_code",
                        "diagnosis_code",
                        "clinical_strata_code")) |>
@@ -124,12 +124,12 @@ tcga_aberration_matrix <- function(qgenes,
     query_genes_df <-
       data.frame('entrezgene' = qgenes, stringsAsFactors = F)
     query_genes_df <-
-      dplyr::inner_join(genedb, query_genes_df, by = "entrezgene", multiple = "all") |>
+      dplyr::inner_join(genedb, query_genes_df, by = "entrezgene", relationship = "many-to-many") |>
       dplyr::distinct()
   } else {
     stopifnot(is.character(qgenes))
     query_genes_df <-
-      dplyr::inner_join(genedb, query_genes_df, by = "symbol", multiple = "all") |>
+      dplyr::inner_join(genedb, query_genes_df, by = "symbol", relationship = "many-to-many") |>
       dplyr::distinct()
   }
 
@@ -150,7 +150,7 @@ tcga_aberration_matrix <- function(qgenes,
   tcga_gene_stats <- tcgadb[['aberration']] |>
     dplyr::inner_join(
       dplyr::select(query_genes_df, c("symbol")),
-      by = c("symbol"), multiple = "all"
+      by = c("symbol"), relationship = "many-to-many"
     )
 
   ## return NULL if no query genes are found with aberration data from TCGA
@@ -170,11 +170,11 @@ tcga_aberration_matrix <- function(qgenes,
 
   tcga_gene_stats <- tcga_gene_stats |>
     dplyr::left_join(tcgadb[['site_code']],
-                     by = "site_code", multiple = "all") |>
+                     by = "site_code", relationship = "many-to-many") |>
     dplyr::left_join(tcgadb[['diagnosis_code']],
-                     by = "diagnosis_code", multiple = "all") |>
+                     by = "diagnosis_code", relationship = "many-to-many") |>
     dplyr::left_join(tcgadb[['clinical_strata_code']],
-                     by = "clinical_strata_code", multiple = "all") |>
+                     by = "clinical_strata_code", relationship = "many-to-many") |>
     dplyr::select(-c("site_code",
                      "diagnosis_code",
                      "clinical_strata_code")) |>
@@ -238,12 +238,12 @@ tcga_aberration_matrix <- function(qgenes,
     dplyr::anti_join(gene_candidates_init, gene_aberrations,
                      by = c("symbol", "primary_site", "variant_type")) |>
     dplyr::left_join(site_stats_zero,
-                     by = c("primary_site"), multiple = "all")
+                     by = c("primary_site"), relationship = "many-to-many")
 
   gene_aberrations <-
     dplyr::left_join(
       dplyr::bind_rows(gene_aberrations, zero_frequency_genes),
-                     pancan_order, by = c("symbol"), multiple = "all") |>
+                     pancan_order, by = c("symbol"), relationship = "many-to-many") |>
     dplyr::mutate(
       pancancer_percent_mutated =
         dplyr::if_else(is.na(.data$pancancer_percent_mutated),
@@ -262,7 +262,7 @@ tcga_aberration_matrix <- function(qgenes,
     utils::head(75)
 
   gene_aberrations_top <- gene_aberrations |>
-    dplyr::inner_join(top_mutated, by = "symbol", multiple = "all") |>
+    dplyr::inner_join(top_mutated, by = "symbol", relationship = "many-to-many") |>
     dplyr::mutate(symbol = factor(.data$symbol, unique(.data$symbol)))
 
 
@@ -333,13 +333,13 @@ tcga_aberration_table <- function(qgenes,
     dplyr::inner_join(
       dplyr::select(query_genes_df, c("symbol",
                                     "entrezgene")),
-                      by=c("symbol"), multiple = "all") |>
+                      by=c("symbol"), relationship = "many-to-many") |>
     dplyr::left_join(tcgadb[['site_code']],
-                     by = "site_code", multiple = "all") |>
+                     by = "site_code", relationship = "many-to-many") |>
     dplyr::left_join(tcgadb[['diagnosis_code']],
-                     by = "diagnosis_code", multiple = "all") |>
+                     by = "diagnosis_code", relationship = "many-to-many") |>
     dplyr::left_join(tcgadb[['clinical_strata_code']],
-                     by = "clinical_strata_code", multiple = "all") |>
+                     by = "clinical_strata_code", relationship = "many-to-many") |>
     dplyr::select(-c("site_code",
                      "diagnosis_code",
                      "clinical_strata_code")) |>
@@ -412,13 +412,13 @@ tcga_coexpression <- function(qgenes,
     query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
     query_genes_df <- dplyr::inner_join(
       dplyr::select(genedb, c("entrezgene","symbol")),
-      query_genes_df, by = "entrezgene", multiple = "all") |>
+      query_genes_df, by = "entrezgene", relationship = "many-to-many") |>
       dplyr::distinct()
   } else {
     stopifnot(is.character(qgenes))
     query_genes_df <- dplyr::inner_join(
       dplyr::select(genedb, c("entrezgene", "symbol")),
-      query_genes_df, by = "symbol", multiple = "all") |>
+      query_genes_df, by = "symbol", relationship = "many-to-many") |>
       dplyr::distinct()
   }
 
@@ -441,7 +441,7 @@ tcga_coexpression <- function(qgenes,
                   "p_value",
                   "tumor")) |>
     dplyr::left_join(
-      query_genes_df, by = c("symbol" = "symbol"), multiple = "all") |>
+      query_genes_df, by = c("symbol" = "symbol"), relationship = "many-to-many") |>
     dplyr::filter(!is.na(.data$entrezgene))
 
   coexp_target_tcga <- tcgadb[['coexpression']] |>
@@ -463,7 +463,7 @@ tcga_coexpression <- function(qgenes,
                   "p_value",
                   "tumor")) |>
     dplyr::left_join(query_genes_df,
-                     by = c("symbol_partner" = "symbol"), multiple = "all") |>
+                     by = c("symbol_partner" = "symbol"), relationship = "many-to-many") |>
     dplyr::filter(!is.na(.data$entrezgene))
 
   if (NROW(coexp_target_tcga) == 0) {
@@ -481,7 +481,7 @@ tcga_coexpression <- function(qgenes,
                     c("name","oncogene","cancer_driver",
                       "tumor_suppressor",
                       "symbol","SM_tractability_category")),
-      by = c("symbol_partner" = "symbol"), multiple = "all") |>
+      by = c("symbol_partner" = "symbol"), relationship = "many-to-many") |>
     dplyr::rename(target_gene = "symbol",
                   partner_gene = "symbol_partner",
                   partner_genename = "name",
@@ -562,7 +562,7 @@ tcga_coexpression <- function(qgenes,
       coexp_target_tcga, by =
         c("target_gene" = "partner_gene",
           "partner_gene" = "target_gene",
-          "tumor" = "tumor"), multiple = "all"
+          "tumor" = "tumor"), relationship = "many-to-many"
     )
 
   if (NROW(duplicated_recs) > 0) {
@@ -585,7 +585,7 @@ tcga_coexpression <- function(qgenes,
         duplicated_recs, by =
           c("target_gene" = "partner_gene",
             "partner_gene" = "target_gene",
-            "tumor" = "tumor"), multiple = "all") |>
+            "tumor" = "tumor"), relationship = "many-to-many") |>
       dplyr::mutate(rn = dplyr::row_number()) |>
       dplyr::filter(.data$rn %% 2 != 0)
 

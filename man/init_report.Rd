@@ -2,7 +2,7 @@
 % Please edit documentation in R/onco_enrichr.R
 \name{init_report}
 \alias{init_report}
-\title{Load oncoEnrichR annotation database}
+\title{Function that initiates oncoEnrichR report structure}
 \usage{
 init_report(
   oeDB,
@@ -151,18 +151,8 @@ of target genes, using data from the Human Protein Atlas}
 \item{show_complex}{logical indicating if report should provide target memberships in known protein complexes (ComplexPortal/Compleat/PDB/CORUM)}
 
 \item{show_domain}{logical indicating if report should provide target memberships in known protein domains (Pfam)}
-
-\item{remote}{If TRUE (default), load database from version-tagged Zenodo repository}
-
-\item{cache_dir}{path to local cache for more efficient subsequent loads}
 }
 \description{
-Load oncoEnrichR annotation database
+Function that initiates oncoEnrichR report structure
 }
-\keyword{Function}
-\keyword{initiates}
 \keyword{internal}
-\keyword{oncoEnrichR}
-\keyword{report}
-\keyword{structure}
-\keyword{that}

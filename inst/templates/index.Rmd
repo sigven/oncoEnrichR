@@ -12,7 +12,7 @@ nocite: |
   @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, 
   @Turei2016-wq, @Drew2021-kd, @Garcia-Alonso2019-mr, @Jin2021-tf, 
   @De_Kegel2021-xo, @Smith2022-mk, @Martinez-Jimenez2020-qx, 
-  @Pacini2021-xm, @GTEx_Consortium2013-fz
+  @Pacini2021-xm, @GTEx_Consortium2013-fz, @Nakken2023-bp
 ---
 
 
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
 ```{r project_background, child='_project_background.Rmd', eval = T}
 ```
 
-```{r project_background, child='_query_verification.Rmd', eval = T}
+```{r query_verification, child='_query_verification.Rmd', eval = T}
 ```
 
 ```{r target_disease, child='_cancer_association.Rmd', eval = onc_enrich_report[['config']][['show']][['disease']]}
