@@ -491,6 +491,8 @@ db_packages <-
   c('CellChat',
     'rWikiPathways',
     'ComplexHeatmap',
+    'bcellViper',
+    'dorothea',
     'Rtsne',
     'KEGGREST',
     'expm',

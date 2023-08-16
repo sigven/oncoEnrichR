@@ -88,7 +88,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
--   August 15th 2023: [**1.4.2 release**](articles/CHANGELOG.html#version-1-4-2)
+-   August 16th 2023: [**1.4.2 release**](articles/CHANGELOG.html#version-1-4-2)
 -   June 18th 2023: [**1.4.1 release**](articles/CHANGELOG.html#version-1-4-1)
 -   February 21st 2023: [**1.4.0 release**](articles/CHANGELOG.html#version-1-4-0)
 -   September 27th 2022: [**1.3.2 release**](articles/CHANGELOG.html#version-1-3-2)
