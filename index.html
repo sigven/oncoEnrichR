@@ -55,7 +55,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4MB4571K5');
+</script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -65,7 +71,7 @@
     
     <a class="navbar-brand me-2" href="index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,7 +132,7 @@
 </div>
 <p><strong>oncoEnrichR</strong> is an R package for functional interrogation of human genesets in the context of cancer. It is primarily intended for exploratory analysis, interpretation, and prioritization of long gene lists, which represent a common output from many types of high-throughput cancer biology screens.</p>
 <p><strong>oncoEnrichR</strong> can be used to interrogate results from e.g. genetic screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics (differential expression). The tool queries a variety of high-quality data resources in order to assemble useful gene annotations and analyses in an interactive report (examples from the report shown below).</p>
-<p>Web-based access to <strong>oncoEnrichR</strong> is available at <font size="4"> <a href="https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.4.1" class="external-link"><strong>https://oncotools.elixir.no</strong></a></font></p>
+<p>Web-based access to <strong>oncoEnrichR</strong> is available at <font size="4"> <a href="https://oncotools.elixir.no/tool_runner?tool_id=galaxy-ntnu.bioinfo.no%2Ftoolshed_nels%2Frepos%2Fradmilko%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.4.2" class="external-link"><strong>https://oncotools.elixir.no</strong></a></font></p>
 <p><br></p>
 <p><img src="reference/figures/oncoenrichr_overview.png" align="center" border="0"></p>
 <p><br><br></p>
@@ -158,6 +164,8 @@
 <h2 id="news">News<a class="anchor" aria-label="anchor" href="#news"></a>
 </h2>
 <ul>
+<li>August 16th 2023: <a href="articles/CHANGELOG.html#version-1-4-2"><strong>1.4.2 release</strong></a>
+</li>
 <li>June 18th 2023: <a href="articles/CHANGELOG.html#version-1-4-1"><strong>1.4.1 release</strong></a>
 </li>
 <li>February 21st 2023: <a href="articles/CHANGELOG.html#version-1-4-0"><strong>1.4.0 release</strong></a>
@@ -167,9 +175,15 @@
 </ul>
 </div>
 <div class="section level2">
+<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
+<p>If you use oncoEnrichR, please cite the following publication:</p>
+<p>Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos, Eivind Hovig, and Jørgen Wesche. <strong>Comprehensive interrogation of gene lists from genome-scale cancer screens with oncoEnrichR</strong> (2023). Int J Cancer. <a href="https://doi.org/10.1002/ijc.34666" class="external-link">doi:10.1002/ijc.34666</a></p>
+</div>
+<div class="section level2">
 <h2 id="example-report">Example report<a class="anchor" aria-label="anchor" href="#example-report"></a>
 </h2>
-<p><a href="https://doi.org/10.5281/zenodo.8051153" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8051153.svg" alt="DOI"></a></p>
+<p><a href="https://doi.org/10.5281/zenodo.8247877" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8247877.svg" alt="DOI"></a></p>
 <p><br></p>
 </div>
 <div class="section level2">

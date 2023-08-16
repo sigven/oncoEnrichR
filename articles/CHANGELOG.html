@@ -23,7 +23,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4MB4571K5');
+</script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +39,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,13 +106,50 @@
     
     
 <div class="section level2">
+<h2 id="version-1-4-2">Version 1.4.2<a class="anchor" aria-label="anchor" href="#version-1-4-2"></a>
+</h2>
+<ul>
+<li>Date: 2023-08-16</li>
+</ul>
+<div class="section level3">
+<h3 id="changed">Changed<a class="anchor" aria-label="anchor" href="#changed"></a>
+</h3>
+<ul>
+<li>Data updates
+<ul>
+<li>WikiPathways (20230810)</li>
+<li>COMPARTMENTS (2023-08)</li>
+<li>KEGG (20230710)</li>
+<li>BioGRID (v4.4.224)</li>
+<li>Open Targets Platform (2023.06)</li>
+<li>Upgraded <a href="https://github.com/sigven/phenOncoX" class="external-link">sigven/phenOncoX</a> to
+v0.6.3:
+<ul>
+<li>Experimental Factor Ontology (v3.56.0)</li>
+<li>Human Disease Ontology (2023-07-20)</li>
+</ul>
+</li>
+<li>A limited set of TCGA amplifications/deletions were erroneously left
+out in v1.4.1 (gene alias matching) - fixed in v1.4.2</li>
+</ul>
+</li>
+<li>Functionality
+<ul>
+<li>Updated <em>Citation Note</em> sections in report</li>
+<li>Fixed some typos in the report template</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
 <h2 id="version-1-4-1">Version 1.4.1<a class="anchor" aria-label="anchor" href="#version-1-4-1"></a>
 </h2>
 <ul>
 <li>Date: 2023-06-18</li>
 </ul>
 <div class="section level3">
-<h3 id="changed">Changed<a class="anchor" aria-label="anchor" href="#changed"></a>
+<h3 id="changed-1">Changed<a class="anchor" aria-label="anchor" href="#changed-1"></a>
 </h3>
 <ul>
 <li>Data updates
@@ -148,7 +191,7 @@ module</li>
 <li>Date: 2023-02-21</li>
 </ul>
 <div class="section level3">
-<h3 id="changed-1">Changed<a class="anchor" aria-label="anchor" href="#changed-1"></a>
+<h3 id="changed-2">Changed<a class="anchor" aria-label="anchor" href="#changed-2"></a>
 </h3>
 <ul>
 <li>Data updates
@@ -291,7 +334,7 @@ CancerMine)</li>
 <li>Date: 2022-09-27</li>
 </ul>
 <div class="section level3">
-<h3 id="changed-2">Changed<a class="anchor" aria-label="anchor" href="#changed-2"></a>
+<h3 id="changed-3">Changed<a class="anchor" aria-label="anchor" href="#changed-3"></a>
 </h3>
 <ul>
 <li>Cancer driver classification in <code>Cancer associations</code>
@@ -340,7 +383,7 @@ appended to Excel output worksheet, tab
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-3">Changed<a class="anchor" aria-label="anchor" href="#changed-3"></a>
+<h3 id="changed-4">Changed<a class="anchor" aria-label="anchor" href="#changed-4"></a>
 </h3>
 <ul>
 <li>Slight modification to column names in
@@ -368,7 +411,7 @@ appended to Excel output worksheet, tab
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-4">Changed<a class="anchor" aria-label="anchor" href="#changed-4"></a>
+<h3 id="changed-5">Changed<a class="anchor" aria-label="anchor" href="#changed-5"></a>
 </h3>
 <ul>
 <li>Fixed some artefacts (<code>-AS1</code> entries) in the output of
@@ -397,7 +440,7 @@ CancerMine</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-5">Changed<a class="anchor" aria-label="anchor" href="#changed-5"></a>
+<h3 id="changed-6">Changed<a class="anchor" aria-label="anchor" href="#changed-6"></a>
 </h3>
 <ul>
 <li>Now using <a href="https://googledrive.tidyverse.org" class="external-link">googledrive</a> as data
@@ -432,7 +475,7 @@ repository host, due to unstable code using Zenodo</li>
 <li>Date: 2022-06-24</li>
 </ul>
 <div class="section level3">
-<h3 id="changed-6">Changed<a class="anchor" aria-label="anchor" href="#changed-6"></a>
+<h3 id="changed-7">Changed<a class="anchor" aria-label="anchor" href="#changed-7"></a>
 </h3>
 <ul>
 <li>Moved to <a href="https://doi.org/10.5281/zenodo.6684347" class="external-link">zenodo.org</a> for hosting
@@ -464,7 +507,7 @@ of HTML report</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-7">Changed<a class="anchor" aria-label="anchor" href="#changed-7"></a>
+<h3 id="changed-8">Changed<a class="anchor" aria-label="anchor" href="#changed-8"></a>
 </h3>
 <ul>
 <li>Option renaming
@@ -536,7 +579,7 @@ section on protein domain frequencies in query set</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-8">Changed<a class="anchor" aria-label="anchor" href="#changed-8"></a>
+<h3 id="changed-9">Changed<a class="anchor" aria-label="anchor" href="#changed-9"></a>
 </h3>
 <ul>
 <li>Re-ordering of HTML sections, multiple cosmetic changes</li>
@@ -595,7 +638,7 @@ interactions (as published by De Kegel et al., Cell Systems, 2021)
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-9">Changed<a class="anchor" aria-label="anchor" href="#changed-9"></a>
+<h3 id="changed-10">Changed<a class="anchor" aria-label="anchor" href="#changed-10"></a>
 </h3>
 <ul>
 <li>Option <code>--show_crispr_lof</code> renamed to
@@ -648,7 +691,7 @@ being empty)</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-10">Changed<a class="anchor" aria-label="anchor" href="#changed-10"></a>
+<h3 id="changed-11">Changed<a class="anchor" aria-label="anchor" href="#changed-11"></a>
 </h3>
 <ul>
 <li>Refactoring of code and data for mapping gene identifiers</li>
@@ -681,7 +724,7 @@ being empty)</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="changed-11">Changed<a class="anchor" aria-label="anchor" href="#changed-11"></a>
+<h3 id="changed-12">Changed<a class="anchor" aria-label="anchor" href="#changed-12"></a>
 </h3>
 <ul>
 <li>Management of annotation databases have been re-designed, reducing

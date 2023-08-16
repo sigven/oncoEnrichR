@@ -23,7 +23,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4MB4571K5');
+</script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +39,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,15 +110,15 @@
 </h2>
 <ul>
 <li>
-<em>oncoEnrichR</em> requires R (&gt;=4.1)</li>
+<em>oncoEnrichR</em> requires R (&gt;= version 4.1)</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="installation-of-oncoenrichr-with-r-commands">Installation of oncoEnrichR with R commands<a class="anchor" aria-label="anchor" href="#installation-of-oncoenrichr-with-r-commands"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li><code>install.packages('devtools')</code></li>
-<li><code>devtools::install_github('sigven/oncoEnrichR', ref = "v1.4.1")</code></li>
+<li><code>install.packages('remotes')</code></li>
+<li><code>remotes::install_github('sigven/oncoEnrichR', ref = "v1.4.2")</code></li>
 <li><code><a href="https://github.com/sigven/oncoEnrichR" class="external-link">library(oncoEnrichR)</a></code></li>
 </ol>
 <p><br></p>

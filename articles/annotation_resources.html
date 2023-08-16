@@ -23,7 +23,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4MB4571K5');
+</script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +39,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,8 +117,8 @@ human drug-target associations and comprehensive disease-target
 associations</li>
 <li>
 <a href="http://bionlp.bcgsc.ca/cancermine/" class="external-link">CancerMine</a> -
-literature-mined database of drivers, oncogenes and tumor suppressors in
-cancer</li>
+literature-mined database of drivers, proto-oncogenes and tumor
+suppressors in cancer</li>
 <li>
 <a href="http://ncg.kcl.ac.uk/index.php" class="external-link">Network of Cancer Genes</a>
 - Network of cancer genes - a web resource to analyze duplicability,
@@ -120,7 +126,9 @@ orthology and network properties of cancer genes</li>
 <li>
 <a href="https://www.intogen.org" class="external-link">IntOGen</a> - Compendium of
 mutational driver genes in cancer</li>
-<li><a href="https://uniprot.org" class="external-link">UniProt</a></li>
+<li>
+<a href="https://uniprot.org" class="external-link">UniProt</a> - Comprehensive and freely
+accessible resource of protein sequence and functional information</li>
 <li><a href="https://cancer.sanger.ac.uk/census" class="external-link">Cancer Gene
 Census</a></li>
 <li>
@@ -373,12 +381,13 @@ components from <a href="http://geneontology.org/" class="external-link">Gene On
 annotations from the <a href="https://proteinatlas.org" class="external-link">Human Protein
 Atlas</a>. Tissue-specific patterns are derived from <a href="https://www.proteinatlas.org/humanproteome/tissue" class="external-link">The Tissue
 Atlas</a>, where tissue specificity is derived from deep sequencing of
-RNA (RNA-seq) in 54 different normal tissue types. All putative
+RNA (RNA-seq) in 50 different normal tissue types. All putative
 protein-coding genes have been classified with respect to abundance
 (tissue enriched, tissue enhanced etc.) for different tissues. For cell
-type specificity, we utilize data from <a href="https://www.proteinatlas.org/humanproteome/celltype" class="external-link">The Cell Type
-Atlas</a>. Here, classification of all protein-coding genes based on
-single cell type-specific expression in 79 different cell types are
+type specificity, we utilize <a href="https://www.proteinatlas.org/about/assays+annotation#singlecell_rna" class="external-link">single
+cell RNA (scRNA) sequencing datasets</a> aggregated within the Human
+Protein Atlas. Here, classification of all protein-coding genes based on
+single cell type-specific expression in 81 different cell types are
 performed; determining the types of genes elevated (cell type enriched,
 cell type enhanced etc.) in a particular cell type compared to all other
 cell types.</li>
