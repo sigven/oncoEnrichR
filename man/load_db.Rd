@@ -4,7 +4,7 @@
 \alias{load_db}
 \title{Load oncoEnrichR data repository}
 \usage{
-load_db(cache_dir = NA, force_download = FALSE, googledrive = TRUE)
+load_db(cache_dir = NA, force_download = FALSE, googledrive = FALSE)
 }
 \arguments{
 \item{cache_dir}{Local directory for data download}

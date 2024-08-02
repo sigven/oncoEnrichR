@@ -8,8 +8,6 @@ init_report(
   oeDB,
   project_title = "_Project title_",
   project_owner = "_Project owner_",
-  html_floating_toc = T,
-  html_report_theme = "default",
   query_id_type = "symbol",
   ignore_id_err = TRUE,
   project_description = "_Project description_",
@@ -59,14 +57,12 @@ init_report(
 
 \item{project_title}{project title (title of report)}
 
-\item{project_owner}{name of project owner}
-
-\item{html_floating_toc}{logical - float the table of contents to the left of the main document content. The floating table of contents will always be visible even when the document is scrolled}
-
-\item{html_report_theme}{Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")}
+\item{project_owner}{name of project owner
+#param html_floating_toc logical - float the table of contents to the left of the main document content. The floating table of contents will always be visible even when the document is scrolled
+#param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")}
 
 \item{query_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
+"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_transcript_id","ensembl_protein","refseq_protein")}
 
 \item{ignore_id_err}{logical indicating if analysis should continue when uknown query identifiers are encountered}
 
@@ -89,7 +85,7 @@ init_report(
 \item{bgset_description}{character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")}
 
 \item{bgset_id_type}{character indicating source of query (one of "uniprot_acc", "symbol",
-"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")}
+"entrezgene", or "ensembl_gene","ensembl_mrna","refseq_transcript_id","ensembl_protein","refseq_protein")}
 
 \item{enrichment_p_value_cutoff}{cutoff p-value for enrichment/over-representation analysis}
 

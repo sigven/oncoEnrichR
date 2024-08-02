@@ -7,7 +7,7 @@
 validate_db(oe_db)
 }
 \arguments{
-\item{db}{list object with annotation data for oncoEnrichR}
+\item{oe_db}{list object with annotation data for oncoEnrichR}
 }
 \description{
 Function that validates the oncoEnrichR database object

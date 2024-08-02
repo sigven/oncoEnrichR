@@ -9,9 +9,7 @@ onco_enrich(
   oeDB = NULL,
   query_id_type = "symbol",
   ignore_id_err = TRUE,
-  html_floating_toc = T,
-  html_report_theme = "default",
-  project_title = "_Project title_",
+  project_title = "_Project Title_",
   project_owner = "_Project owner_",
   project_description = "_Project description_",
   bgset = NULL,
@@ -42,18 +40,17 @@ onco_enrich(
   show_cancer_hallmarks = TRUE,
   show_drug = TRUE,
   show_enrichment = TRUE,
-  show_aberration = TRUE,
-  show_coexpression = TRUE,
-  show_cell_tissue = FALSE,
-  show_ligand_receptor = TRUE,
-  show_regulatory = TRUE,
+  show_aberration = FALSE,
+  show_coexpression = FALSE,
+  show_ligand_receptor = FALSE,
+  show_regulatory = FALSE,
   show_unknown_function = TRUE,
   show_prognostic = TRUE,
-  show_subcell_comp = TRUE,
-  show_synleth = TRUE,
+  show_subcell_comp = FALSE,
+  show_synleth = FALSE,
   show_fitness = TRUE,
   show_complex = TRUE,
-  show_domain = TRUE,
+  show_domain = FALSE,
   ...
 )
 }
@@ -64,19 +61,10 @@ onco_enrich(
 
 \item{query_id_type}{character indicating source of query (one of
 "uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
-"refseq_mrna", "ensembl_protein", "refseq_protein")}
+"refseq_transcript_id", "ensembl_protein", "refseq_protein")}
 
 \item{ignore_id_err}{logical indicating if analysis should
 continue when uknown query identifiers are encountered}
-
-\item{html_floating_toc}{logical - float the table of contents to the left
-of the main document content (HTML report). The floating table of contents
-will always be visible even when the document is scrolled}
-
-\item{html_report_theme}{Bootswatch theme for HTML report (any of
-"bootstrap", "cerulean", "cosmo", "default",
-"flatly", "journal", "lumen", "paper", "sandstone", "simplex",
-"spacelab", "united", "yeti")}
 
 \item{project_title}{project title (title of report)}
 
@@ -89,7 +77,7 @@ reference/background for enrichment/over-representation analysis}
 
 \item{bgset_id_type}{character indicating source of background
 ("uniprot_acc", "symbol", "entrezgene",
-"ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein",
+"ensembl_gene", "ensembl_mrna", "refseq_transcript_id", "ensembl_protein",
 "refseq_protein"), default: "symbol"}
 
 \item{bgset_description}{character indicating type of background
@@ -185,9 +173,8 @@ aberration plots (amplifications/deletions, default: TRUE)}
 
 \item{show_coexpression}{logical indicating if report should contain TCGA
 co-expression data (RNAseq) of query set with oncogenes/tumor
-suppressor genes (default: TRUE)}
-
-\item{show_cell_tissue}{logical indicating if report should contain
+suppressor genes (default: TRUE)
+#param show_cell_tissue logical indicating if report should contain
 tissue-specificity and single cell-type specificity assessments
 (Human Protein Atlas) of target genes (default: FALSE)}
 
