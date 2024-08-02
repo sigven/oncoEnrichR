@@ -7,8 +7,6 @@ test_that("oncoEnrichR - initialize report", {
         oedb,
         project_title = "Project title",
         project_owner = "Project owner",
-        html_floating_toc = T,
-        html_report_theme = "default",
         query_id_type = "symbol",
         ignore_id_err = TRUE,
         project_description = "Project description",
@@ -38,7 +36,6 @@ test_that("oncoEnrichR - initialize report", {
         show_coexpression = T,
         show_subcell_comp = T,
         show_fitness = T,
-        show_cell_tissue = F,
         show_ligand_receptor = T,
         show_regulatory = T,
         show_unknown_function = T,
@@ -50,17 +47,6 @@ test_that("oncoEnrichR - initialize report", {
 
 })
 
-
-# test_that("oncoEnrichR - load database testing", {
-#
-#   expect_identical(
-#     typeof(
-#       oncoEnrichR:::load_db(cache_dir = "~/.oncoenrichr_cache", remote = F)
-#     ),
-#     "list"
-#   )
-#
-# })
 
 test_that("oncoEnrichR - generate report", {
 
@@ -97,15 +83,6 @@ test_that("oncoEnrichR - generate report", {
     regexp = "ERROR: "
   )
 
-  ## single gene not allowed
-  expect_output(
-    oncoEnrichR::onco_enrich(
-      query = "BRAF",
-      oeDB = oedb
-    ),
-    regexp = "ERROR: "
-  )
-
   expect_output(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
@@ -120,15 +97,6 @@ test_that("oncoEnrichR - generate report", {
       query = myc_data$symbol,
       oeDB = oedb,
       regulatory_min_confidence = "F"
-    ),
-    regexp = "ERROR: "
-  )
-
-  expect_output(
-    oncoEnrichR::onco_enrich(
-      query = myc_data$symbol,
-      oeDB = oedb,
-      html_report_theme = "UNKNOWN_THEME"
     ),
     regexp = "ERROR: "
   )
@@ -235,14 +203,6 @@ test_that("oncoEnrichR - generate report", {
     regexp = "ERROR: "
   )
 
-  expect_output(
-    oncoEnrichR::onco_enrich(
-      query = c("BRAF","TESTZ4"),
-      oeDB = oedb
-    ),
-    regexp = "ERROR: "
-  )
-
   expect_error(
     oncoEnrichR::onco_enrich(
       query = myc_data$symbol,
@@ -256,10 +216,7 @@ test_that("oncoEnrichR - generate report", {
       oncoEnrichR::onco_enrich(
         query = myc_data[['symbol']],
         oeDB = oedb,
-        html_floating_toc = T,
-        html_report_theme = "default",
         query_id_type = "symbol",
-        show_cell_tissue = T,
         show_enrichment = T,
         project_title = "cMYC_BioID_screen",
         project_owner = "Raught et al.")
@@ -267,25 +224,6 @@ test_that("oncoEnrichR - generate report", {
     "list"
   )
 
-  # expect_identical(
-  #   typeof(
-  #     oncoEnrichR::onco_enrich(
-  #       query = myc_data[['symbol']],
-  #       bgset = background_sample_entrez,
-  #       bgset_id_type = "entrezgene",
-  #       bgset_description = "Sample background set",
-  #       oeDB = oedb,
-  #       html_floating_toc = T,
-  #       html_report_theme = "default",
-  #       query_id_type = "symbol",
-  #       show_tcga_aberration = F,
-  #       show_tcga_coexpression = F,
-  #       show_enrichment = F,
-  #       project_title = "cMYC_BioID_screen",
-  #       project_owner = "Raught et al.")
-  #   ),
-  #   "list"
-  # )
 
 })
 

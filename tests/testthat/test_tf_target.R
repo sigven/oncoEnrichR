@@ -72,7 +72,7 @@ test_that("TF-target annotations - testing ", {
     0)
 
   expect_identical(
-    type(
+    typeof(
       oncoEnrichR:::retrieve_tf_target_network(
         oncoEnrichR:::annotate_tf_targets(
           qgenes = c("SMARCA2"),
@@ -84,7 +84,7 @@ test_that("TF-target annotations - testing ", {
   )
 
   expect_identical(
-    type(
+    typeof(
       oncoEnrichR:::retrieve_tf_target_network(
         oncoEnrichR:::annotate_tf_targets(
           qgenes = c("MYC","TP53"),

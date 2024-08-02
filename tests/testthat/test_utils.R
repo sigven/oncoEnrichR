@@ -80,7 +80,7 @@ test_that("Query gene validation routine - testing ", {
         qgenes = "NM_005228",
         transcript_xref = oedb$genedb$transcript_xref,
         genedb = oedb$genedb$all,
-        q_id_type = "refseq_mrna"
+        q_id_type = "refseq_transcript_id"
       )$found
     ),
     as.integer(1)

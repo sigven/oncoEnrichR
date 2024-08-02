@@ -17,7 +17,7 @@ myc_data <- read.csv(system.file("extdata","myc_data.csv",
 
 bg_set <-
   oedb[['genedb']][['all']] %>%
-  dplyr::filter(.data$gene_biotype == "protein-coding") %>%
+  dplyr::filter(.data$gene_biotype == "protein_coding") %>%
   dplyr::filter(!is.na(.data$entrezgene)) %>%
   dplyr::distinct()
 

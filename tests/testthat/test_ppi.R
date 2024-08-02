@@ -22,7 +22,7 @@ ppi_settings[["biogrid"]][["show_isolated_nodes"]] <- F
 
 
 pc_genes <-
-  oedb$genedb$all[oedb$genedb$all$gene_biotype == "protein-coding",]
+  oedb$genedb$all[oedb$genedb$all$gene_biotype == "protein_coding",]
 
 test_that("Protein-protein interaction network ", {
   expect_error(oncoEnrichR:::get_ppi_network(
