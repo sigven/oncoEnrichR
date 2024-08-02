@@ -1,34 +1,40 @@
-### Subcellular compartment localization 
+### Subcellular compartments 
 
-<br>
+::: {.callout-note}
+## Synopsis
 
 * The query set is annotated with data from [COMPARTMENTS](https://compartments.jensenlab.org/Search), a weekly updated database of subcellular localization data for human proteins, and results are here presented in two different views:
 
    1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the query set
        * Compartments are here limited to the key compartments (n = 24) defined within the [gganatogram package](https://github.com/jespermaag/gganatogram#cellular-structures)
-       * An accompanying legend is also provided - depicting the locations of the various subcellular structures
    2. A subcellular _data browser_
-       * Subcellular compartment annotations pr. protein in the query set ("By Gene")
-          * Here, a maximum of _n = 2,500_ annotations are shown (the complete set are listed in the Excel output of oncoEnrichR)
        * All unique subcellular compartment annotations and their target members ("By Compartment")
        * Subcellular compartment annotations per gene are provided with a __confidence score__ between 3 and 5 - indicating the quality/reliability of a given compartment annotation
           * Minimum confidence score (pr. COMPARTMENTS channel) - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
           * Minimum number of supporting COMPARTMENTS channels pr. annotation - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_channels`__
           * Ignore cytosol as a subcellular location: __`r !onc_enrich_report$config$subcellcomp$show_cytosol`__
 
-<br><br>
+:::
 
-
-#### Subcellular anatogram {.tabset}
 <br>
 
+#### Subcellular anatogram
+
+::: {.panel-tabset}
+
 ##### Heatmap - query set
+
 <br>
 
 * In the heatmap below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
 <br><br>
 
-```{r gganatogram_plot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0, fig.width = 10, fig.height = 5}
+```{r gganatogram_plot}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0) == TRUE
+#| fig-width: 10
+#| fig-height: 5
 
 suppressPackageStartupMessages(library(gganatogram))
 
@@ -53,7 +59,10 @@ gganatogram::gganatogram(data = subcellcomp_geneset_density,
 ```
 <br><br>
 
-```{r subcellcomp_density_barplot, echo = F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0}
+```{r subcellcomp_density_barplot}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0) == TRUE
 
 plot_data <- onc_enrich_report[['data']][['subcellcomp']][['anatogram']] |>
   dplyr::arrange(value)
@@ -94,54 +103,14 @@ plotly::ggplotly(p, width = 600, height = 600)
 ```
 
 
-##### Legend - subcellular structures
-<br>
-```{r gganatogram_legend, echo = F, results = "asis", eval = T, fig.width = 10, fig.height = 20}
 
-suppressPackageStartupMessages(library(gganatogram))
-ggpubr::ggarrange(
-  plotlist = 
-    onc_enrich_report[['config']][['subcellcomp']][['gganatogram_legend']][1:24], 
-  ncol = 4, nrow = 6)
+:::
 
-```
+#### Subcellular data browser
 
-#### Subcellular data browser{.tabset}
 <br>
 
-##### By gene
-
-```{r table_browse_subcell_comp_all, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['all']]) > 0}
-
-subcell_comp_all <- 
-  crosstalk::SharedData$new(onc_enrich_report[['data']][['subcellcomp']][['all']])
-
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("target_gene", "Target gene", 
-                             subcell_comp_all,~symbol),
-    crosstalk::filter_select("supporting_channels", "Supporting channels", 
-                             subcell_comp_all, ~supporting_channels)
-  ),
-  list(
-    crosstalk::filter_select("supporting_sources", "Supporting sources", 
-                             subcell_comp_all, ~supporting_sources),
-    crosstalk::filter_slider("minimum_confidence", 
-                             "Minimum confidence level (across channels)", 
-                             subcell_comp_all, ~minimum_confidence, step = 1, 
-                             min = 3, max = 5)
-  )
-)
-
-htmltools::br()
-DT::datatable(subcell_comp_all, escape = F, 
-              extensions=c("Buttons","Responsive"), width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-)
-
-
-```
-<br><br><br>
+::: {.panel-tabset}
 
 ##### By compartment
 
@@ -149,7 +118,10 @@ DT::datatable(subcell_comp_all, escape = F,
 
 <br>
 
-```{r table_browse_subcell_comp_grouped, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['subcellcomp']][['grouped']]) > 0}
+```{r table_browse_subcell_comp_grouped}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['grouped']]) > 0) == TRUE
 
 htmltools::br()
 DT::datatable(onc_enrich_report[['data']][['subcellcomp']][['grouped']], 
@@ -159,19 +131,7 @@ DT::datatable(onc_enrich_report[['data']][['subcellcomp']][['grouped']],
 
 
 ```
-<br><br>
+<br><br><br>
 
-### {.unlisted .unnumbered .toc-ignore}
-
-<span style="font-size: 100%; padding: 2px; background-color:#014587; color:white">&nbsp;&nbsp;<b>Citation Note</b>&nbsp;&nbsp;</span> : If you use the output of the *Subcellular localization* module of oncoEnrichR in your research, please cite the following resources and tools:
-
- * [Nakken et al., Int J Cancer, 2023](https://doi.org/10.1002/ijc.34666) - *oncoEnrichR*
- * [Maag et al., F100Res, 2018](https://pubmed.ncbi.nlm.nih.gov/30467523) - *gganatogram package*
- * [Binder et al., Database, 2014](https://pubmed.ncbi.nlm.nih.gov/34529928/) - *COMPARTMENTS*
-
-
-<br><br>
-
-
-
+:::
 

@@ -1,0 +1,228 @@
+
+<br><br>
+
+### Citation policy
+
+::: {.callout-important}
+## Citation policies for usage of report contents
+
+We encourage users of _oncoEnrichR_ to properly cite no only the software but also the underlying data sources and other software tools used in the analysis. Below, we provide a guide as to the recommended citations for the various output modules of the report.
+:::
+
+:::: {.columns}
+
+::: {.column width="47.5%"}
+
+* <i>Cancer association module:</i>
+  * [@Nakken2023-bp;@Sondka2018-wf;@Ochoa2021-jc;@Martinez-Jimenez2020-qx;@Repana2019-dd;@Lever2019-xp]
+
+* <i>Cancer hallmark evidence:</i>
+  * [@Nakken2023-bp;@Ochoa2021-jc;@Hanahan2011-da]
+  
+* <i>Drug association module:</i>
+  * [@Nakken2023-bp;@Ochoa2021-jc;@Sioutos2007-nl]
+  
+* <i>Gene fitness scores:</i>
+  * [@Nakken2023-bp;@Behan2019-tf;@Pacini2021-xm]
+
+* <i>Synthetic lethality module:</i>
+  * [@Nakken2023-bp;@De_Kegel2021-xo]
+
+* <i>Protein complex module:</i>
+  * [@Nakken2023-bp;@Giurgiu2019-yu;@Drew2021-kd;@Vinayagam2013-aq;@Meldal2018-pg]
+
+* <i>Tumor aberration/co-expression modules</i>
+  * [@Nakken2023-bp;@The_Cancer_Genome_Atlas_Research_Network2013-zu]
+  
+:::
+
+::: {.column width="5%"}
+<!-- empty column to create gap -->
+:::
+
+::: {.column width="47.5%"}
+
+* <i>Protein-protein interaction module:</i>
+  * [@Nakken2023-bp;@Von_Mering2005-jy;@Stark2006-ux;@Clauset2004-ov;@Kleinberg1999-oo]
+
+* <i>Regulatory interaction module:</i>
+  * [@Nakken2023-bp;@Garcia-Alonso2019-mr;@Turei2016-wq]
+  
+* <i>Functional enrichment module:</i>
+  * [@Nakken2023-bp;@Yu2012-yk;@Kanehisa2000-nm;@Joshi-Tope2005-bw;@Kandasamy2010-te;@Kelder2012-vj;@Ashburner2000-sy;@Subramanian2005-ci]
+
+* <i>Subcellular compartment module:</i>
+  * [@Nakken2023-bp;@Binder2014-py;@Maag2018-yv]
+
+* <i>Prognostic association module:</i>
+  * [@Nakken2023-bp;@Uhlen2017-mg;@Smith2022-mk]
+
+* <i>Ligand-receptor module</i>
+  * [@Nakken2023-bp;@Jin2021-tf]
+  
+:::
+
+::::
+
+### Documentation and settings
+
+Here we outline the specific configuration values used to generate this report, as well as an overview of annotation resources used. 
+
+#### Configuration values for `onco_enrich()` 
+
+:::: {.columns}
+
+::: {.column width="47.5%"}
+
+
+
+* <i>General:</i>
+  * `query_id_type` = __`r onc_enrich_report[['config']][['query']][['id_type']]`__
+  * `bgset_id_type` = __`r onc_enrich_report[['config']][['bgset']][['id_type']]`__
+  * `bgset_description` = __`r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`__
+
+* <i>Modules included in report</i>:
+
+  * `show_disease` = __`r onc_enrich_report[['config']][['show']][['disease']]`__
+  * `show_drugs` = __`r onc_enrich_report[['config']][['show']][['drug']]`__
+  * `show_cancer_hallmarks` = __`r onc_enrich_report[['config']][['show']][['cancer_hallmark']]`__
+  * `show_fitness` = __`r onc_enrich_report[['config']][['show']][['fitness']]`__
+  * `show_complex` = __`r onc_enrich_report[['config']][['show']][['protein_complex']]`__
+  * `show_unknown_function` = __`r onc_enrich_report[['config']][['show']][['unknown_function']]`__
+  * `show_domain` = __`r onc_enrich_report[['config']][['show']][['protein_domain']]`__
+  * `show_synleth` = __`r onc_enrich_report[['config']][['show']][['synleth']]`__
+  * `show_ligand_receptor` = __`r onc_enrich_report[['config']][['show']][['ligand_receptor']]`__
+  * `show_regulatory` = __`r onc_enrich_report[['config']][['show']][['regulatory']]`__
+  * `show_subcellcomp` = __`r onc_enrich_report[['config']][['show']][['subcellcomp']]`__
+  * `show_enrichment` = __`r onc_enrich_report[['config']][['show']][['enrichment']]`__
+  * `show_cell_tissue` = __`r onc_enrich_report[['config']][['show']][['cell_tissue']]`__
+  * `show_coexpression` = __`r onc_enrich_report[['config']][['show']][['coexpression']]`__
+  * `show_aberration` = __`r onc_enrich_report[['config']][['show']][['aberration']]`__
+  * `show_prognostic` = __`r onc_enrich_report[['config']][['show']][['cancer_prognosis']]`__
+  * `show_ppi` = __`r onc_enrich_report[['config']][['show']][['ppi']]`__
+
+* <i>Cancer associations:</i>
+  * `show_top_diseases_only` = __`r onc_enrich_report[['config']][['disease']][['show_top_diseases']]`__
+
+* <i>Regulatory interactions:</i>
+  * `regulatory_min_confidence` = __`r onc_enrich_report[['config']][['regulatory']][['min_confidence']]`__
+
+:::
+
+::: {.column width="5%"}
+<!-- empty column to create gap -->
+:::
+
+::: {.column width="47.5%"}
+
+
+* <i>Subcellular compartments:</i>
+  * `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
+  * `subcellcomp_min_channels` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_channels']]`__
+  * `subcellcomp_show_cytosol` = __`r onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']]`__
+
+* <i>Gene fitness scores:</i>
+  * `fitness_max_score` = __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
+
+* <i>Enrichment:</i>
+  * `enrichment_p_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
+  * `enrichment_q_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
+  * `enrichment_p_value_adj` = __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
+  * `enrichment_min_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
+  * `enrichment_max_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
+  * `enrichment_simplify_go` = __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
+  * `enrichment_plot_num_terms` = __`r onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]`__
+
+* <i>Protein-protein interactions:</i>
+  * `ppi_string_min_score` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
+  * `ppi_string_network_type` = __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
+  * `ppi_biogrid_min_evidence` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
+  * `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__
+  * `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['string']][['visnetwork_shadow']]`__
+  * `ppi_show_drugs` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
+  * `ppi_show_isolated_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
+
+:::
+
+::::
+
+<br>
+
+#### Annotation resources
+
+The analysis performed in the _oncoEnrichR report_ is based on multiple tools and knowledge resources, as outlined below.
+
+::: {.callout-important}
+## Licensing note
+
+Some resources (highlighted below) require specific licensing agreements if you plan to utilize their data (and thus this report) in a commercial, non-research setting.
+:::
+
+
+* __Software__ 
+```{r list_software}
+#| echo: false
+#| output: asis
+ 
+for(n in names(onc_enrich_report[['config']][['resources']])){
+  if(onc_enrich_report[['config']][['resources']][[n]]$resource_type == 'software'){
+    license <- onc_enrich_report[['config']][['resources']][[n]]$license
+    if(onc_enrich_report[['config']][['resources']][[n]]$license == "tissueEnrich"){
+      next
+    }
+    s <- glue::glue(
+      "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+      "[{onc_enrich_report[['config']][['resources']][[n]]$license}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$license_url})")
+    if(license == "."){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "**See below for licensing requirements**")
+    }else if(license == "Open Access"){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "*Open Access*")
+    }
+    cat(s,sep="\n")
+  }
+}
+
+```
+<br><br>
+
+* __Databases/datasets__ 
+```{r list_db}
+#| echo: false
+#| output: asis
+
+for(n in names(onc_enrich_report[['config']][['resources']])){
+  if(onc_enrich_report[['config']][['resources']][[n]]$resource_type != 'software'){
+      license <- onc_enrich_report[['config']][['resources']][[n]]$license
+    
+    s <- glue::glue(
+      "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+      "[{onc_enrich_report[['config']][['resources']][[n]]$license}]",
+      "({onc_enrich_report[['config']][['resources']][[n]]$license_url})")
+    if(license == "."){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "**<sup>\\*</sup>See below for licensing requirements**")
+    }else if(license == "Open Access"){
+      s <- glue::glue(
+        "    * [{onc_enrich_report[['config']][['resources']][[n]]$name}]",
+        "({onc_enrich_report[['config']][['resources']][[n]]$url}) - ", "{onc_enrich_report[['config']][['resources']][[n]]$description} ",  "({onc_enrich_report[['config']][['resources']][[n]]$version}) - ",
+        "*Open Access*")
+    }
+    cat(s,sep="\n")
+  }
+}
+
+cat("\n*<sup>\\*</sup>KEGG and CGC are freely available for academic, non-commercial use. For commercial usage, end users need to consult [https://www.pathway.jp](https://www.pathway.jp) and [https://cancer.sanger.ac.uk/cosmic/license](https://cancer.sanger.ac.uk/cosmic/license) for licensing inquiries.*\n")
+cat("\n")
+
+```

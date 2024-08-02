@@ -1,0 +1,353 @@
+### Tissue and cell type enrichment
+
+<br>
+
+* Using data from the [Human Protein Atlas (HPA)](https://www.proteinatlas.org/humanproteome/tissue), we are here interrogating classification of all protein coding genes in the query set with respect to elevated expression in normal/healthy tissues and cell types
+  * Gene expression per tissue is based on consensus data from HPA and [Genotype-Tissue Expression (GTEx) Project](https://gtexportal.org/home/), containing data from [55 distinct tissue types](https://www.proteinatlas.org/about/assays+annotation#gtex_rna). Gene expression measure unit: [_normalized_ transcripts pr million (nTPM)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
+  * RNA single-cell data comes from HPA, in which transcript expression levels are summarized per gene in 76 cell types from [26 datasets](https://www.proteinatlas.org/about/assays+annotation#singlecell_rna). Gene expression measure unit: [_normalized_ transcripts pr million (nTPM)](https://www.proteinatlas.org/about/assays+annotation#normalization_rna)
+
+<br>
+
+#### Target set - tissue specificity
+
+* Genes have been classified, based on mean expression (across samples) per tissue in GTex, into distinct _specificity categories_ (algorithm developed within HPA):
+  * **Not detected**: Genes with a mean expression level less than 1 (_nTPM < 1_) across all the tissues.
+  * **Tissue enriched**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a particular tissue compared to all other tissues.
+  * **Group enriched**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a group of 2-5 tissues compared to all other tissues, and that are not considered *Tissue enriched*.
+  * **Tissue enhanced**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a particular tissue compared to the average levels in all other tissues, and that are not considered *Tissue enriched* or *Group enriched*.
+  * **Low tissue specificity**: Genes with an expression level greater than or equal to 1 (_nTPM >= 1_) across all of the tissues that are not in any of the above 4 groups.
+  * **Mixed**: Genes that are not assigned to any of the above 5 groups.
+  
+* Enrichment of specific tissues in the query set (with respect to tissue-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
+  * Only tissues that are enriched with an adjusted (Benjamini-Hochberg) p-value < 0.05 are listed
+  
+<br><br>
+
+
+```{r tissue_category_dist}
+#| echo: false
+#| eval: !expr NROW(onc_enrich_report[['data']][['cell_tissue']][['tissue_overview']][['category_df']]) > 0
+
+oe_tissue_category_df <- 
+  onc_enrich_report[['data']][['cell_tissue']][['tissue_overview']][['category_df']]
+oe_tissue_category_plot <-
+    ggplot2::ggplot(oe_tissue_category_df, ggplot2::aes(x = category, y = pct)) +
+    ggplot2::geom_col(ggplot2::aes(color = group, fill = group),
+                      position = ggplot2::position_dodge(0.8), width = 0.7) +
+    ggsci::scale_color_locuszoom() +
+    ggsci::scale_fill_locuszoom() +
+    ggplot2::ylab("Percent") +
+    ggplot2::xlab("") +
+    ggplot2::ylim(0,100) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      legend.position = "top",
+      legend.title = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 30, size = 11, vjust = 0.5),
+      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 12),
+      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 12)
+
+
+    )
+
+rm(oe_tissue_category_df)
+plotly::ggplotly(oe_tissue_category_plot, height = 500, width = 900) |>  
+  plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
+rm(oe_tissue_category_plot)
+
+```
+<br><br>
+
+::: {.panel-tabset}
+
+##### Tissue specificities per target gene
+
+```{r tissue_specs_per_gene}
+#| echo: false
+#| output: asis
+
+tissue_specs_per_gene <- 
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']][['per_gene']] |> dplyr::select(-cancer_max_rank))
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("category", "Category", tissue_specs_per_gene, ~category)
+  ),
+  list(
+    crosstalk::filter_select("tissue", "Tissues", tissue_specs_per_gene, ~tissue)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  tissue_specs_per_gene, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'category', 
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["cell_tissue"]][["tissue_enrichment_levels"]],
+      onc_enrich_report[["config"]][["cell_tissue"]][["enrichment_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+##### Tissue enrichment - query set
+
+
+```{r filter_tissue}
+#| echo: false
+#| output: asis
+
+num_significant_tissues <- 
+  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3) |>
+  nrow()
+
+```
+
+
+```{r no_significant_tissues}
+#| echo: false
+#| output: asis
+#| eval: !expr num_significant_tissues == 0
+
+htmltools::br()
+
+cat("<ul><li>")
+cat('<i><font style="font-size: 100%">Considering the tissue specificities of members of the query set, <b>NO TISSUES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</font></i>', sep='\n')
+cat('</li></ul>')
+
+htmltools::br()
+htmltools::br()
+htmltools::br()
+htmltools::br()
+
+```
+
+```{r significantly_enriched_tissues}
+#| echo: false
+#| output: asis
+#| eval: !expr num_significant_tissues > 0
+
+enriched_tissues_df <- 
+  onc_enrich_report[['data']][['cell_tissue']][['tissue_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3)
+
+DT::datatable(
+  enriched_tissues_df, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )
+htmltools::br()
+```
+
+:::
+
+#### Target set - cell type specificity
+
+* Genes have been classified, based on mean expression (across samples) per cell type, into distinct _specificity categories_ (algorithm developed within HPA):
+  * **Not detected**: Genes with a mean expression level less than 1 (_nTPM < 1_) across all the cell types.
+  * **Cell type enriched**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a particular cell type compared to all other cell types.
+  * **Group enriched**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a group of 2-10 cell types compared to all other cell types, and that are not considered *Cell type enriched*.
+  * **Cell type enhanced**: Genes with a mean expression level greater than or equal to 1 (_nTPM >= 1_) that also have at least four-fold higher expression levels in a particular cell type compared to the average levels in all other cell types, and that are not considered *Cell type enriched* or *Group enriched*.
+  * **Low cell type specificity**: Genes with an expression level greater than or equal to 1 (_nTPM >= 1_) across all of the cell types that are not in any of the above 4 groups.
+  * **Mixed**: Genes that are not assigned to any of the above 5 groups.
+
+* Enrichment of specific cell types in the query set (with respect to cell type-specific gene expression) is performed with [TissueEnrich](https://www.bioconductor.org/packages/release/bioc/vignettes/TissueEnrich/inst/doc/TissueEnrich.html)
+  * Only cell types that are enriched with an adjusted (Benjamini-Hochberg) p-value < 0.05 are listed
+  
+<br><br>
+
+
+```{r cell_type_category_dist}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['cell_tissue']][['scRNA_overview']][['category_df']]) > 0
+
+oe_ctype_category_df <- 
+  onc_enrich_report[['data']][['cell_tissue']][['scRNA_overview']][['category_df']]
+oe_ctype_category_plot <-
+    ggplot2::ggplot(oe_ctype_category_df, ggplot2::aes(x = category, y = pct)) +
+    ggplot2::geom_col(ggplot2::aes(color = group, fill = group),
+                      position = ggplot2::position_dodge(0.8), width = 0.7) +
+    ggsci::scale_color_locuszoom() +
+    ggsci::scale_fill_locuszoom() +
+    ggplot2::ylab("Percent") +
+    ggplot2::xlab("") +
+    ggplot2::ylim(0,100) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      legend.position = "top",
+      legend.title = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 30, size = 11, vjust = 0.5),
+      legend.text = ggplot2::element_text(face="bold", family = "Helvetica", size = 12),
+      axis.text.y = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
+      axis.title.y = ggplot2::element_text(family = "Helvetica", size = 12)
+    )
+
+rm(oe_ctype_category_df)
+plotly::ggplotly(oe_ctype_category_plot, height = 500, width = 900) |>  
+  plotly::layout(legend = list(orientation = "h", x = 0.2, y = -0.45))
+rm(oe_ctype_category_plot)
+
+
+```
+<br><br>
+
+::: {.panel-tabset}
+
+##### Cell type specififies per target gene
+
+```{r celltype_specs_per_gene}
+#| echo: false
+#| output: asis
+
+celltype_specs_per_gene <- 
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']][['per_gene']] |> dplyr::select(-cancer_max_rank))
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("category", "Category", celltype_specs_per_gene, ~category)
+  ),
+  list(
+    crosstalk::filter_select("cell_type", "Cell type", celltype_specs_per_gene, ~cell_type)
+  )
+)
+
+htmltools::br()
+DT::datatable(
+  celltype_specs_per_gene, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'category', 
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["cell_tissue"]][["ctype_enrichment_levels"]],
+      onc_enrich_report[["config"]][["cell_tissue"]][["enrichment_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+##### Cell type enrichment - query set
+
+<br>
+
+
+```{r filter_celltype}
+#| echo: false
+#| output: asis
+
+num_significant_celltypes <- 
+  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3) |>
+  nrow()
+
+
+```
+
+
+```{r no_significant_celltypes}
+#| echo: false
+#| output: asis
+#| eval: !expr num_significant_celltypes == 0
+
+htmltools::br()
+
+cat("<ul><li>")
+cat('<i><font style="font-size: 100%">Considering the cell-type specificities of members of the query set, <b>NO CELL TYPES</b> are enriched (adjusted p-value < 0.05) compared to the background set.</font></i>', sep='\n')
+cat('</li></ul>')
+
+htmltools::br()
+htmltools::br()
+htmltools::br()
+htmltools::br()
+
+
+```
+
+
+```{r significantly_enriched_celltypes}
+#| echo: false
+#| output: asis
+#| eval: !expr num_significant_celltypes > 0
+
+enriched_celltypes_df <- 
+  onc_enrich_report[['data']][['cell_tissue']][['scRNA_enrichment']]$per_type |>
+  dplyr::filter(log10_pvalue >= 1.3)
+
+DT::datatable(
+  enriched_celltypes_df, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )
+
+htmltools::br()
+
+# p <- ggplot2::ggplot(expression_dist, ggplot2::aes(cell_type, symbol)) +
+#   ggplot2::geom_tile(aes(fill = exp),
+#             colour = "white") +
+#   ggplot2::scale_fill_gradient(low = "white",
+#                       high = "steelblue") +
+#   ggplot2::labs(x='', y = '') +
+#   ggplot2::theme_bw()+
+#   ggplot2::guides(fill = ggplot2::guide_legend(title = "Log2(TPM)"))+
+#   #theme(legend.position="none")+
+#   ggplot2::theme(plot.title = ggplot2::element_text(
+#     hjust = 0.5,size = 20),
+#     axis.title = ggplot2::element_text(size=15)) +
+#   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45,
+#                                    vjust = 1, hjust = 1),
+#         panel.grid.major= ggplot2::element_blank(),
+#         panel.grid.minor = ggplot2::element_blank())
+```
+
+:::

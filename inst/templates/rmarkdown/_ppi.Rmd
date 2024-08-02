@@ -1,0 +1,204 @@
+### Protein-protein interaction network
+
+
+
+* We here create dedicated protein-protein interaction networks for members of the query set, shown using data from the two largest resources on protein-protein interactions:
+  * [BioGRID](https://thebiogrid.org) - a biomedical interaction repository with data compiled through comprehensive curation efforts
+  * [STRING](https://string-db.org/cgi/about?footer_active_subpage=content) - database of known and predicted protein-protein interactions, including direct (physical) and indirect (functional) associations
+  * Three different views are shown for each resource:
+    * Complete protein-protein interaction network, also showing proteins with no known interactions
+    * Network community structures, as detected by the fast greedy modularity optimization algorithm by [Clauset et al.](http://www.arxiv.org/abs/cond-mat/0408187)
+    * Network centrality/hub scores pr. node, as measured by [Kleinberg's score](https://dl.acm.org/citation.cfm?id=324140)
+  * All detailed evidence for each interaction (STRING scores and BioGRID evidence items) are provided in the Excel output of oncoEnrichR
+  
+<br>
+
+* Network legend
+  * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressorproto-oncogenecancer-driver-annotation) of having tumor suppressive function are <span style="color:firebrick"><b>HIGHLIGHTED IN RED</b></span>
+  * Target genes with _strong/very strong_ support in [Network of Cancer Genes/Cancer Gene Census/CancerMine](https://sigven.github.io/oncoEnrichR/articles/annotation_resources.html#tumor-suppressorproto-oncogenecancer-driver-annotation) of having oncogenic function <span style="color:darkolivegreen"><b>HIGHLIGHTED IN GREEN</b></span>
+  * Genes with evidence of having dual roles (both oncogenic and tumor suppressive) are <span style="color:black"><b>HIGHLIGHTED IN BLACK</b></span>
+  * Targeted cancer drugs (from [Open Targets Platform](https://targetvalidation.org)):
+     * Compounds in late (3-4) clinical development phases are <span style="color:orange"><b>HIGHLIGHTED IN ORANGE</b></span>
+     * Compounds in early (1-2) clinical development phases are <span style="color:purple"><b>HIGHLIGHTED IN PURPLE</b></span>
+  * Use the mouse to zoom in/out, alter the position of nodes, mouse-over edges and nodes to view gene names/drug mechanism of actions (with indications)/interaction scores (evidence support)
+
+:::
+
+<br><br>
+
+#### PPI network - STRING {.tabset}
+
+<br>
+
+  * STRING interaction network type: __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
+    * This reflects the `network_type` parameter in the [STRING API](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions)
+  * The STRING network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__ proteins that interact with proteins in the query set
+    * This reflects the `add_nodes` parameter in the [STRING API](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions)
+  * Minimum STRING [interaction confidence score](https://string-db.org/cgi/info) required: __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__ (range 0-1)
+    * This reflects the `required_score` parameter in the [STRING API](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions)
+  * Drugs added to the STRING network: __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__ 
+  * Show isolated nodes in the STRING network: __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
+
+<br>
+
+##### Complete network
+
+```{r ppi_string_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height = 13}
+visNetwork::visNetwork(
+  onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes, 
+  onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$edges) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
+  visNetwork::visIgraphLayout(layout="layout_nicely")
+
+```
+
+
+```{r ppi_string_complete_network_missing, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['complete_network']]$nodes) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No protein-protein interactions from STRING were found among members in the query set (with the required association score). Lowering the assocation score threshold of for interactions in STRING may provide a network. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+##### Network communities
+
+```{r ppi_string_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) > 0, fig.width = 12, fig.height = 13}
+visNetwork::visNetwork(
+  onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes, 
+  onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
+  visNetwork::visIgraphLayout(layout="layout_nicely")
+
+```
+
+```{r ppi_string_missing_network_community, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$nodes) == 0 | NROW(onc_enrich_report[['data']][['ppi']][['string']][['community_network']]$edges) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No network communities were found among members in the query set (with the required association score). Lowering the assocation score threshold of for interactions in STRING may provide a network and associated communities. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+<br><br>
+
+##### Network hubs
+
+```{r table_string_browse_ppi_hubs, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']]$hubscores) > 0}
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['ppi']][['string']][['hubscores']], 
+              escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip', pagelength = 20)) |>
+  DT::formatStyle("symbol","hub_score", color = "white", backgroundColor = DT::styleInterval(onc_enrich_report[['config']][['disease']][['breaks']], onc_enrich_report[['config']][['disease']][['colors']]))
+
+
+
+```
+
+```{r table_string_browse_ppi_hubs_missing, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['string']]$hubscores) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No hubscores from the protein-protein interaction network were established for members in the query set (with the required association score). Lowering the assocation score threshold of for interactions in STRING may provide a network with hubscores. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+<br><br>
+
+#### PPI network - BioGRID {.tabset}
+
+<br>
+
+  * The BioGRID network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['biogrid']][['add_nodes']]`__ targets that are not part of the query set, but that interact with members of the query set
+    * These targets are selected based on the number of interactions that they have with members of the query set
+  * Minimum evidence support required for each BioGRID interaction: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__ 
+  * Drugs added to the BioGRID network: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['show_drugs']]`__ 
+  * Show isolated nodes in the BioGRID network: __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['show_isolated_nodes']]`__
+
+  
+<br>
+  
+##### Complete network
+
+```{r ppi_biogrid_complete_network, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes) > 0, fig.width = 12, fig.height = 13}
+visNetwork::visNetwork(
+  onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes, 
+  onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$edges) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
+  visNetwork::visIgraphLayout(layout="layout_nicely")
+
+```
+
+
+```{r ppi_biogrid_complete_network_missing, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['ppi']][['biogrid']][['complete_network']]$nodes) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No protein-protein interactions from BioGRID were found among members in the query set (with the required evidence support). Lowering the required evidence support for interactions in BioGRID may provide a network. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+##### Network communities
+
+```{r ppi_biogrid_network_community, echo = F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes) > 0 & NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) > 0, fig.width = 12, fig.height = 13}
+visNetwork::visNetwork(
+  onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes, 
+  onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) |>
+  visNetwork::visInteraction(multiselect = TRUE, tooltipDelay = 300) |>
+  visNetwork::visIgraphLayout(layout="layout_nicely")
+
+```
+
+```{r ppi_biogrid_missing_network_community, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$nodes) == 0 | NROW(onc_enrich_report[['data']][['ppi']][['biogrid']][['community_network']]$edges) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No network communities were found among members in the query set (with the required evidence support). Lowering the required evidence support for interactions in BioGRID may provide a network and associated communities. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+<br><br>
+
+##### Network hubs
+
+```{r table_biogrid_browse_ppi_hubs, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']]$hubscores) > 0}
+
+htmltools::br()
+DT::datatable(onc_enrich_report[['data']][['ppi']][['biogrid']][['hubscores']], 
+              escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip', pagelength = 20)) |>
+  DT::formatStyle("symbol","hub_score", color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['disease']][['breaks']],                                                                                           onc_enrich_report[['config']][['disease']][['colors']])
+  )
+
+
+
+```
+
+```{r table_biogrid_browse_ppi_hubs_missing, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['ppi']][['biogrid']]$hubscores) == 0}
+cat('<br>')
+cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No hubscores from the protein-protein interaction network were established for members in the query set (with the required evidence support). Lowering the required evidence support for interactions in BioGRID may provide a network with hubscores. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+### {.unlisted .unnumbered .toc-ignore}
+
+<span style="font-size: 100%; padding: 2px; background-color:#014587; color:white">&nbsp;&nbsp;<b>Citation Note</b>&nbsp;&nbsp;</span> : If you use the output of the *Protein-protein interaction network* module of oncoEnrichR in your research, please cite the following resources and tools as appropriate:
+
+ * **[Nakken et al., Int J Cancer, 2023](https://doi.org/10.1002/ijc.34666)** - *oncoEnrichR*
+ * [von Mering et al., Nucleic Acids Res, 2005](https://pubmed.ncbi.nlm.nih.gov/15608232/) - *STRING*
+ * [Stark et al., Nucleic Acids Res, 2006](https://pubmed.ncbi.nlm.nih.gov/16381927/) - *BioGrid*
+ * [Clauset et al., arXiv, 2004](https://arxiv.org/abs/cond-mat/0408187/) - *Network community structure detection*
+ * [Kleinberg et al., J ACM, 1999](https://dl.acm.org/doi/10.1145/324133.324140/) - *Network hub scores*
+
+<br><br>
+
+

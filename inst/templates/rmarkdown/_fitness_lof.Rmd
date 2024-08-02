@@ -1,5 +1,7 @@
 ### Gene fitness scores {.tabset}
 
+
+
 * The [Cancer Dependency Map](https://depmap.org) and [Project Score](https://score.depmap.sanger.ac.uk/) have performed systematic genome-scale CRISPR/Cas9 drop-out screens in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
 * Here, we are showing, across the main human tissue types:
    * Genes in the query set that are annotated with a [statistically significant effect on cell fitness](https://score.depmap.sanger.ac.uk/documentation) in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
@@ -7,7 +9,8 @@
 
 * Settings 
    * Maximum loss-of-fitness score pr. gene (BAGEL - scaled Bayes Factor): __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
-   
+  
+
 <br><br>
 
 #### Loss-of-fitness distribution
@@ -35,7 +38,7 @@ fitness_lof_oe_plot <- targets_wide |>
   ggplot2::coord_flip() +
   ggplot2::ylab("Number of cell lines with significant loss-of-fitness") +
   ggplot2::xlab("") +
-  ggplot2::scale_fill_manual(values = pals::stepped(24)) +
+  ggplot2::scale_fill_manual(values = oncoEnrichR::tissue_colors) +
   ggplot2::theme(
     panel.grid.minor = ggplot2::element_blank(),
     axis.text = ggplot2::element_text(family = "Helvetica", size = 11),

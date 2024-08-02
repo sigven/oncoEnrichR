@@ -1,0 +1,633 @@
+### Regulatory interactions
+
+::: {.callout-note}
+## Synopsis
+
+* Using data from the [OmniPath/DoRothEA](https://saezlab.github.io/dorothea/) gene set resource, we are here interrogating *previously established* transcription factor (TF) - target interactions for members of the query set. TF-target interactions in DoRothEA have been established according to different lines of evidence, i.e. 
+   i) literature-curated resources
+   ii) ChIP-seq peaks
+   iii) TF binding site motifs
+   iv) gene expression-inferred interactions. 
+
+* In **DoRothEA**, each interaction is assigned a confidence level based on the amount of supporting evidence, ranging from A (highest confidence) to D (lowest confidence):
+
+   * **A** - Supported by all four lines of evidence, manually curated by experts in specific reviews, or supported both in at least two curated resources are considered to be highly reliable
+   * **B-D** - Curated and/or ChIP-seq interactions with different levels of additional evidence
+   * **E** - Used for interactions that are uniquely supported by computational predictions (*not included in oncoEnrichR*)
+   
+* Here, we show regulatory interactions related to the queryset along three different axes: 
+
+  i) interactions for which **both regulatory gene and regulatory target** are found in the queryset
+  ii) interactions for which **only the regulatory gene** is found in the queryset
+  iii) interactions for which **only the regulatory target** is found in the queryset
+  - Interactions are ranked according to confidence, visualized in varying shades of blue (from <span style="background-color:#4292c6; padding:2x; color:white"><b>&nbsp; low-confident interactions &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; high-confident interactions &nbsp; </b></span>).
+  
+We interrogate interactions in the query set for two separate collections of regulatory interactions in DoRothEA: 
+
+  1. regulatory interactions inferred with gene expression from GTex (**global set**), 
+  2. regulatory interactions inferred with gene expression from TCGA (**cancer-focused set**)
+
+:::
+
+<br>
+
+```{r regulatory_prep}
+#| echo: false
+#| output: asis
+#| eval: true
+
+
+reg_interactions <- list()
+active_tab <- list()
+for(cl in c('global','pancancer')){
+  reg_interactions[[cl]] <- list()
+  active_tab[[cl]] <- list()
+  
+  reg_interactions[[cl]][['tf_target']] <- data.frame()
+  reg_interactions[[cl]][['tf_only']] <- data.frame()
+  reg_interactions[[cl]][['target_only']] <- data.frame()
+
+  active_tab[[cl]][['tf_target']] <- F
+  active_tab[[cl]][['tf_only']] <- F
+  active_tab[[cl]][['target_only']] <- F
+  
+  if(NROW(onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]]) > 0){
+    reg_interactions[[cl]][['tf_target']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"TF_TARGET_")) |>
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) |>
+      head(2500)
+    
+    if(NROW(reg_interactions[[cl]][['tf_target']]) > 0){
+      active_tab[[cl]][['tf_target']] <- T
+    }
+    
+    reg_interactions[[cl]][['tf_only']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TF_(A|B|C|D))$")) |>
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) |>
+      head(2500)
+    
+    if(NROW(reg_interactions[[cl]][['tf_only']]) > 0 & 
+       active_tab[[cl]][['tf_target']] == F){
+      active_tab[[cl]][['tf_only']] <- T
+    }
+    
+    reg_interactions[[cl]][['target_only']] <- 
+      onc_enrich_report[['data']][['regulatory']][['interactions']][[cl]] |>
+      dplyr::filter(stringr::str_detect(queryset_overlap,"^(TARGET_(A|B|C|D))$")) |>
+      dplyr::select(-c(regulator_cancer_max_rank,
+                       target_cancer_max_rank)) |>
+      head(2500)
+    
+    if(NROW(reg_interactions[[cl]][['target_only']]) > 0 & 
+       active_tab[[cl]][['tf_target']] == F &
+       active_tab[[cl]][['tf_only']] == F){
+      active_tab[[cl]][['target_only']] <- T
+    }
+  }
+}
+
+for(cl in c('global','pancancer')){
+  if(active_tab[[cl]][['tf_target']] == F & 
+     active_tab[[cl]][['tf_only']] == F & 
+     active_tab[[cl]][['target_only']] == F){
+    active_tab[[cl]][['tf_target']] <- T
+  }
+}
+
+```
+
+
+#### DoRothEA - global set 
+
+::: {.panel-tabset}
+
+```{r active_tab_tf_target_global}
+#| echo: false
+#| output: asis
+
+if(active_tab[['global']][['tf_target']] == T){
+  cat("")
+  cat("##### Regulatory gene and target {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene and target")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_1}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(reg_interactions[['global']][['tf_target']]) > 0) == TRUE
+
+tf_target_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['global']][['tf_target']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", tf_target_sd, ~regulator)
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", tf_target_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", tf_target_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  tf_target_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'regulator', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
+    )
+  ) |>
+  DT::formatStyle(
+    'target', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["target_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["target_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_1}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(reg_interactions[['global']][['tf_target']]) == 0) == TRUE
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - global set) for which <b>BOTH</b> the regulatory gene and the target are part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_tf_global}
+#| echo: false
+#| output: asis
+
+if(active_tab[['global']][['tf_only']] == T){
+  cat("")
+  cat("##### Regulatory gene only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene only")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_2}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(reg_interactions[['global']][['tf_only']]) > 0) == TRUE
+
+tf_only_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['global']][['tf_only']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", tf_only_sd, ~regulator)
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", tf_only_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", tf_only_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  tf_only_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'regulator', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_2}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['global']][['tf_only']]) == 0
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - global set) for which <b>ONLY</b> the regulatory gene is part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_target_global}
+#| echo: false
+#| output: asis
+
+if(active_tab[['global']][['target_only']] == T){
+  cat("")
+  cat("##### Target only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Target only")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_3}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(reg_interactions[['global']][['target_only']]) > 0) == TRUE
+ 
+
+target_only_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['global']][['target_only']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", target_only_sd, ~regulator)
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", target_only_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", target_only_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  target_only_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )  |>
+  DT::formatStyle(
+    'target', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["target_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["target_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_3}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['global']][['target_only']]) == 0
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - global set) for which <b>ONLY</b> the regulatory target is part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+:::
+
+<br>
+
+#### DoRothEA - cancer-focused set 
+
+::: {.panel-tabset}
+
+```{r active_tab_tf_target_pancancer}
+#| echo: false
+#| output: asis
+
+if(active_tab[['pancancer']][['tf_target']] == T){
+  cat("")
+  cat("##### Regulatory gene and target {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene and target")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_4}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['pancancer']][['tf_target']]) > 0
+
+tf_target_pancancer_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['pancancer']][['tf_target']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", tf_target_pancancer_sd, ~regulator),
+    crosstalk::filter_select("mode_of_regulation", "Mode of regulation", tf_target_pancancer_sd, ~mode_of_regulation)
+
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", tf_target_pancancer_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", tf_target_pancancer_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  tf_target_pancancer_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'regulator', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
+    )
+  ) |>
+  DT::formatStyle(
+    'target', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["target_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["target_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_4}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['pancancer']][['tf_target']]) == 0
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - cancer-focused set) for which <b>BOTH</b> the regulatory gene and the target are part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_tf_pancancer}
+#| echo: false
+#| output: asis
+
+if(active_tab[['pancancer']][['tf_only']] == T){
+  cat("")
+  cat("##### Regulatory gene only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Regulatory gene only")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_5}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['pancancer']][['tf_only']]) > 0
+
+tf_only_pancancer_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['pancancer']][['tf_only']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", tf_only_pancancer_sd, ~regulator),
+    crosstalk::filter_select("mode_of_regulation", "Mode of regulation", tf_only_pancancer_sd, ~mode_of_regulation)
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", tf_only_pancancer_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", tf_only_pancancer_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  tf_only_pancancer_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  ) |>
+  DT::formatStyle(
+    'regulator', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["tf_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["tf_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_5}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(reg_interactions[['pancancer']][['tf_only']]) == 0) == TRUE
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - cancer- focused set) for which <b>ONLY</b> the regulatory gene is part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_target_pancancer}
+#| echo: false
+#| output: asis
+
+if(active_tab[['pancancer']][['target_only']] == T){
+  cat("")
+  cat("##### Target only {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Target only")
+  cat("")
+}
+```
+
+
+```{r regulatory_interactions_6}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['pancancer']][['target_only']]) > 0
+
+target_only_pancancer_sd <- 
+  crosstalk::SharedData$new(reg_interactions[['pancancer']][['target_only']])
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("transcription_regulator", "Regulator", target_only_pancancer_sd, ~regulator),
+        crosstalk::filter_select("mode_of_regulation", "Mode of regulation", target_only_pancancer_sd, ~mode_of_regulation)
+
+  ),
+  list(
+    crosstalk::filter_select("target_gene", "Target", target_only_pancancer_sd, ~target),
+    crosstalk::filter_select("confidence_level", "Confidence level (interaction)", target_only_pancancer_sd, ~confidence_level)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(
+  target_only_pancancer_sd, 
+  escape = F, 
+  extensions=c("Buttons","Responsive"), 
+  width = "100%",
+  #style = 'bootstrap',
+  rownames = F,
+  options=list(buttons = c('csv','excel'),
+               pageLength = 10,
+               bPaginate = T,
+               dom = 'Bfrtip')
+  )  |>
+  DT::formatStyle(
+    'target', 
+    'queryset_overlap',
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["regulatory"]][["target_levels"]],
+      onc_enrich_report[["config"]][["regulatory"]][["target_colors"]]
+    )
+  )
+
+
+
+```
+<br><br>
+
+
+```{r regulatory_interactions_missing_6}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(reg_interactions[['pancancer']][['target_only']]) == 0
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes in the queryset are involved in regulatory interactions (DoRothEA - cancer-focused set) for which <b>ONLY</b> the regulatory target is part of the queryset.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+:::
+
+
+#### Key regulatory network interactions
+
+* Visualization of known regulatory interactions (**DoRothEA - cancer-focused set**) where both **regulator** and **target** are found in the query set
+
+   * Edge *length* between nodes reflects confidence level of regulatory interaction (shorter lengths - higher confidence)
+   * Edge *color* between nodes indicates mode of regulation (&nbsp;<span style="background-color:darkgreen; padding:2x; color:white"><b>&nbsp; Stimulation &nbsp; </b></span>&nbsp; vs. <span style="background-color:darkred; padding:2x; color:white"><b>&nbsp; Repression &nbsp; </b></span>&nbsp;)
+
+<br><br>
+
+```{r regulatory_network}
+#| echo: false
+#| output: asis
+#| fig-width: 14
+#| fig-height: 12
+#| eval: !expr NROW(onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]) > 0 & NROW(onc_enrich_report[['data']][['regulatory']][['network']][['edges']]) > 0
+
+regulatory_nodes <- onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]
+regulatory_edges <- onc_enrich_report[['data']][['regulatory']][['network']][['edges']]
+
+visNetwork::visNetwork(regulatory_nodes, regulatory_edges) |> 
+  visNetwork::visInteraction(multiselect=TRUE, tooltipDelay=300) |>
+  visNetwork::visLegend()
+  #visNetwork::visIgraphLayout(layout="layout_nicely")
+```
+
+```{r regulatory_network_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['regulatory']][['network']][['nodes']]) == 0
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> pair of genes in the queryset are involved in regulatory interactions (<b>as reported in DoRothEA - cancer-focused set</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```

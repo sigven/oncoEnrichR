@@ -1,0 +1,1152 @@
+### Tumor aberration frequencies
+
+::: {.callout-note}
+## Synopsis
+
+-   The somatic mutation frequencies of the target genes in \~10,000 tumor samples have been calculated with data from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/)
+
+:::
+
+<br>
+
+#### SNVs/InDels - oncoplots
+
+-   Frequency of somatic SNVs/InDels in the query set genes (top mutated) are illustrated with [oncoplots](https://www.bioconductor.org/packages/devel/bioc/vignettes/maftools/inst/doc/oncoplots.html)
+-   Query set mutation frequencies are sorted by type of diagnosis (i.e. cancer subtypes)
+-   The frequency of transitions/transversions is also shown per sample
+
+<br><br>
+
+```{r tcga_oncoplot_setup}
+#| echo: false
+#| eval: true
+
+tcga_oncoplot_data <- onc_enrich_report[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]]
+
+## oncoplot arguments
+gene_mar <- 10
+annotationFontSize <- 2.5
+sepwd_genes <- 0.7
+fontSize <- 1.5
+legendFontSize <- 2.4
+legend_height <- 5
+anno_height <- 0.6
+
+fheight <- 26
+fwidth <- 18
+
+for(n in names(tcga_oncoplot_data)){
+  tcga_oncoplot_data[[n]]$fheight <- fheight
+  n_genes <- NROW(tcga_oncoplot_data[[n]][['top_mutated_genes']])
+  if(n_genes < 40){
+    tcga_oncoplot_data[[n]]$fheight <- 24
+  }
+  if(n_genes < 30){
+    tcga_oncoplot_data[[n]]$fheight <- 21
+  }
+  if(n_genes < 20){
+    tcga_oncoplot_data[[n]]$fheight <- 17
+  }
+  if(n_genes < 10){
+    tcga_oncoplot_data[[n]]$fheight <- 14
+  }
+  
+  
+  
+}
+
+
+
+```
+
+::: panel-tabset
+##### Breast
+
+```{r tcga_oncoplot_breast}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Breast"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Breast"]]$fheight
+
+code <- tcga_oncoplot_data[["Breast"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Breast"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F, 
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_breast_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Breast"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Colon/Rectum
+
+```{r tcga_oncoplot_colon}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Colon/Rectum"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Colon/Rectum"]]$fheight
+
+code <- tcga_oncoplot_data[["Colon/Rectum"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Colon/Rectum"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_colon_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Colon/Rectum"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Lung
+
+```{r tcga_oncoplot_lung}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Lung"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Lung"]]$fheight
+
+code <- tcga_oncoplot_data[["Lung"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lung"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_lung_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Lung"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Skin
+
+```{r tcga_oncoplot_skin}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Skin"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Skin"]]$fheight
+
+code <- tcga_oncoplot_data[["Skin"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Skin"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_skin_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Skin"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Esophagus/Stomach
+
+```{r tcga_oncoplot_stomach}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Esophagus/Stomach"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Esophagus/Stomach"]]$fheight
+
+code <- tcga_oncoplot_data[["Esophagus/Stomach"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Esophagus/Stomach"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_esophagus_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Esophagus/Stomach"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Cervix
+
+```{r tcga_oncoplot_cervix}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Cervix"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Cervix"]]$fheight
+
+code <- tcga_oncoplot_data[["Cervix"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Cervix"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   draw_titv = T, bgCol = "gray93",
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_cervix_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Cervix"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Prostate
+
+```{r tcga_oncoplot_prostate}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Prostate"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Prostate"]]$fheight
+
+code <- tcga_oncoplot_data[["Prostate"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Prostate"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_prostate_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Prostate"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Ovary/Fallopian Tube
+
+```{r tcga_oncoplot_ovary}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Ovary/Fallopian Tube"]]$fheight
+
+code <- tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_ovary_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Ovary/Fallopian Tube"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Uterus
+
+```{r tcga_oncoplot_uterus}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Uterus"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Uterus"]]$fheight
+
+code <- tcga_oncoplot_data[["Uterus"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Uterus"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis","MSI_status"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_uterus_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Uterus"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Pancreas
+
+```{r tcga_oncoplot_pancreas}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Pancreas"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Pancreas"]]$fheight
+
+code <- tcga_oncoplot_data[["Pancreas"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pancreas"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_pancreas_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Pancreas"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Soft Tissue
+
+```{r tcga_oncoplot_softtissue}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Soft Tissue"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Soft Tissue"]]$fheight
+
+code <- tcga_oncoplot_data[["Soft Tissue"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Soft Tissue"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_softtissue_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Soft Tissue"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Myeloid
+
+```{r tcga_oncoplot_myeloid}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Myeloid"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Myeloid"]]$fheight
+
+code <- tcga_oncoplot_data[["Myeloid"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Myeloid"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_myeloid_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Myeloid"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### CNS/Brain
+
+```{r tcga_oncoplot_cns}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["CNS/Brain"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["CNS/Brain"]]$fheight
+
+code <- tcga_oncoplot_data[["CNS/Brain"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["CNS/Brain"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_brain_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["CNS/Brain"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Liver
+
+```{r tcga_oncoplot_liver}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Liver"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Liver"]]$fheight
+
+code <- tcga_oncoplot_data[["Liver"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Liver"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   draw_titv = T, bgCol = "gray93",
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_liver_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Liver"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Kidney
+
+```{r tcga_oncoplot_kidney}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Kidney"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Kidney"]]$fheight
+
+code <- tcga_oncoplot_data[["Kidney"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Kidney"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_kidney_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Kidney"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Lymphoid
+
+```{r tcga_oncoplot_lymphoid}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Lymphoid"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Lymphoid"]]$fheight
+
+code <- tcga_oncoplot_data[["Lymphoid"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Lymphoid"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_lymphoid_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Lymphoid"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Head and Neck
+
+```{r tcga_oncoplot_headneck}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Head and Neck"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Head and Neck"]]$fheight
+
+code <- tcga_oncoplot_data[["Head and Neck"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Head and Neck"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_headneck_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Head and Neck"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Biliary Tract
+
+```{r tcga_oncoplot_biliarytract}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Biliary Tract"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Biliary Tract"]]$fheight
+
+code <- tcga_oncoplot_data[["Biliary Tract"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Biliary Tract"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   draw_titv = T, bgCol = "gray93",
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_biliary_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Biliary Tract"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Bladder/Urinary Tract
+
+```{r tcga_oncoplot_bladder}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Bladder/Urinary Tract"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Bladder/Urinary Tract"]]$fheight
+
+code <- tcga_oncoplot_data[["Bladder/Urinary Tract"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Bladder/Urinary Tract"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   draw_titv = T, bgCol = "gray93",
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_bladder_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Bladder/Urinary Tract"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Pleura
+
+```{r tcga_pleura}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Pleura"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Pleura"]]$fheight
+
+code <- tcga_oncoplot_data[["Pleura"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Pleura"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   draw_titv = T, bgCol = "gray93",
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_pleura_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Pleura"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+##### Thyroid
+
+```{r tcga_thyroid}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Thyroid"]][['top_mutated_genes']]) >= 5
+#| fig-width: !expr fwidth
+#| fig-height: !expr tcga_oncoplot_data[["Thyroid"]]$fheight
+
+code <- tcga_oncoplot_data[["Thyroid"]][['code']]
+maf <- tcga_maf_datasets[[code]]
+maftools::oncoplot(maf, genes = tcga_oncoplot_data[["Thyroid"]][['top_mutated_genes']]$symbol,
+                   drawRowBar = F, drawColBar = F,
+                   sortByAnnotation = T,
+                   draw_titv = T, bgCol = "gray93",
+                   clinicalFeatures = c("Diagnosis"), showTitle = F,
+                   gene_mar = gene_mar,
+                   annotationFontSize = annotationFontSize, 
+                   sepwd_genes = sepwd_genes, 
+                   fontSize = fontSize,
+                   legendFontSize = legendFontSize, 
+                   legend_height = legend_height,
+                   anno_height = anno_height)
+```
+
+```{r tcga_thyroid_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(tcga_oncoplot_data[["Thyroid"]][['top_mutated_genes']]) < 5
+
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>Too few genes (n < 5) </b> with significant SNV/InDel mutation frequency for oncoplot &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+:::
+
+#### SNVs/InDels - recurrent variants
+
+::: {.callout-note}
+## Synopsis
+
+-   Browse recurrent, protein-coding somatic SNVs/InDels from TCGA in the query set
+    -   Variants are listed as one record *per tissue/site*, in effect making the same variant occurring in multiple rows
+    -   Only variants with a site-specific frequency \>= 2 are shown
+    -   Variants can be filtered based on various properties, e.g. **Site/tissue variant recurrence**, as well as overall recurrence across all tumor sites (column **Pan-cancer variant recurrence**)
+    -   Notably, each variant have been annotated/classified with a
+        1.  *loss-of-function* status
+        2.  Status as [ <b>somatic mutation hotspots </b>]{style="background-color:black; padding:2x; color:white"} in cancer, according to [cancerhotspots.org](https://cancerhotspots.org). Format: *\<GENE\>\|\<CODON\>\|\<AMINO_ACID_VARIANT\>\|\<Q-VALUE\>*
+-   Top 1,000 recurrent variants are listed here (all variants are listed in the Excel output of *oncoEnrichR*)
+
+:::
+
+<br>
+
+```{r filter_tcga_recurrence}
+#| echo: false
+#| output: asis
+
+missing_recurrent_tcga_variants <- TRUE
+if(nrow(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0){
+  missing_recurrent_tcga_variants <- FALSE
+}
+
+```
+
+```{r table_browse_recurrent_vars}
+#| echo: false
+#| output: asis
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0) == TRUE
+
+
+vars <- onc_enrich_report[['data']][['tcga']][['recurrent_variants']] |>
+  dplyr::mutate(SITE_RECURRENCE = as.integer(SITE_RECURRENCE))
+
+mutation_hotspot_levels <- levels(as.factor(
+  vars$MUTATION_HOTSPOT))
+
+
+vars <- vars |>
+  dplyr::arrange(
+    dplyr::desc(SITE_RECURRENCE), 
+    dplyr::desc(LOSS_OF_FUNCTION)) |>
+  dplyr::mutate(CONSEQUENCE = stringr::str_replace_all(
+    CONSEQUENCE, "&", ", "
+  )) |>
+  head(1000)
+
+if(length(mutation_hotspot_levels) > 0){
+  vars <- vars |>
+    dplyr::arrange(MUTATION_HOTSPOT, dplyr::desc(SITE_RECURRENCE))
+}
+
+recurrent_vars_tcga <- crosstalk::SharedData$new(
+  vars)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("SYMBOL","Gene symbol",recurrent_vars_tcga, ~SYMBOL),
+    crosstalk::filter_select("CONSEQUENCE", "Variant consequence", recurrent_vars_tcga, ~CONSEQUENCE),
+    crosstalk::filter_select("PRIMARY_SITE", "Primary site/tissue", recurrent_vars_tcga, ~PRIMARY_SITE),
+    crosstalk::filter_select("MUTATION_HOTSPOT", 
+                             "Cancer mutation hotspot", 
+                             recurrent_vars_tcga, ~MUTATION_HOTSPOT)
+  ),
+  list(
+    crosstalk::filter_checkbox("LOSS_OF_FUNCTION", "Loss-of-function status", 
+                               recurrent_vars_tcga, ~LOSS_OF_FUNCTION),
+    crosstalk::filter_slider("TOTAL_RECURRENCE", "Pancancer variant recurrence", 
+                             recurrent_vars_tcga, ~TOTAL_RECURRENCE),
+    crosstalk::filter_slider("SITE_RECURRENCE", "Site/tissue variant recurrence", 
+                             recurrent_vars_tcga, ~SITE_RECURRENCE)
+    
+  )
+)
+
+htmltools::br()
+dt <- DT::datatable(recurrent_vars_tcga, escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+
+if(length(mutation_hotspot_levels) > 0){
+  dt <- dt |>
+    DT::formatStyle(
+      "MUTATION_HOTSPOT","MUTATION_HOTSPOT",
+      color = "white", fontWeight = "bold",
+      backgroundColor = DT::styleEqual(
+        mutation_hotspot_levels, rep("black", length(mutation_hotspot_levels)))
+    )
+}
+dt
+htmltools::br()
+htmltools::br()
+
+
+```
+
+```{r tcga_recurrent_variants_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) == 0
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query proteins with recurrent coding somatic variants in TCGA were found. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+#### Copy number alterations
+
+::: {.callout-note}
+## Synopsis
+
+-   Genes targeted by somatic copy number alterations (sCNAs) in tumor samples have been retrieved from TCGA, where copy number state have been estimated with [GISTIC](http://portals.broadinstitute.org/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=216&p=t)
+-   Gene aberration frequency are plotted in heatmaps across two categories of mutation types
+    1.  [<b>  sCNA - amplifications   </b>]{style="background-color:#005a32; color:white"}
+    2.  [<b>  sCNA - homozygous deletions   </b>]{style="background-color:#800026; color:white"}
+-   The values in the heatmaps reflect the percent of all tumor samples pr. primary site with the gene amplified/lost (**percent_mutated**)
+    -   Genes in the heatmap are ranked according to alteration frequency across all sites (i.e. *pan-cancer*), limited to the top 70 genes in the query set
+-   Frequencies across all subtypes per primary site are listed in an interactive table
+    -   Only including genes that are aberrant in \>= 5 percent of samples for a given tumor type/subtype (and more than 5 samples in total)
+    -   Limited here to top 1,000 gene-subtype frequencies (all aberration frequencies are listed in the Excel output of *oncoEnrichR*)
+
+:::
+
+<br>
+
+::: {.panel-tabset height="1200px"}
+
+##### Amplifications
+
+<br>
+
+```{r tcga_ampl_plot}
+#| echo: false
+#| output: asis
+#| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']]) == FALSE
+
+suppressMessages(library(plotly))
+gene_aberration_top_mat <-
+  onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']]
+#plotly_colors <- "YlGn"
+
+
+fig <- plotly::plot_ly(
+  colors = "YlGn",
+  width = 800,
+  height = 400 + (14.67 * NROW(onc_enrich_report$data$tcga$aberration$matrix$cna_ampl))) |>
+    plotly::add_heatmap(
+      y = rownames(gene_aberration_top_mat),
+      x = colnames(gene_aberration_top_mat),
+      z = gene_aberration_top_mat,
+      hovertext = "Percent mutated",
+      yaxis = "y") |>
+    plotly::layout(
+      title = "Amplifications",
+      xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                   tickangle = -50),
+      yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+      margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4),
+      legend = list(orientation = 'h')
+    ) |>
+    plotly::colorbar(
+      nticks = 10,
+      title = list(text = "Percent mutated",side = "bottom"),
+      limits = c(0, plyr::round_any(max(gene_aberration_top_mat), 10, ceiling)))
+
+rm(gene_aberration_top_mat) 
+fig
+
+
+```
+
+```{r tcga_amplificiations_too_few}
+#| echo: false
+#| output: asis
+#| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']]) == TRUE
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in copy number amplifications (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+##### Homozygous deletions
+
+<br>
+
+```{r tcga_homdel_plot}
+#| echo: false
+#| output: asis
+#| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']]) == FALSE
+
+suppressMessages(library(plotly))
+gene_aberration_top_mat <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']]
+
+#plotly_colors <- "YlOrRd"
+
+fig <- plotly::plot_ly(
+  colors = "YlOrRd",
+  width = 800,
+  height = 400 + (14.67 * NROW(gene_aberration_top_mat))) |>
+    plotly::add_heatmap(
+      y = rownames(gene_aberration_top_mat),
+      x = colnames(gene_aberration_top_mat),
+      z = gene_aberration_top_mat,
+      hovertext = "Percent mutated",
+      yaxis = "y") |>
+    plotly::layout(
+      title = 'Homozygous deletions',
+      xaxis = list(tickfont = list(size = 13, family = "Helvetica"), 
+                   tickangle = -50),
+      yaxis = list(tickfont = list(size = 12, family = "Helvetica")),
+      margin = list(l = 75, r = 20, b = 150, t = 30, pad = 4)
+    ) |>
+    plotly::colorbar(
+      nticks = 10, 
+      title = list(text = "Percent mutated",side = "bottom"),
+      limits = c(0, plyr::round_any(max(gene_aberration_top_mat), 10, ceiling)))
+
+rm(gene_aberration_top_mat)  
+fig
+htmltools::br()
+htmltools::br()
+
+
+```
+
+```{r tcga_homdel_too_few}
+#| echo: false
+#| output: asis
+#| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']]) == TRUE
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heatmap not shown - limited number of genes in the queryset are involved in homozygous deletions (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+:::
+
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+```{r filter_tcga}
+#| echo: false
+#| output: asis
+
+all_targets_vtypes <- 
+  onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_homdel']] |>
+  dplyr::bind_rows(
+    onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
+  ) |>
+  dplyr::arrange(dplyr::desc(percent_mutated)) |>
+  dplyr::filter(percent_mutated >= 5 & samples_mutated >= 5) |>
+  head(1000)
+
+```
+
+```{r table_browse_tcga_freqs}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(all_targets_vtypes) > 0
+
+oe_targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select(
+      "primary_site", "Primary site/tissue", oe_targets_tcga, ~primary_site),
+    crosstalk::filter_select(
+      "variant_type", "Aberration type", oe_targets_tcga, ~variant_type),
+    crosstalk::filter_slider(
+      "percent_mutated", "Percent mutated", 
+      oe_targets_tcga, ~percent_mutated, step = 10,
+      min = 0, max = 100)
+  ),
+  list(
+    crosstalk::filter_select("primary_diagnosis", "Diagnosis", oe_targets_tcga, ~primary_diagnosis),
+    crosstalk::filter_slider("cohort_size", "Cohort Size", oe_targets_tcga, ~cohort_size)
+  )
+)
+
+htmltools::br()
+DT::datatable(oe_targets_tcga, escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+
+```
+
+```{r tcga_freqs_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(all_targets_vtypes) == 0
+
+cat('<i>No genes with tcga aberrations were found.</i>',sep='\n')
+cat('\n')
+```
+
+<br><br>

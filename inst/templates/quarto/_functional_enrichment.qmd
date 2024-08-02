@@ -1,0 +1,760 @@
+### Function and pathway enrichment
+
+::: {.callout-note}
+## Synopsis
+
+-   The query set is analyzed with [clusterProfiler](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html) for functional enrichment/over-representation with respect to:
+    -   [Gene Ontology terms](https://geneontology.org). All three subontologies: *Molecular Function* (GO_MF), *Cellular Component* (GO_CC) & *Biological Process* (GO_BP)
+    -   Molecular signalling networks from [KEGG](https://www.genome.jp/kegg/pathway.html)
+    -   Cellular pathways from [Reactome](https://reactome.org/), and other curated gene signature sets from the [Molecular Signatures Database (MSiGDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp)
+    -   [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
+    -   Manually curated signal transduction pathways from [NetPath](http://www.netpath.org)
+
+<br>
+
+-   Enrichment/over-representation test settings (*clusterProfiler*)
+    -   P-value cutoff: **`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`**
+    -   Q-value cutoff: **`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`**
+    -   Correction for multiple testing: **`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`**
+    -   Minimal size of genes annotated by term for testing: **`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`**
+    -   Maximal size of genes annotated by term for testing: **`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`**
+    -   Background gene set description: **`r onc_enrich_report[['config']][['enrichment']][['bgset_description']]`**
+    -   Background gene set size: **`r onc_enrich_report[['config']][['enrichment']][['bgset_size']]`**
+    -   Remove redundancy of enriched GO terms: **`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`**
+
+:::
+
+<br>
+
+```{r prepare_enrichment_data}
+#| echo: false
+#| output: asis
+
+show_enrichment_filters <- list()
+eitems <- list()
+active_tab <- list()
+for(type in c('go','msigdb','kegg','wikipathway','netpath')) {
+  show_enrichment_filters[[type]] <- F
+  active_tab[[type]] <- F
+  if (NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0) {
+    show_enrichment_filters[[type]] <- T
+  }
+}
+
+plot_fontsize <- 10
+
+subontology_plots <- list()
+subontology_plots[['ALL']] <- T
+subontology_plots[['BP']] <- T
+subontology_plots[['MF']] <- T
+subontology_plots[['CC']] <- T
+
+#for(ont in c('GO_BP','GO_CC','GO_MF')) {
+if (show_enrichment_filters[['go']] == T) {
+  subont_bp <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+    dplyr::filter(db == 'GO_BP')
+  
+  if (nrow(subont_bp) <= 2) {subontology_plots[['BP']] <- F}
+  
+  subont_mf <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+    dplyr::filter(db == 'GO_MF')
+  
+  if (nrow(subont_mf) <= 2) {subontology_plots[['MF']] <- F}
+  
+  subont_cc <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+    dplyr::filter(db == 'GO_CC')
+  
+  if (nrow(subont_cc) <= 2) {subontology_plots[['CC']] <- F}
+  
+}else{
+  subontology_plots[['ALL']] <- F
+  subontology_plots[['MF']] <- F
+  subontology_plots[['BP']] <- F
+  subontology_plots[['CC']] <- F
+}
+
+
+## Set active tabs
+if (show_enrichment_filters[['go']] == T) {
+  active_tab[['go']] <- T
+}else{
+  if (show_enrichment_filters[['msigdb']] == T) {
+      active_tab[['msigdb']] <- T
+  }
+  else{
+    if (show_enrichment_filters[['kegg']] == T) {
+      active_tab[['kegg']] <- T
+    }
+    else{
+      if (show_enrichment_filters[['wikipathway']] == T) {
+        active_tab[['wikipathway']] <- T
+      }
+      else{
+        if (show_enrichment_filters[['netpath']] == T) {
+          active_tab[['netpath']] <- T
+        }
+      }
+    }
+  }
+}
+
+## If no content in enrichment tables, set GO to active tab
+if (active_tab[['go']] == F & active_tab[['msigdb']] == F &
+   active_tab[['kegg']] == F & active_tab[['wikipathway']] == F &
+   active_tab[['netpath']] == F) {
+  active_tab[['go']] <- T
+}
+
+
+
+
+```
+
+#### Enrichment tables
+
+<br>
+
+::: panel-tabset
+<br>
+
+```{r active_tab_go}
+#| echo: false
+#| output: asis
+
+if (active_tab[['go']] == T) {
+  cat("")
+  cat("##### Gene Ontology {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Gene Ontology")
+  cat("")
+}
+```
+
+<br>
+
+```{r table_browse_go}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['go']]
+
+
+enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio) |> 
+                #Count = count,
+                #P_Value_Cutoff = setting_p_value_cutoff,
+                #Q_Value_Cutoff = setting_q_value_cutoff,
+                #P_Value_Adj_Method = setting_p_value_adj_method,
+                #Min_Geneset_Size = setting_min_geneset_size,
+                #Max_Geneset_Size = setting_max_geneset_size) |>
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio) |> 
+                #Count, P_Value_Cutoff, Q_Value_Cutoff,
+                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
+  dplyr::arrange(Q_Value)
+
+
+terms_go <- crosstalk::SharedData$new(enrichment_go_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_go, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Ontology", terms_go, ~DB)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(
+  terms_go, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), 
+                 dom = 'Bfrtip')
+)
+rm(terms_go)
+rm(enrichment_go_display)
+
+
+```
+
+<br>
+
+```{r go_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['go']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No gene ontology terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_msigdb}
+#| echo: false
+#| output: asis
+
+if (active_tab[['msigdb']] == T) {
+  cat("")
+  cat("##### Molecular Signatures Database (MSigDB) {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### Molecular Signatures Database (MSigDB)")
+  cat("")
+}
+```
+
+<br>
+
+```{r table_browse_msigdb}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['msigdb']]
+
+enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] |>
+  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio) |>
+                #Count = count,
+                #P_Value_Cutoff = setting_p_value_cutoff,
+                #Q_Value_Cutoff = setting_q_value_cutoff,
+                #P_Value_Adj_Method = setting_p_value_adj_method,
+                #Min_Geneset_Size = setting_min_geneset_size,
+                #Max_Geneset_Size = setting_max_geneset_size) |>
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio) |>
+                #Count, P_Value_Cutoff, Q_Value_Cutoff,
+                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
+  dplyr::arrange(Q_Value)
+
+terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_msigdb, ~Enrichment)
+  ),
+  list(
+    crosstalk::filter_select("DB", "Signature collection", terms_msigdb, ~DB)
+
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_msigdb, escape = F, 
+              extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')
+)
+rm(terms_msigdb)
+rm(enrichment_msigdb_display)
+```
+
+<br>
+
+```{r msigdb_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['msigdb']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signatures from the Molecular Signature Database (MSIGdb) were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_kegg}
+#| echo: false
+#| output: asis
+
+if (active_tab[['kegg']] == T) {
+  cat("")
+  cat("##### KEGG pathways {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### KEGG pathways")
+  cat("")
+}
+```
+
+<br>
+
+```{r table_browse_kegg}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['kegg']]
+enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg']] |>
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue,  
+                P_Value = pvalue,
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio) |>
+                #Count = count,
+                #P_Value_Cutoff = setting_p_value_cutoff,
+                #Q_Value_Cutoff = setting_q_value_cutoff,
+                #P_Value_Adj_Method = setting_p_value_adj_method,
+                #Min_Geneset_Size = setting_min_geneset_size,
+                #Max_Geneset_Size = setting_max_geneset_size) |>
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio) |>
+                #Count, P_Value_Cutoff, Q_Value_Cutoff,
+                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
+  dplyr::arrange(Q_Value)
+
+terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_keggdb, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(terms_keggdb, escape = F, extensions=c("Buttons","Responsive"), width = "100%",
+              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
+)
+rm(terms_keggdb)
+rm(enrichment_keggdb_display)
+
+
+```
+
+<br>
+
+```{r keggdb_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['kegg']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathways from KEGG  were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_wikipathways}
+#| echo: false
+#| output: asis
+
+if (active_tab[['wikipathway']] == T) {
+  cat("")
+  cat("##### WikiPathways {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### WikiPathways")
+  cat("")
+}
+```
+
+<br>
+
+```{r table_browse_wikipathwaydb}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['wikipathway']]
+
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] |>
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio) |> 
+                #Count = count,
+                #P_Value_Cutoff = setting_p_value_cutoff,
+                #Q_Value_Cutoff = setting_q_value_cutoff,
+                #P_Value_Adj_Method = setting_p_value_adj_method,
+                #Min_Geneset_Size = setting_min_geneset_size,
+                #Max_Geneset_Size = setting_max_geneset_size) |>
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
+                 DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio) |>
+                #Count, 
+                #P_Value_Cutoff, Q_Value_Cutoff,
+                #P_Value_Adj_Method, 
+                #Min_Geneset_Size, Max_Geneset_Size) |>
+  dplyr::arrange(Q_Value)
+
+
+terms_wikipathway <- crosstalk::SharedData$new(enrichment_wikidb_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_wikipathway, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(
+  terms_wikipathway, escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), dom = 'Bfrtip')
+)
+
+rm(terms_wikipathway)
+rm(enrichment_wikidb_display)
+
+
+
+```
+
+<br>
+
+```{r wiki_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['wikipathway']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+
+```
+
+<br>
+
+```{r active_tab_netpath}
+#| echo: false
+#| output: asis
+
+if (active_tab[['netpath']] == T) {
+  cat("")
+  cat("##### NetPath {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("##### NetPath")
+  cat("")
+}
+```
+
+<br>
+
+```{r table_browse_netpathdb}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['netpath']]
+
+enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netpath']] |>
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, P_Value = pvalue,
+                Gene_Members = gene_symbol_link, DB = db,
+                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Ratio = gene_ratio) |>
+                #Count = count,
+                #P_Value_Cutoff = setting_p_value_cutoff,
+                #Q_Value_Cutoff = setting_q_value_cutoff,
+                #P_Value_Adj_Method = setting_p_value_adj_method,
+                #Min_Geneset_Size = setting_min_geneset_size,
+                #Max_Geneset_Size = setting_max_geneset_size) |>
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
+                 DB, Exact_Source, 
+                Background_Ratio, Gene_Ratio) |> 
+                #Count, 
+                #P_Value_Cutoff, Q_Value_Cutoff,
+                #P_Value_Adj_Method, 
+                #Min_Geneset_Size, Max_Geneset_Size) |>
+  dplyr::arrange(Q_Value)
+
+terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("Enrichment", "Enrichment", terms_netpath, ~Enrichment)
+  )
+)
+
+htmltools::br()
+DT::datatable(
+  terms_netpath, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'), 
+                 dom = 'Bfrtip')
+)
+
+rm(terms_netpath)
+rm(enrichment_netpath_display)
+
+```
+
+<br>
+
+```{r netpath_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr show_enrichment_filters[['netpath']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No signalling pathways from NetPath were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+
+```
+:::
+
+<br>
+
+#### GO enrichment plots {.tabset}
+
+<br>
+
+::: panel-tabset
+##### Molecular function
+
+```{r go_enrichment_barplot_mf}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['MF']]
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_MF') |>
+  dplyr::arrange(qvalue) |>
+  utils::head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("Enrichment") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if (nrow(plot_data) <= 15) {
+  height_plot <- 400
+}
+if (nrow(plot_data) <= 10) {
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+```{r go_plot_missing_mf}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['MF']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+##### Biological Process
+
+```{r go_enrichment_barplot_bp}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['BP']]
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_BP') |>
+  dplyr::arrange(qvalue) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("Enrichment") +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if (nrow(plot_data) <= 15) {
+  height_plot <- 400
+}
+if (nrow(plot_data) <= 10) {
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+```{r go_plot_missing_bp}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['BP']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>
+
+##### Cellular Component
+
+```{r go_enrichment_barplot_cc}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['CC']]
+
+plot_data <- onc_enrich_report[['data']][['enrichment']][['go']] |>
+  dplyr::select(description, enrichment_factor, qvalue, db) |>
+  dplyr::filter(db == 'GO_CC') |>
+  dplyr::arrange(qvalue) |>
+  head(onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]) |>
+  ## reverse order (to show entries with lowest q-values at the top of the plot)
+  dplyr::arrange(dplyr::desc(qvalue)) |>
+  dplyr::rename(Subontology = db) |>
+  dplyr::mutate(
+    Subontology = dplyr::case_when(
+      Subontology == "GO_BP" ~ "Biological Process",
+      Subontology == "GO_CC" ~ "Cellular Component",
+      Subontology == "GO_MF" ~ "Molecular Function",
+      TRUE ~ as.character(Subontology)
+    ))
+
+plot_data$description <- 
+  factor(plot_data$description, levels = plot_data$description)
+
+max_y <- max(plyr::round_any(plot_data$enrichment_factor, 10, f = ceiling))
+
+p <- ggplot2::ggplot(
+  plot_data, 
+  ggplot2::aes( x = description, y = enrichment_factor, fill = qvalue) ) +
+  ggplot2::geom_bar( stat = "identity" ) +
+  ggplot2::xlab("") +
+  ggplot2::ylab("Enrichment") +
+  ggplot2::ylim(0, max_y) +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::theme(
+    #legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = plot_fontsize, vjust = 0.5),
+    axis.text.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.x = ggplot2::element_text(family = "Helvetica", size = plot_fontsize),
+    axis.title.y = ggplot2::element_text(family = "Helvetica", size = plot_fontsize)
+  )
+
+rm(max_y)
+
+height_plot <- 500
+if (nrow(plot_data) <= 15) {
+  height_plot <- 400
+}
+if (nrow(plot_data) <= 10) {
+  height_plot <- 300
+}
+
+enrichment_barplot <- plotly::ggplotly(p, width = 800, height = height_plot) |>
+    plotly::layout(legend = list(orientation = "h", x = -0.2, y = -0.25))
+
+enrichment_barplot
+rm(height_plot)
+rm(plot_data)
+
+```
+
+```{r go_plot_missing_cc}
+#| echo: false
+#| output: asis
+#| eval: !expr subontology_plots[['CC']] == FALSE
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Enrichment plot omitted: No/limited GO terms were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+:::
+
+<br><br>

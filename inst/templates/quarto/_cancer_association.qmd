@@ -1,4 +1,7 @@
-### Cancer associations {.tabset}
+### Cancer associations
+
+::: {.callout-note}
+## Synopsis
 
 * Each target in the query set is annotated with known associations to cancer phenotypes (_ontology terms_) established from multiple data types through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and [rank scores](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html)
 
@@ -7,22 +10,22 @@
     * [IntOGen](https://www.intogen.org)
     * [Cancer Gene Census (CGC) - TIER1/2](https://cancer.sanger.ac.uk/census)
     * [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-    * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource (considering only entries with > 10 citations)
+    * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource on cancer genes (considering only entries with > 5 citations)
 * Evidence for genes harboring tumor suppressive or oncogenic functions are provided with three levels of confidence:
-    * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;Very Strong&nbsp;</b></span>
-        * Manually curated entry in NCG or CGC, and with _significant support (> 10 citations)_ in the biomedical literature (CancerMine), **OR**
-        * _Strong_support (> 20 citations)_ in the biomedical literature, no entry in NCG/CGC
+    * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;Very strong&nbsp;</b></span>
+        * Record present in __all three__ databases, i.e. NCG __and__ CGC, __and__ with _support (> 5 citations)_ in the biomedical literature (CancerMine)
     * <span style="background-color:#898989; padding:2x; color:white"><b>&nbsp;Strong&nbsp;</b></span> 
-        * Curated entry in NCG or CGC, with _moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), **OR**
-        * _Significant support (> 10 citations, <= 20 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+        * Record present in __at most two__ databases (CancerMine, CGC, or NCG)
     * <span style="background-color:#BBBBBB; padding:2x; color:white"><b>&nbsp;Moderate&nbsp;</b></span>
-        * Curated entry in NCG/CGC, with _no or weak support (<= 5 citations)_ in the biomedical literature (CancerMine), **OR**
-        * _Moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+        * Record present in __at most one__ database (CancerMine, CGC, or NCG)
           
 * Gene function summary is retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
- 
-<br><br>
 
+:::
+
+<br>
+
+::: {.panel-tabset}
 
 #### Query set - cancer association rank
 
@@ -32,7 +35,10 @@
 
 <br><br>
 
-```{r table_browse_targets, echo=F, results = "asis", eval = NROW(onc_enrich_report[['data']][['disease']][['target']]) > 0}
+```{r table_browse_targets}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['disease']][['target']]) > 0
 
 target_assocs <- onc_enrich_report[['data']][['disease']][['target']] |>
   dplyr::mutate(targetset_cancer_rank = round(
@@ -43,15 +49,15 @@ target_assocs <- onc_enrich_report[['data']][['disease']][['target']] |>
   dplyr::rename(tumor_suppressive = tsg_confidence_level,
                 oncogenic = oncogene_confidence_level) |>
   dplyr::mutate(tumor_suppressive = dplyr::case_when(
-    tumor_suppressive == "VERY STRONG" ~ "Very Strong",
-    tumor_suppressive == "STRONG" ~ "Strong",
-    tumor_suppressive == "MODERATE" ~ "Moderate",
+    tumor_suppressive == "Very strong" ~ "Very strong",
+    tumor_suppressive == "Strong" ~ "Strong",
+    tumor_suppressive == "Moderate" ~ "Moderate",
     TRUE ~ as.character(tumor_suppressive)
   )) |>
    dplyr::mutate(oncogenic = dplyr::case_when(
-    oncogenic == "VERY STRONG" ~ "Very Strong",
-    oncogenic == "STRONG" ~ "Strong",
-    oncogenic == "MODERATE" ~ "Moderate",
+    oncogenic == "Very strong" ~ "Very strong",
+    oncogenic == "Strong" ~ "Strong",
+    oncogenic == "Moderate" ~ "Moderate",
     TRUE ~ as.character(oncogenic)
   )) |>
   dplyr::mutate(tumor_suppressive = dplyr::if_else(
@@ -99,7 +105,7 @@ dt <- DT::datatable(
   options=list(buttons = c('csv','excel'),
                #columnDefs = list(list(className = 'dt-center', targets = 3:5)),
                pageLength = 20,
-               dom = 'Blfrtip')) |>
+               dom = 'Bfrtip')) |>
   DT::formatStyle('oncogenic', textAlign = 'center') |>
   DT::formatStyle('tumor_suppressive', textAlign = 'center') |>
   DT::formatStyle("symbol",
@@ -116,7 +122,7 @@ if(length(tsg_confidence_levels) > 0){
       "tumor_suppressive","tumor_suppressive",
       color = "white", 
       backgroundColor = DT::styleEqual(
-        c("Very Strong", "Strong", "Moderate"),
+        c("Very strong", "Strong", "Moderate"),
        c("#5A5A5A", "#898989", "#BBBBBB"))
     )
 }
@@ -127,7 +133,7 @@ if(length(oncogene_confidence_levels) > 0){
       "oncogenic", "oncogenic",
       color = "white",
       backgroundColor = DT::styleEqual(
-        c("Very Strong", "Strong", "Moderate"),
+        c("Very strong", "Strong", "Moderate"),
         c("#5A5A5A", "#898989", "#BBBBBB"))
     )
 }
@@ -136,7 +142,11 @@ dt
 ```
 
 
-```{r opentargets_missing, echo=F, results = 'asis', eval = NROW(onc_enrich_report[['data']][['disease']][['target']]) == 0}
+```{r opentargets_missing}
+#| output: asis
+#| echo: false
+#| eval: !expr NROW(onc_enrich_report[['data']][['disease']][['target']]) == 0
+
 cat('<i>No genes with disease associations from Open Targets Platform were found.</i>',sep='\n')
 cat('\n')
 ```
@@ -144,13 +154,18 @@ cat('\n')
 
 <br><br>
 
+
 #### Query set - association strength pr. tumor type
 
-* Top cancer-associated genes (maximum 100) in the query set are shown with their specific tumor-type association strengths (percent rank)
 
 <br><br>
 
-```{r target_ttype_heatmap, echo = F, eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2 & ncol(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2}
+* Top cancer-associated genes (maximum 100) in the query set are shown with their specific tumor-type association strengths (percent rank)
+
+
+```{r target_ttype_heatmap}
+#| echo: false
+#| eval: !expr NROW(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2 & NCOL(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) > 2
 
 oe_ttype_matrix <- 
   onc_enrich_report[['data']][['disease']][['ttype_matrix']]
@@ -169,12 +184,12 @@ if(NROW(oe_ttype_matrix) < 20){
   n_percent_ticks <- 5
 }
 
+#plotly_colors <- "Blues"
+
 target_ttype_rank_fig <- plotly::plot_ly(
   colors = "Blues",
   width = 800,
   height = 400 + (14.67 * NROW(oe_ttype_matrix))) |>
-  #width = 1040,
-  #height = 520 + (19.071 * NROW(oe_ttype_matrix))) |>
   plotly::add_heatmap(
     y = rownames(oe_ttype_matrix),
     x = colnames(oe_ttype_matrix),
@@ -199,7 +214,11 @@ target_ttype_rank_fig
 
 ```
 
-```{r missing_ttype_ranked_associations, echo=F, results = "asis", eval = nrow(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) <= 2 | ncol(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) <= 2}
+```{r missing_ttype_ranked_associations}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) <= 2 | NCOL(onc_enrich_report[['data']][['disease']][['ttype_matrix']]) <= 2
+
 cat('<br>')
 cat('\n <ul><li>  <i> <span style="font-size: 100%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NOT SHOWN</b> - limited/few tumor-type specific associations found for genes in the query set.&nbsp;&nbsp;</span></i></li></ul>',sep='\n')
 cat('\n')
@@ -208,16 +227,5 @@ cat('<br><br>')
 ```
 <br><br>
 
-### {.unlisted .unnumbered .toc-ignore}
 
-<span style="font-size: 100%; padding: 2px; background-color:#014587; color:white">&nbsp;&nbsp;<b>Citation Note</b>&nbsp;&nbsp;</span> : If you use the output of the *Cancer Association* module of oncoEnrichR in your research, please cite the following resources and tools as approriate:
-
- * **[Nakken et al., Int J Cancer, 2023](https://doi.org/10.1002/ijc.34666)** - *oncoEnrichR*
- * **[Ochoa et al., Nucleic Acids Res, 2021](https://pubmed.ncbi.nlm.nih.gov/33196847/)** - *Open Targets Platform - cancer association scores*
- * [Lever et al., Nat Methods, 2019](https://pubmed.ncbi.nlm.nih.gov/31110280/) - *CancerMine* 
- * [Sondka et al., Nat Rev Cancer, 2019](https://pubmed.ncbi.nlm.nih.gov/30293088/) - *Cancer Gene Census* 
- * [Repana et al., Genome Biol, 2019](https://pubmed.ncbi.nlm.nih.gov/30606230/) - *Network of Cancer Genes*
- * [Martinez-Jimenez et al., Nat Rev Cancer, 2020](https://pubmed.ncbi.nlm.nih.gov/32778778/) - *IntOGen catalogue of mutational driver genes*
-
-
-<br><br>
+:::

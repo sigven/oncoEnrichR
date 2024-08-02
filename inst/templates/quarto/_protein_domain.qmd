@@ -1,0 +1,52 @@
+### Protein domains
+
+::: {.callout-note}
+## Synopsis
+
+Here we show the most frequent protein domains ([PFAM](https://www.ebi.ac.uk/interpro/entry/pfam/#table)) that occur within members of the query set
+   
+   * Only domains occurring in more than one query target protein are shown in the table below
+   
+:::
+
+
+```{r table_browse_domain_pfam}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_domain']][['target']]) > 0
+
+htmltools::br()
+
+domains_recurrent <- onc_enrich_report[['data']][['protein_domain']][['target']] |>
+  dplyr::filter(stringr::str_detect(
+    .data$target_genes, ","
+  ))
+
+DT::datatable(domains_recurrent, 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              #style = 'bootstrap',
+              rownames = F,
+              options=list(buttons = c('csv','excel'),
+                           pageLength = 10,
+                           bPaginate = T,
+                           dom = 'Bfrtip') 
+)
+
+
+```
+
+
+```{r indicate_missing_domains}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_domain']][['target']]) == 0
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set are annotated with common protein domains found in the PFAM database. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br><br>

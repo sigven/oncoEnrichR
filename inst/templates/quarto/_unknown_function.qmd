@@ -1,0 +1,90 @@
+### Poorly characterized genes
+
+::: {.callout-note}
+## Synopsis
+
+* The aim of this section is to highlight poorly characterized protein-coding genes or protein-coding genes with unknown function in the query set
+* A set of _uncharacterized/poorly characterized human protein-coding genes (__n = `r onc_enrich_report[['config']][['unknown_function']][['num_candidates']]`__) _ have been established based on
+   1. Gene names specifically designated with _uncharacterized_ or _open reading frame_
+   2. Missing gene function summary in [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene) AND function summary in [UniProt Knowledgebase](https://uniprot.org)
+   3. Missing or limited (<= 2) [gene ontology (GO) annotations](https://www.ebi.ac.uk/GOA/human_release) with respect to molecular function (MF) or biological process (BP)
+      * Ontology annotations attributed with an [electronic annotation evidence code (IEA)](http://geneontology.org/docs/guide-go-evidence-codes/) are not considered in this calculation (less reliable due to lack of manually review)
+      
+* Query genes found within the set of poorly characterized protein-coding genes are listed below, colored in varying shades of red according to the level of missing characterization (from <span style="background-color:#99000d; padding:2x; color:white">&nbsp;unknown function&nbsp;</span> to <span style="background-color:#fcbba1; padding:2x; color:white">&nbsp;poorly defined function&nbsp;</span>)
+
+:::
+
+<br><br>
+
+
+
+```{r filter_unknown}
+#| echo: false
+#| output: asis
+
+show_ufunction_genes <- FALSE
+no_ufunction_genes <- TRUE
+
+if(nrow(onc_enrich_report[['data']][['unknown_function']][['hits_df']]) > 0){
+  show_ufunction_genes <- TRUE
+  no_ufunction_genes <- FALSE
+  
+}
+
+```
+
+
+```{r table_browse_unknown}
+#| echo: false
+#| output: asis
+#| eval: !expr show_ufunction_genes
+
+targets_unknown_function <- crosstalk::SharedData$new(
+  onc_enrich_report[['data']][['unknown_function']][['hits_df']] |>
+    dplyr::rename(go_terms = go_term_link))
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_select("symbol", "Target", targets_unknown_function, ~symbol),
+    crosstalk::filter_checkbox("has_gene_summary", "Has gene summary", targets_unknown_function, ~has_gene_summary)
+  ),
+  list(
+    crosstalk::filter_slider("num_go_annotations", "Number of annotated GO terms (non-IEA)", targets_unknown_function, ~num_go_terms)
+  )
+)
+
+htmltools::br()
+DT::datatable(targets_unknown_function, 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              options=list(buttons = c('csv','excel'), 
+                           dom = 'Bfrtip')) |>
+  
+  DT::formatStyle(
+    "symbol",
+    "unknown_function_rank", 
+    color = "white",
+    backgroundColor = DT::styleEqual(
+      onc_enrich_report[["config"]][["unknown_function"]][["rank"]],
+      onc_enrich_report[["config"]][["unknown_function"]][["colors"]]
+    )
+  )
+
+
+```
+
+
+```{r ufunction_genes_missing}
+#| echo: false
+#| output: asis
+#| eval: !expr no_ufunction_genes
+
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> genes with unknown or poorly defined functions were detected in the query set.&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br><br>

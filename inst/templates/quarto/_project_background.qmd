@@ -1,0 +1,7 @@
+### Project background
+
+* Project owner/contact: `r onc_enrich_report[['config']][['project_owner']]`
+
+* Description: `r onc_enrich_report[['config']][['project_description']]`
+
+<br><br>

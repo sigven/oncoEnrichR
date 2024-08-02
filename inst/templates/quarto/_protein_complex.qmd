@@ -1,0 +1,199 @@
+### Protein complexes 
+
+::: {.callout-note}
+## Synopsis
+
+Here we show how members of the query set that are involved in *known* protein complexes, using two different collections of protein complex annotations:
+
+  1. [OmniPath](https://omnipathdb.org/) - a meta-database of molecular biology prior knowledge, containing protein complex annotations predominantly from [CORUM](http://mips.helmholtz-muenchen.de/corum/), [ComplexPortal](https://www.ebi.ac.uk/complexportal/home), [Compleat](https://fgr.hms.harvard.edu/compleat), and [PDB](https://www.rcsb.org/).
+     * We limit complexes to those that are supported by references to the scientific literature (i.e. manually curated), and those with more than one participating members
+  2. [Human Protein Complex Map - hu.MAP v2.0](http://humap2.proteincomplexes.org/)  - created through an integration of > 15,000 proteomics experiments (biochemical fractionation data, proximity labeling data, and RNA hairpin pulldown data)
+     * Each complex comes with a confidence score from clustering (1=Extremely High, 2=Very High, 3=High, 4=Medium High, 5=Medium)
+   
+* The protein complexes that overlap with members of the query set are ranked according to the mean cancer-relevance score of the participating members, and is color-coded in varying shades of blue (i.e. from <span style="background-color:#b8b8ba; padding:2x; color:white"><b>&nbsp; low cancer-relevance &nbsp; </b></span>&nbsp; to <span style="background-color:#08306b; padding:2x; color:white"><b>&nbsp; strong cancer-relevance &nbsp; </b></span>).
+
+
+:::
+
+<br><br>
+
+```{r complex_prep}
+#| echo: false
+#| output: asis
+#| eval: true
+
+active_tab <- list()
+
+for(cl in c('omnipath','humap2')){
+  active_tab[[cl]] <- F
+}
+
+if(NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0){
+  active_tab[['omnipath']] <- T
+}else{
+  if(NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) > 0){
+    active_tab[['humap2']] <- T
+  }else{
+    active_tab[['omnipath']] <- T
+  }
+}
+
+  
+```
+
+::: {.panel-tabset}
+
+```{r active_tab_omnipath}
+#| echo: false
+#| output: asis
+
+if(active_tab[['omnipath']] == T){
+  cat("")
+  cat("#### OmniPath {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### OmniPath")
+  cat("")
+}
+```
+
+```{r table_browse_complex_omnipath}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) > 0
+
+htmltools::br()
+
+stepsize <- 1
+max_complex_members <- max(onc_enrich_report[['data']][['protein_complex']][['omnipath']]$num_target_members)
+if(max_complex_members > 10){
+  stepsize <- 2
+}
+if(max_complex_members > 20){
+  stepsize <- 3
+}
+
+omnipath_complexes_df <- 
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['protein_complex']][['omnipath']]|>
+      dplyr::filter(num_target_members > 1))
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("num_target_members", "Minimum number of query set members in complex", 
+                             omnipath_complexes_df, ~num_target_members, step = stepsize)
+  )
+)
+
+htmltools::br()
+DT::datatable(omnipath_complexes_df, 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              #style = 'bootstrap',
+              rownames = F,
+              options=list(buttons = c('csv','excel'),
+                           pageLength = 10,
+                           bPaginate = T,
+                           dom = 'Bfrtip')) |>
+   DT::formatStyle("complex_name",
+                  "complex_cancer_rank_score", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['complex']][['breaks']],
+                    onc_enrich_report[['config']][['complex']][['colors']])
+   )
+
+
+```
+
+
+```{r indicate_missing_complexes}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_complex']][['omnipath']]) == 0
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes found in the OmniPath database .&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+<br>
+
+```{r active_tab_humap2}
+#| echo: false
+#| output: asis
+
+if(active_tab[['humap2']] == T){
+  cat("")
+  cat("#### hu.MAP v2.0 {.active}")
+  cat("")
+}else{
+  cat("")
+  cat("#### hu.MAP v2.0")
+  cat("")
+}
+```
+
+```{r table_browse_complex_humap2}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) > 0
+
+htmltools::br()
+
+humap2_complexes_df <- 
+  crosstalk::SharedData$new(
+    onc_enrich_report[['data']][['protein_complex']][['humap2']] |>
+      dplyr::filter(num_target_members > 1))
+
+crosstalk::bscols(
+  list(
+    crosstalk::filter_slider("num_target_members", "Number of query set members in complex", 
+                             humap2_complexes_df, ~num_target_members)
+  )
+)
+
+htmltools::br()
+
+DT::datatable(humap2_complexes_df, 
+              escape = F, 
+              extensions=c("Buttons","Responsive"), 
+              width = "100%",
+              #style = 'bootstrap',
+              rownames = F,
+              options=list(buttons = c('csv','excel'),
+                           pageLength = 10,
+                           bPaginate = T,
+                           dom = 'Bfrtip')) |>
+  
+  
+   DT::formatStyle("complex_name",
+                  "complex_cancer_rank_score", 
+                  color = "white", 
+                  backgroundColor = DT::styleInterval(
+                    onc_enrich_report[['config']][['complex']][['breaks']],
+                    onc_enrich_report[['config']][['complex']][['colors']])
+   )
+
+
+```
+
+
+```{r indicate_missing_complexes_humap2}
+#| echo: false
+#| output: asis
+#| eval: !expr NROW(onc_enrich_report[['data']][['protein_complex']][['humap2']]) == 0
+
+cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO GENES</b> in the query set associate with protein complexes established by the <b>hu.MAP v2.0</b> protein complex map .&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n')
+cat('<br><br>')
+
+```
+
+
+<br>
+
+:::

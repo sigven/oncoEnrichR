@@ -1,0 +1,188 @@
+---
+title: "<PROJECT_TITLE>"
+subtitle: " - _prioritization and interrogation of cancer gene relevance by oncoEnrichR_"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+bibliography: '`r system.file("bibliography.bib", package = "oncoEnrichR")`'
+title-block-banner: "#014587"
+title-block-banner-color: "white"
+linkcolor: "#014587"
+include-in-header:
+  - text: |
+      <link rel="shortcut icon" href="favicon-16x16.png"/>
+      <style>
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
+nocite: |
+  @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, 
+  @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, 
+  @Yu2012-yk, @Clauset2004-ov, @Kleinberg1999-oo, @Hart2016-ic, @Iorio2018-ph, 
+  @Subramanian2005-ci, @Uhlen2015-sh, @Uhlen2017-mg, @Jain2019-eh, 
+  @Lever2019-xn, @Binder2014-py,
+  @Mermel2011-bp, @Kandasamy2010-te, @Behan2019-tf, @Hanahan2011-da, 
+  @Turei2016-wq, @Drew2021-kd, @Garcia-Alonso2019-mr, @Jin2021-tf, 
+  @De_Kegel2021-xo, @Smith2022-mk, @Martinez-Jimenez2020-qx, 
+  @Pacini2021-xm, @Nakken2023-bp
+format: 
+  html:
+    link-external-newwindow: true
+    smooth-scroll: true
+    embed-resources: true
+    page-layout: full
+    fontsize: 0.93em
+    toc: true
+    toc-title: Contents
+    toc-depth: 3
+    toc-expand: 4
+    grid:
+      body-width: 920px
+lightbox: true
+---
+
+```{r global_options}
+#| include: false
+#| echo: false
+
+knitr::opts_chunk$set(echo = F,warning=FALSE, dpi=72, error=F, eval=T)
+
+options(scipen = 999)
+
+onc_enrich_report <- readRDS(file="<ONCO_ENRICHR_REPORT_OBJECT.rds>")
+tcga_maf_datasets <- readRDS(file="<TCGA_MAF_DATASETS.rds>")
+
+logo_fname_path <- system.file("extdata", "logo.png", package = "oncoEnrichR")
+
+```
+
+<a href="https://sigven.github.io/oncoEnrichR">
+  <img src="`r logo_fname_path`" title="" alt="" align="right" width="80"/>
+</a>
+<br><br>
+
+```{r project_background}
+#| child: 'quarto/_project_background.qmd'
+#| eval: true
+```
+
+```{r target_verification}
+#| child: 'quarto/_query_verification.qmd'
+#| eval: true
+```
+
+```{r target_disease}
+#| child: 'quarto/_cancer_association.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['disease']]
+```
+
+```{r target_hallmark}
+#| child: 'quarto/_cancer_hallmark_association.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['cancer_hallmark']]
+```
+
+```{r target_unknown}
+#| child: 'quarto/_unknown_function.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['unknown_function']]
+```
+
+```{r target_drug}
+#| child: 'quarto/_drug_target_association.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['drug']]
+```
+
+
+```{r target_synthetic_lethality}
+#| child: 'quarto/_synthetic_lethality.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['synleth']]
+```
+
+```{r target_fitness}
+#| child: 'quarto/_fitness_lof.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['fitness']]
+```
+
+<br>
+
+```{r target_complex}
+#| child: 'quarto/_protein_complex.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['protein_complex']]
+```
+
+```{r target_domain}
+#| child: 'quarto/_protein_domain.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['protein_domain']]
+```
+
+
+```{r target_ppi}
+#| child: 'quarto/_ppi.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['ppi']]
+```
+
+```{r target_ligand_receptor}
+#| child: 'quarto/_ligand_receptor.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['ligand_receptor']]
+```
+
+
+```{r target_regulatory}
+#| child: 'quarto/_regulatory_interactions.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['regulatory']]
+```
+
+```{r target_subcell}
+#| child: 'quarto/_subcell_comp.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['subcellcomp']]
+```
+
+```{r target_enrichment_invalid}
+#| child: 'quarto/_functional_enrichment_invalid.qmd'
+#| eval: !expr NROW(onc_enrich_report[['data']][['query']][['target']] |> dplyr::filter(status == "found")) < 5
+```
+
+```{r target_enrichment}
+#| child: 'quarto/_functional_enrichment.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['enrichment']]
+```
+
+```{r target_cell_tissue}
+#| child: 'quarto/_cell_tissue.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['cell_tissue']]
+```
+
+```{r target_tcga_aberration}
+#| child: 'quarto/_aberration.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['aberration']]
+```
+
+```{r target_tcga_coexpression}
+#| child: 'quarto/_coexpression.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['coexpression']]
+```
+
+```{r target_cancer_prognosis}
+#| child: 'quarto/_prognosis_survival.qmd'
+#| eval: !expr onc_enrich_report[['config']][['show']][['cancer_prognosis']]
+```
+
+
+```{r documentation_workflow}
+#| child: 'quarto/_documentation_workflow.qmd'
+#| eval: !expr onc_enrich_report[['data']][['query']]$validation_status != "imperfect_stop"
+```
+
+<br><br>
+
+### References
+
+::: {#refs}
+:::
+
+
+```{r oncoenrichr_disclaimer}
+#| eval: true
+#| output: asis
+
+cat("<br><br>\n\n::: {.callout-important}\n## DISCLAIMER\n\n<i>The information contained in this report is more of an exploratory procedure than a statistical analysis. The final interpretation, i.e. putting the results in the context of the study/screen, should be made by biologists/analysts rather than by any tool.</i><br>\n\n:::")
+
+```
