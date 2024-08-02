@@ -205,7 +205,7 @@ get_citations_pubmed2 <- function(
 
 get_msigdb_signatures <- function(
     raw_db_dir = NULL,
-    db_version = 'v2023.1.Hs (March 2023)'){
+    db_version = 'v2023.1.Hs March 2023)'){
 
   ## get full dataset: Broad Institute's Molecular Signatures Database (v7.1)
   invisible(assertthat::assert_that(
@@ -219,6 +219,52 @@ get_msigdb_signatures <- function(
     msg = paste0("File '",
                  msigdb_xml_fname,
                  "' does not exist")))
+
+  # all_msigdb_2 <- data.frame()
+  # for(cat in c("C2","C3","C4","C5","C6","C7","C8")){
+  #   genesets = msigdbr::msigdbr(species = "human", category = cat) |>
+  #     dplyr::select(-c("gene_symbol","ensembl_gene",
+  #                      "human_ensembl_gene",
+  #                      "gs_geoid","human_gene_symbol",
+  #                      "gs_id")) |>
+  #     dplyr::mutate(organism = "Homo sapiens",
+  #                   systematic_name = NA, contributor = NA) |>
+  #     dplyr::rename(standard_name = gs_name,
+  #                   category_code = gs_cat,
+  #                   description = gs_description,
+  #                   subcategory_code = gs_subcat,
+  #                   entrezgene = entrez_gene,
+  #                   exact_source = gs_exact_source,
+  #                   external_url = gs_url,
+  #                   pmid = gs_pmid) |>
+  #     dplyr::select(
+  #       category_code, description, standard_name,
+  #       organism, pmid, systematic_name, subcategory_code,
+  #       entrezgene, contributor, exact_source, external_url) |>
+  #     dplyr::filter(subcategory_code != 'CP:KEGG') |>
+  #     dplyr::arrange(category_code) |>
+  #     dplyr::mutate(pmid = dplyr::if_else(
+  #       nchar(pmid) == 0,
+  #       as.character(NA),
+  #       as.character(pmid))) |>
+  #     dplyr::mutate(subcategory_code = dplyr::if_else(
+  #       nchar(subcategory_code) == 0,
+  #       as.character("ALL"),
+  #       as.character(subcategory_code))) |>
+  #     dplyr::mutate(external_url = dplyr::if_else(
+  #       nchar(external_url) == 0,
+  #       paste0("http://software.broadinstitute.org/gsea/msigdb/cards/",standard_name),
+  #       as.character(external_url))) |>
+  #     dplyr::mutate(description = stringr::str_replace_all(
+  #       description,
+  #       "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
+  #
+  #   all_msigdb_2 <- all_msigdb_2 |>
+  #     dplyr::bind_rows(genesets) |>
+  #     dplyr::distinct()
+  #
+  # }
+
 
   msig_data_xml <- xml2::read_xml(msigdb_xml_fname)
 
@@ -382,7 +428,7 @@ get_opentarget_associations <-
   function(raw_db_dir = NULL,
            min_overall_score = 0.1,
            min_num_sources = 2,
-           release = "2023.06",
+           release = "2023.12",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -503,7 +549,7 @@ get_cancer_hallmarks <- function(raw_db_dir = NULL,
 
   pmid_data <- get_citations_pubmed(
     unique(hallmark_data_long$pmid),
-    chunk_size = 15) |>
+    chunk_size = 90) |>
     dplyr::mutate(pmid = as.character(pmid))
 
 
@@ -603,7 +649,7 @@ get_tf_target_interactions <- function(
       dplyr::group_by(source_genesymbol, target_genesymbol) |>
       dplyr::summarise(
         tf_target_literature_support = paste(
-          link, collapse= ","),
+          link, collapse= ", "),
         tf_target_literature = paste(
           citation, collapse="|"
         ),
@@ -676,7 +722,9 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   approved_inhibitors <- as.data.frame(
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_targeted_agent = T,
+      treatment_category = c("targeted_therapy_classified",
+                             "targeted_therapy_unclassified",
+                             "hormone_therapy_classified"),
       drug_action_inhibition = T,
       drug_cancer_indication = T,
       drug_is_approved = T)$records |>
@@ -720,7 +768,8 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   cancer_drugs[['late_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_targeted_agent = T,
+      treatment_category = c("targeted_therapy_classified", "targeted_therapy_unclassified",
+                             "hormone_therapy_classified"),
       drug_action_inhibition = T,
       drug_cancer_indication = F,
       drug_classified_cancer = F,
@@ -742,7 +791,8 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   cancer_drugs[['early_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      drug_targeted_agent = T,
+      treatment_category = c("targeted_therapy_classified", "targeted_therapy_unclassified",
+                             "hormone_therapy_classified"),
       drug_action_inhibition = F,
       drug_cancer_indication = F,
       drug_classified_cancer = F,
@@ -930,9 +980,9 @@ get_pathway_annotations <- function(
         format = "gmt")
     }
 
-    wikipathways <- clusterProfiler::read.gmt(
+    wikipathways_raw <- clusterProfiler::read.gmt(
       wikipathways_gmt)
-    wp2gene <- wikipathways |>
+    wp2gene <- wikipathways_raw |>
       tidyr::separate(term, c("name","version","wpid","org"), "%")
     wikipathwaydb <- list()
     wikipathwaydb[['VERSION']] <- wikipathways_version
@@ -1455,7 +1505,7 @@ get_survival_associations <- function(
     fname <- file.path(raw_db_dir,
                        "km_survival_cshl",
                        paste0(feature_type,".xlsx"))
-    data <- openxlsx::read.xlsx(fname)
+    data <- openxlsx::read.xlsx(fname, sheet = 1)
 
     if(feature_type == 'protein_expression'){
       rownames(data) <- data$Protein
@@ -1489,7 +1539,7 @@ get_survival_associations <- function(
                                      symbol, gene_biotype),
                        by = "symbol",  relationship = "many-to-many") |>
       ## limit associations to protein-coding genes
-      dplyr::filter(gene_biotype == "protein-coding") |>
+      dplyr::filter(gene_biotype == "protein_coding") |>
       dplyr::select(-gene_biotype)
 
     pancancer_trend <- as.data.frame(
@@ -1544,8 +1594,8 @@ get_unique_transcript_xrefs <- function(
       ensembl_gene_id,
       symbol,
       entrezgene,
-      refseq_mrna,
-      refseq_peptide,
+      refseq_transcript_id,
+      refseq_protein_id,
       uniprot_acc,
       name,
       ensembl_transcript_id,
@@ -1565,9 +1615,9 @@ get_unique_transcript_xrefs <- function(
                 'uniprot_acc',
                 'ensembl_gene_id',
                 'ensembl_protein_id',
-                'refseq_mrna',
+                'refseq_transcript_id',
                 'symbol',
-                'refseq_peptide')){
+                'refseq_protein_id')){
 
     tmp <- gencode_merged |>
       dplyr::select(entrezgene, !!rlang::sym(xref)) |>
@@ -1616,7 +1666,7 @@ get_omnipath_gene_annotations <- function(
   }
 
   protein_coding_genes <- gene_info |>
-    dplyr::filter(gene_biotype == "protein-coding") |>
+    dplyr::filter(gene_biotype == "protein_coding") |>
     dplyr::select(symbol) |>
     dplyr::filter(!stringr::str_detect(symbol,"-")) |>
     dplyr::filter(symbol != "XYLB") |>
@@ -1998,14 +2048,14 @@ generate_gene_xref_df <- function(
       FALSE,
       as.logical(oncogene))) |>
 
-    dplyr::mutate(tsg_confidence_level = dplyr::if_else(
-      tumor_suppressor == FALSE,
-      "NONE/LIMITED",
-      as.character(tsg_confidence_level))) |>
-    dplyr::mutate(oncogene_confidence_level = dplyr::if_else(
-      oncogene == FALSE,
-      "NONE/LIMITED",
-      as.character(oncogene_confidence_level))) |>
+    # dplyr::mutate(tsg_confidence_level = dplyr::if_else(
+    #   tumor_suppressor == FALSE,
+    #   "NONE/LIMITED",
+    #   as.character(tsg_confidence_level))) |>
+    # dplyr::mutate(oncogene_confidence_level = dplyr::if_else(
+    #   oncogene == FALSE,
+    #   "NONE/LIMITED",
+    #   as.character(oncogene_confidence_level))) |>
     dplyr::mutate(cancer_driver = dplyr::if_else(
       is.na(cancer_driver),
       FALSE,
@@ -3019,7 +3069,7 @@ get_hpa_associations <- function(
 #   return(hpa)
 #
 #
-# }
+#}
 
 
 get_mean_median_tpm <- function(
@@ -3126,17 +3176,17 @@ get_tcga_db <- function(
     "tcga_recurrent_coding_gvanno.grch38.tsv.gz"
   )
 
-  gene_xref <- gene_xref |>
-    dplyr::mutate(oncogene = dplyr::if_else(
-      .data$oncogene_confidence_level == "MODERATE",
-      FALSE,
-      as.logical(.data$oncogene)
-    )) |>
-    dplyr::mutate(tumor_suppressor = dplyr::if_else(
-      .data$tsg_confidence_level == "MODERATE",
-      FALSE,
-      as.logical(.data$tumor_suppressor)
-    ))
+  # gene_xref <- gene_xref |>
+  #   dplyr::mutate(oncogene = dplyr::if_else(
+  #     .data$oncogene_confidence_level == "Moderate",
+  #     FALSE,
+  #     as.logical(.data$oncogene)
+  #   )) |>
+  #   dplyr::mutate(tumor_suppressor = dplyr::if_else(
+  #     .data$tsg_confidence_level == "Moderate",
+  #     FALSE,
+  #     as.logical(.data$tumor_suppressor)
+  #   ))
 
 
   if(update == F & file.exists(rds_fname)){
@@ -3843,21 +3893,23 @@ get_subcellular_annotations <- function(
     )
 
   subcell_figure_legend <- list()
-  cell_key[['cell']]$colour <- "#ffd700"
-    for (i in 1:nrow(cell_key[['cell']])) {
+  cell_key_data <- gganatogram::cell_key[['cell']]
+
+  cell_key_data$colour <- "#ffd700"
+    for (i in 1:nrow(cell_key_data)) {
       subcell_figure_legend[[i]] <-
         gganatogram::gganatogram(
-          data=cell_key[['cell']][i,],
+          data = cell_key_data[i,],
           outline = T,
           fillOutline='#a6bddb',
           organism="cell",
           fill="colour")  +
         ggplot2::theme_void() +
-        ggplot2::ggtitle(cell_key[['cell']][i,]$organ) +
+        ggplot2::ggtitle(
+          cell_key_data[i,]$organ) +
         ggplot2::theme(
           plot.title = ggplot2::element_text(
-            hjust=0.5, size=10)
-        ) +
+            hjust=0.5, size=10)) +
         ggplot2::coord_fixed()
     }
 

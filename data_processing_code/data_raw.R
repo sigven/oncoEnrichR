@@ -1,32 +1,32 @@
-library(TissueEnrich)
 library(gganatogram)
 
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v2023.1.Hs'
-wikipathways_version <- "20230810"
+wikipathways_version <- "20240710"
 netpath_version <- "2010"
-opentargets_version <- "2023.06"
-kegg_version <- "20230710"
-gencode_version <- "44"
-uniprot_release <- "2023_03"
+opentargets_version <- "2024.06"
+kegg_version <- "20240626"
+gencode_version <- "46"
+uniprot_release <- "2024_04"
 
 ## Which databases to update or retrieve from last updated state
-update_omnipathdb <- F
-update_hpa <- F
-update_tcga <- T
-update_cancer_hallmarks <- F
-update_omnipath_regulatory <- F
-update_omnipath_complexdb <- F
-update_subcelldb <- T
-update_ligand_receptor_db <- F
+db_updates <- list()
+db_updates[['omnipathdb']] <- F
+db_updates[['hpa']] <- F
+db_updates[['tcga']] <- F
+db_updates[['cancer_hallmarks']] <- F
+db_updates[['omnipath_complexdb']] <- F
+db_updates[['omnipath_regulatory']] <- F
+db_updates[['subcelldb']] <- F
+db_updates[['ligand_receptor_db']] <- F
 
-oe_version <- "1.4.2"
+oe_version <- "1.5.0"
 
 data_raw_dir <-
-  "/Users/sigven/project_data/package__oncoEnrichR/db/raw"
+  "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"
 data_output_dir <-
-  "/Users/sigven/project_data/package__oncoEnrichR/db/output"
+  "/Users/sigven/project_data/packages/package__oncoEnrichR/db/output"
 
 release_notes <- list()
 software_db_version <-
@@ -181,7 +181,7 @@ genedb[['cancer_hallmark']] <-
     opentargets_version = opentargets_version,
     raw_db_dir = data_raw_dir,
     gene_info = gene_info,
-    update = update_cancer_hallmarks)
+    update = db_updates[['cancer_hallmarks']])
 
 ####----TSG/Oncogene/driver annotations---####
 ts_oncogene_annotations <-
@@ -209,6 +209,7 @@ opentarget_associations <-
     raw_db_dir = data_raw_dir,
     min_num_sources = 2,
     min_overall_score = 0.05,
+    release = opentargets_version,
     direct_associations_only = T)
 
 otdb <- quantify_gene_cancer_relevance(
@@ -226,13 +227,13 @@ genedb[['transcript_xref']] <- get_unique_transcript_xrefs(
 omnipathdb <- get_omnipath_gene_annotations(
   raw_db_dir = data_raw_dir,
   gene_info = gene_info,
-  update = update_omnipathdb
+  update = db_updates[['omnipathdb']]
 )
 
 ####---OmniPathDB - TF interactions ----####
 tf_target_interactions <- get_tf_target_interactions(
   raw_db_dir = data_raw_dir,
-  update = update_omnipath_regulatory
+  update = db_updates[['omnipath_regulatory']]
 )
 
 ####---Pathway annotations ----####
@@ -253,7 +254,7 @@ pathwaydb <- get_pathway_annotations(
 ####---OmniPathDB - protein complexes ----####
 genedb[['proteincomplexdb']] <- get_protein_complexes(
   raw_db_dir = data_raw_dir,
-  update = update_omnipath_complexdb
+  update = db_updates[['omnipath_complexdb']]
 )
 
 ####---OTP - Targeted cancer drugs ---####
@@ -292,14 +293,14 @@ genedb[['all']] <- generate_gene_xref_df(
 ligandreceptordb <- get_ligand_receptors(
   raw_db_dir = data_raw_dir,
   keggdb = pathwaydb$kegg,
-  update = update_ligand_receptor_db
+  update = db_updates[['ligand_receptor_db']]
 )
 
 ####----COMPARTMENTS - subcellular compartments---####
 subcelldb <- get_subcellular_annotations(
   raw_db_dir = data_raw_dir,
   transcript_xref_db = genedb[['transcript_xref']],
-  update = update_subcelldb
+  update = db_updates[['subcelldb']]
 )
 
 ####---- Project Score/DepMap ----####
@@ -324,19 +325,19 @@ slparalogdb <- get_paralog_SL_predictions(
 hpa <- get_hpa_associations(
   raw_db_dir = data_raw_dir,
   gene_xref = genedb[['all']],
-  update = update_hpa
+  update = db_updates[['hpa']]
 )
 
 ####----TCGA aberration data ----####
 tcgadb <- get_tcga_db(
   raw_db_dir = data_raw_dir,
-  update = update_tcga,
+  update = db_updates[['tcga']],
   gene_xref = genedb[['all']]
 )
 
-tissuecelldb <- get_tissue_celltype_specificity(
-  raw_db_dir = data_raw_dir
-)
+#tissuecelldb <- get_tissue_celltype_specificity(
+#  raw_db_dir = data_raw_dir
+#)
 
 oedb <- list()
 oedb[['cancerdrugdb']] <- cancerdrugdb
@@ -347,7 +348,7 @@ oedb[['genedb']] <- genedb
 oedb[['otdb']] <- otdb
 oedb[['pfamdb']] <- pfamdb
 oedb[['tftargetdb']] <- tf_target_interactions
-oedb[['tissuecelldb']] <- tissuecelldb
+#oedb[['tissuecelldb']] <- tissuecelldb
 oedb[['hpa']] <- hpa
 oedb[['survivaldb']] <- survivaldb
 oedb[['depmapdb']] <- depmapdb
@@ -376,11 +377,15 @@ rm(ts_oncogene_annotations)
 rm(subcelldb)
 rm(tf_target_interactions)
 rm(ligandreceptordb)
-rm(tissuecelldb)
 rm(go_terms_pr_gene)
 rm(slparalogdb)
 rm(gOncoX)
 rm(biogrid)
+
+tissue_colors <-
+  pals::stepped(24)
+
+usethis::use_data(tissue_colors, overwrite = T)
 
 
 #googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
@@ -401,7 +406,7 @@ for(elem in c('cancerdrugdb',
            'slparalogdb',
            'tcgadb',
            'tftargetdb',
-           'tissuecelldb',
+           #'tissuecelldb',
            'biogrid',
            'release_notes')){
 
