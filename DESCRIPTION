@@ -2,7 +2,6 @@ Package: oncoEnrichR
 Type: Package
 Title: Cancer-dedicated gene set interpretation
 Version: 1.4.2
-Date: 2023-08-16
 Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
@@ -27,7 +26,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     report and an Excel workbook in which the user can interrogate the various 
     types of annotations and analyses performed with the query geneset. 
 Depends: 
-    R (>= 4.1), GSEABase
+    R (>= 4.1)
 biocViews: 
 Imports: dplyr,
          assertthat,
@@ -38,17 +37,19 @@ Imports: dplyr,
          ggpubr,
          openxlsx,
          stringr,
+         tidyr,
+         readr,
          googledrive,
          visNetwork, 
-         SummarizedExperiment,
+         quarto,
          plotly, 
-         pals (>= 1.7), 
+         jsonlite,
+         forcats,
          org.Hs.eg.db, 
-         igraph (>= 1.2.6), 
+         igraph (>= 2.0), 
          lgr,
          maftools, 
          rlang,
-         TissueEnrich, 
          textclean (>= 0.9.3)
 Suggests: 
     testthat (>= 3.1.0),
@@ -58,6 +59,9 @@ VignetteBuilder: knitr
 License: MIT + file LICENSE
 Encoding: UTF-8
 Remotes: jespermaag/gganatogram
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
+LazyData: true
+SystemRequirements: Quarto command line tool
+    (<https://github.com/quarto-dev/quarto-cli>).

@@ -71,7 +71,6 @@ load_db <- function(cache_dir = NA,
                    "subcelldb",
                    "slparalogdb",
                    "tcgadb",
-                   "tissuecelldb",
                    "tftargetdb")
 
   for (elem in oe_datasets) {

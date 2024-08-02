@@ -12,7 +12,7 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## Getting started
 
--   [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-adressed-by-oncoenrichr)
+-   [What types of questions can be answered by oncoEnrichR?](https://sigven.github.io/oncoEnrichR/index.html#questions-addressed-by-oncoenrichr)
 -   [Output views from oncoEnrichR](https://sigven.github.io/oncoEnrichR/articles/output.html)
 -   [Installation instructions](https://sigven.github.io/oncoEnrichR/articles/installation.html)
 -   [Running instructions](https://sigven.github.io/oncoEnrichR/articles/running.html)
@@ -20,13 +20,14 @@ Web-based access to **oncoEnrichR** is available at [**https://oncotools.elixir.
 
 ## News
 
+-   August 2nd 2024 [**1.5.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-5-0)
 -   August 16th 2023: [**1.4.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-4-2)
 -   June 18th 2023: [**1.4.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-4-1)
 -   February 21st 2023 [**1.4.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-4-0)
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.8247877"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8247877.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.13170482"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.13170482.svg" alt="DOI"/></a>
 
 ## Citation
 

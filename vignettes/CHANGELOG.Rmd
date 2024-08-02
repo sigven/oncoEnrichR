@@ -7,6 +7,28 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.5.0
+
+* Date: 2024-08-02
+
+### Changed
+
+* Data updates
+  * Open Targets Platform (2024.06)
+  * WikiPathways (20240710)
+  * COMPARTMENTS (2024-07)
+  * KEGG (20240626)
+  * BioGRID (v4.4.236)
+  * Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.7.6
+
+* Functionality
+  * Cell/tissue-type enrichment is no longer available (TissueEnrich package is deprecated)
+  * HTML report is now based on the [quarto framework](https://quarto.org) rather than RMarkdown
+  * Many modules are now disabled by default in order to reduce size of HTML report output when running in default mode (primarily a Galaxy consideration)
+  * Limit protein complexes to those harboring at least two members from the query set
+
+
 ## Version 1.4.2
 
 * Date: 2023-08-16

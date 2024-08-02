@@ -1,7 +1,7 @@
-<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.4.2">
+<tool id="oncoenrichr_wrapper" name="oncoEnrichR" version="1.5.0">
   <description>Cancer-dedicated gene set interpretation</description>
     <requirements>
-        <container type="docker">sigven/oncoenrichr:1.4.2</container>
+        <container type="docker">sigven/oncoenrichr:1.5.0</container>
   </requirements>
   <command detect_errors="aggressive"><![CDATA[
       #if $query_set.query_choice.query_input == "text"
@@ -57,7 +57,6 @@
       show_complex = $modules.show_complex,
 	  show_domain = $modules.show_domain,
       show_fitness = $modules.show_fitness,
-	  show_cell_tissue = $modules.show_cell_tissue,
       show_ligand_receptor = $modules.show_ligand_receptor,
       show_regulatory = $modules.show_regulatory,
 	  show_prognostic = $modules.show_prognostic,
@@ -123,14 +122,11 @@
       #end if
 
       regulatory_min_confidence = "$regulatory.regulatory_min_confidence",
-
-      html_floating_toc = $report_metadata.html_floating_toc,
-      html_report_theme = "$report_metadata.html_report_theme",
       galaxy = TRUE
       );
 
-      oncoEnrichR::write(report = oe_report, oeDB = oedb, file = "$report1", format = "html", selfcontained_html = F, extra_files_path = "$report1.extra_files_path", overwrite = T, ignore_file_extension = T);
-	 oncoEnrichR::write(report = oe_report, oeDB = oedb, file = "$report2", format = "excel", overwrite = T, ignore_file_extension = T)' 2>&1
+      oncoEnrichR::write(report = oe_report, oeDB = oedb, file = "$report1", format = "html", embed_resources = F, extra_files_path = "$report1.extra_files_path", overwrite = T, ignore_file_extension = T);
+      oncoEnrichR::write(report = oe_report, oeDB = oedb, file = "$report2", format = "excel", overwrite = T, ignore_file_extension = T)' 2>&1
 
   ]]></command>
   <inputs>
@@ -156,7 +152,7 @@
               <option value="ensembl_gene">Ensembl gene identifier - e.g. ENSG00000133703</option>
               <option value="ensembl_mrna">Ensembl transcript identifier - e.g. ENST00000311936</option>
               <option value="ensembl_protein">Ensembl protein identifier - e.g. ENSP00000308495</option>
-              <option value="refseq_mrna">RefSeq mRNA identifier - e.g. NM_004985</option>
+              <option value="refseq_transcript_id">RefSeq mRNA identifier - e.g. NM_004985</option>
               <option value="refseq_protein">RefSeq protein identifier - e.g. NP_004976</option>
           </param>
 		<param name="ignore_id_err" type="boolean" label="Ignore erroneous idenfiers" truevalue="T" falsevalue="F" checked="true"/>
@@ -168,40 +164,25 @@
           <param type="text" name="project_title" label="Project title" />
           <param type="text" name="project_owner" label="Project owner" />
           <param type="text" name="project_description" label="Project description" area="true"/>
-          <param name="html_floating_toc" type="boolean" label="HTML report - float the table of contents to the left of the main document content (always visible during scrolling)" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="html_report_theme" type="select" label="HTML report - bootswatch theme">
-              <option value="default">default</option>
-              <option value="cerulean">cerulean</option>
-              <option value="cosmo">cosmo</option>
-              <option value="journal">journal</option>
-              <option value="lumen">lumen</option>
-              <option value="paper">paper</option>
-              <option value="sandstone">sandstone</option>
-              <option value="simplex">simplex</option>
-              <option value="spacelab">spacelab</option>
-              <option value="united">united</option>
-              <option value="yeti">yeti</option>
-          </param>
       </section>
 
       <section title="" name=""/>
       <section name="modules" title="Analysis modules included in the report" expanded="true">
 		  <param name="show_disease" type="boolean" label="Gene-cancer associations" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_enrichment" type="boolean" label="Gene functional enrichment" truevalue="T" falsevalue="F" checked="true"/>
-		  <param name="show_cell_tissue" type="boolean" label="Tissue/cell-type enrichment" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_ppi" type="boolean" label="Protein-protein interaction network" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="show_regulatory" type="boolean" label="Regulatory (TF-target) interactions" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="show_ligand_receptor" type="boolean" label="Ligand-receptor interactions" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_regulatory" type="boolean" label="Regulatory (TF-target) interactions" truevalue="T" falsevalue="F" checked="false"/>
+          <param name="show_ligand_receptor" type="boolean" label="Ligand-receptor interactions" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_cancer_hallmarks" type="boolean" label="Cancer hallmark associations" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_drug" type="boolean" label="Drug-target associations" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="show_aberration" type="boolean" label="Tumor aberration frequencies" truevalue="T" falsevalue="F" checked="true"/>
-          <param name="show_coexpression" type="boolean" label="Tumor co-expression patterns" truevalue="T" falsevalue="F" checked="true"/>
+          <param name="show_aberration" type="boolean" label="Tumor aberration frequencies" truevalue="T" falsevalue="F" checked="false"/>
+          <param name="show_coexpression" type="boolean" label="Tumor co-expression patterns" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_subcell_comp" type="boolean" label="Subcellular localizations" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_complex" type="boolean" label="Protein complex memberships" truevalue="T" falsevalue="F" checked="true"/>
 		  <param name="show_domain" type="boolean" label="Protein domain frequencies" truevalue="T" falsevalue="F" checked="false"/>
           <param name="show_fitness" type="boolean" label="Gene fitness effects" truevalue="T" falsevalue="F" checked="true"/>
           <param name="show_synleth" type="boolean" label="Predicted synthetic lethality interactions" truevalue="T" falsevalue="F" checked="true"/>
-		  <param name="show_unknown_function" type="boolean" label="Genes of poorly defined function" truevalue="T" falsevalue="F" checked="true"/>
+		  <param name="show_unknown_function" type="boolean" label="Genes of poorly defined function" truevalue="T" falsevalue="F" checked="false"/>
 		  <param name="show_prognostic" type="boolean" label="Prognostic cancer associations" truevalue="T" falsevalue="F" checked="true"/>
       </section>
 
@@ -232,7 +213,7 @@
                       <option value="ensembl_gene">Ensembl gene identifier - e.g. ENSG00000133703</option>
                       <option value="ensembl_mrna">Ensembl transcript identifier - e.g. ENST00000311936</option>
                       <option value="ensembl_protein">Ensembl protein identifier - e.g. ENSP00000308495</option>
-                      <option value="refseq_mrna">RefSeq mRNA identifier - e.g. NM_004985</option>
+                      <option value="refseq_transcript_id">RefSeq mRNA identifier - e.g. NM_004985</option>
                       <option value="refseq_protein">RefSeq protein identifier - e.g. NP_004976</option>
 		          </param>
 		          <param type="text" name="bg_enrich_description" label="Custom background gene set description" value="Custom background description"/>
@@ -306,7 +287,7 @@
   <help><![CDATA[
 .. class:: infomark
 
-The query gene set is limited to n = 1000 identifiers. A limited query gene set (e.g. n < 5) will in general reduce the relevance and significance of many oncoEnrichR report modules.
+The query gene set is limited to n = 200 identifiers. Running with more identifiers can be done through the stand-alone R package. A very limited query gene set (e.g. n < 5) will in general reduce the relevance and significance of many oncoEnrichR report modules (i.e. protein-protein interaction networks, functional enrichment etc.).
 
 -----
 
@@ -321,7 +302,7 @@ The input dataset is in tabular_ format. The two output datasets are html_ and x
 
 **What it does**
 
-*OncoEnrichR* is intended for exploratory analysis and prioritization of a candidate hits (referred to as *query set* below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to interpret the query gene set along various dimensions, examples being cancer aberration frequencies, protein-protein interactions, pathway enrichment, subcellular compartment localization, target druggability, gene fitness scores, and tissue/cell-type specificity.
+*OncoEnrichR* is intended for exploratory analysis and prioritization of a candidate hits (referred to as *query set* below) from high-throughput cancer biology experiments. The tool queries a number of high-quality data resources in order to interpret the query gene set along various dimensions, examples being cancer aberration frequencies, protein-protein interactions, pathway enrichment, subcellular compartment localization, target druggability, gene fitness scores, and regulatory interactions.
 
 The results from the various analysis modules are provided in an interactive HTML report where the user can interrogate the results further. A multisheet Excel workbook is also provided for convience. The following resources are currently utilized for annotation and analysis:
 
@@ -386,8 +367,6 @@ The contents of the gene set analysis report attempt to answer the following que
 -  Are there known ligand-receptor interactions in the query set?
 
 -  Which subcellular compartments (nucleus, cytosol, plasma membrane etc.) are dominant localizations for members of the query set?
-
--  Are specific tissues or cell types enriched in the query set, considering healthy tissue/cell-type specific expression patterns (GTex/Human Protein Atlas) of query genes?
 
 -  Which protein-protein interactions are known within the query set? Are there interactions between members of the query set and other cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or predicted cancer drivers)? Which proteins constitute hubs in the protein-protein interaction network?
 

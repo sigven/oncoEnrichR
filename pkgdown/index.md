@@ -48,9 +48,6 @@ following scientific questions for a given gene list:
 -   Which protein complexes involve proteins in the query set?
 -   Which subcellular compartments (nucleus, cytosol, plasma membrane
     etc) are dominant localizations for proteins in the query set?
--   Are specific tissues or cell types enriched in the query set,
-    considering tissue/cell-type specific expression patterns of target
-    genes?
 -   Which protein-protein interactions are known within the query set?
     Are there interactions between members of the query set and other
     cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or
@@ -88,6 +85,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   August 2nd 2024: [**1.5.0 release**](articles/CHANGELOG.html#version-1-5-0)
 -   August 16th 2023: [**1.4.2 release**](articles/CHANGELOG.html#version-1-4-2)
 -   June 18th 2023: [**1.4.1 release**](articles/CHANGELOG.html#version-1-4-1)
 -   February 21st 2023: [**1.4.0 release**](articles/CHANGELOG.html#version-1-4-0)
@@ -102,7 +100,7 @@ Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.8247877"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.8247877.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.13170482"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.13170482.svg" alt="DOI"/></a>
 
 <br>
 
@@ -110,10 +108,8 @@ Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos
 
 -   [Installation instructions](articles/installation.html)
 -   [How to run oncoEnrichR](articles/running.html)
--   [Explore the various analysis outputs produced with
-    oncoEnrichR](articles/output.html)
--   [Annotation resources available in
-    oncoEnrichR](articles/annotation_resources.html)
+-   [Explore the various analysis outputs produced with oncoEnrichR](articles/output.html)
+-   [Annotation resources available in oncoEnrichR](articles/annotation_resources.html)
 
 ## Contact
 
