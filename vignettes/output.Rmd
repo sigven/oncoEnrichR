@@ -11,7 +11,7 @@ vignette: >
 
 The output of the analyses performed with oncoEnrichR are provided in two different formats:
 
-* An interactive HTML report
+* An interactive [quarto](https://quarto.org)-generated HTML report
 * A multi-sheet Excel workbook
 
 
@@ -44,7 +44,7 @@ various types of questions that can be answered with the tool.
 
 #### Cancer associations
 
-* Which tumor types are associated with genes in the queryset? To what extents? Which genes are classified as tumor suppressors, proto-oncogenes or potential cancer driver genes?
+* Which tumor types are associated with genes in the queryset? To what extents? Which genes are classified as tumor suppressors, proto-oncogenes, or potential cancer driver genes?
 
 <br>
 <p align = "center">
@@ -187,19 +187,6 @@ various types of questions that can be answered with the tool.
 </p>
 <br>
 
-#### Tissue and cell type enrichment
-
-* What are the tissue- and cell-type specific expression patterns of query genes in normal/healthy tissue?
-
-<br>
-<p align = "center">
-  <a href = "module_screenshots/cell_tissue_I.jpg"><img src="module_screenshots/cell_tissue_I.jpg" width = "500" height = "700" border = 1>
-  </a>
-   <br><br><br>
-   <a href = "module_screenshots/cell_tissue_II.jpg"><img src="module_screenshots/cell_tissue_II.jpg" width = "500" height = "700" border = 1>
-  </a>
-</p>
-<br>
 
 #### Tumor aberration frequencies
 

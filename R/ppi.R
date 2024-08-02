@@ -62,7 +62,7 @@ get_network_communities <- function(edges = NULL, nodes = NULL) {
 
   ## communities, fast greedy modularity optimization algorithm
   ## for finding community structure,
-  cties <- igraph::fastgreedy.community(d)
+  cties <- igraph::cluster_fast_greedy(d)
   edges_communities <- data.frame()
   if (length(cties) > 0) {
     n <- 1
@@ -272,12 +272,12 @@ get_biogrid_network_nodes_edges <-
     ## support/confidence in the protein-protein interaction network
     genedb <- genedb |>
       dplyr::mutate(oncogene = dplyr::if_else(
-        .data$oncogene_confidence_level == "MODERATE",
+        .data$oncogene_confidence_level == "Moderate",
         FALSE,
         as.logical(.data$oncogene)
       )) |>
       dplyr::mutate(tumor_suppressor = dplyr::if_else(
-        .data$tsg_confidence_level == "MODERATE",
+        .data$tsg_confidence_level == "Moderate",
         FALSE,
         as.logical(.data$tumor_suppressor)
       ))
@@ -391,12 +391,12 @@ get_string_network_nodes_edges <-
   ## support/confidence in the protein-protein interaction network
   genedb <- genedb |>
     dplyr::mutate(oncogene = dplyr::if_else(
-      .data$oncogene_confidence_level == "MODERATE",
+      .data$oncogene_confidence_level == "Moderate",
       FALSE,
       as.logical(.data$oncogene)
     )) |>
     dplyr::mutate(tumor_suppressor = dplyr::if_else(
-      .data$tsg_confidence_level == "MODERATE",
+      .data$tsg_confidence_level == "Moderate",
       FALSE,
       as.logical(.data$tumor_suppressor)
     ))
@@ -755,12 +755,20 @@ get_ppi_network <- function(qgenes = NULL,
       dplyr::mutate(color.background  = dplyr::if_else(
         .data$query_node == T, "lightblue", "mistyrose")) |>
       dplyr::mutate(color.background = dplyr::if_else(
-        .data$tumor_suppressor == T & .data$oncogene == F,
-        "firebrick", as.character(.data$color.background),
+        !is.na(.data$tumor_suppressor) &
+          .data$tumor_suppressor == T &
+          (is.na(.data$oncogene) |
+          .data$oncogene == F),
+        "firebrick",
+        as.character(.data$color.background),
         as.character(.data$color.background))) |>
       dplyr::mutate(color.background = dplyr::if_else(
-        .data$oncogene == T & .data$tumor_suppressor == F,
-        "darkolivegreen", as.character(.data$color.background),
+        !is.na(.data$oncogene) &
+          .data$oncogene == T &
+          (is.na(.data$tumor_suppressor) |
+             .data$tumor_suppressor == F),
+        "darkolivegreen",
+        as.character(.data$color.background),
         as.character(.data$color.background))) |>
       dplyr::mutate(color.background = dplyr::if_else(
         .data$oncogene == T & .data$tumor_suppressor == T,

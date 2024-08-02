@@ -52,7 +52,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 * We assign three confidence levels with respect to genes having oncogenic and/or tumor suppressive roles
 
-     - **Very Strong**
+     - **Very strong**
           * _Strong_support (> 20 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), no curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), **OR**
           * Manually curated entry in NCG or CGC, and with _significant support (> 10 citations)_ in the biomedical literature (CancerMine)
           
@@ -94,11 +94,6 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 ### Molecular gene signatures / pathways
 
 * A comprehensive set of pathway annotations and molecular gene signatures form the basis for the functional enrichment module offered by *oncoEnrichR*. We include a diverse set of molecular signatures from [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/), annotations with respect to molecular function, biological processes and cellular components from [Gene Ontology (GO)](http://geneontology.org/), and pathway annotations from [KEGG](https://www.genome.jp/kegg/pathway.html), [WikiPathways](https://www.wikipathways.org/), [NetPath](http://netpath.org), and [Reactome](https://reactome.org/)
-
-### Cell/tissue-specific gene expression patterns
-
-* We provide tissue- and cell-type specific gene expression annotations from the [Human Protein Atlas](https://proteinatlas.org). Tissue-specific patterns are derived from [The Tissue Atlas](https://www.proteinatlas.org/humanproteome/tissue), where tissue specificity is derived from deep sequencing of RNA (RNA-seq) in 50 different normal tissue types. All putative protein-coding genes have been classified with respect to abundance (tissue enriched, tissue enhanced etc.) for different tissues. For cell type specificity, we utilize [single cell RNA (scRNA) sequencing datasets ](https://www.proteinatlas.org/about/assays+annotation#singlecell_rna) aggregated within the Human Protein Atlas. Here, classification of all protein-coding genes based on single cell type-specific expression in 81 different cell types are performed; determining the types of genes elevated (cell type enriched, cell type enhanced etc.) in a particular cell type compared to all other cell types.
-
 
 ### Gene fitness effects
 

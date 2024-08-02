@@ -18,7 +18,7 @@
 #'
 load_db <- function(cache_dir = NA,
                     force_download = FALSE,
-                    googledrive = TRUE) {
+                    googledrive = FALSE) {
 
 
   lgr::lgr$appenders$console$set_layout(
@@ -158,10 +158,10 @@ load_db <- function(cache_dir = NA,
 #' @param oeDB oncoEnrichR annotation database object
 #' @param project_title project title (title of report)
 #' @param project_owner name of project owner
-#' @param html_floating_toc logical - float the table of contents to the left of the main document content. The floating table of contents will always be visible even when the document is scrolled
-#' @param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
+#' #param html_floating_toc logical - float the table of contents to the left of the main document content. The floating table of contents will always be visible even when the document is scrolled
+#' #param html_report_theme Bootswatch theme for HTML report (any of "bootstrap","cerulean","cosmo","default","flatly","journal","lumen","paper","sandstone","simplex","spacelab","united","yeti")
 #' @param query_id_type character indicating source of query (one of "uniprot_acc", "symbol",
-#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_transcript_id","ensembl_protein","refseq_protein")
 #' @param ignore_id_err logical indicating if analysis should continue when uknown query identifiers are encountered
 #' @param project_description project background information
 #' @param ppi_string_min_score minimum score (between 0 and 1) for confidence of retrieved protein-protein interactions (STRING)
@@ -173,7 +173,7 @@ load_db <- function(cache_dir = NA,
 #' @param ppi_show_isolated_nodes logical indicating if targets/nodes without any interactions should be displayed in the protein-protein interaction network
 #' @param bgset_description character indicating type of background (e.g. "All lipid-binding proteins (n = 200)")
 #' @param bgset_id_type character indicating source of query (one of "uniprot_acc", "symbol",
-#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_mrna","ensembl_protein","refseq_protein")
+#' "entrezgene", or "ensembl_gene","ensembl_mrna","refseq_transcript_id","ensembl_protein","refseq_protein")
 #' @param enrichment_p_value_cutoff cutoff p-value for enrichment/over-representation analysis
 #' @param enrichment_p_value_adj one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 #' @param enrichment_q_value_cutoff cutoff q-value for enrichment analysis
@@ -212,8 +212,8 @@ load_db <- function(cache_dir = NA,
 init_report <- function(oeDB,
                         project_title = "_Project title_",
                         project_owner = "_Project owner_",
-                        html_floating_toc = T,
-                        html_report_theme = "default",
+                        #html_floating_toc = T,
+                        #html_report_theme = "default",
                         query_id_type = "symbol",
                         ignore_id_err = TRUE,
                         project_description = "_Project description_",
@@ -303,9 +303,9 @@ init_report <- function(oeDB,
   rep[["config"]][["project_title"]] <- project_title
   rep[["config"]][["project_description"]] <- project_description
   rep[["config"]][["project_owner"]] <- project_owner
-  rep[["config"]][["rmarkdown"]] <- list()
-  rep[["config"]][["rmarkdown"]][["floating_toc"]] <- html_floating_toc
-  rep[["config"]][["rmarkdown"]][["theme"]] <- html_report_theme
+  #rep[["config"]][["rmarkdown"]] <- list()
+  #rep[["config"]][["rmarkdown"]][["floating_toc"]] <- html_floating_toc
+  #rep[["config"]][["rmarkdown"]][["theme"]] <- html_report_theme
 
   ## config - query (id type and option to ignore errors)
   rep[["config"]][["query"]] <- list()
@@ -685,14 +685,7 @@ init_report <- function(oeDB,
 #' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
 #' @param query_id_type character indicating source of query (one of
 #' "uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
-#' "refseq_mrna", "ensembl_protein", "refseq_protein")
-#' @param html_floating_toc logical - float the table of contents to the left
-#' of the main document content (HTML report). The floating table of contents
-#' will always be visible even when the document is scrolled
-#' @param html_report_theme Bootswatch theme for HTML report (any of
-#' "bootstrap", "cerulean", "cosmo", "default",
-#' "flatly", "journal", "lumen", "paper", "sandstone", "simplex",
-#' "spacelab", "united", "yeti")
+#' "refseq_transcript_id", "ensembl_protein", "refseq_protein")
 #' @param ignore_id_err logical indicating if analysis should
 #' continue when uknown query identifiers are encountered
 #' @param project_title project title (title of report)
@@ -702,7 +695,7 @@ init_report <- function(oeDB,
 #' reference/background for enrichment/over-representation analysis
 #' @param bgset_id_type character indicating source of background
 #' ("uniprot_acc", "symbol", "entrezgene",
-#' "ensembl_gene", "ensembl_mrna", "refseq_mrna", "ensembl_protein",
+#' "ensembl_gene", "ensembl_mrna", "refseq_transcript_id", "ensembl_protein",
 #' "refseq_protein"), default: "symbol"
 #' @param bgset_description character indicating type of background
 #' (e.g. "All lipid-binding proteins (n = 200)")
@@ -771,7 +764,7 @@ init_report <- function(oeDB,
 #' @param show_coexpression logical indicating if report should contain TCGA
 #' co-expression data (RNAseq) of query set with oncogenes/tumor
 #' suppressor genes (default: TRUE)
-#' @param show_cell_tissue logical indicating if report should contain
+#' #param show_cell_tissue logical indicating if report should contain
 #' tissue-specificity and single cell-type specificity assessments
 #' (Human Protein Atlas) of target genes (default: FALSE)
 #' @param show_ligand_receptor logical indicating if report should contain
@@ -813,9 +806,7 @@ onco_enrich <- function(query = NULL,
                         oeDB = NULL,
                         query_id_type = "symbol",
                         ignore_id_err = TRUE,
-                        html_floating_toc = T,
-                        html_report_theme = "default",
-                        project_title = "_Project title_",
+                        project_title = "_Project Title_",
                         project_owner = "_Project owner_",
                         project_description = "_Project description_",
                         bgset = NULL,
@@ -846,18 +837,17 @@ onco_enrich <- function(query = NULL,
                         show_cancer_hallmarks = TRUE,
                         show_drug = TRUE,
                         show_enrichment = TRUE,
-                        show_aberration = TRUE,
-                        show_coexpression = TRUE,
-                        show_cell_tissue = FALSE,
-                        show_ligand_receptor = TRUE,
-                        show_regulatory = TRUE,
+                        show_aberration = FALSE,
+                        show_coexpression = FALSE,
+                        show_ligand_receptor = FALSE,
+                        show_regulatory = FALSE,
                         show_unknown_function = TRUE,
                         show_prognostic = TRUE,
-                        show_subcell_comp = TRUE,
-                        show_synleth = TRUE,
+                        show_subcell_comp = FALSE,
+                        show_synleth = FALSE,
                         show_fitness = TRUE,
                         show_complex = TRUE,
-                        show_domain = TRUE,
+                        show_domain = FALSE,
                         ...) {
 
 
@@ -897,7 +887,7 @@ onco_enrich <- function(query = NULL,
     }
   }
 
-  val <- assertthat::validate_that(length(query) >= 2)
+  val <- assertthat::validate_that(length(query) >= 1)
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
       "ERROR: query set must contain at least two entries - length of query is: ", length(query)))
@@ -929,19 +919,19 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  val <- assertthat::validate_that(
-    html_report_theme %in% c("bootstrap","cerulean","cosmo","default",
-                        "flatly","journal","lumen","paper","sandstone",
-                        "simplex","spacelab","united","yeti")
-  )
-  if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'html_report_theme' must take on any of the following values: ",
-      "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
-      "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
-      " (value provided was '", enrichment_p_value_adj,"')"))
-    return()
-  }
+  # val <- assertthat::validate_that(
+  #   html_report_theme %in% c("bootstrap","cerulean","cosmo","default",
+  #                       "flatly","journal","lumen","paper","sandstone",
+  #                       "simplex","spacelab","united","yeti")
+  # )
+  # if (!is.logical(val)) {
+  #   lgr::lgr$info( paste0(
+  #     "ERROR: 'html_report_theme' must take on any of the following values: ",
+  #     "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
+  #     "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
+  #     " (value provided was '", enrichment_p_value_adj,"')"))
+  #   return()
+  # }
 
   ## Number of allowed query genes
   oncoenrichr_query_limit <- 1000
@@ -952,7 +942,7 @@ onco_enrich <- function(query = NULL,
                  "NOTE: Running oncoEnrichR workflow in Galaxy mode")
       if (is.logical(dot_args$galaxy)) {
         if (dot_args$galaxy == T) {
-          oncoenrichr_query_limit <- 1000
+          oncoenrichr_query_limit <- 200
         }
       }
   }
@@ -961,8 +951,17 @@ onco_enrich <- function(query = NULL,
     lgr::lgr$info(
       paste0("WARNING: oncoEnrichR is limited to the analysis of n = ",
              oncoenrichr_query_limit," entries. Query contained n = ",
-             length(query), " identifiers, limiting to top ",
+             length(query), " identifiers, limiting to first ",
              oncoenrichr_query_limit," genes"))
+    if(dot_args$galaxy == T){
+      lgr::lgr$info(
+        paste0("WARNING: oncoEnrichR in Galaxy is limited to the analysis of n = ",
+               oncoenrichr_query_limit," entries (running through the stand-alone R package ",
+               "allows longer query list (n = 1000). Query contained n = ",
+               length(query), " identifiers, limiting to first ",
+               oncoenrichr_query_limit," genes"))
+    }
+
     query <- utils::head(unique(query),
                          oncoenrichr_query_limit)
   }
@@ -970,7 +969,7 @@ onco_enrich <- function(query = NULL,
   val <- assertthat::validate_that(
     query_id_type %in%
       c("symbol", "entrezgene",
-        "refseq_mrna", "ensembl_mrna",
+        "refseq_transcript_id", "ensembl_mrna",
         "refseq_protein", "ensembl_protein",
         "uniprot_acc",
         "ensembl_gene")
@@ -978,7 +977,7 @@ onco_enrich <- function(query = NULL,
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
       "ERROR: 'query_id_type' must take on of the following values: ",
-      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
+      "'symbol', 'entrezgene', 'refseq_transcript_id', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
       " (value provided was '", query_id_type,"')"))
     return()
@@ -986,14 +985,14 @@ onco_enrich <- function(query = NULL,
 
   val <- assertthat::validate_that(
     bgset_id_type %in%
-      c("symbol", "entrezgene", "refseq_mrna", "ensembl_mrna",
+      c("symbol", "entrezgene", "refseq_transcript_id", "ensembl_mrna",
         "refseq_protein", "ensembl_protein", "uniprot_acc",
         "ensembl_gene")
   )
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
       "ERROR: 'bgset_id_type' must take on any of the following values: ",
-      "'symbol', 'entrezgene', 'refseq_mrna', 'ensembl_mrna', ",
+      "'symbol', 'entrezgene', 'refseq_transcript_id', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
       " (value provided was '", bgset_id_type,"')"))
     return()
@@ -1067,27 +1066,6 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  # val <- T
-  # subcellcomp_num_channels_selected <- 0
-  # for (e in subcellcomp_channel_types) {
-  #   if (!(e %in% c('Experimental', 'Text mining', 'Knowledge'))) {
-  #     val <- F
-  #   } else {
-  #     subcellcomp_num_channels_selected <-
-  #       subcellcomp_num_channels_selected + 1
-  #   }
-  # }
-  #
-  # if (val == F) {
-  #   lgr::lgr$info( paste0(
-  #     "ERROR: 'subcellcomp_channel_types' must be any selection of 'Knowledge' ",
-  #     ", 'Experimental', and 'Text mining', (current type and value: '",
-  #     typeof(subcellcomp_channel_types),"' - ",
-  #     paste(subcellcomp_channel_types, collapse = ', '),")"
-  #   ))
-  #   return()
-  # }
-
   val <-
     subcellcomp_min_channels %% 1 == 0 &
     subcellcomp_min_channels > 0 &
@@ -1133,13 +1111,25 @@ onco_enrich <- function(query = NULL,
 
   stopifnot(ppi_add_nodes <= 50)
 
+  if(length(query) <= 1){
+    show_enrichment <- FALSE
+    show_ppi <- FALSE
+    ## log warning
+    lgr::lgr$info(
+      paste0(
+        "WARNING: Functional enrichment and protein-protein ",
+        "interaction analysis are NOT performed ",
+        "for single gene queries."))
+
+  }
+
   ## Initialize the oncoEnrichR report structure
   onc_rep <- init_report(
     oeDB = oeDB,
     project_title = project_title,
     project_owner = project_owner,
-    html_report_theme = html_report_theme,
-    html_floating_toc = html_floating_toc,
+    #html_report_theme = html_report_theme,
+    #html_floating_toc = html_floating_toc,
     query_id_type = query_id_type,
     ignore_id_err = ignore_id_err,
     project_description = project_description,
@@ -1175,7 +1165,7 @@ onco_enrich <- function(query = NULL,
     show_coexpression = show_coexpression,
     show_subcell_comp = show_subcell_comp,
     show_fitness = show_fitness,
-    show_cell_tissue = show_cell_tissue,
+    #show_cell_tissue = show_cell_tissue,
     show_ligand_receptor = show_ligand_receptor,
     show_regulatory = show_regulatory,
     show_unknown_function = show_unknown_function,
@@ -1194,10 +1184,10 @@ onco_enrich <- function(query = NULL,
       genedb = oeDB[['genedb']][['all']],
       transcript_xref = oeDB[['genedb']][['transcript_xref']])
 
-  val <- assertthat::validate_that(NROW(qgenes_match$found) >= 2)
+  val <- assertthat::validate_that(NROW(qgenes_match$found) >= 1)
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
-      "ERROR: query set must contain at least two valid entries - number of validated entries: ", NROW(qgenes_match$found)))
+      "ERROR: query set must contain at least one valid entry - number of validated entries: ", NROW(qgenes_match$found)))
     return()
   }
 
@@ -1219,7 +1209,7 @@ onco_enrich <- function(query = NULL,
                "ppi",
                "aberration",
                "coexpression",
-               "cell_tissue",
+               #"cell_tissue",
                "cancer_hallmark",
                "fitness",
                "regulatory_interactions",
@@ -1246,42 +1236,45 @@ onco_enrich <- function(query = NULL,
   ## validate background gene set (if provided)
   background_entrezgene <- NULL
   background_genes_match <- NULL
-  if (!is.null(bgset)) {
-    background_genes_match <-
-      validate_query_genes(
-        bgset,
-        q_id_type = bgset_id_type,
-        ignore_id_err = ignore_id_err,
-        genedb = oeDB[['genedb']][['all']],
-        transcript_xref = oeDB[['genedb']][['transcript_xref']],
-        qtype = "background")
-    if (background_genes_match[["match_status"]] == "imperfect_stop" |
-        NROW(background_genes_match[['found']]) <= 1) {
-      lgr::lgr$info( paste0("WARNING: Background geneset not defined properly - ",
-                        "using all protein-coding genes instead"))
-      background_entrezgene <- as.character(
-        unique(oeDB[['genedb']][['all']]$entrezgene)
-      )
-    } else {
-      background_entrezgene <- as.character(
-        unique(background_genes_match[["found"]]$entrezgene)
-      )
-      if (onc_rep[['config']][['enrichment']][['bgset_description']] ==
-         "All protein-coding genes") {
-        lgr::lgr$info( paste0("WARNING: Description of background set is not set"))
-        onc_rep[['config']][['enrichment']][['bgset_description']] <-
-          "Undefined"
 
+  if (onc_rep[['config']][['show']][['enrichment']] == T) {
+    if (!is.null(bgset)) {
+      background_genes_match <-
+        validate_query_genes(
+          bgset,
+          q_id_type = bgset_id_type,
+          ignore_id_err = ignore_id_err,
+          genedb = oeDB[['genedb']][['all']],
+          transcript_xref = oeDB[['genedb']][['transcript_xref']],
+          qtype = "background")
+      if (background_genes_match[["match_status"]] == "imperfect_stop" |
+          NROW(background_genes_match[['found']]) <= 1) {
+        lgr::lgr$info( paste0("WARNING: Background geneset not defined properly - ",
+                          "using all protein-coding genes instead"))
+        background_entrezgene <- as.character(
+          unique(oeDB[['genedb']][['all']]$entrezgene)
+        )
+      } else {
+        background_entrezgene <- as.character(
+          unique(background_genes_match[["found"]]$entrezgene)
+        )
+        if (onc_rep[['config']][['enrichment']][['bgset_description']] ==
+           "All protein-coding genes") {
+          lgr::lgr$info( paste0("WARNING: Description of background set is not set"))
+          onc_rep[['config']][['enrichment']][['bgset_description']] <-
+            "Undefined"
+
+        }
       }
+    } else {
+      bg <- dplyr::select(oeDB[['genedb']][['all']],
+                          c("entrezgene",
+                          "gene_biotype")) |>
+        dplyr::filter(!is.na(.data$entrezgene) &
+                        .data$gene_biotype == "protein_coding") |>
+        dplyr::distinct()
+      background_entrezgene <- as.character(bg$entrezgene)
     }
-  } else {
-    bg <- dplyr::select(oeDB[['genedb']][['all']],
-                        c("entrezgene",
-                        "gene_biotype")) |>
-      dplyr::filter(!is.na(.data$entrezgene) &
-                      .data$gene_biotype == "protein-coding") |>
-      dplyr::distinct()
-    background_entrezgene <- as.character(bg$entrezgene)
   }
   onc_rep[['config']][['enrichment']][['bgset_size']] <-
     length(background_entrezgene)
@@ -1637,7 +1630,7 @@ onco_enrich <- function(query = NULL,
           as.character(.data$MUTATION_HOTSPOT)
         )) |>
         tidyr::separate(
-          MUTATION_HOTSPOT,
+          .data$MUTATION_HOTSPOT,
           c("tmp1","tmp2","tmp3","tmp4","tmp5","tmp6"),
           sep = "\\|", remove = T, fill = "right") |>
         dplyr::mutate(MUTATION_HOTSPOT = paste(
@@ -1746,52 +1739,52 @@ onco_enrich <- function(query = NULL,
 
   }
 
-  if (show_cell_tissue == T) {
-    onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
-      gene_tissue_cell_spec_cat(
-        qgenes = query_symbol,
-        q_id_type = "symbol",
-        resolution = "tissue",
-        genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df =
-          oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_expr_db_df =
-          oeDB[['tissuecelldb']][['tissue']][['expr_df']])
+  # if (show_cell_tissue == T) {
+  #   onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
+  #     gene_tissue_cell_spec_cat(
+  #       qgenes = query_symbol,
+  #       q_id_type = "symbol",
+  #       resolution = "tissue",
+  #       genedb = oeDB[['genedb']][['all']],
+  #       hpa_enrichment_db_df =
+  #         oeDB[['tissuecelldb']][['tissue']][['te_df']],
+  #       hpa_expr_db_df =
+  #         oeDB[['tissuecelldb']][['tissue']][['expr_df']])
+  #
+  #   onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
+  #     gene_tissue_cell_enrichment(
+  #       qgenes_entrez = as.integer(query_entrezgene),
+  #       resolution = "tissue",
+  #       background_entrez = as.integer(background_entrezgene),
+  #       genedb = oeDB[['genedb']][['all']],
+  #       hpa_enrichment_db_df =
+  #         oeDB[['tissuecelldb']][['tissue']][['te_df']],
+  #       hpa_enrichment_db_SE =
+  #         oeDB[['tissuecelldb']][['tissue']][['te_SE']])
 
-    onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
-      gene_tissue_cell_enrichment(
-        qgenes_entrez = as.integer(query_entrezgene),
-        resolution = "tissue",
-        background_entrez = as.integer(background_entrezgene),
-        genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df =
-          oeDB[['tissuecelldb']][['tissue']][['te_df']],
-        hpa_enrichment_db_SE =
-          oeDB[['tissuecelldb']][['tissue']][['te_SE']])
-
-    onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
-      gene_tissue_cell_spec_cat(
-        qgenes = as.integer(query_entrezgene),
-        q_id_type = "entrezgene",
-        resolution = "single_cell",
-        genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df =
-          oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_expr_db_df =
-          oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
-
-    onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
-      gene_tissue_cell_enrichment(
-        qgenes_entrez = as.integer(query_entrezgene),
-        background_entrez = as.integer(background_entrezgene),
-        resolution = "single_cell",
-        genedb = oeDB[['genedb']][['all']],
-        hpa_enrichment_db_df =
-          oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-        hpa_enrichment_db_SE =
-          oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
-
-  }
+  #   onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
+  #     gene_tissue_cell_spec_cat(
+  #       qgenes = as.integer(query_entrezgene),
+  #       q_id_type = "entrezgene",
+  #       resolution = "single_cell",
+  #       genedb = oeDB[['genedb']][['all']],
+  #       hpa_enrichment_db_df =
+  #         oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+  #       hpa_expr_db_df =
+  #         oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
+  #
+  #   onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
+  #     gene_tissue_cell_enrichment(
+  #       qgenes_entrez = as.integer(query_entrezgene),
+  #       background_entrez = as.integer(background_entrezgene),
+  #       resolution = "single_cell",
+  #       genedb = oeDB[['genedb']][['all']],
+  #       hpa_enrichment_db_df =
+  #         oeDB[['tissuecelldb']][['single_cell']][['te_df']],
+  #       hpa_enrichment_db_SE =
+  #         oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
+  #
+  # }
 
   return(onc_rep)
 
@@ -1825,7 +1818,7 @@ write <- function(report,
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  selfcontained <- T
+  embed_resources <- T
   galaxy_run <- T
   html_extern_path <- NA
   # logger <- log4r::logger(threshold = "INFO",
@@ -1834,7 +1827,7 @@ write <- function(report,
   if (length(names(dot_args)) > 0) {
 
     for (arg in names(dot_args)) {
-      if (!(arg == "selfcontained_html" |
+      if (!(arg == "embed_resources" |
             arg == "galaxy" | arg == "extra_files_path")) {
         lgr::lgr$info( paste0(
           "ERROR: argument '",arg,"' does not exist for oeDB$write()"))
@@ -1842,9 +1835,9 @@ write <- function(report,
       }
     }
 
-    if ("selfcontained_html" %in% names(dot_args)) {
-      if (is.logical(dot_args$selfcontained_html)) {
-        selfcontained <- dot_args$selfcontained_html
+    if ("embed_resources" %in% names(dot_args)) {
+      if (is.logical(dot_args$embed_resources)) {
+        embed_resources <- dot_args$embed_resources
       }
     }
     if ("galaxy" %in% names(dot_args)) {
@@ -1891,6 +1884,10 @@ write <- function(report,
   }
 
   output_directory <- dirname(file)
+
+  if(is.na(html_extern_path) & !embed_resources){
+    html_extern_path <- output_directory
+  }
   file_basename <- basename(file)
   file_basename_prefix <- stringr::str_replace(
     file_basename,"\\.(html|xlsx)$","")
@@ -1969,155 +1966,129 @@ write <- function(report,
     lgr::lgr$info( "------")
     lgr::lgr$info( "Writing HTML file with report contents")
 
-    if (selfcontained == F) {
 
-      oe_rmarkdown_template_dir <-
-        system.file("templates", package = "oncoEnrichR")
-      tmpdir <-
-        file.path(
-          output_directory,
-          paste0("tmp_",
-                 stringi::stri_rand_strings(
-                   1, 20, pattern = "[A-Za-z0-9]")
-          )
-        )
-      dir.create(tmpdir)
-      system(paste0('cp ',
-                    oe_rmarkdown_template_dir,
-                    .Platform$file.sep,
-                    "* ",
-                    tmpdir))
+    oe_rep_template_path <-
+      system.file("templates", package = "oncoEnrichR")
 
-      floating_toc <- "false"
-      if (report$config$rmarkdown$floating_toc == T) {
-        floating_toc <- "true"
+    ## make temporary directory for quarto report rendering
+    #stringi::stri_rand_strings(10, 1)
+    tmp_quarto_dir <- file.path(
+      output_directory,
+      paste0('quarto_', stringi::stri_rand_strings(1, 15))
+    )
+    quarto_main_template <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_quarto.qmd")
+    quarto_main_template_sample <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_sample.qmd")
+    quarto_html <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_sample.html")
+    quarto_supp_dir <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_sample_files")
+    quarto_supp_libs <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_sample_files{.Platform$file.sep}libs")
+    quarto_supp_fig <-
+      glue::glue("{tmp_quarto_dir}{.Platform$file.sep}index_sample_files{.Platform$file.sep}figure-html")
+
+    ## Copy all oncoEnrichR quarto reporting templates, bibliography, css etc to
+    ## the temporary directory for quarto report rendering
+    if (!dir.exists(tmp_quarto_dir)) {
+      dir.create(tmp_quarto_dir, recursive = TRUE)
+    }
+    #invisible(cpsr::mkdir(tmp_quarto_dir))
+    system(glue::glue(
+      "cp -r {oe_rep_template_path}{.Platform$file.sep}* {tmp_quarto_dir}"))
+
+    ## Save oncoEnrichR report object in temporary quarto rendering directory
+    rds_report_path <- file.path(
+      tmp_quarto_dir, "oe_report.rds")
+    saveRDS(report, file = rds_report_path)
+
+    rds_tcga_maf_path <- file.path(
+      tmp_quarto_dir, "tcga_maf_datasets.rds")
+    saveRDS(oeDB$tcgadb$maf, file = rds_tcga_maf_path)
+
+    ## Substitute rds object in main quarto template
+    ## with path to sample report rds, and also TCGA MAF objects
+
+    embed_resources_val <- "embed-resources: true"
+    if(!embed_resources){
+      embed_resources_val <- "embed-resources: false"
+    }
+    readLines(quarto_main_template) |>
+      stringr::str_replace(
+          pattern = "embed-resources: true",
+          replacement = embed_resources_val) |>
+      stringr::str_replace(
+        pattern = "<PROJECT_TITLE>",
+        replacement = report$config$project_title) |>
+      stringr::str_replace(
+        pattern = "<ONCO_ENRICHR_REPORT_OBJECT.rds>",
+        replacement = rds_report_path) |>
+      stringr::str_replace(
+        pattern = "<TCGA_MAF_DATASETS.rds>",
+        replacement = rds_tcga_maf_path) |>
+      writeLines(con = quarto_main_template_sample)
+
+    ## Render quarto report (quietly)
+    quarto::quarto_render(
+      input = quarto_main_template_sample,
+      execute_dir = tmp_quarto_dir,
+      quiet = T)
+
+    ## check that supporting libs do not exist in output directory (Galaxy)
+    if (galaxy_run == T & embed_resources == F){
+      if(dir.exists(quarto_supp_fig) &
+         dir.exists(quarto_supp_libs) &
+         dir.exists(quarto_supp_dir) &
+         !is.na(html_extern_path)) {
+
+        for(d in c("libs","figure-html")) {
+          if (dir.exists(file.path(html_extern_path, d))) {
+            if (overwrite == F) {
+              lgr::lgr$info( paste0(
+                "ERROR: Cannot create HTML since '", d,
+                "' exists in output_directory",
+                " and 'overwrite' is FALSE")
+              )
+              return()
+            } else {
+              system(paste0('rm -rf ',file.path(
+                html_extern_path, d
+              )))
+            }
+          }
+        }
+
+        system(paste0('mv ', quarto_supp_dir," ", html_extern_path))
+
       }
-
-      sink(file = file.path(tmpdir,"_site.yml"))
-      cat("output:",
-          "  html_document:",
-          "    number_sections: false",
-          "    toc: true",
-          "    fig_width: 5",
-          "    fig_height: 4",
-          "    toc_depth: 3",
-          paste0("    toc_float: ", floating_toc),
-          "    highlight: null",
-          "    mathjax: null",
-          paste0("    theme: ", report$config$rmarkdown$theme),
-          "    includes:",
-          "      in_header: _header.html",
-          "      after_body: _disclaimer.md", sep ="\n")
-      sink()
-
-
-      rmdown_html <- file.path(tmpdir,"_site", "index.html")
-      rmdown_supporting1 <- file.path(tmpdir,"_site","index_files")
-      rmdown_supporting2 <- file.path(tmpdir,"_site","site_libs")
-
-      if (galaxy_run == T) {
-
-        if (dir.exists(file.path(
-          html_extern_path, "site_libs"))) {
-          if (overwrite == F) {
-            lgr::lgr$info( paste0(
-              "ERROR: Cannot create HTML since 'site_libs' exist in output_directory",
-              " and 'overwrite' is FALSE")
-            )
-            return()
-          } else {
-            system(paste0('rm -rf ',file.path(
-              html_extern_path, "site_libs"
-            )))
-          }
-        }
-        if (dir.exists(file.path(
-          html_extern_path, "index_files"))) {
-          if (overwrite == F) {
-            lgr::lgr$info( paste0(
-              "ERROR: Cannot create HTML since 'index_files' exist in output_directory",
-              " and 'overwrite' is FALSE")
-            )
-            return()
-          }
-          else{
-            system(paste0('rm -rf ',file.path(
-              html_extern_path, "index_files"
-            )))
-          }
-        }
-
-        suppressWarnings(
-          rmarkdown::render_site(
-            input = tmpdir,
-            quiet = T
-          )
-        )
-
-        if (file.exists(rmdown_html) & dir.exists(rmdown_supporting1) &
-           dir.exists(rmdown_supporting2)) {
-          system(paste0('mv ', rmdown_html, ' ',
-                        file))
-          system(paste0('mv ', rmdown_supporting1," ", html_extern_path))
-          system(paste0('mv ', rmdown_supporting2," ", html_extern_path))
-          system(paste0('rm -rf ',tmpdir))
-
-          lgr::lgr$info( paste0("Output file: ",
-                                          file))
-          lgr::lgr$info( "------")
-        }
-      }
-
-    } else {
-
-      disclaimer <- system.file(
-        "templates",
-        "_disclaimer.md",
-        package = "oncoEnrichR")
-
-      header <- system.file(
-        "templates",
-        "_header.html",
-        package = "oncoEnrichR")
-
-      report_theme <- report$config$rmarkdown$theme
-      toc_float <- report$config$rmarkdown$floating_toc
-
-      markdown_input <- system.file(
-        "templates",
-        "index.Rmd",
-        package = "oncoEnrichR")
-
-      suppressWarnings(
-        rmarkdown::render(
-          markdown_input,
-          output_format = rmarkdown::html_document(
-            theme = report_theme,
-            toc = T,
-            fig_width = 5,
-            highlight = NULL,
-            mathjax = NULL,
-            fig_height = 4,
-            toc_depth = 3,
-            toc_float = toc_float,
-            number_sections = F,
-            includes = rmarkdown::includes(
-              in_header = header,
-              after_body = disclaimer)),
-          output_file = file_basename,
-          output_dir = output_directory,
-          clean = T,
-          intermediates_dir = output_directory,
-          quiet = T)
-      )
-
-      lgr::lgr$info( paste0("Output file (self-contained HTML): ",
-                                      file))
-      lgr::lgr$info( "------")
     }
 
+    ## Copy output HTML report from temporary rendering directory
+    ## to designated HTML file in output directory
+    if(file.exists(quarto_html)){
+      system(
+        glue::glue(paste0(
+          "cp -f {quarto_html} ",
+          "{file}")))
+    }else{
+      cat("WARNING\n")
+    }
+    ## Remove temporary rendering directory
+    system(glue::glue("rm -rf {tmp_quarto_dir}"))
 
+    if(galaxy_run == F & embed_resources == F){
+      lgr::lgr$info( paste0(
+        "Output file (non-selfcontained quarto-based HTML): ",
+        file))
+    }else{
+      lgr::lgr$info( paste0(
+        "Output file (selfcontained quarto-based HTML): ",
+        file))
+    }
+    lgr::lgr$info( "------")
   }
+
   if (format == "excel") {
 
     wb <- openxlsx::createWorkbook()
@@ -2126,30 +2097,30 @@ write <- function(report,
 
     table_style_index <- 15
     for (elem in c("settings",
-                  "query",
-                  "unknown_function",
-                  "cancer_association",
-                  "cancer_hallmark",
-                  "drug_known",
-                  "drug_tractability",
-                  "synthetic_lethality",
-                  "fitness_scores",
-                  "fitness_prioritized",
-                  "protein_complex",
-                  "protein_domain",
-                  "ppi_string",
-                  "ppi_biogrid",
-                  "enrichment",
-                  "regulatory",
-                  "ligand_receptor",
-                  "subcellcomp",
-                  "cell_tissue",
-                  "aberration",
-                  "recurrent_variants",
-                  "coexpression",
-                  "prognostic_association_I",
-                  "prognostic_association_II"
-                  )) {
+                   "query",
+                   "unknown_function",
+                   "cancer_association",
+                   "cancer_hallmark",
+                   "drug_known",
+                   "drug_tractability",
+                   "synthetic_lethality",
+                   "fitness_scores",
+                   "fitness_prioritized",
+                   "protein_complex",
+                   "protein_domain",
+                   "ppi_string",
+                   "ppi_biogrid",
+                   "enrichment",
+                   "regulatory",
+                   "ligand_receptor",
+                   "subcellcomp",
+                   #"cell_tissue",
+                   "aberration",
+                   "recurrent_variants",
+                   "coexpression",
+                   "prognostic_association_I",
+                   "prognostic_association_II"
+    )) {
 
       show_elem <- elem
       if (elem == "cancer_association") {
@@ -2194,7 +2165,7 @@ write <- function(report,
         analysis_output = elem,
         tableStyle =
           paste0("TableStyleMedium",
-                table_style_index)
+                 table_style_index)
       )
 
       ## Excel Table style: TableStyleMedium - 15 to 21                                                                                               table_style_index))
@@ -2208,10 +2179,5 @@ write <- function(report,
     openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
     lgr::lgr$info( paste0("Output file: ",file))
     lgr::lgr$info( "------")
-  }
-  else{
-    if (format == "json") {
-      lgr::lgr$info( "JSON output not yet implemented")
-    }
   }
 }

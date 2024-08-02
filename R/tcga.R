@@ -259,7 +259,7 @@ tcga_aberration_matrix <- function(qgenes,
     dplyr::arrange(dplyr::desc(.data$pancancer_percent_mutated)) |>
     dplyr::select(c("symbol")) |>
     dplyr::distinct() |>
-    utils::head(75)
+    utils::head(70)
 
   gene_aberrations_top <- gene_aberrations |>
     dplyr::inner_join(top_mutated, by = "symbol", relationship = "many-to-many") |>

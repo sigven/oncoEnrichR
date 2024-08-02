@@ -43,9 +43,9 @@ RUN cd cmake-3.20.0 && ./bootstrap && make && make install
 
 ## oncoEnrichR dependencies: restore all R package versions and dependencies with renv package
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
-RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_1.0.1.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_1.0.7.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.4.2.tar.gz /
+COPY oncoEnrichR_1.5.0.tar.gz /
 
 #RUN R -e "library(renv)"
 
@@ -53,7 +53,7 @@ RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.4.2.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.5.0.tar.gz', lib = '/usr/lib/R/library/')"
 
 ## PINNED VERSION: pandoc (for HTML report generation)
 RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd64.deb && \
@@ -61,6 +61,16 @@ RUN wget https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd6
   rm pandoc* && \
   apt-get clean
 
+
+RUN set -e -x && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    gdebi-core \
+    librsvg2-bin && apt-get clean
+
+RUN curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
+RUN gdebi --non-interactive quarto-linux-amd64.deb
+RUN rm -f quarto-linux-amd64.deb
+
 RUN rm -rf /root/.cache
-RUN rm -rf /oncoEnrichR_1.4.2.tar.gz
+RUN rm -rf /oncoEnrichR_1.5.0.tar.gz
 RUN rm -rf /cmake-3.20.0*

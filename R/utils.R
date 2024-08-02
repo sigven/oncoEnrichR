@@ -15,7 +15,7 @@ validate_query_genes <- function(qgenes,
               q_id_type == "ensembl_mrna" |
               q_id_type == "ensembl_protein" |
               q_id_type == "refseq_protein" |
-              q_id_type == "refseq_mrna" |
+              q_id_type == "refseq_transcript_id" |
               q_id_type == "uniprot_acc" |
               q_id_type == "ensembl_gene")
   stopifnot(is.character(qgenes))
@@ -46,8 +46,8 @@ validate_query_genes <- function(qgenes,
   if (q_id_type == "ensembl_gene" |
       q_id_type == "ensembl_protein" |
       q_id_type == "ensembl_mrna" |
-      q_id_type == "refseq_mrna" |
-      q_id_type == "refseq_peptide") {
+      q_id_type == "refseq_transcript_id" |
+      q_id_type == "refseq_protein_id") {
     target_genes$qid <- stringr::str_replace(
       target_genes$qid, "\\.[0-9]{1,}","")
   }
@@ -81,7 +81,7 @@ validate_query_genes <- function(qgenes,
 
     qtype_id <- q_id_type
     if (q_id_type == "refseq_protein") {
-      qtype_id <- "refseq_peptide"
+      qtype_id <- "refseq_protein_id"
     }
     if (q_id_type == "ensembl_mrna") {
       qtype_id <- "ensembl_transcript_id"
@@ -323,7 +323,7 @@ validate_query_genes <- function(qgenes,
 
 #' Function that validates the oncoEnrichR database object
 #'
-#' @param db list object with annotation data for oncoEnrichR
+#' @param oe_db list object with annotation data for oncoEnrichR
 #'
 #' @keywords internal
 #'
@@ -345,8 +345,8 @@ validate_db <- function(oe_db) {
       "slparalogdb",
       "subcelldb",
       "tcgadb",
-      "tftargetdb",
-      "tissuecelldb")
+      "tftargetdb")
+      #"tissuecelldb")
 
   for (db in db_entries) {
     if (!(db %in% names(oe_db))) {
@@ -396,8 +396,8 @@ validate_db_df <- function(df, dbtype = "genedb") {
                "go_gganatogram",
                "opentarget_disease_assoc",
                "opentarget_disease_site_rank",
-               "enrichment_db_hpa_singlecell",
-               "enrichment_db_hpa_tissue",
+               #"enrichment_db_hpa_singlecell",
+               #"enrichment_db_hpa_tissue",
                "ppi_nodes",
                "slparalog",
                "fitness_scores",
@@ -701,8 +701,8 @@ validate_db_df <- function(df, dbtype = "genedb") {
                      'ensembl_gene_id',
                      'ensembl_protein_id',
                      'ensembl_transcript_id',
-                     'refseq_mrna',
-                     'refseq_peptide',
+                     'refseq_protein_id',
+                     'refseq_transcript_id',
                      'symbol',
                      'uniprot_acc')
 
@@ -1006,20 +1006,7 @@ add_excel_sheet <- function(
           configuration = 'bgset_id_type',
           value = as.character(report$config$bgset$id_type),
           stringsAsFactors = F
-        ),
-        data.frame(
-          category = 'OTHER',
-          configuration = 'floating_toc',
-          value = as.character(report$config$rmarkdown$floating_toc),
-          stringsAsFactors = F
-        ),
-        data.frame(
-          category = 'OTHER',
-          configuration = 'report_theme',
-          value = as.character(report$config$rmarkdown$theme),
-          stringsAsFactors = F
         )
-
       )
 
   }
@@ -1826,13 +1813,6 @@ file_is_writable <- function(path) {
 #' @name tidyeval
 #' @keywords internal
 #' @importFrom rlang .data :=
-NULL
-
-#' GSEAbase imports
-#'
-#' @name gseabase
-#' @keywords internal
-#' @importFrom GSEABase GeneSet SymbolIdentifier ENSEMBLIdentifier EntrezIdentifier
 NULL
 
 utils::globalVariables(c("."))
