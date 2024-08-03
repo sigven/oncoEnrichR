@@ -6,7 +6,7 @@
 ::: {.callout-important}
 ## Citation policies for usage of report contents
 
-We encourage users of _oncoEnrichR_ to properly cite no only the software but also the underlying data sources and other software tools used in the analysis. Below, we provide a guide as to the recommended citations for the various output modules of the report.
+We encourage users of _oncoEnrichR_ to properly cite not only the software, but also the underlying data sources and other software tools used in the analysis. Below, we provide a guide as to the underlying citations for the various output modules of the report.
 :::
 
 :::: {.columns}

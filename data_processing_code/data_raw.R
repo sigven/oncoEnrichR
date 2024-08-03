@@ -21,7 +21,7 @@ db_updates[['omnipath_regulatory']] <- F
 db_updates[['subcelldb']] <- F
 db_updates[['ligand_receptor_db']] <- F
 
-oe_version <- "1.5.0"
+oe_version <- "1.5.1"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"

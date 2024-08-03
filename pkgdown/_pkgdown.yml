@@ -4,6 +4,17 @@ toc:
   depth: 3
 template:
   bootstrap: 5
+  bslib:
+    info: "#014587"
+    dropdown-link-hover-bg: "#014587"
+    dropdown-link-hover-color: "white"
+    dropdown-link-active-color: "white"
+    navbar-light-color: "white"
+    navbar-light-brand-color: "white"
+    navbar-link-hover-color: "white !important"
+    nav-link-hover-color: "white !important"
+    navbar-light-brand-hover-color: "white !important"
+    navbar-link-color: "white"
   includes:
     in_header: |
        <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script>
@@ -18,6 +29,12 @@ authors:
   Sigve Nakken:
     href: "https://github.com/sigven"
 navbar:
+  link-color: "white"
+  light-color: "white"
+  light-brand-color: "white"
+  light-hover-color: "white !important"
+  type: light
+  bg: info
   structure:
     left:  [home, installation, running, articles, changelog]
     right: [reference, search, github]

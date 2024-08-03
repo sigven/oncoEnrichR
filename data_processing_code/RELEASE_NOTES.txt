@@ -1,6 +1,6 @@
-##ONCOENRICHR_DB_VERSION = 20240801
+##ONCOENRICHR_DB_VERSION = 20240803
 name	url	description	version	key	resource_type	license
-oncoEnrichR	https://github.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.5.0	oncoEnrichR	software	MIT
+oncoEnrichR	https://github.com/sigven/oncoEnrichR	R package for functional interrogation of genesets in the context of cancer	v1.5.1	oncoEnrichR	software	MIT
 clusterProfiler	https://guangchuangyu.github.io/software/clusterProfiler/	A universal enrichment tool for interpreting omics data (R package)	v4.12.0	clusterProfiler	software	Artistic-2.0
 OmnipathR	https://omnipathdb.org/	Access to datasets on prior molecular knowledge: gene regulatory interactions, enzyme-PTM relationships, protein complexes, protein annotations etc.	v3.11.10	omnipathr	software	MIT
 hu.MAP	http://humap2.proteincomplexes.org/	Human Protein Complex Map	v2.0	humap2	db	CC0 1.0

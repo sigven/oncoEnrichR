@@ -7,6 +7,13 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.5.1
+
+* Date: 2024-08-03
+
+* Updates
+  * Minor patch that highlights `quarto` as package dependency in installation instructions
+
 ## Version 1.5.0
 
 * Date: 2024-08-02

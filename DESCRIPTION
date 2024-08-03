@@ -17,8 +17,7 @@ Description: oncoEnrichR performs annotation and prioritization of genesets
     patterns in human tumor samples), STRING/BioGRID (protein-protein interaction networks), 
     curated protein complexes (CORUM/Compleat/ComplexPortal/hu.MAP2), 
     COMPARTMENTS (subcellular compartments), 
-    Human Protein Atlas (tissue and cell-type specific expression patterns and 
-    prognostic associations), CellChatDB (ligand-receptor interactions),
+    Human Protein Atlas (prognostic gene expression associations), CellChatDB (ligand-receptor interactions),
     DoRothEA (regulatory interactions), synthetic lethality predictions, 
     and Gene Ontology/MSigDB/REACTOME/KEGG/NetPath 
     (functional enrichment/over-representation analysis with respect to gene 
