@@ -20,3 +20,5 @@ In order to establish an overall ranking of genes with respect to cancer relevan
 </p>
 <br>
 
+Note that the oncoEnrichR package contains a dedicated function `cancer_association_rank()` that provides the relative importance of query genes with respect to a particular tumor type/site. The function takes as input a character vector with gene symbols, and returns a list with genes ranked according to strength of association to the given tumor type/site, i.e. using the strategy outlined above.
+

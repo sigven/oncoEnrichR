@@ -75,6 +75,9 @@ get_go_enrichment <- function(query_entrez,
           go_description = "Description",
           count = "Count",
           gene_ratio = "GeneRatio",
+          rich_factor = "RichFactor",
+          fold_enrichment = "FoldEnrichment",
+          z_score = "zScore",
           background_ratio = "BgRatio",
           gene_id = "geneID") |>
         dplyr::mutate(
@@ -242,6 +245,9 @@ get_universal_enrichment <- function(query_entrez,
           description = "Description",
           count = "Count",
           gene_ratio = "GeneRatio",
+          rich_factor = "RichFactor",
+          fold_enrichment = "FoldEnrichment",
+          z_score = "zScore",
           background_ratio = "BgRatio",
           gene_id = "geneID")
     )
@@ -257,6 +263,7 @@ get_universal_enrichment <- function(query_entrez,
         dplyr::mutate(
           exact_source = "https://wikipathways.org",
           external_url = "https://wikipathways.org",
+          url = "https://wikipathways.org",
           db = dbsource)
     }
     else if (dbsource == "KEGG") {
@@ -271,6 +278,7 @@ get_universal_enrichment <- function(query_entrez,
         dplyr::mutate(
           exact_source = "https://www.genome.jp/kegg/pathway.html",
           external_url = "https://www.genome.jp/kegg/pathway.html",
+          url = "https://www.genome.jp/kegg/pathway.html",
           db = dbsource)
     }
     else if (dbsource == "NetPath") {
@@ -284,18 +292,21 @@ get_universal_enrichment <- function(query_entrez,
         dplyr::mutate(
           exact_source = "http://netpath.org",
           external_url = "http://netpath.org",
+          url = "http://netpath.org",
           db = dbsource)
     }
     else{
       stopifnot(!is.null(TERM2SOURCE) | !is.data.frame(TERM2SOURCE))
       stopifnot("standard_name" %in% colnames(TERM2SOURCE))
       df <- df |>
-        dplyr::left_join(TERM2SOURCE, by="standard_name", relationship = "many-to-many") |>
+        dplyr::left_join(
+          TERM2SOURCE, by="standard_name",
+          relationship = "many-to-many") |>
         dplyr::mutate(
           description_link =
             dplyr::if_else(
-              !is.na(.data$external_url),
-              paste0("<a href='",.data$external_url,
+              !is.na(.data$url),
+              paste0("<a href='",.data$url,
                      "' target='_blank'>",
                      .data$description,"</a>"),
               .data$description))

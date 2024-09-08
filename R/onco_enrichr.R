@@ -918,20 +918,6 @@ onco_enrich <- function(query = NULL,
     return()
   }
 
-  # val <- assertthat::validate_that(
-  #   html_report_theme %in% c("bootstrap","cerulean","cosmo","default",
-  #                       "flatly","journal","lumen","paper","sandstone",
-  #                       "simplex","spacelab","united","yeti")
-  # )
-  # if (!is.logical(val)) {
-  #   lgr::lgr$info( paste0(
-  #     "ERROR: 'html_report_theme' must take on any of the following values: ",
-  #     "'bootstrap', 'cerulean', 'cosmo', 'default', 'flatly', 'journal', 'lumen',",
-  #     "'paper', 'sandstone', 'simplex', 'spacelab', 'united', 'yeti'",
-  #     " (value provided was '", enrichment_p_value_adj,"')"))
-  #   return()
-  # }
-
   ## Number of allowed query genes
   oncoenrichr_query_limit <- 1000
 
@@ -1510,7 +1496,7 @@ onco_enrich <- function(query = NULL,
       onc_rep[["config"]][["fitness"]][["plot_height_fitness"]]  <-
         onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] +
         as.integer((
-          onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/8.5)
+          onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/5.6)
     }
 
     onc_rep[["data"]][["fitness"]][["target_priority_scores"]] <-

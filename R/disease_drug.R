@@ -1,4 +1,199 @@
+#' Rank a gene list according to cancer relevance to a tumor type/site
+#'
+#' Function that ranks a list of human gene identifiers with respect to
+#' strength of association to a particular tumor type/site. Underlying association
+#' evidence for the cancer rank per site is pulled from the Open Targets Platform,
+#' see more details \href{https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html}{here}.
+#'
+#' @param query character vector with gene/query identifiers (minimum 1, maximum 2,500)
+#' @param oeDB oncoEnrichR data repository object - as returned from `load_db()`
+#' @param query_id_type character indicating source of query (one of
+#' "uniprot_acc", "symbol","entrezgene", or "ensembl_gene", "ensembl_mrna",
+#' "refseq_transcript_id", "ensembl_protein", "refseq_protein")
+#' @param ignore_id_err logical indicating if analysis should
+#' continue when uknown query identifiers are encountered
+#' @param incude_gene_summary logical indicating if gene summary (NCBI/UniProt) should be included
+#' in output data tables
+#' @param tumor_site character indicating primary tumor site of interest
+#'
+#' @return
+#' A list with two data frames: query genes ranked according to cancer relevance
+#' for the specified tumor site, and unranked query genes (no evidence found)
+#'
+#' @export
+#'
+cancer_association_rank <- function(
+    query = NULL,
+    tumor_site = "Breast",
+    query_id_type = "symbol",
+    ignore_id_err = TRUE,
+    include_gene_summary = FALSE,
+    oeDB = NULL){
 
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+
+  if (is.null(oeDB)) {
+    lgr::lgr$info( paste0(
+      "ERROR: mandatory argument 'oeDB' cannot be NULL"))
+    return()
+  }
+  oedb_val <- validate_db(oeDB)
+  if (oedb_val != 0) {
+    return()
+  }
+
+  val <- assertthat::validate_that(
+    query_id_type %in%
+      c("symbol", "entrezgene",
+        "refseq_transcript_id", "ensembl_mrna",
+        "refseq_protein", "ensembl_protein",
+        "uniprot_acc",
+        "ensembl_gene")
+  )
+  if (!is.logical(val)) {
+    lgr::lgr$info( paste0(
+      "ERROR: 'query_id_type' must take on of the following values: ",
+      "'symbol', 'entrezgene', 'refseq_transcript_id', 'ensembl_mrna', ",
+      "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
+      " (value provided was '", query_id_type,"')"))
+    return()
+  }
+
+  tumor_sites <-
+    c('Adrenal Gland', 'Ampulla of Vater', 'Biliary Tract',
+    'Bladder/Urinary Tract', 'Bone', 'Breast', 'CNS/Brain',
+    'Cervix', 'Colon/Rectum', 'Esophagus/Stomach',
+    'Eye', 'Head and Neck', 'Kidney', 'Liver',
+    'Lung', 'Lymphoid', 'Myeloid',
+    'Ovary/Fallopian Tube', 'Pancreas',
+    'Penis', 'Peripheral Nervous System',
+    'Peritoneum', 'Pleura', 'Prostate',
+    'Skin', 'Soft Tissue', 'Testis',
+    'Thymus', 'Thyroid',
+    'Uterus', 'Vulva/Vagina')
+
+  if(!(tumor_site %in% tumor_sites)){
+    lgr::lgr$info( paste0(
+      "ERROR: argument 'tumor_site' must have a value in the following list: '",
+      paste(tumor_sites, collapse="', '"),"'"))
+    return()
+  }
+
+  if (is.null(query)) {
+    lgr::lgr$info( paste0(
+      "ERROR: mandatory argument 'query' cannot be NULL"))
+    return()
+  }
+  if (!is.character(query)) {
+    lgr::lgr$info( paste0(
+      "ERROR: mandatory argument 'query' is of wrong type (not character)"))
+    return()
+  }
+
+  if (length(query) == 0) {
+    lgr::lgr$info( paste0(
+      "ERROR: mandatory argument 'query' is empty (length = 0)"))
+    return()
+  }
+
+
+  ## validate query gene set
+  qgenes_match <-
+    validate_query_genes(
+      qgenes = query,
+      q_id_type = query_id_type,
+      ignore_id_err = ignore_id_err,
+      genedb = oeDB[['genedb']][['all']],
+      transcript_xref = oeDB[['genedb']][['transcript_xref']])
+
+  val <- assertthat::validate_that(NROW(qgenes_match$found) >= 1)
+  if (!is.logical(val)) {
+    lgr::lgr$info( paste0(
+      "ERROR: query set must contain at least one valid entry - ",
+      "number of validated entries: ",
+      NROW(qgenes_match$found)))
+    return()
+  }
+
+  if(NROW(qgenes_match$found) > 2500){
+    lgr::lgr$warn( paste0(
+      "Query set must exceeds max limit of 2,500 valid entries - ",
+      "limiting input to 2,500 entries"))
+    qgenes_match[['found']] <- head(qgenes_match[['found']], 2500)
+  }
+
+  lgr::lgr$info( paste0(
+    "Generating rank of query set according to cancer association ",
+    "to '", tumor_site,"'"))
+
+  ## get validated gene set
+  targets_validated <-
+    qgenes_match[['found']] |>
+    dplyr::select(
+      c("symbol","entrezgene")) |>
+    dplyr::left_join(
+      dplyr::select(
+        oeDB$genedb$all,
+        c("ensembl_gene_id", "entrezgene",
+          "name", "gene_biotype","gene_summary")),
+      by = "entrezgene"
+    )
+
+  targets_validated$gene_summary <-
+    stringr::str_trim(
+      textclean::replace_html(targets_validated$gene_summary),
+      side = "both")
+
+  if(!include_gene_summary){
+    targets_validated <-
+      dplyr::select(targets_validated, -c("gene_summary"))
+  }
+
+  site_rank <- oeDB$otdb$gene_rank |>
+    dplyr::filter(.data$primary_site == tumor_site)
+
+  ## get cancer gene rank
+  cancer_rank <-
+    targets_validated |>
+    dplyr::left_join(site_rank,
+                     by = "ensembl_gene_id") |>
+    dplyr::arrange(dplyr::desc(.data$tissue_assoc_rank)) |>
+    dplyr::rename(
+      tumor_site = "primary_site",
+      site_assoc_rank = "tissue_assoc_rank",
+      site_assoc_score = "tissue_assoc_score",
+    )
+
+  ## genes with unknown rank
+  n_genes_no_site_associations <-
+    cancer_rank |>
+    dplyr::filter(is.na(.data$site_assoc_rank)) |>
+    NROW()
+
+  result <- list()
+  result[['ranked']] <- data.frame()
+  result[['unranked']] <- data.frame()
+
+  result[['ranked']] <- cancer_rank |>
+    dplyr::filter(!is.na(.data$site_assoc_rank))
+
+  if(n_genes_no_site_associations > 0){
+    result[['unranked']] <- cancer_rank |>
+      dplyr::filter(is.na(.data$site_assoc_rank))
+
+    pct_unknown_assoc <-
+      round((n_genes_no_site_associations /
+              NROW(cancer_rank) * 100), 2)
+    lgr::lgr$warn( paste0(
+      pct_unknown_assoc, "% of the ",
+      "query set have no/non-significant cancer association ",
+      "with '", tumor_site,"'"))
+  }
+
+  return(result)
+
+}
 
 target_disease_associations <-
   function(qgenes,

@@ -165,6 +165,7 @@ logo_fname_path <- system.file("extdata", "logo.png", package = "oncoEnrichR")
 #| eval: !expr onc_enrich_report[['config']][['show']][['cancer_prognosis']]
 ```
 
+<br>
 
 ```{r documentation_workflow}
 #| child: 'quarto/_documentation_workflow.qmd'

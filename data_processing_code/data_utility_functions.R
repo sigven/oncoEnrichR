@@ -205,183 +205,123 @@ get_citations_pubmed2 <- function(
 
 get_msigdb_signatures <- function(
     raw_db_dir = NULL,
-    db_version = 'v2023.1.Hs March 2023)'){
+    db_version = 'v2024.1.Hs (August 2024)'){
 
-  ## get full dataset: Broad Institute's Molecular Signatures Database (v7.1)
-  invisible(assertthat::assert_that(
-    dir.exists(raw_db_dir),
-    msg = paste0("Directory '",
-                 raw_db_dir,"' does not exist")))
-  msigdb_xml_fname <- file.path(
-    raw_db_dir, "msigdb", "msigdb.xml")
-  invisible(assertthat::assert_that(
-    file.exists(msigdb_xml_fname),
-    msg = paste0("File '",
-                 msigdb_xml_fname,
-                 "' does not exist")))
-
-  # all_msigdb_2 <- data.frame()
-  # for(cat in c("C2","C3","C4","C5","C6","C7","C8")){
-  #   genesets = msigdbr::msigdbr(species = "human", category = cat) |>
-  #     dplyr::select(-c("gene_symbol","ensembl_gene",
-  #                      "human_ensembl_gene",
-  #                      "gs_geoid","human_gene_symbol",
-  #                      "gs_id")) |>
-  #     dplyr::mutate(organism = "Homo sapiens",
-  #                   systematic_name = NA, contributor = NA) |>
-  #     dplyr::rename(standard_name = gs_name,
-  #                   category_code = gs_cat,
-  #                   description = gs_description,
-  #                   subcategory_code = gs_subcat,
-  #                   entrezgene = entrez_gene,
-  #                   exact_source = gs_exact_source,
-  #                   external_url = gs_url,
-  #                   pmid = gs_pmid) |>
-  #     dplyr::select(
-  #       category_code, description, standard_name,
-  #       organism, pmid, systematic_name, subcategory_code,
-  #       entrezgene, contributor, exact_source, external_url) |>
-  #     dplyr::filter(subcategory_code != 'CP:KEGG') |>
-  #     dplyr::arrange(category_code) |>
-  #     dplyr::mutate(pmid = dplyr::if_else(
-  #       nchar(pmid) == 0,
-  #       as.character(NA),
-  #       as.character(pmid))) |>
-  #     dplyr::mutate(subcategory_code = dplyr::if_else(
-  #       nchar(subcategory_code) == 0,
-  #       as.character("ALL"),
-  #       as.character(subcategory_code))) |>
-  #     dplyr::mutate(external_url = dplyr::if_else(
-  #       nchar(external_url) == 0,
-  #       paste0("http://software.broadinstitute.org/gsea/msigdb/cards/",standard_name),
-  #       as.character(external_url))) |>
-  #     dplyr::mutate(description = stringr::str_replace_all(
-  #       description,
-  #       "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
-  #
-  #   all_msigdb_2 <- all_msigdb_2 |>
-  #     dplyr::bind_rows(genesets) |>
-  #     dplyr::distinct()
-  #
-  # }
-
-
-  msig_data_xml <- xml2::read_xml(msigdb_xml_fname)
-
-  ## make data frame with signatures, one record pr. gene-signature association
-  all_genesets <- msig_data_xml |> xml2::xml_find_all("//GENESET")
-  category_code <- all_genesets |> xml2::xml_attr("CATEGORY_CODE")
-  all_msigdb <- data.frame('category_code' = category_code, stringsAsFactors = F)
-  all_msigdb$description <- all_genesets |> xml2::xml_attr("DESCRIPTION_BRIEF")
-  all_msigdb$standard_name <- all_genesets |> xml2::xml_attr("STANDARD_NAME")
-  all_msigdb$organism <- all_genesets |> xml2::xml_attr("ORGANISM")
-  all_msigdb$pmid <- all_genesets |> xml2::xml_attr("PMID")
-  all_msigdb$systematic_name <- all_genesets |> xml2::xml_attr("SYSTEMATIC_NAME")
-  all_msigdb$subcategory_code <- all_genesets |> xml2::xml_attr("SUB_CATEGORY_CODE")
-  all_msigdb$entrezgene <- all_genesets |> xml2::xml_attr("MEMBERS_EZID")
-  all_msigdb$contributor <- all_genesets |> xml2::xml_attr("CONTRIBUTOR")
-  all_msigdb$exact_source <- all_genesets |> xml2::xml_attr("EXACT_SOURCE")
-  all_msigdb$external_url <- all_genesets |> xml2::xml_attr("EXTERNAL_DETAILS_URL")
-  all_msigdb <- all_msigdb |>
-    tidyr::separate_rows(entrezgene,sep=",") |>
-    dplyr::filter(organism == "Homo sapiens") |>
-    dplyr::filter(subcategory_code != 'CP:KEGG') |>
-    dplyr::arrange(category_code) |>
-    dplyr::mutate(pmid = dplyr::if_else(
-      nchar(pmid) == 0,
-      as.character(NA),
-      as.character(pmid))) |>
-    dplyr::mutate(subcategory_code = dplyr::if_else(
-      nchar(subcategory_code) == 0,
-      as.character("ALL"),
-      as.character(subcategory_code))) |>
-    dplyr::filter(
-      category_code != "ARCHIVED" &
-        category_code != "C1") |>
-    dplyr::mutate(external_url = dplyr::if_else(
-      nchar(external_url) == 0,
-      paste0("http://software.broadinstitute.org/gsea/msigdb/cards/",standard_name),
-      as.character(external_url))) |>
-    dplyr::mutate(description = stringr::str_replace_all(
-      description,
-      "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID=[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem=[0-9]{1,}(;[0-9]{1,})*\\]( )?)",""))
-
+  msigdb_sqlite_db <- file.path(
+    raw_db_dir, "msigdb", "msigdb.db")
   msigdb_category_description <- read.table(
     file = file.path(
       raw_db_dir, "msigdb",
       "msigdb_collection_description.tsv"),
     sep = "\t", header = T, stringsAsFactors = F)
 
-  msigdb_complete <- as.data.frame(all_msigdb |>
-    dplyr::left_join(msigdb_category_description,
-                     by = c("category_code", "subcategory_code"),
-                     relationship = "many-to-many") |>
-    dplyr::mutate(db = "MSigDB", db_version = db_version) |>
-    dplyr::select(db, db_version, category_code, category_description,
-                  subcategory_code, subcategory_description,
-                  standard_name, description, organism,
-                  entrezgene) |>
-    dplyr::rename(signature_description = description,
-                  signature_name = standard_name)
-  )
+  con <- RSQLite::dbConnect(
+    RSQLite::SQLite(), msigdb_sqlite_db)
 
+  ## get signatures (standard names, category codes etc)
+  msigdb_signatures <- RSQLite::dbReadTable(
+    con, 'gene_set') |>
+    dplyr::rename(
+      gsid = "id") |>
+
+    ## skip certain signatures (some provided through
+    ## more up-to-date sources (WikiPathway, KEGG))
+    dplyr::filter(collection_name != "C1") |>
+    dplyr::filter(collection_name != "C3:MIR:MIR_LEGACY") |>
+    dplyr::filter(collection_name != "C3:TFT:TFT_LEGACY") |>
+    dplyr::filter(collection_name != "C2:CP:WIKIPATHWAYS") |>
+    dplyr::filter(collection_name != "C7:VAX") |>
+    dplyr::filter(collection_name != "C2:CP:KEGG_LEGACY") |>
+    dplyr::filter(collection_name != "C2:CP:KEGG_MEDICUS") |>
+    dplyr::mutate(collection_name = dplyr::if_else(
+      !stringr::str_detect(
+        .data$collection_name,":"),
+      paste0(.data$collection_name,":ALL"),
+      .data$collection_name)) |>
+    dplyr::select(-c("tags","license_code")) |>
+    dplyr::mutate(
+      category_code = stringr::str_replace(
+        stringr::str_match(
+          .data$collection_name,
+          "^(C[0-9]|H):")[,1],
+        ":",""),
+      ) |>
+    dplyr::mutate(
+      subcategory_code = stringr::str_replace(
+        .data$collection_name,
+        "(C[0-9]|H):","")
+    ) |>
+    dplyr::select(-c("collection_name")) |>
+    dplyr::left_join(
+      msigdb_category_description,
+      by = c("category_code", "subcategory_code"),
+      relationship = "many-to-many") |>
+    dplyr::mutate(db_version = db_version)
+
+
+  ## get gene set details
+  msigdb_signatures_details <- RSQLite::dbReadTable(
+    con, 'gene_set_details') |>
+    dplyr::rename(
+      gsid = "gene_set_id",
+      description = "description_brief",
+      external_url = "external_details_URL"
+    ) |>
+    dplyr::mutate(description = stringr::str_replace_all(
+      description,
+      "( \\[ICI [0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[GeneID( )?=( )?[0-9]{1,}(;[0-9]{1,})*\\]( )?)|( \\[PubChem( )?=( )?[0-9]{1,}(;[0-9]{1,})*\\])","")) |>
+    dplyr::select(
+      c("gsid",
+        "description",
+        "contributor",
+        "exact_source",
+        "systematic_name",
+        "external_url")
+    ) |>
+    dplyr::distinct()
+
+  ## get geneset gene members
+
+  entrez_info <- RSQLite::dbReadTable(
+    con, 'gene_symbol') |>
+    dplyr::rename(
+      gene_id = "id",
+      entrez_gene = "NCBI_id") |>
+    dplyr::select(-c("namespace_id","symbol")) |>
+    dplyr::mutate(entrez_gene = as.character(entrez_gene))
+
+  msigdb2entrez <- RSQLite::dbReadTable(
+    con, 'gene_set_gene_symbol') |>
+    dplyr::rename(
+      gsid = "gene_set_id",
+      gene_id = "gene_symbol_id") |>
+    dplyr::left_join(
+      entrez_info, by = "gene_id") |>
+    dplyr::select(-c("gene_id")) |>
+    dplyr::distinct()
+
+  RSQLite::dbDisconnect(con)
+
+  msigdb_signatures <-
+    msigdb_signatures |> dplyr::left_join(
+      msigdb_signatures_details, by = "gsid") |>
+    dplyr::left_join(
+      msigdb2entrez, by = "gsid") |>
+    dplyr::filter(
+      !is.na(.data$standard_name) &
+        nchar(.data$standard_name) > 0) |>
+    dplyr::mutate(url = paste0(
+      "https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/",
+      .data$standard_name,".html")) |>
+    dplyr::filter(nchar(description) > 0)
 
   msigdb <- list()
-  msigdb[['VERSION']] <- version
-  msigdb[['TERM2SOURCE']] <- all_msigdb |>
-    dplyr::filter(subcategory_code != "MIR:MIR_Legacy") |>
-    dplyr::filter(subcategory_code != "TFT:TFT_Legacy") |>
-    dplyr::filter(subcategory_code != "CP:WIKIPATHWAYS") |>
-    dplyr::filter(subcategory_code != "VAX") |>
-    dplyr::select(standard_name, exact_source, external_url,
+  msigdb[['VERSION']] <- db_version
+  msigdb[['TERM2SOURCE']] <- msigdb_signatures |>
+    dplyr::select(standard_name,
+                  exact_source, external_url, url, db,
                   category_code, subcategory_code) |>
     dplyr::distinct() |>
-    dplyr::mutate(external_url = stringr::str_replace(
-      external_url,"\\|https://reactome.org/PathwayBrowser/","")) |>
-    dplyr::mutate(external_url = dplyr::if_else(
-      nchar(external_url) == 0,as.character(NA),as.character(external_url))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      stringr::str_detect(standard_name,"^GO_"),
-      subcategory_code,as.character(NA))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      stringr::str_detect(standard_name,"^HP_"),
-      subcategory_code,as.character(NA))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      stringr::str_detect(standard_name,"^REACTOME_"),
-      "REACTOME",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      stringr::str_detect(standard_name,"^BIOCARTA_"),
-      "BIOCARTA",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      stringr::str_detect(standard_name,"^PID_"),
-      "PATHWAY_INTERACTION_DB",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "H",
-      "HALLMARK",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C2" & subcategory_code == "CGP",
-      "CHEM_GEN_PERTURB",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C2" & subcategory_code == "CP",
-      "CANONICAL_PATHWAY",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C3" & subcategory_code == "MIR:MIRDB",
-      "MICRORNA_TARGET_MIRDB",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C3" & subcategory_code == "TFT:GTRD",
-      "TF_TARGET_GTRD",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C4" & subcategory_code == "CGN",
-      "CANCER_NEIGHBOURHOOD",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C4" & subcategory_code == "CM",
-      "CANCER_MODULE",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C6","ONCOGENIC",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C7","IMMUNESIGDB",as.character(db))) |>
-    dplyr::mutate(db = dplyr::if_else(
-      category_code == "C8","CELLTYPE_SIGNATURES",as.character(db))) |>
     dplyr::select(-c(category_code,subcategory_code)) |>
     dplyr::filter(!is.na(db))
 
@@ -391,27 +331,19 @@ get_msigdb_signatures <- function(
   for(c in c('H','C2','C3','C4','C5','C6','C7','C8')){
     msigdb[['COLLECTION']][[c]] <- list()
     subcategories <-
-      unique(all_msigdb[all_msigdb$category_code == c,]$subcategory_code)
+      unique(msigdb_signatures[msigdb_signatures$category_code == c,]$subcategory_code)
     for(scat in subcategories){
       subcat <- stringr::str_replace(scat,"GO:","")
-      if(subcat == "CP:WIKIPATHWAYS" |
-         subcat == "VAX" |
-         subcat == "MIR:MIR_Legacy" |
-         subcat == "TFT:TFT_Legacy"){
-        next
-      }
 
       msigdb[['COLLECTION']][[c]][[subcat]] <- list()
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2GENE']] <- data.frame()
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2GENE']] <-
-        dplyr::filter(all_msigdb,
+        dplyr::filter(msigdb_signatures,
                       category_code == c &
                         subcategory_code == scat) |>
-        dplyr::select(standard_name, entrezgene) |>
-        dplyr::rename(entrez_gene = entrezgene)
-
+        dplyr::select(standard_name, entrez_gene)
       msigdb[['COLLECTION']][[c]][[subcat]][['TERM2NAME']] <-
-        dplyr::filter(all_msigdb,
+        dplyr::filter(msigdb_signatures,
                       category_code == c &
                         subcategory_code == scat) |>
         dplyr::select(standard_name, description) |>
@@ -419,16 +351,15 @@ get_msigdb_signatures <- function(
         dplyr::distinct()
     }
   }
-  rm(all_msigdb)
-  return(list('db' = msigdb, 'df' = msigdb_complete))
-}
+  return(list('db' = msigdb))
 
+}
 
 get_opentarget_associations <-
   function(raw_db_dir = NULL,
-           min_overall_score = 0.1,
+           min_overall_score = 0.05,
            min_num_sources = 2,
-           release = "2023.12",
+           release = "2024.06",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -988,7 +919,8 @@ get_pathway_annotations <- function(
     wikipathwaydb[['VERSION']] <- wikipathways_version
     wikipathwaydb[['TERM2GENE']] <- wp2gene |>
       dplyr::select(wpid, gene) |>
-      dplyr::rename(standard_name = wpid, entrez_gene = gene)
+      dplyr::rename(standard_name = wpid, entrez_gene = gene) |>
+      dplyr::distinct()
     wikipathwaydb[['TERM2NAME']] <- wp2gene |>
       dplyr::select(wpid, name) |>
       dplyr::rename(standard_name = wpid) |>
@@ -1021,7 +953,8 @@ get_pathway_annotations <- function(
     netpathdb <- list()
     netpathdb[['VERSION']] <- netpath_version
     netpathdb[['TERM2GENE']] <- netpath_pathway_data |>
-      dplyr::select(standard_name, entrez_gene)
+      dplyr::select(standard_name, entrez_gene) |>
+      dplyr::distinct()
     netpathdb[['TERM2NAME']] <- netpath_pathway_data |>
       dplyr::select(standard_name, name) |>
       dplyr::distinct()
@@ -2096,188 +2029,188 @@ generate_gene_xref_df <- function(
 
 }
 #
-get_tissue_celltype_specificity <- function(
-  raw_db_dir = NULL){
-
-    ## https://www.proteinatlas.org/about/assays+annotation#gtex_rna
-    ##
-    ## Consensus transcript expression levels summarized per gene in
-    ## 55 tissues based on transcriptomics data from HPA and GTEx.
-    ## The tab-separated file includes Ensembl
-    ## gene identifier ("Gene"), analysed sample ("Tissue"),
-    ## transcripts per million ("TPM"), protein-transcripts
-    ## per million ("pTPM") and normalized expression ("nTPM").
-
-    tissue_cell_expr <- list()
-    tissue_cell_expr[['tissue']] <- list()
-    tissue_cell_expr[['tissue']][['expr_df']] <- data.frame()
-    tissue_cell_expr[['tissue']][['unit']] <- NULL
-    tissue_cell_expr[['tissue']][['te_SE']] <- NULL
-    tissue_cell_expr[['tissue']][['te_df']] <- data.frame()
-
-    ## https://www.proteinatlas.org/about/assays+annotation#singlecell_rna
-    ##
-    ## Transcript expression levels summarized per gene in 79 cell types
-    ## types from 30 studies. The tab-separated file includes Ensembl
-    ## gene identifier ("Gene"), gene name ("Gene name"), analysed
-    ## sample ("Cell type") and normalized expresion ("nTPM").
-
-    tissue_cell_expr[['single_cell']] <- list()
-    tissue_cell_expr[['single_cell']][['expr_df']] <- data.frame()
-    tissue_cell_expr[['single_cell']][['unit']] <- NULL
-    tissue_cell_expr[['single_cell']][['te_SE']] <- NULL
-    tissue_cell_expr[['single_cell']][['te_df']] <- data.frame()
-
-    for(t in c("rna_tissue_consensus",
-               "rna_single_cell_type")){
-
-      local_hpa_file <- file.path(
-        raw_db_dir,
-        "hpa",
-        paste0(t, ".tsv.zip")
-      )
-
-      if(!file.exists(local_hpa_file)){
-        download.file(
-          url = paste0("https://www.proteinatlas.org/download/",
-                       t, ".tsv.zip"),
-          destfile = local_hpa_file
-        )
-      }
-
-      ##set max number of tissues/cell_types for
-      ##determination of groups in group-enriched genes
-      max_types_in_group <- 5
-
-      data <- readr::read_tsv(
-        local_hpa_file,
-        show_col_types = F,
-        col_names = T)
-
-      num_tissues_per_gene <- data |>
-        dplyr::group_by(Gene) |>
-        dplyr::summarise(n = dplyr::n()) |>
-        dplyr::filter(n == 1)
-
-      data <- data |>
-        dplyr::anti_join(num_tissues_per_gene,
-                         by = "Gene")
-      data <- as.data.frame(
-        data[, c(1,3,4)] |>
-          purrr::set_names(
-            c("ensembl_gene_id","category","exp1")) |>
-          dplyr::mutate(
-            category =
-              stringr::str_replace_all(category," |, ","_")) |>
-          dplyr::group_by(ensembl_gene_id, category) |>
-          dplyr::summarise(exp = mean(exp1), .groups = "drop") |>
-          tidyr::pivot_wider(names_from = category,
-                             values_from = exp)
-      )
-      rownames(data) <- data$ensembl_gene_id
-      data$ensembl_gene_id <- NULL
-      se <- SummarizedExperiment::SummarizedExperiment(
-        assays = S4Vectors::SimpleList(
-          as.matrix(data)),
-        rowData = row.names(data),
-        colData = colnames(data)
-      )
-      te_gene_retrieval_se <-
-        TissueEnrich::teGeneRetrieval(
-          expressionData = se,
-          foldChangeThreshold = 4,
-          maxNumberOfTissues = max_types_in_group)
-
-      if(t == "rna_tissue_consensus"){
-        tissue_cell_expr[['tissue']][['expr_df']] <- data
-        tissue_cell_expr[['tissue']][['te_SE']] <-
-          te_gene_retrieval_se
-        tissue_cell_expr[['tissue']][['unit']] <- 'nTPM'
-        tissue_cell_expr[['tissue']][['te_df']] <-
-          as.data.frame(
-            as.data.frame(
-              SummarizedExperiment::assay(
-                tissue_cell_expr[['tissue']][['te_SE']])) |>
-              dplyr::rename(ensembl_gene_id = Gene,
-                            category = Group) |>
-              dplyr::group_by(ensembl_gene_id,
-                              category) |>
-              dplyr::summarise(
-                tissue = paste(
-                  sort(unique(Tissue)), collapse=", "),
-                .groups = "drop")
-          ) |>
-          dplyr::mutate(
-            tissue = stringr::str_to_title(tissue)
-          ) |>
-          dplyr::mutate(
-            category = dplyr::case_when(
-              category == "Expressed-In-All" ~ "Low tissue specificity",
-              category == "Group-Enriched" ~ "Group enriched",
-              category == "Tissue-Enhanced" ~ "Tissue enhanced",
-              category == "Tissue-Enriched" ~ "Tissue enriched",
-              category == "Not-Expressed" ~ "Not detected",
-              TRUE ~ as.character("Mixed"))
-          ) |>
-          dplyr::mutate(
-            category = factor(
-              category,
-              levels = c("Tissue enriched",
-                         "Group enriched",
-                         "Tissue enhanced",
-                         "Mixed",
-                         "Low tissue specificity",
-                         "Not detected"))
-          )
-
-
-      }else{
-        tissue_cell_expr[['single_cell']][['expr_df']] <- data
-        tissue_cell_expr[['single_cell']][['unit']] <- 'nTPM'
-        tissue_cell_expr[['single_cell']][['te_SE']] <-
-          te_gene_retrieval_se
-        tissue_cell_expr[['single_cell']][['te_df']] <-
-          as.data.frame(
-            as.data.frame(
-              SummarizedExperiment::assay(
-                tissue_cell_expr[['single_cell']][['te_SE']])
-            ) |>
-              dplyr::rename(ensembl_gene_id = Gene,
-                            category = Group) |>
-              dplyr::group_by(ensembl_gene_id,
-                              category) |>
-              dplyr::summarise(
-                cell_type = paste(sort(unique(Tissue)), collapse=", "),
-                .groups = "drop")
-          ) |>
-          dplyr::mutate(
-            cell_type = stringr::str_to_title(cell_type)
-          ) |>
-          dplyr::mutate(
-            category = dplyr::case_when(
-              category == "Expressed-In-All" ~ "Low cell type specificity",
-              category == "Group-Enriched" ~ "Group enriched",
-              category == "Tissue-Enhanced" ~ "Cell type enhanced",
-              category == "Tissue-Enriched" ~ "Cell type enriched",
-              category == "Not-Expressed" ~ "Not detected",
-              TRUE ~ as.character("Mixed"))
-          ) |>
-          dplyr::mutate(
-            category =
-              factor(category,
-                     levels = c("Cell type enriched",
-                                "Group enriched",
-                                "Cell type enhanced",
-                                "Mixed",
-                                "Low cell type specificity",
-                                "Not detected"))
-          )
-      }
-
-    }
-    return(tissue_cell_expr)
-
-  }
+# get_tissue_celltype_specificity <- function(
+#   raw_db_dir = NULL){
+#
+#     ## https://www.proteinatlas.org/about/assays+annotation#gtex_rna
+#     ##
+#     ## Consensus transcript expression levels summarized per gene in
+#     ## 55 tissues based on transcriptomics data from HPA and GTEx.
+#     ## The tab-separated file includes Ensembl
+#     ## gene identifier ("Gene"), analysed sample ("Tissue"),
+#     ## transcripts per million ("TPM"), protein-transcripts
+#     ## per million ("pTPM") and normalized expression ("nTPM").
+#
+#     tissue_cell_expr <- list()
+#     tissue_cell_expr[['tissue']] <- list()
+#     tissue_cell_expr[['tissue']][['expr_df']] <- data.frame()
+#     tissue_cell_expr[['tissue']][['unit']] <- NULL
+#     tissue_cell_expr[['tissue']][['te_SE']] <- NULL
+#     tissue_cell_expr[['tissue']][['te_df']] <- data.frame()
+#
+#     ## https://www.proteinatlas.org/about/assays+annotation#singlecell_rna
+#     ##
+#     ## Transcript expression levels summarized per gene in 79 cell types
+#     ## types from 30 studies. The tab-separated file includes Ensembl
+#     ## gene identifier ("Gene"), gene name ("Gene name"), analysed
+#     ## sample ("Cell type") and normalized expresion ("nTPM").
+#
+#     tissue_cell_expr[['single_cell']] <- list()
+#     tissue_cell_expr[['single_cell']][['expr_df']] <- data.frame()
+#     tissue_cell_expr[['single_cell']][['unit']] <- NULL
+#     tissue_cell_expr[['single_cell']][['te_SE']] <- NULL
+#     tissue_cell_expr[['single_cell']][['te_df']] <- data.frame()
+#
+#     for(t in c("rna_tissue_consensus",
+#                "rna_single_cell_type")){
+#
+#       local_hpa_file <- file.path(
+#         raw_db_dir,
+#         "hpa",
+#         paste0(t, ".tsv.zip")
+#       )
+#
+#       if(!file.exists(local_hpa_file)){
+#         download.file(
+#           url = paste0("https://www.proteinatlas.org/download/",
+#                        t, ".tsv.zip"),
+#           destfile = local_hpa_file
+#         )
+#       }
+#
+#       ##set max number of tissues/cell_types for
+#       ##determination of groups in group-enriched genes
+#       max_types_in_group <- 5
+#
+#       data <- readr::read_tsv(
+#         local_hpa_file,
+#         show_col_types = F,
+#         col_names = T)
+#
+#       num_tissues_per_gene <- data |>
+#         dplyr::group_by(Gene) |>
+#         dplyr::summarise(n = dplyr::n()) |>
+#         dplyr::filter(n == 1)
+#
+#       data <- data |>
+#         dplyr::anti_join(num_tissues_per_gene,
+#                          by = "Gene")
+#       data <- as.data.frame(
+#         data[, c(1,3,4)] |>
+#           purrr::set_names(
+#             c("ensembl_gene_id","category","exp1")) |>
+#           dplyr::mutate(
+#             category =
+#               stringr::str_replace_all(category," |, ","_")) |>
+#           dplyr::group_by(ensembl_gene_id, category) |>
+#           dplyr::summarise(exp = mean(exp1), .groups = "drop") |>
+#           tidyr::pivot_wider(names_from = category,
+#                              values_from = exp)
+#       )
+#       rownames(data) <- data$ensembl_gene_id
+#       data$ensembl_gene_id <- NULL
+#       se <- SummarizedExperiment::SummarizedExperiment(
+#         assays = S4Vectors::SimpleList(
+#           as.matrix(data)),
+#         rowData = row.names(data),
+#         colData = colnames(data)
+#       )
+#       te_gene_retrieval_se <-
+#         TissueEnrich::teGeneRetrieval(
+#           expressionData = se,
+#           foldChangeThreshold = 4,
+#           maxNumberOfTissues = max_types_in_group)
+#
+#       if(t == "rna_tissue_consensus"){
+#         tissue_cell_expr[['tissue']][['expr_df']] <- data
+#         tissue_cell_expr[['tissue']][['te_SE']] <-
+#           te_gene_retrieval_se
+#         tissue_cell_expr[['tissue']][['unit']] <- 'nTPM'
+#         tissue_cell_expr[['tissue']][['te_df']] <-
+#           as.data.frame(
+#             as.data.frame(
+#               SummarizedExperiment::assay(
+#                 tissue_cell_expr[['tissue']][['te_SE']])) |>
+#               dplyr::rename(ensembl_gene_id = Gene,
+#                             category = Group) |>
+#               dplyr::group_by(ensembl_gene_id,
+#                               category) |>
+#               dplyr::summarise(
+#                 tissue = paste(
+#                   sort(unique(Tissue)), collapse=", "),
+#                 .groups = "drop")
+#           ) |>
+#           dplyr::mutate(
+#             tissue = stringr::str_to_title(tissue)
+#           ) |>
+#           dplyr::mutate(
+#             category = dplyr::case_when(
+#               category == "Expressed-In-All" ~ "Low tissue specificity",
+#               category == "Group-Enriched" ~ "Group enriched",
+#               category == "Tissue-Enhanced" ~ "Tissue enhanced",
+#               category == "Tissue-Enriched" ~ "Tissue enriched",
+#               category == "Not-Expressed" ~ "Not detected",
+#               TRUE ~ as.character("Mixed"))
+#           ) |>
+#           dplyr::mutate(
+#             category = factor(
+#               category,
+#               levels = c("Tissue enriched",
+#                          "Group enriched",
+#                          "Tissue enhanced",
+#                          "Mixed",
+#                          "Low tissue specificity",
+#                          "Not detected"))
+#           )
+#
+#
+#       }else{
+#         tissue_cell_expr[['single_cell']][['expr_df']] <- data
+#         tissue_cell_expr[['single_cell']][['unit']] <- 'nTPM'
+#         tissue_cell_expr[['single_cell']][['te_SE']] <-
+#           te_gene_retrieval_se
+#         tissue_cell_expr[['single_cell']][['te_df']] <-
+#           as.data.frame(
+#             as.data.frame(
+#               SummarizedExperiment::assay(
+#                 tissue_cell_expr[['single_cell']][['te_SE']])
+#             ) |>
+#               dplyr::rename(ensembl_gene_id = Gene,
+#                             category = Group) |>
+#               dplyr::group_by(ensembl_gene_id,
+#                               category) |>
+#               dplyr::summarise(
+#                 cell_type = paste(sort(unique(Tissue)), collapse=", "),
+#                 .groups = "drop")
+#           ) |>
+#           dplyr::mutate(
+#             cell_type = stringr::str_to_title(cell_type)
+#           ) |>
+#           dplyr::mutate(
+#             category = dplyr::case_when(
+#               category == "Expressed-In-All" ~ "Low cell type specificity",
+#               category == "Group-Enriched" ~ "Group enriched",
+#               category == "Tissue-Enhanced" ~ "Cell type enhanced",
+#               category == "Tissue-Enriched" ~ "Cell type enriched",
+#               category == "Not-Expressed" ~ "Not detected",
+#               TRUE ~ as.character("Mixed"))
+#           ) |>
+#           dplyr::mutate(
+#             category =
+#               factor(category,
+#                      levels = c("Cell type enriched",
+#                                 "Group enriched",
+#                                 "Cell type enhanced",
+#                                 "Mixed",
+#                                 "Low cell type specificity",
+#                                 "Not detected"))
+#           )
+#       }
+#
+#     }
+#     return(tissue_cell_expr)
+#
+#   }
 
 quantify_gene_cancer_relevance <- function(
     cache_dir = NA,
@@ -3112,7 +3045,7 @@ get_mean_median_tpm <- function(
 get_tcga_db <- function(
   raw_db_dir = NULL,
   gene_xref = NULL,
-  tcga_release = "release37_20230329",
+  tcga_release = "release41_20240828",
   update = F){
 
 

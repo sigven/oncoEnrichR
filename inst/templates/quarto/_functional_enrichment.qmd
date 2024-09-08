@@ -10,8 +10,6 @@
     -   [WikiPathways](https://www.wikipathways.org/index.php/Special:BrowsePathways)
     -   Manually curated signal transduction pathways from [NetPath](http://www.netpath.org)
 
-<br>
-
 -   Enrichment/over-representation test settings (*clusterProfiler*)
     -   P-value cutoff: **`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`**
     -   Q-value cutoff: **`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`**
@@ -33,7 +31,7 @@
 show_enrichment_filters <- list()
 eitems <- list()
 active_tab <- list()
-for(type in c('go','msigdb','kegg','wikipathway','netpath')) {
+for(type in c('go','msigdb','kegg','wikipathways','netpath')) {
   show_enrichment_filters[[type]] <- F
   active_tab[[type]] <- F
   if (NROW(onc_enrich_report[['data']][['enrichment']][[type]]) > 0) {
@@ -86,8 +84,8 @@ if (show_enrichment_filters[['go']] == T) {
       active_tab[['kegg']] <- T
     }
     else{
-      if (show_enrichment_filters[['wikipathway']] == T) {
-        active_tab[['wikipathway']] <- T
+      if (show_enrichment_filters[['wikipathways']] == T) {
+        active_tab[['wikipathways']] <- T
       }
       else{
         if (show_enrichment_filters[['netpath']] == T) {
@@ -100,7 +98,7 @@ if (show_enrichment_filters[['go']] == T) {
 
 ## If no content in enrichment tables, set GO to active tab
 if (active_tab[['go']] == F & active_tab[['msigdb']] == F &
-   active_tab[['kegg']] == F & active_tab[['wikipathway']] == F &
+   active_tab[['kegg']] == F & active_tab[['wikipathways']] == F &
    active_tab[['netpath']] == F) {
   active_tab[['go']] <- T
 }
@@ -146,16 +144,8 @@ enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] |>
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |> 
-                #Count = count,
-                #P_Value_Cutoff = setting_p_value_cutoff,
-                #Q_Value_Cutoff = setting_q_value_cutoff,
-                #P_Value_Adj_Method = setting_p_value_adj_method,
-                #Min_Geneset_Size = setting_min_geneset_size,
-                #Max_Geneset_Size = setting_max_geneset_size) |>
-   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB,  
                 Background_Ratio, Gene_Ratio) |> 
-                #Count, P_Value_Cutoff, Q_Value_Cutoff,
-                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 
@@ -228,16 +218,8 @@ enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigd
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |>
-                #Count = count,
-                #P_Value_Cutoff = setting_p_value_cutoff,
-                #Q_Value_Cutoff = setting_q_value_cutoff,
-                #P_Value_Adj_Method = setting_p_value_adj_method,
-                #Min_Geneset_Size = setting_min_geneset_size,
-                #Max_Geneset_Size = setting_max_geneset_size) |>
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB,  
                 Background_Ratio, Gene_Ratio) |>
-                #Count, P_Value_Cutoff, Q_Value_Cutoff,
-                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_msigdb <- crosstalk::SharedData$new(enrichment_msigdb_display)
@@ -308,16 +290,8 @@ enrichment_keggdb_display <- onc_enrich_report[['data']][['enrichment']][['kegg'
                 Exact_Source = exact_source, 
                 Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |>
-                #Count = count,
-                #P_Value_Cutoff = setting_p_value_cutoff,
-                #Q_Value_Cutoff = setting_q_value_cutoff,
-                #P_Value_Adj_Method = setting_p_value_adj_method,
-                #Min_Geneset_Size = setting_min_geneset_size,
-                #Max_Geneset_Size = setting_max_geneset_size) |>
-  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB, Exact_Source, 
+  dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB,  
                 Background_Ratio, Gene_Ratio) |>
-                #Count, P_Value_Cutoff, Q_Value_Cutoff,
-                #P_Value_Adj_Method, Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_keggdb <- crosstalk::SharedData$new(enrichment_keggdb_display)
@@ -357,7 +331,7 @@ cat('<br><br>')
 #| echo: false
 #| output: asis
 
-if (active_tab[['wikipathway']] == T) {
+if (active_tab[['wikipathways']] == T) {
   cat("")
   cat("##### WikiPathways {.active}")
   cat("")
@@ -373,9 +347,9 @@ if (active_tab[['wikipathway']] == T) {
 ```{r table_browse_wikipathwaydb}
 #| echo: false
 #| output: asis
-#| eval: !expr show_enrichment_filters[['wikipathway']]
+#| eval: !expr show_enrichment_filters[['wikipathways']]
 
-enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathway']] |>
+enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikipathways']] |>
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, 
                 Q_Value = qvalue, P_Value = pvalue,
@@ -383,19 +357,9 @@ enrichment_wikidb_display <- onc_enrich_report[['data']][['enrichment']][['wikip
                 Exact_Source = exact_source, 
                 Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |> 
-                #Count = count,
-                #P_Value_Cutoff = setting_p_value_cutoff,
-                #Q_Value_Cutoff = setting_q_value_cutoff,
-                #P_Value_Adj_Method = setting_p_value_adj_method,
-                #Min_Geneset_Size = setting_min_geneset_size,
-                #Max_Geneset_Size = setting_max_geneset_size) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
-                 DB, Exact_Source, 
+                 DB, 
                 Background_Ratio, Gene_Ratio) |>
-                #Count, 
-                #P_Value_Cutoff, Q_Value_Cutoff,
-                #P_Value_Adj_Method, 
-                #Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 
@@ -427,7 +391,7 @@ rm(enrichment_wikidb_display)
 ```{r wiki_missing}
 #| echo: false
 #| output: asis
-#| eval: !expr show_enrichment_filters[['wikipathway']] == FALSE
+#| eval: !expr show_enrichment_filters[['wikipathways']] == FALSE
 
 cat('<br><br>\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;No pathway signatures from WikiPathways were enriched in the query set.&nbsp;&nbsp; </span></i></li></ul>', sep = '\n')
 cat('\n')
@@ -467,19 +431,9 @@ enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netp
                 Gene_Members = gene_symbol_link, DB = db,
                 Exact_Source = exact_source, Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |>
-                #Count = count,
-                #P_Value_Cutoff = setting_p_value_cutoff,
-                #Q_Value_Cutoff = setting_q_value_cutoff,
-                #P_Value_Adj_Method = setting_p_value_adj_method,
-                #Min_Geneset_Size = setting_min_geneset_size,
-                #Max_Geneset_Size = setting_max_geneset_size) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
-                 DB, Exact_Source, 
+                 DB, 
                 Background_Ratio, Gene_Ratio) |> 
-                #Count, 
-                #P_Value_Cutoff, Q_Value_Cutoff,
-                #P_Value_Adj_Method, 
-                #Min_Geneset_Size, Max_Geneset_Size) |>
   dplyr::arrange(Q_Value)
 
 terms_netpath <- crosstalk::SharedData$new(enrichment_netpath_display)

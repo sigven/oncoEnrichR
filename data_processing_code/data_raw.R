@@ -2,11 +2,11 @@ library(gganatogram)
 
 source('data_processing_code/data_utility_functions.R')
 
-msigdb_version <- 'v2023.1.Hs'
-wikipathways_version <- "20240710"
+msigdb_version <- 'v2024.1.Hs'
+wikipathways_version <- "20240810"
 netpath_version <- "2010"
 opentargets_version <- "2024.06"
-kegg_version <- "20240626"
+kegg_version <- "20240904"
 gencode_version <- "46"
 uniprot_release <- "2024_04"
 
@@ -21,7 +21,7 @@ db_updates[['omnipath_regulatory']] <- F
 db_updates[['subcelldb']] <- F
 db_updates[['ligand_receptor_db']] <- F
 
-oe_version <- "1.5.1"
+oe_version <- "1.5.2"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"
