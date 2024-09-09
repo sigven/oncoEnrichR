@@ -6,7 +6,7 @@ Authors@R: person(given = "Sigve", family = "Nakken", role = c("aut", "cre"),
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050"))
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
-URL: https://github.com/sigven/oncoEnrichR
+URL: https://sigven.github.io/oncoEnrichR
 BugReports: https://github.com/sigven/oncoEnrichR/issues
 Description: oncoEnrichR performs annotation and prioritization of genesets 
     discovered from high-throughput experiments within cancer biology. The tool 

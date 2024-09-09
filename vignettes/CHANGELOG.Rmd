@@ -7,6 +7,22 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.5.2
+
+* Date: 2024-09-09
+
+* Updates
+  * Updated pre-processing code that pulls in missing pathway annotations (KEGG)
+  * Data updates
+     * KEGG - 20240904
+     * WikiPathways - 20240810 (fixed bug in report display)
+     * MSigDB (including GO) - v2024.1.Hs
+     * COMPARTMENTS - 2024-09
+     * BIOGRID - v4.4.237
+  * Created a dedicated function `cancer_association_rank()`, which ranks a query gene
+    set according to strength of association (using data from the Open Targets Platform)
+    to a primary tumor type/site.
+
 ## Version 1.5.1
 
 * Date: 2024-08-03
