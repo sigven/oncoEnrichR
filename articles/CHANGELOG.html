@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,6 +83,32 @@
 
     
     
+<div class="section level2">
+<h2 id="version-1-5-2">Version 1.5.2<a class="anchor" aria-label="anchor" href="#version-1-5-2"></a>
+</h2>
+<ul>
+<li><p>Date: 2024-09-09</p></li>
+<li>
+<p>Updates</p>
+<ul>
+<li>Updated pre-processing code that pulls in missing pathway
+annotations (KEGG)</li>
+<li>Data updates
+<ul>
+<li>KEGG - 20240904</li>
+<li>WikiPathways - 20240810 (fixed bug in report display)</li>
+<li>MSigDB (including GO) - v2024.1.Hs</li>
+<li>COMPARTMENTS - 2024-09</li>
+<li>BIOGRID - v4.4.237</li>
+</ul>
+</li>
+<li>Created a dedicated function <code><a href="../reference/cancer_association_rank.html">cancer_association_rank()</a></code>,
+which ranks a query gene set according to strength of association (using
+data from the Open Targets Platform) to a primary tumor type/site.</li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="version-1-5-1">Version 1.5.1<a class="anchor" aria-label="anchor" href="#version-1-5-1"></a>
 </h2>

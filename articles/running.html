@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -205,13 +205,13 @@ configurations for the <code>onco_enrich</code> method:</p>
 <li><code>project_title = "cMYC_BioID_screen"</code></li>
 <li><code>project_owner = "Raught et al."</code></li>
 </ul>
-<p>and produced the <a href="https://doi.org/10.5281/zenodo.13170482" class="external-link">following HTML report
+<p>and produced the <a href="https://doi.org/10.5281/zenodo.13734871" class="external-link">following HTML report
 with results</a>.</p>
 <p>Below are R commands provided to reproduce the example output.
 <strong>NOTE</strong>: Replace “&lt;LOCAL_FOLDER&gt;” with a directory
 on your local computer:</p>
 <ul>
-<li><code><a href="https://github.com/sigven/oncoEnrichR" class="external-link">library(oncoEnrichR)</a></code></li>
+<li><code><a href="https://sigven.github.io/oncoEnrichR">library(oncoEnrichR)</a></code></li>
 <li><code>myc_interact_targets &lt;- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)</code></li>
 <li><code>oeDB &lt;- oncoEnrichR::load_db(cache_dir = "&lt;LOCAL_FOLDER&gt;")</code></li>
 <li><code>myc_report &lt;- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, oeDB = oeDB, project_title = "cMYC BioID screen", project_owner = "Raught et al.")</code></li>

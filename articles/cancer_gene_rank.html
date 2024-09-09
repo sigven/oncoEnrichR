@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,6 +111,12 @@ ranked and scaled between 0 and 1 (illustration below).</p>
 <a href="module_screenshots/oncoEnrichR_SuppFigure1.png"><img src="module_screenshots/oncoEnrichR_SuppFigure1.png" width="750" height="600" border="0"></a>
 </p>
 <p><br></p>
+<p>Note that the oncoEnrichR package contains a dedicated function
+<code><a href="../reference/cancer_association_rank.html">cancer_association_rank()</a></code> that provides the relative
+importance of query genes with respect to a particular tumor type/site.
+The function takes as input a character vector with gene symbols, and
+returns a list with genes ranked according to strength of association to
+the given tumor type/site, i.e. using the strategy outlined above.</p>
   </main>
 </div>
 
