@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.1.0
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   annotation_resources: annotation_resources.html
@@ -9,7 +9,7 @@ articles:
   installation: installation.html
   output: output.html
   running: running.html
-last_built: 2024-09-09T09:58Z
+last_built: 2025-02-27T21:39Z
 urls:
   reference: https://sigven.github.io/oncoEnrichR/reference
   article: https://sigven.github.io/oncoEnrichR/articles
