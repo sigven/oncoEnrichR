@@ -30,7 +30,7 @@ biocViews:
 Imports: dplyr,
          assertthat,
          assertable,
-         clusterProfiler,
+         clusterProfiler (>= 4.13),
          DT, 
          gganatogram, 
          ggpubr,

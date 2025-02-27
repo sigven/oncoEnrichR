@@ -64,21 +64,7 @@ test_that("GO enrichment/ORA functionality (clusterProfiler) - testing ", {
          background_entrez = background_full_entrez,
        )
      ),
-     c("exact_source", "description",
-       "gene_ratio", "background_ratio",
-       "rich_factor","fold_enrichment","z_score",
-       "pvalue", "p.adjust","qvalue",
-       "gene_id","count","db",
-       "description_link",
-       "enrichment_factor",
-       "gene_symbol_link",
-       "gene_symbol",
-       "standard_name",
-       "setting_p_value_cutoff",
-       "setting_q_value_cutoff",
-       "setting_p_value_adj_method",
-       "setting_min_geneset_size",
-       "setting_max_geneset_size")
+     oncoEnrichR::cp_output_cols
    )
 
    expect_identical(
@@ -147,14 +133,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
           TERM2GENE = oedb$pathwaydb[[pway_db]]$TERM2GENE,
           TERM2NAME = oedb$pathwaydb[[pway_db]]$TERM2NAME)
       ),
-      c("standard_name","description","gene_ratio","background_ratio",
-        "rich_factor","fold_enrichment","z_score",
-        "pvalue","p.adjust","qvalue","gene_id","count","description_link",
-        "exact_source",
-        "external_url","url","db","enrichment_factor",
-        "gene_symbol_link","gene_symbol","setting_p_value_cutoff",
-        "setting_q_value_cutoff","setting_p_value_adj_method",
-        "setting_min_geneset_size","setting_max_geneset_size")
+      oncoEnrichR::cp_output_cols
     )
 
   }
@@ -186,13 +165,7 @@ test_that("Universal enrichment/ORA functionality (clusterProfiler) - testing ",
         TERM2NAME = oedb$pathwaydb$msigdb$COLLECTION$H$ALL$TERM2NAME,
         TERM2SOURCE = oedb$pathwaydb$msigdb$TERM2SOURCE)
     ),
-    c("standard_name","description","gene_ratio","background_ratio",
-      "rich_factor","fold_enrichment","z_score",
-      "pvalue","p.adjust","qvalue","gene_id","count","exact_source",
-      "external_url","url","db","description_link","enrichment_factor",
-      "gene_symbol_link","gene_symbol","setting_p_value_cutoff",
-      "setting_q_value_cutoff","setting_p_value_adj_method",
-      "setting_min_geneset_size","setting_max_geneset_size")
+    oncoEnrichR::cp_output_cols
   )
 
   expect_identical(

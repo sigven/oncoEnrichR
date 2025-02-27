@@ -55,8 +55,9 @@ get_go_enrichment <- function(query_entrez,
     )
 
   if (simplify == T) {
-    ego <- clusterProfiler::simplify(ego, cutoff=0.8,
-                                     by="p.adjust", select_fun=min)
+    ego <- clusterProfiler::simplify(
+      ego, cutoff=0.8,
+      by="p.adjust", select_fun=min)
   }
 
   df <- as.data.frame(utils::head(ego, 5000))
@@ -67,6 +68,12 @@ get_go_enrichment <- function(query_entrez,
     df <- df |> dplyr::mutate(db = ontology)
   }
   if (nrow(df) > 0) {
+    assertable::assert_colnames(
+      df, c("ID","Description","Count",
+            "GeneRatio","BgRatio","pvalue",
+            "qvalue","geneID"),
+      only_colnames = F, quiet = T)
+
     df <- suppressWarnings(
       df |>
         dplyr::mutate(db = paste0("GO_", .data$db)) |>
@@ -75,8 +82,6 @@ get_go_enrichment <- function(query_entrez,
           go_description = "Description",
           count = "Count",
           gene_ratio = "GeneRatio",
-          rich_factor = "RichFactor",
-          fold_enrichment = "FoldEnrichment",
           z_score = "zScore",
           background_ratio = "BgRatio",
           gene_id = "geneID") |>
@@ -85,9 +90,6 @@ get_go_enrichment <- function(query_entrez,
             paste0('<a href=\'http://amigo.geneontology.org/amigo/term/',
                    .data$go_id,'\' target=\'_blank\'>',
                    .data$go_description,'</a>')) |>
-        tidyr::separate(.data$gene_ratio,
-                        c('num_query_hits','num_query_all'),
-                        sep = "/", remove = F, convert = T) |>
         dplyr::mutate(qvalue = as.numeric(.data$qvalue)) |>
         dplyr::mutate(pvalue = as.numeric(.data$pvalue)) |>
         dplyr::mutate(
@@ -103,20 +105,65 @@ get_go_enrichment <- function(query_entrez,
               !is.na(.data$pvalue),
               as.numeric(formatC(.data$pvalue, format = "e",
                                  digits = 1)),
+              as.numeric(NA)))
+    )
+
+    df <- suppressWarnings(
+      df |>
+        dplyr::mutate(qvalue = as.numeric(.data$qvalue)) |>
+        dplyr::mutate(pvalue = as.numeric(.data$pvalue)) |>
+        dplyr::mutate(
+          qvalue =
+            dplyr::if_else(
+              !is.na(.data$qvalue),
+              as.numeric(formatC(.data$qvalue, format = "e",
+                                 digits = 1)),
               as.numeric(NA))) |>
-        tidyr::separate(.data$background_ratio,
-                        c('num_background_hits','num_background_all'),
-                        sep = "/", remove = F, convert = T) |>
+        dplyr::mutate(
+          pvalue =
+            dplyr::if_else(
+              !is.na(.data$pvalue),
+              as.numeric(formatC(.data$pvalue, format = "e",
+                                 digits = 1)),
+              as.numeric(NA)))
+    )
+
+    df$enrichment_factor <- NA
+    if("FoldEnrichment" %in% colnames(df)){
+      df <- df |>
+        dplyr::mutate(
+          enrichment_factor = round(
+            as.numeric(.data$FoldEnrichment), digits = 2)) |>
+        dplyr::select(-c("FoldEnrichment"))
+    }else{
+      df <- df |>
+        tidyr::separate(
+          .data$gene_ratio,
+          c('num_query_hits','num_query_all'),
+          sep = "/", remove = F, convert = T) |>
+        tidyr::separate(
+          .data$background_ratio,
+          c('num_background_hits','num_background_all'),
+          sep = "/", remove = F, convert = T) |>
         dplyr::mutate(
           enrichment_factor =
-            round(as.numeric((.data$num_query_hits / .data$num_query_all) /
-                               (.data$num_background_hits / .data$num_background_all)),
-                  digits = 1)) |>
+            round(as.numeric((
+              .data$num_query_hits / .data$num_query_all) /
+                (.data$num_background_hits / .data$num_background_all)),
+              digits = 2)) |>
         dplyr::select(-c("num_query_hits",
                          "num_query_all",
                          "num_background_hits",
                          "num_background_all"))
-    )
+
+    }
+    df$rich_factor <- NA
+    if("RichFactor" %in% colnames(df)){
+      df <- df |>
+        dplyr::mutate(
+          rich_factor = as.numeric(.data$RichFactor)) |>
+        dplyr::select(-c("RichFactor"))
+    }
 
     gene2id <- NULL
     if (!is.null(genedb)) {
@@ -164,6 +211,15 @@ get_go_enrichment <- function(query_entrez,
       df$setting_p_value_adj_method <- p_value_adjustment_method
       df$setting_min_geneset_size <- min_geneset_size
       df$setting_max_geneset_size <- max_geneset_size
+
+      for(c in oncoEnrichR::cp_output_cols){
+        if(!(c %in% colnames(df))){
+          df[,c] <- NA
+        }
+      }
+      df <- df |>
+        dplyr::select(
+          dplyr::any_of(oncoEnrichR::cp_output_cols))
     }
   } else {
     df <- NULL
@@ -238,6 +294,11 @@ get_universal_enrichment <- function(query_entrez,
   df <- as.data.frame(utils::head(enr,5000))
   rownames(df) <- NULL
   if (nrow(df) > 0) {
+    assertable::assert_colnames(
+      df, c("ID","Description","Count",
+            "GeneRatio","BgRatio","pvalue",
+            "qvalue","geneID"),
+      only_colnames = F, quiet = T)
     df <- suppressWarnings(
       df |>
         dplyr::rename(
@@ -245,8 +306,6 @@ get_universal_enrichment <- function(query_entrez,
           description = "Description",
           count = "Count",
           gene_ratio = "GeneRatio",
-          rich_factor = "RichFactor",
-          fold_enrichment = "FoldEnrichment",
           z_score = "zScore",
           background_ratio = "BgRatio",
           gene_id = "geneID")
@@ -331,6 +390,21 @@ get_universal_enrichment <- function(query_entrez,
               as.numeric(formatC(.data$pvalue, format = "e",
                                  digits = 1)),
               as.numeric(NA))) |>
+        dplyr::mutate(
+          db = dplyr::if_else(is.na(.data$db) &
+                                nchar(dbsource) > 0,
+                              dbsource,
+                              as.character(.data$db)))
+    )
+
+    if("FoldEnrichment" %in% colnames(df)){
+      df <- df |>
+        dplyr::mutate(
+          enrichment_factor = round(
+            as.numeric(.data$FoldEnrichment), digits = 2)) |>
+        dplyr::select(-c("FoldEnrichment"))
+    }else{
+      df <- df |>
         tidyr::separate(
           .data$gene_ratio,
           c('num_query_hits','num_query_all'),
@@ -344,17 +418,20 @@ get_universal_enrichment <- function(query_entrez,
             round(as.numeric((
               .data$num_query_hits / .data$num_query_all) /
                 (.data$num_background_hits / .data$num_background_all)),
-              digits = 1)) |>
+              digits = 2)) |>
         dplyr::select(-c("num_query_hits",
                          "num_query_all",
                          "num_background_hits",
-                         "num_background_all")) |>
+                         "num_background_all"))
+
+    }
+    df$rich_factor <- NA
+    if("RichFactor" %in% colnames(df)){
+      df <- df |>
         dplyr::mutate(
-          db = dplyr::if_else(is.na(.data$db) &
-                                nchar(dbsource) > 0,
-                              dbsource,
-                              as.character(.data$db)))
-    )
+          rich_factor = as.numeric(.data$RichFactor)) |>
+        dplyr::select(-c("RichFactor"))
+    }
 
     gene2id <- NULL
     if (!is.null(genedb)) {
@@ -392,6 +469,15 @@ get_universal_enrichment <- function(query_entrez,
       df$setting_p_value_adj_method <- p_value_adjustment_method
       df$setting_min_geneset_size <- min_geneset_size
       df$setting_max_geneset_size <- max_geneset_size
+
+      for(c in oncoEnrichR::cp_output_cols){
+        if(!(c %in% colnames(df))){
+          df[,c] <- NA
+        }
+      }
+      df <- df |>
+        dplyr::select(
+          dplyr::any_of(oncoEnrichR::cp_output_cols))
     }
   } else {
     df <- NULL

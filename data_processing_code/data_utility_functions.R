@@ -357,9 +357,9 @@ get_msigdb_signatures <- function(
 
 get_opentarget_associations <-
   function(raw_db_dir = NULL,
-           min_overall_score = 0.05,
+           min_overall_score = 0.01,
            min_num_sources = 2,
-           release = "2024.06",
+           release = "2024.09",
            direct_associations_only = F){
 
     opentarget_targets <- as.data.frame(
@@ -441,7 +441,7 @@ get_opentarget_associations <-
 
 get_cancer_hallmarks <- function(raw_db_dir = NULL,
                                  gene_info = NULL,
-                                 opentargets_version = "2023.06",
+                                 opentargets_version = "2024.09",
                                  update = T){
 
   rds_fname <-
@@ -722,8 +722,10 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
   cancer_drugs[['early_phase']] <-
     pharmOncoX::get_drugs(
       cache_dir = raw_db_dir,
-      treatment_category = c("targeted_therapy_classified", "targeted_therapy_unclassified",
-                             "hormone_therapy_classified"),
+      treatment_category =
+        c("targeted_therapy_classified",
+          "targeted_therapy_unclassified",
+          "hormone_therapy_classified"),
       drug_action_inhibition = F,
       drug_cancer_indication = F,
       drug_classified_cancer = F,
@@ -1016,7 +1018,8 @@ get_protein_complexes <- function(
 
     corum_complexes_tsv <- file.path(
       raw_db_dir,
-      "protein_complexes", "coreComplexes.txt")
+      "protein_complexes","corum_humanComplexes.txt")
+      #"protein_complexes", "coreComplexes.txt")
 
     humap_url <-
       "http://humap2.proteincomplexes.org/static/downloads/humap2/humap2_complexes_20200809.txt"
@@ -1111,8 +1114,9 @@ get_protein_complexes <- function(
         corum_complexes_tsv,
         show_col_types = F) |>
         janitor::clean_names() |>
-        dplyr::rename(pmid = pub_med_id,
-                      uniprot_acc = subunits_uni_prot_i_ds) |>
+        dplyr::rename(uniprot_acc = subunits_uni_prot_i_ds) |>
+        # dplyr::rename(pmid = pub_med_id,
+        #               uniprot_acc = subunits_uni_prot_i_ds) |>
         dplyr::mutate(
           complex_name = stringr::str_replace_all(
             complex_name, "\\\\u2013", "-"
@@ -1611,29 +1615,38 @@ get_omnipath_gene_annotations <- function(
     genes <-
       protein_coding_genes$symbol[i:min(nrow(protein_coding_genes),i + 199)]
     annotations <-
-      OmnipathR::import_omnipath_annotations(proteins = genes) |>
+      OmnipathR::annotations(proteins = genes) |>
       dplyr::filter(
         !stringr::str_detect(
-          source, "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski2015)$")) |>
-      dplyr::rename(uniprot_acc = uniprot) |>
-      dplyr::mutate(record_id = as.character(record_id))
-    omnipathdb <-
-      dplyr::bind_rows(
-        omnipathdb, annotations)
+          source, "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski_location)$"))
+     if(nrow(annotations) > 0){
+       annotations <- annotations |>
+        dplyr::rename(uniprot_acc = uniprot) |>
+        dplyr::mutate(record_id = as.character(record_id))
+      omnipathdb <-
+        dplyr::bind_rows(
+          omnipathdb, annotations)
+     }
     cat(i, min(nrow(protein_coding_genes), i + 199), '\n')
     i <- i + 200
   }
+
+
   genes <-
     protein_coding_genes$symbol[i:nrow(protein_coding_genes)]
   annotations <-
-    OmnipathR::import_omnipath_annotations(
-      select_genes = genes) |>
+    OmnipathR::annotations(
+      proteins = genes) |>
     dplyr::filter(!stringr::str_detect(
-      source, "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski2015)$")) |>
-    dplyr::rename(uniprot_acc = uniprot) |>
-    dplyr::mutate(record_id = as.character(record_id))
+      source,
+      "^(HPA_tissue|DisGeNet|KEGG|MSigDB|ComPPI|DGIdb|LOCATE|Vesiclepedia|Ramilowski_location)$"))
+
 
   if(nrow(annotations) > 0){
+    annotations <- annotations |>
+      dplyr::rename(uniprot_acc = uniprot) |>
+      dplyr::mutate(record_id = as.character(record_id))
+
     omnipathdb <-
       dplyr::bind_rows(omnipathdb, annotations)
   }

@@ -3,12 +3,12 @@ library(gganatogram)
 source('data_processing_code/data_utility_functions.R')
 
 msigdb_version <- 'v2024.1.Hs'
-wikipathways_version <- "20240810"
+wikipathways_version <- "20250210"
 netpath_version <- "2010"
-opentargets_version <- "2024.06"
-kegg_version <- "20240904"
-gencode_version <- "46"
-uniprot_release <- "2024_04"
+opentargets_version <- "2024.09"
+kegg_version <- "20250225"
+gencode_version <- "47"
+uniprot_release <- "2025_01"
 
 ## Which databases to update or retrieve from last updated state
 db_updates <- list()
@@ -21,7 +21,7 @@ db_updates[['omnipath_regulatory']] <- F
 db_updates[['subcelldb']] <- F
 db_updates[['ligand_receptor_db']] <- F
 
-oe_version <- "1.5.2"
+oe_version <- "1.5.3"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"
@@ -208,7 +208,7 @@ opentarget_associations <-
   get_opentarget_associations(
     raw_db_dir = data_raw_dir,
     min_num_sources = 2,
-    min_overall_score = 0.05,
+    min_overall_score = 0.02,
     release = opentargets_version,
     direct_associations_only = T)
 
@@ -465,6 +465,33 @@ for(elem in c('cancerdrugdb',
 }
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
+
+cp_output_cols <-
+  c('db',
+    'description',
+    'standard_name',
+    'gene_ratio',
+    'background_ratio',
+    'enrichment_factor',
+    'rich_factor',
+    'z_score',
+    'pvalue',
+    'p.adjust',
+    'qvalue',
+    'gene_id',
+    'gene_symbol',
+    'gene_symbol_link',
+    'setting_p_value_cutoff',
+    'setting_q_value_cutoff',
+    'setting_p_value_adj_method',
+    'setting_min_geneset_size',
+    'setting_max_geneset_size',
+    'description_link',
+    'exact_source',
+    'external_url',
+    'url')
+
+usethis::use_data(cp_output_cols, overwrite = T)
 
 ####---Zenodo upload ----####
 

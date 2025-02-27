@@ -25,10 +25,10 @@ cancer_association_rank(
 \item{ignore_id_err}{logical indicating if analysis should
 continue when uknown query identifiers are encountered}
 
-\item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
-
-\item{incude_gene_summary}{logical indicating if gene summary (NCBI/UniProt) should be included
+\item{include_gene_summary}{logical indicating if gene summary (NCBI/UniProt) should be included
 in output data tables}
+
+\item{oeDB}{oncoEnrichR data repository object - as returned from \code{load_db()}}
 }
 \value{
 A list with two data frames: query genes ranked according to cancer relevance

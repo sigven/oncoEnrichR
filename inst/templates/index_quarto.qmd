@@ -38,6 +38,7 @@ format:
     grid:
       body-width: 920px
 lightbox: true
+callout-appearance: default
 ---
 
 ```{r global_options}

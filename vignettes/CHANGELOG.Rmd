@@ -7,6 +7,20 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.5.3
+
+* Date: 2025-02-27
+
+* Updates
+  * Data updates
+     * KEGG - 20250225
+     * WikiPathways - 20250210
+     * COMPARTMENTS - 2025-01
+     * BIOGRID - v4.4.241
+     * Open Targets Platform (2024.09)
+
+* Fixed [https://github.com/sigven/oncoEnrichR/issues/37](#issue37)
+
 ## Version 1.5.2
 
 * Date: 2024-09-09

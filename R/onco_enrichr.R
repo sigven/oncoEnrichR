@@ -1786,6 +1786,7 @@ onco_enrich <- function(query = NULL,
 #' @param file full filename for report output (e.g. "oe_report.html" or "oe_report.xlsx")
 #' @param ignore_file_extension logical to accept any type of filaname extensions (for Galaxy integration)
 #' @param overwrite logical indicating if existing output files may be overwritten
+#' @param render_quarto_quiet logical indicating if Quarto rendering should be done quietly
 #' @param format file format of output (html/excel)
 #' @param ... options for Galaxy/non self-contained HTML. Only applicable for use in Galaxy
 #'
@@ -1797,6 +1798,7 @@ write <- function(report,
                   file = "testReport.html",
                   ignore_file_extension = F,
                   overwrite = F,
+                  render_quarto_quiet = T,
                   format = "html",
                   ...) {
 
@@ -1868,7 +1870,8 @@ write <- function(report,
     return()
   }
 
-  output_directory <- dirname(file)
+  #output_directory <- dirname(file)
+  output_directory <- normalizePath(dirname(file))
 
   if(is.na(html_extern_path) & !embed_resources){
     html_extern_path <- output_directory
@@ -1885,6 +1888,9 @@ write <- function(report,
       lgr::lgr$info(paste0("ERROR: ",val))
       return()
     }
+  }else{
+    lgr::lgr$info(paste0("ERROR: provide absolute (not relative) path to output file"))
+    return()
   }
 
   if (overwrite == F) {
@@ -1956,7 +1962,6 @@ write <- function(report,
       system.file("templates", package = "oncoEnrichR")
 
     ## make temporary directory for quarto report rendering
-    #stringi::stri_rand_strings(10, 1)
     tmp_quarto_dir <- file.path(
       output_directory,
       paste0('quarto_', stringi::stri_rand_strings(1, 15))
@@ -2018,7 +2023,7 @@ write <- function(report,
     quarto::quarto_render(
       input = quarto_main_template_sample,
       execute_dir = tmp_quarto_dir,
-      quiet = T)
+      quiet = render_quarto_quiet)
 
     ## check that supporting libs do not exist in output directory (Galaxy)
     if (galaxy_run == T & embed_resources == F){

@@ -12,7 +12,7 @@
 #' "refseq_transcript_id", "ensembl_protein", "refseq_protein")
 #' @param ignore_id_err logical indicating if analysis should
 #' continue when uknown query identifiers are encountered
-#' @param incude_gene_summary logical indicating if gene summary (NCBI/UniProt) should be included
+#' @param include_gene_summary logical indicating if gene summary (NCBI/UniProt) should be included
 #' in output data tables
 #' @param tumor_site character indicating primary tumor site of interest
 #'
@@ -118,9 +118,10 @@ cancer_association_rank <- function(
 
   if(NROW(qgenes_match$found) > 2500){
     lgr::lgr$warn( paste0(
-      "Query set must exceeds max limit of 2,500 valid entries - ",
+      "Query set exceeds max limit of 2,500 valid entries - ",
       "limiting input to 2,500 entries"))
-    qgenes_match[['found']] <- head(qgenes_match[['found']], 2500)
+    qgenes_match[['found']] <-
+      utils::head(qgenes_match[['found']], 2500)
   }
 
   lgr::lgr$info( paste0(

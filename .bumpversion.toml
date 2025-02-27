@@ -1,0 +1,46 @@
+[tool.bumpversion]
+current_version = "1.5.2"
+search = "{current_version}"
+replace = "{new_version}"
+message = "Bump version: {current_version} → {new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+commit = true
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:\\.(?P<dev>\\d+))?
+"""
+
+serialize = [
+    "{major}.{minor}.{patch}.{dev}",
+    "{major}.{minor}.{patch}",
+]
+
+[[tool.bumpversion.files]]
+filename = "DESCRIPTION"
+search = "Version: {current_version}"
+replace = "Version: {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "README.md"
+search = "2F{current_version}"
+replace = "2F{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pkgdown/index.md"
+search = "2F{current_version}"
+replace = "2F{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "vignettes/installation.Rmd"
+search = "{current_version}"
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = ".github/workflows/pkgdown.yaml"
+search = "VERSION: '{current_version}'"
+replace = "VERSION: '{new_version}'"
+

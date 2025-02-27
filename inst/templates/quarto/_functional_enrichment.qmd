@@ -140,9 +140,13 @@ if (active_tab[['go']] == T) {
 
 enrichment_go_display <- onc_enrich_report[['data']][['enrichment']][['go']] |>
   dplyr::rename(Term = description_link, 
-                Enrichment = enrichment_factor, Q_Value = qvalue, P_Value = pvalue, 
-                Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue, 
+                P_Value = pvalue, 
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |> 
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB,  
                 Background_Ratio, Gene_Ratio) |> 
@@ -214,9 +218,14 @@ if (active_tab[['msigdb']] == T) {
 #| eval: !expr show_enrichment_filters[['msigdb']]
 
 enrichment_msigdb_display <- onc_enrich_report[['data']][['enrichment']][['msigdb']] |>
-  dplyr::rename(Term = description_link, Enrichment = enrichment_factor, Q_Value = qvalue,  P_Value = pvalue,
-                Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+  dplyr::rename(Term = description_link, 
+                Enrichment = enrichment_factor, 
+                Q_Value = qvalue,  
+                P_Value = pvalue,
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |>
   dplyr::select(Term, Enrichment, Q_Value, Gene_Members, DB,  
                 Background_Ratio, Gene_Ratio) |>
@@ -428,8 +437,10 @@ enrichment_netpath_display <- onc_enrich_report[['data']][['enrichment']][['netp
   dplyr::rename(Term = description_link, 
                 Enrichment = enrichment_factor, 
                 Q_Value = qvalue, P_Value = pvalue,
-                Gene_Members = gene_symbol_link, DB = db,
-                Exact_Source = exact_source, Background_Ratio = background_ratio, 
+                Gene_Members = gene_symbol_link, 
+                DB = db,
+                Exact_Source = exact_source, 
+                Background_Ratio = background_ratio, 
                 Gene_Ratio = gene_ratio) |>
    dplyr::select(Term, Enrichment, Q_Value, Gene_Members, 
                  DB, 

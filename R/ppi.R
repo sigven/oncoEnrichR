@@ -19,7 +19,8 @@ get_network_hubs <- function(edges = NULL,
   d <- igraph::graph_from_data_frame(d = edges, directed = F)
 
   ## hub score (Kleinberg"s hub centrality)
-  hscore <- igraph::hub_score(d)
+  #hscore <- igraph::hub_score(d)
+  hscore <- igraph::authority_score(d)
   hub_scores <- data.frame(
     symbol = names(sort(hscore$vector,decreasing = T)),
     hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),

@@ -10,6 +10,7 @@ write(
   file = "testReport.html",
   ignore_file_extension = F,
   overwrite = F,
+  render_quarto_quiet = T,
   format = "html",
   ...
 )
@@ -24,6 +25,8 @@ write(
 \item{ignore_file_extension}{logical to accept any type of filaname extensions (for Galaxy integration)}
 
 \item{overwrite}{logical indicating if existing output files may be overwritten}
+
+\item{render_quarto_quiet}{logical indicating if Quarto rendering should be done quietly}
 
 \item{format}{file format of output (html/excel)}
 
