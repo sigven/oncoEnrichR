@@ -32,23 +32,21 @@ Imports: dplyr,
          assertable,
          clusterProfiler (>= 4.13),
          DT, 
-         gganatogram, 
          ggpubr,
          openxlsx,
-         stringr,
          tidyr,
          readr,
          googledrive,
          visNetwork, 
          quarto,
          plotly, 
-         jsonlite,
          forcats,
          org.Hs.eg.db, 
          igraph (>= 2.0), 
          lgr,
-         maftools, 
+         bscui,
          rlang,
+         maftools, 
          textclean (>= 0.9.3)
 Suggests: 
     testthat (>= 3.1.0),
@@ -57,8 +55,7 @@ Suggests:
 VignetteBuilder: knitr 
 License: MIT + file LICENSE
 Encoding: UTF-8
-Remotes: jespermaag/gganatogram
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 LazyData: true

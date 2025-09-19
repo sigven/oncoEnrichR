@@ -7,6 +7,29 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.6.0
+
+* Date: 2025-09-19
+
+* Updates
+  * Data updates
+     * WikiPathways - 20250910
+     * COMPARTMENTS - 2025-07
+     * BIOGRID - v4.4.249
+     * Open Targets Platform (2025.09)
+     * MSigDB (including GO) - v2025.1.Hs
+     * KEGG - 20250603
+     * CellChatDB v2
+  * New interactive subcellular compartment visualization, utilizing the [bscui package](https://cran.r-project.org/web/packages/bscui/vignettes/bscui.html)
+  * CRISPR KO fitness score data and target priority scores now retrieved from [Cell Model Passports](https://cellmodelpassports.sanger.ac.uk/)
+  * Signed transcription factor (TF) - target gene interactions now retrieved from [CollecTRI](https://github.com/saezlab/CollecTRI)
+    * new argument to `onco_enrich()`: `regulatory_min_resources` - minimum number of supporting resources for each TF-target interaction (default: 2)
+  * Abandoned Cancer Gene Census (CGC) as a source for oncogene/tumor suppressor
+classification (within [geneOncoX](https://github.com/sigven/geneOncoX)), due to changes in data licensing terms
+  * Increased maximum allowed size of query set to *n = 2000* genes. Note that, for large query sets, some modules may take longer time to compute (GO enrichment in particular), and some modules will be explicitly turned off to avoid issues/crash (e.g. PPI network, co-expression, recurrent SNV/InDels)
+  * Updating the web-based version of oncoEnrichR (Galaxy) is still work in progress
+
+
 ## Version 1.5.3
 
 * Date: 2025-02-27

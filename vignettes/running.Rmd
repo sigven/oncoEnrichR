@@ -50,7 +50,7 @@ it to a local cache directory.
       subcellcomp_min_confidence = 3,
       subcellcomp_min_channels = 1,
       subcellcomp_show_cytosol = FALSE,
-      regulatory_min_confidence = "D",
+      regulatory_min_resources = 2,
       fitness_max_score = -2,
       ppi_add_nodes = 30,
       ppi_string_min_score = 0.9,

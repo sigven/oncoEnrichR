@@ -30,10 +30,10 @@ attempts to map such cases as synonyms/aliases for the primary gene symbols.
 
 In order to keep the size of the HTML output report at a manageable level, there is currently an upper limit of
 
-  * **`n = 1000`** 
+  * **`n = 2000`** 
 
-genes that can be used as input to the tool. When running the tool through Galaxy, the limitation with respect to the number of input genes is stricter (**`n = 200`**). Note also that if the number of input genes is very low (i.e. __n = 1-5__), some analysis modules are not applicable for analysis (functional enrichment, protein-protein interaction network etc). 
+genes that can be used as input to the tool. When the number of input genes exceeds _n = 500_, oncoEnrichR will disable selected modules (protein-protein interaction networks, co-expression retrieval, and TCGA SNV/InDel recurrence), as we have experienced challenges running them with huge input sets. When running the tool through Galaxy, the limitation with respect to the number of input genes is stricter (**`n = 200`**). Note also that if the number of input genes is very low (i.e. __n = 1-5__), some analysis modules are not applicable for analysis (functional enrichment, protein-protein interaction network etc). 
 
-**IMPORTANT NOTE**: Due to its large size, the HTML report can be slow to load when generating full reports with the maximum number of genes (n = 1000). We generally recommend to use oncoEnrichR with smaller querysets (< 500), as this will produce reports that can be more efficiently loaded and viewed. If you want to submit a query that pushes the limit (n = 1000), we recommend that you carefully configure the report contents/modules, in that sense producing more managable reports.
+**IMPORTANT NOTE**: Due to its large size, the HTML report can be slow to load when generating full reports with the maximum number of genes (n = 2000). We generally recommend to use oncoEnrichR with smaller querysets (< 500), as this will produce reports that can be more efficiently loaded and viewed. If you want to submit a query that pushes the limit (n = 1000), we recommend that you carefully configure the report contents/modules, in that sense producing more manageable reports.
 
 

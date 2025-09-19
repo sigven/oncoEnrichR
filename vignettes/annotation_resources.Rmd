@@ -16,8 +16,7 @@ Data harvested and integrated from the following resources form the backbone of 
 -   [Network of Cancer Genes](http://ncg.kcl.ac.uk/index.php) - Network of cancer genes - a web resource to analyze duplicability, orthology and network properties of cancer genes
 -   [IntOGen](https://www.intogen.org) - Compendium of mutational driver genes in cancer
 -   [UniProt](https://uniprot.org) - Comprehensive and freely accessible resource of protein sequence and functional information
--   [Cancer Gene Census](https://cancer.sanger.ac.uk/census)
--   [DoRothEA](https://saezlab.github.io/dorothea/index.html) - gene set resource containing signed transcription factor (TF) - target (regulatory) interactions
+-   [CollecTRI](https://github.com/saezlab/CollecTRI) - gene set resource containing signed transcription factor (TF) - target (regulatory) interactions
 -   [CellChatDB](http://www.cellchat.org/) - ligand-receptor interaction resource
 -   [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/) - gene aberration frequencies, recurrent point mutations/indels, and co-expression patterns in \~9,500 primary tumor samples
 -   [The Human Protein Atlas](https://www.proteinatlas.org) - expression data for healthy human tissues ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene expression associations in cancer
@@ -31,7 +30,7 @@ Data harvested and integrated from the following resources form the backbone of 
 -   [ComplexPortal](https://www.ebi.ac.uk/complexportal/home) - manually curated, encyclopaedic resource of macro-molecular complexes
 -   [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex map
 -   [COMPARTMENTS](https://compartments.jensenlab.org/Search) - subcellular compartment database
--   [DepMap/Project Score](https://score.depmap.sanger.ac.uk) - Databases on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
+-   [Cell Models Passports](https://cellmodelpassports.sanger.ac.uk/) - Resource on the effects on cancer cell line viability elicited by CRISPR-Cas9 mediated gene activation
 -   [Genetic determinants of survival in cancer](https://www.tcga-survival.com/) - Resource on the relative prognostic impact of gene mutation, expression, methylation, and CNA in human cancers
 -   [Predicted synthetic lethality interactions](https://pubmed.ncbi.nlm.nih.gov/34529928/) - Resource on predicted synthetic lethality interactions between human gene paralogs (using human cancer cell lines)
 
@@ -42,7 +41,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 ### Target-disease associations
 
-* Associations between genes and diseases/tumor types are harvested from the [Open Targets Platform](https://targetvalidation.org). To increase the confidence of target-disease associations shown, we include only associations with support from at least two [data types](https://platform-docs.opentargets.org/associations). Very weak associations, i.e. those with an overall score less than 0.05, have been excluded (complete range 0-1). 
+* Associations between genes and diseases/tumor types are harvested from the [Open Targets Platform](https://targetvalidation.org). To increase the confidence of target-disease associations shown, we include only associations with support from at least two [data types](https://platform-docs.opentargets.org/associations). Associations with a weak rank score, i.e. those with an overall score less than 0.02, have been excluded (complete range 0-1). 
 
 ### Target-drug associations
 
@@ -50,31 +49,22 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 ### Tumor suppressor/proto-oncogene/cancer driver annotation
 
-* We assign three confidence levels with respect to genes having oncogenic and/or tumor suppressive roles
+* We assign two confidence levels with respect to genes having oncogenic and/or tumor suppressive roles
 
-     - **Very strong**
-          * _Strong_support (> 20 citations)_ in the biomedical literature ([CancerMine](http://bionlp.bcgsc.ca/cancermine/)), no curated entry in [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/) or [Cancer Gene Census (CGC)](https://cancer.sanger.ac.uk/census), **OR**
-          * Manually curated entry in NCG or CGC, and with _significant support (> 10 citations)_ in the biomedical literature (CancerMine)
-          
      - **Strong** 
-         * Curated entry in NCG or CGC, with _moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), **OR**
-         * _Significant support (> 10 citations, <= 20 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+         * Curated entry in NCG _and_ with support/hits ( >= 5 citations) in the biomedical literature (CancerMine), **OR**
               
      - **Moderate** 
-         * Curated entry in NCG/CGC, with _no or weak support (<= 5 citations)_ in the biomedical literature (CancerMine), **OR**
-         * _Moderate support (<= 10 citations, > 5 citations)_ in the biomedical literature (CancerMine), no entry in CGC/NCG
+         * Curated entry in NCG, _or_ only support ( >= 20 citations) in the biomedical literature (CancerMine)
          
      - Literature support for a tumor suppressive role is ignored if the gene has 2.5 times as much literature support for an oncogenic role (and *vice versa*)
     
 
-* Classification of genes as potential cancer drivers *require support from at least two of the following sources*:
+* Classification of genes as potential cancer drivers *require support from at least one of the following sources*:
      - [Network of Cancer Genes](http://ncg.kcl.ac.uk/) - canonical cancer drivers
      - [IntOGen](https://www.intogen.org) - predicted cancer driver genes
-     - [Cancer Gene Census - TIER1/2](https://cancer.sanger.ac.uk/census) - curated cancer genes
      - [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
-     - [CancerMine](https://www.nature.com/articles/s41592-019-0422-y) - literature mining resource, considering only entries with support from > 5 citations)
      
-
 ### Gene cancer hallmark associations
 
 * The [hallmarks of cancer](https://pubmed.ncbi.nlm.nih.gov/21376230/) comprise six biological capabilities acquired during the multistep development of human tumors. Genes attributed to the hallmarks of cancer have been retrieved from the [Open Targets Platform/COSMIC](https://targetvalidation.org)
@@ -97,7 +87,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 ### Gene fitness effects
 
-* Gene fitness effects are retrieved from an integration of data in [DepMap & Project Score](https://score.depmap.sanger.ac.uk/). We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).
+* Gene fitness effects are retrieved from data hosted within the [Cell Model Passports](https://cellmodelpassports.sanger.ac.uk/) resource, which include data from [DepMap](https://depmap.org). We include data on genes with a statistically significant effect on cell fitness in cancer cell lines (fitness score is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting).
 
 ### Subcellular compartment annotation
 
@@ -126,7 +116,7 @@ This section describes the underlying annotation types of _oncoEnrichR_ in detai
 
 ### Gene regulatory interactions
 
-* Regulatory interactions (TF-target) have been retrieved from the [DoRothEA](https://saezlab.github.io/dorothea/) resource. Two collections of interactions are subject to overlap against the query set in *oncoEnrichR*: a **global set** of regulatory interactions, many of which are inferred from gene expression patterns in normal tissues (GTEx), and a **cancer-focused set**, the latter inferred from gene expression patterns in tumors (TCGA).
+* Signed regulatory interactions (TF-target) have been retrieved from the [CollecTRI](https://github.com/saezlab/CollecTRI) resource. Users have the possibility to configure the stringency with respect to the confidence level of the regulatory interactions shown (number of supporting resources).
 
 ### Prognostic gene associations
 

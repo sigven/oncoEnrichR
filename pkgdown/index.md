@@ -16,12 +16,16 @@ high-throughput cancer biology screens.
 
 **oncoEnrichR** can be used to interrogate results from e.g. genetic
 screens (siRNA/CRISPR), protein proximity labeling, or transcriptomics
-(differential expression). The tool queries a variety of high-quality
-data resources in order to assemble useful gene annotations and analyses
-in an interactive report (examples from the report shown below).
+(differential expression). In principle, oncoEnrichR can be relevant for any screen 
+or analysis that produces a list of human gene _hits_ that needs functional
+annotation and/or prioritization with respect to cancer relevance. The tool 
+queries a number of high-quality data resources in order to assemble 
+cancer-relevant annotations and analyses in an interactive report 
+(examples from the report shown below).
 
 Web-based access to **oncoEnrichR** is available at <font size="4">
 [**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.5.3)</font>
+_The web version of oncoEnrichR is not currently operating with the latest version, we are working to get the latest version in place also in Galaxy._
 
 <br>
 
@@ -85,6 +89,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   September 19th 2025: [**1.6.0 release**](articles/CHANGELOG.html#version-1-6-0)
 -   February 27th 2025: [**1.5.3 release**](articles/CHANGELOG.html#version-1-5-3)
 -   September 9th 2024: [**1.5.2 release**](articles/CHANGELOG.html#version-1-5-2)
 -   August 3rd 2024: [**1.5.1 release**](articles/CHANGELOG.html#version-1-5-1)
@@ -99,7 +104,7 @@ Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.14941445"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.14941445.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.17158614"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17158614.svg" alt="DOI"/></a>
 
 <br>
 
