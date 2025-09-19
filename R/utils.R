@@ -339,7 +339,7 @@ validate_db <- function(oe_db) {
       "otdb",
       "pathwaydb",
       "pfamdb",
-      "depmapdb",
+      "cellmodeldb",
       "survivaldb",
       "release_notes",
       "slparalogdb",
@@ -385,11 +385,11 @@ validate_db_df <- function(df, dbtype = "genedb") {
                "tcga_recurrent_variants",
                "protein_complex",
                "protein_domain",
-               "dorothea",
                "ligand_receptor_db",
                "ligand_receptor_xref",
                "transcript_xref",
                "biogrid",
+               "collectri",
                "compartments",
                "oeDB",
                "tf_target_interactions",
@@ -457,7 +457,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
   if (dbtype == "biogrid") {
     cols <- c("entrezgene_A",
               "entrezgene_B",
-              "method",
+              "experimental_system",
               "pmid",
               "throughput")
   }
@@ -553,7 +553,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
                  "regulator_name",
                  "target",
                  "target_name",
-                 "confidence_level",
+                 "n_resources",
                  "mode_of_regulation")
   }
 
@@ -601,11 +601,13 @@ validate_db_df <- function(df, dbtype = "genedb") {
               'co_I_receptor',
               'literature_support')
   }
-  if (dbtype == "dorothea") {
-    cols <- c('regulator',
+  if (dbtype == "collectri") {
+    cols <- c('record_id',
+              'regulator',
               'target',
               'interaction_sources',
-              'confidence_level',
+              'curation_effort',
+              'n_resources',
               'mode_of_regulation',
               'tf_target_literature_support',
               'tf_target_literature')
@@ -639,7 +641,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
               'tissue_status',
               'entrezgene',
               'sample_site',
-              'gene_id_project_score')
+              'gene_id_cmpassports')
   }
 
   if (dbtype == "comppidb") {
@@ -850,8 +852,8 @@ add_excel_sheet <- function(
         ),
         data.frame(
           category = 'REGULATORY',
-          configuration = 'regulatory_min_confidence',
-          value = as.character(report$config$regulatory$min_confidence),
+          configuration = 'regulatory_min_resources',
+          value = as.character(report$config$regulatory$min_resources),
           stringsAsFactors = F
         ),
         data.frame(
@@ -1006,6 +1008,12 @@ add_excel_sheet <- function(
           configuration = 'bgset_id_type',
           value = as.character(report$config$bgset$id_type),
           stringsAsFactors = F
+        ),
+        data.frame(
+          category = 'OTHER',
+          configuration = 'oncoEnrichR_version',
+          value = as.character(report$config$resources$oncoEnrichR$version),
+          stringsAsFactors = F
         )
       )
 
@@ -1031,9 +1039,9 @@ add_excel_sheet <- function(
     if (is.data.frame(report$data$unknown_function$hits_df)) {
       if (NROW(report$data$unknown_function$hits_df) > 0) {
         target_df <- report$data$unknown_function$hits_df |>
-          dplyr::rename(go_terms = .data$go_term_link) |>
+          dplyr::rename(go_terms = "go_term_link") |>
           dplyr::mutate(
-            annotation_source = "Gene Ontology (2022-12)/NCBI Gene/UniProt (2022_05)",
+            annotation_source = "Gene Ontology (2025-06)/NCBI Gene/UniProt (2025-03)",
             version = NA) |>
           dplyr::select(c("annotation_source",
                         "version"),
@@ -1097,7 +1105,13 @@ add_excel_sheet <- function(
                 )
               )
           ) |>
-          dplyr::select(-c("literature_support"))
+          dplyr::mutate(
+            annotation_source =
+              report$config$resources$opentargets$name,
+            version =
+              report$config$resources$opentargets$version) |>
+          dplyr::select(c("annotation_source", "version"),
+                        dplyr::everything())
       }
     }
   }
@@ -1193,22 +1207,25 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources$opentargets$name,
               version = report$config$resources$opentargets$version) |>
-            dplyr::rename(tractability_category = .data$AB_tractability_category,
-                          tractability_support = .data$AB_tractability_support) |>
+            dplyr::rename(tractability_category = "AB_tractability_category",
+                          tractability_support = "AB_tractability_support") |>
             dplyr::mutate(tractability_drugtype = "Antibody") |>
-            dplyr::select(c("annotation_source", "version",
+            dplyr::select(c("annotation_source",
+                            "version",
                           "tractability_drugtype"),
                           dplyr::everything()) |>
             dplyr::mutate(
               symbol =
                 stringr::str_trim(
-                  textclean::replace_html(.data$symbol)
+                  textclean::replace_html(
+                    .data$symbol)
                 )
             ) |>
             dplyr::mutate(
               tractability_support =
                 stringr::str_trim(
-                  textclean::replace_html(.data$tractability_support)
+                  textclean::replace_html(
+                    .data$tractability_support)
                 )
             )
 
@@ -1292,6 +1309,12 @@ add_excel_sheet <- function(
             dplyr::mutate(
               annotation_source = report$config$resources[[res_name]]$name,
               version = report$config$resources[[res_name]]$version) |>
+            dplyr::select(
+              -dplyr::any_of(
+                c("complex_id",
+                  "complex_comment",
+                  "disease_comment",
+                   "literature"))) |>
             dplyr::select(c("annotation_source",
                             "version"),
                           dplyr::everything()) |>
@@ -1305,6 +1328,12 @@ add_excel_sheet <- function(
                   ),
                   " , ",
                   ", "
+                )
+            ) |>
+            dplyr::mutate(
+              complex_name =
+                stringr::str_trim(
+                  textclean::replace_html(.data$complex_name)
                 )
             )
 
@@ -1321,12 +1350,6 @@ add_excel_sheet <- function(
           literature =
             stringr::str_trim(
               textclean::replace_html(.data$literature)
-            )
-        ) |>
-        dplyr::mutate(
-          complex_name =
-            stringr::str_trim(
-              textclean::replace_html(.data$complex_name)
             )
         )
     }
@@ -1434,46 +1457,40 @@ add_excel_sheet <- function(
 
   if (analysis_output == "regulatory") {
 
-    ## regulatory interactions
-    for (c in c('pancancer','global')) {
+    if (is.data.frame(report$data$regulatory$interactions)) {
+      if (NROW(report$data$regulatory$interactions) > 0) {
+        df <- report$data$regulatory$interactions |>
+          dplyr::mutate(
+            annotation_source = report$config$resources$collectri$name,
+            version = report$config$resources$collectri$version) |>
+          dplyr::select(c("annotation_source",
+                          "version"),
+                        dplyr::everything()) |>
+          dplyr::mutate(
+            target_name =
+              stringr::str_trim(
+                textclean::replace_html(.data$target_name)
+              )
+          ) |>
+          dplyr::mutate(
+            regulator_name =
+              stringr::str_trim(
+                textclean::replace_html(.data$regulator_name)
+              )
+          ) |>
+          dplyr::mutate(
+            literature_support =
+              stringr::str_trim(
+                textclean::replace_html(.data$literature_support)
+              )
+          )
 
-      if (is.data.frame(report$data$regulatory$interactions[[c]])) {
-        if (NROW(report$data$regulatory$interactions[[c]]) > 0) {
-          df <- report$data$regulatory$interactions[[c]] |>
-            dplyr::mutate(
-              dorothea_collection = c,
-              annotation_source = report$config$resources$dorothea$name,
-              version = report$config$resources$dorothea$version) |>
-            dplyr::select(c("annotation_source",
-                            "version",
-                          "dorothea_collection"),
-                          dplyr::everything()) |>
-            dplyr::mutate(
-              target_name =
-                stringr::str_trim(
-                  textclean::replace_html(.data$target_name)
-                )
-            ) |>
-            dplyr::mutate(
-              regulator_name =
-                stringr::str_trim(
-                  textclean::replace_html(.data$regulator_name)
-                )
-            ) |>
-            dplyr::mutate(
-              literature_support =
-                stringr::str_trim(
-                  textclean::replace_html(.data$literature_support)
-                )
-            )
-
-          target_df <- target_df |>
-            dplyr::bind_rows(df)
-        }
+        target_df <- target_df |>
+          dplyr::bind_rows(df)
       }
     }
-
   }
+
 
   if (analysis_output == "recurrent_variants") {
 
@@ -1583,7 +1600,6 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$compartments$name,
             version = report$config$resources$compartments$version) |>
-          dplyr::select(-c("ggcompartment")) |>
           dplyr::select(c("annotation_source", "version"),
                         dplyr::everything()) |>
           dplyr::mutate(
@@ -1632,8 +1648,8 @@ add_excel_sheet <- function(
       if (NROW(report$data$fitness$fitness_scores$targets) > 0) {
         target_df <- report$data$fitness$fitness_scores$targets |>
           dplyr::mutate(
-            annotation_source = report$config$resources$depmap$name,
-            version = report$config$resources$depmap$version) |>
+            annotation_source = report$config$resources$cellmodeldb$name,
+            version = report$config$resources$cellmodeldb$version) |>
           dplyr::select(-c("symbol_link_ps", "model_link_ps",
                            "n_gene")) |>
           dplyr::select(c("annotation_source", "version"),
@@ -1647,8 +1663,8 @@ add_excel_sheet <- function(
       if (NROW(report$data$fitness$target_priority_scores$targets) > 0) {
         target_df <- report$data$fitness$target_priority_scores$targets |>
           dplyr::mutate(
-            annotation_source = report$config$resources$depmap$name,
-            version = report$config$resources$depmap$version) |>
+            annotation_source = report$config$resources$cellmodeldb$name,
+            version = report$config$resources$cellmodeldb$version) |>
           dplyr::select(c("annotation_source", "version"),
                         dplyr::everything())
       }
@@ -1687,6 +1703,9 @@ add_excel_sheet <- function(
                         "string_escore",
                         "string_dscore",
                         "string_tscore")) |>
+          dplyr::filter(
+            (!(.data$is_target_A == FALSE & .data$is_target_B == FALSE))
+          ) |>
           dplyr::mutate(
             annotation_source = report$config$resources$string$name,
             version = report$config$resources$string$version) |>

@@ -2,62 +2,48 @@
 annotate_tf_targets <- function(qgenes,
                                 genedb = NULL,
                                 tf_target_interactions = NULL,
-                                collection = "global",
-                                regulatory_min_confidence = "D") {
+                                regulatory_min_resources = 2) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
-
-  stopifnot(is.character(collection))
-  stopifnot(collection == "global" | collection == "pancancer")
-
   stopifnot(is.character(qgenes))
   stopifnot(!is.null(genedb))
-  stopifnot(typeof(tf_target_interactions) == "list")
-  stopifnot(!is.null(tf_target_interactions[[collection]]))
+  stopifnot(!is.null(tf_target_interactions))
   validate_db_df(genedb, dbtype = "genedb")
-  validate_db_df(tf_target_interactions[[collection]], dbtype = "dorothea")
-  stopifnot(regulatory_min_confidence %in% c("A","B","C","D"))
+  validate_db_df(tf_target_interactions, dbtype = "collectri")
+  stopifnot(is.numeric(regulatory_min_resources))
+  stopifnot(regulatory_min_resources >= 1 &
+              regulatory_min_resources <= 3)
 
   lgr::lgr$info(
-    paste0("DoRothEA: retrieval of regulatory interactions involving members of target set - ", collection))
-
-  exclude_level_regex <- "E"
-  if (regulatory_min_confidence == "C") {
-    exclude_level_regex <- "(D|E)"
-  }
-  if (regulatory_min_confidence == "B") {
-    exclude_level_regex <- "(C|D|E)"
-  }
-  if (regulatory_min_confidence == "A") {
-    exclude_level_regex <- "(B|C|D|E)"
-  }
+    paste0("Collectri: retrieval of regulatory interactions involving members of target set"))
 
   target_genes <- data.frame("target" = qgenes, stringsAsFactors = F) |>
-    dplyr::left_join(tf_target_interactions[[collection]],
+    dplyr::left_join(tf_target_interactions,
                      by = c("target"), relationship = "many-to-many") |>
     dplyr::distinct() |>
-    dplyr::filter(!is.na(.data$confidence_level)) |>
-    dplyr::filter(!stringr::str_detect(
-      .data$confidence_level, exclude_level_regex))
+    dplyr::filter(!is.na(.data$n_resources) &
+                  .data$n_resources >= regulatory_min_resources)
 
   if (nrow(target_genes) > 0) {
     target_genes <- target_genes |>
       dplyr::mutate(
         queryset_overlap = paste("TARGET",
-                                 .data$confidence_level, sep = "_"))
+                                 .data$n_resources, sep = "_"))
   }
 
   tf_genes <- data.frame("regulator" = qgenes, stringsAsFactors = F) |>
-    dplyr::left_join(tf_target_interactions[[collection]],
-                     by = c("regulator"), relationship = "many-to-many") |>
+    dplyr::left_join(tf_target_interactions,
+                     by = c("regulator"),
+                     relationship = "many-to-many") |>
     dplyr::distinct() |>
-    dplyr::filter(!stringr::str_detect(
-      .data$confidence_level, exclude_level_regex))
+    dplyr::filter(!is.na(.data$n_resources) &
+                    .data$n_resources >= regulatory_min_resources)
 
   if (nrow(tf_genes) > 0) {
     tf_genes <- tf_genes |>
-      dplyr::mutate(queryset_overlap = paste("TF", .data$confidence_level, sep = "_"))
+      dplyr::mutate(
+        queryset_overlap = paste("TF", .data$n_resources, sep = "_"))
   }
 
   query_tf_target_interactions <- data.frame()
@@ -67,7 +53,7 @@ annotate_tf_targets <- function(qgenes,
       tf_genes |>
         dplyr::bind_rows(target_genes) |>
         dplyr::group_by(.data$regulator, .data$target, .data$mode_of_regulation,
-                        .data$interaction_sources, .data$confidence_level,
+                        .data$interaction_sources, .data$n_resources,
                         .data$tf_target_literature_support) |>
         dplyr::summarise(queryset_overlap = paste(.data$queryset_overlap, collapse = ";"),
                          .groups = "drop") |>
@@ -86,21 +72,27 @@ annotate_tf_targets <- function(qgenes,
         dplyr::rename(target_name = "genename",
                       target_cancer_max_rank = "cancer_max_rank") |>
         dplyr::mutate(queryset_overlap = stringr::str_replace(
-          .data$queryset_overlap, "(A|B|C|D);","")) |>
+          .data$queryset_overlap, "(0|1|2|3|4|5);","")) |>
         dplyr::mutate(queryset_overlap = factor(
-          .data$queryset_overlap, levels = c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C",
-                                       "TF_TARGET_D","TF_A","TF_B","TF_C","TF_D",
-                                       "TARGET_A","TARGET_B","TARGET_C","TARGET_D"))) |>
-        dplyr::arrange(.data$queryset_overlap, .data$confidence_level,
+          .data$queryset_overlap,
+          levels = c("TF_TARGET_1","TF_TARGET_2","TF_TARGET_3",
+                     "TF_TARGET_4","TF_TARGET_5","TF_TARGET_6",
+                      "TF_1","TF_2","TF_3","TF_4","TF_5","TF_6",
+                     "TARGET_1","TARGET_2","TARGET_3",
+                      "TARGET_4","TARGET_5","TARGET_6"))) |>
+        dplyr::arrange(.data$queryset_overlap, .data$n_resources,
                        dplyr::desc(.data$regulator_cancer_max_rank),
                        dplyr::desc(.data$target_cancer_max_rank)) |>
         dplyr::rename(literature_support = "tf_target_literature_support") |>
         dplyr::select(c("regulator",
                         "regulator_name",
                         "target", "target_name",
-                        "confidence_level", "mode_of_regulation",
-                        "literature_support", "interaction_sources",
-                        "queryset_overlap", "regulator_cancer_max_rank",
+                        "n_resources",
+                        "mode_of_regulation",
+                        "literature_support",
+                        "interaction_sources",
+                        "queryset_overlap",
+                        "regulator_cancer_max_rank",
                         "target_cancer_max_rank"))
     )
   }
@@ -131,25 +123,27 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
       tf_target_network[['edges']] <- complete_interactions |>
         dplyr::select(c("regulator",
                         "target",
-                        "confidence_level",
+                        "n_resources",
                         "mode_of_regulation")) |>
         dplyr::rename(from = "regulator",
                       to = "target") |>
-        dplyr::mutate(title = paste0(.data$mode_of_regulation, ": confidence level ",
-                                     .data$confidence_level)) |>
+        dplyr::mutate(title = paste0(.data$mode_of_regulation, ": num resources ",
+                                     .data$n_resources)) |>
         dplyr::mutate(arrows = "to") |>
         dplyr::mutate(length = dplyr::case_when(
-          .data$confidence_level == "A" ~ 150,
-          .data$confidence_level == "B" ~ 200,
-          .data$confidence_level == "C" ~ 250,
-          .data$confidence_level == "D" ~ 300,
+          .data$n_resources == 6 | .data$n_resources == 5 ~ 150,
+          .data$n_resources == 4 ~ 200,
+          .data$n_resources == 3 ~ 250,
+          .data$n_resources == 2 ~ 300,
+          .data$n_resources == 1 ~ 200,
+          TRUE ~ 150
         )) |>
         dplyr::mutate(dashes = T) |>
         dplyr::mutate(color = dplyr::case_when(
           .data$mode_of_regulation == "Stimulation" ~ "darkgreen",
           .data$mode_of_regulation == "Repression" ~ "darkred",
          )) |>
-        dplyr::arrange(.data$confidence_level) |>
+        dplyr::arrange(.data$n_resources) |>
         utils::head(150)
 
       all_nodes <-
@@ -159,7 +153,8 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
                    'size' = 25,
                    'label' = complete_interactions$regulator,
                    'title' = stringr::str_trim(
-                     textclean::replace_html(complete_interactions$regulator_name)
+                     textclean::replace_html(
+                       complete_interactions$regulator_name)
                    ),
                    stringsAsFactors = F) |>
       dplyr::bind_rows(
@@ -168,7 +163,8 @@ retrieve_tf_target_network <- function(tf_target_interactions = NULL) {
                    'size' = 25,
                    'label' = complete_interactions$target,
                    'title' = stringr::str_trim(
-                     textclean::replace_html(complete_interactions$target_name)
+                     textclean::replace_html(
+                       complete_interactions$target_name)
                    ),
                    stringsAsFactors = F)) |>
         dplyr::distinct()

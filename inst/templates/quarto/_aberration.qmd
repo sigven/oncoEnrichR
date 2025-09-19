@@ -945,7 +945,7 @@ htmltools::br()
 #| output: asis
 #| eval: !expr NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) == 0
 
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query proteins with recurrent coding somatic variants in TCGA were found. &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query proteins with recurrent coding somatic variants in TCGA were found (likely due to too small or too large query set; for the latter case, no recurrent variants are shown if query set exceeds n = 500). &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 

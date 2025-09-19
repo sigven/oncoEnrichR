@@ -8,16 +8,14 @@
 * Indication of putative cancer driver genes require support from **at least two** of the following sources:
     * [Network of Cancer Genes (NCG)](http://ncg.kcl.ac.uk/)
     * [IntOGen](https://www.intogen.org)
-    * [Cancer Gene Census (CGC) - TIER1/2](https://cancer.sanger.ac.uk/census)
     * [TCGA's predicted cancer driver genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
     * [CancerMine](http://bionlp.bcgsc.ca/cancermine/) literature mining resource on cancer genes (considering only entries with > 5 citations)
-* Evidence for genes harboring tumor suppressive or oncogenic functions are provided with three levels of confidence:
-    * <span style="background-color:#5A5A5A; padding:2x; color:white"><b>&nbsp;Very strong&nbsp;</b></span>
-        * Record present in __all three__ databases, i.e. NCG __and__ CGC, __and__ with _support (> 5 citations)_ in the biomedical literature (CancerMine)
+
+* Evidence for genes harboring tumor suppressive or oncogenic functions are provided with two levels of confidence:
     * <span style="background-color:#898989; padding:2x; color:white"><b>&nbsp;Strong&nbsp;</b></span> 
-        * Record present in __at most two__ databases (CancerMine, CGC, or NCG)
+        * Record present in __at least two__ databases (CancerMine and NCG)
     * <span style="background-color:#BBBBBB; padding:2x; color:white"><b>&nbsp;Moderate&nbsp;</b></span>
-        * Record present in __at most one__ database (CancerMine, CGC, or NCG)
+        * Record present in __at least one__ database (CancerMine or NCG)
           
 * Gene function summary is retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/gene) and [UniProt Knowledgebase](https://www.uniprot.org/)
 
@@ -103,7 +101,6 @@ dt <- DT::datatable(
   extensions=c("Buttons","Responsive"), 
   width = "100%",
   options=list(buttons = c('csv','excel'),
-               #columnDefs = list(list(className = 'dt-center', targets = 3:5)),
                pageLength = 20,
                dom = 'Bfrtip')) |>
   DT::formatStyle('oncogenic', textAlign = 'center') |>
@@ -122,8 +119,8 @@ if(length(tsg_confidence_levels) > 0){
       "tumor_suppressive","tumor_suppressive",
       color = "white", 
       backgroundColor = DT::styleEqual(
-        c("Very strong", "Strong", "Moderate"),
-       c("#5A5A5A", "#898989", "#BBBBBB"))
+        c( "Strong", "Moderate"),
+       c("#898989", "#BBBBBB"))
     )
 }
 
@@ -133,8 +130,10 @@ if(length(oncogene_confidence_levels) > 0){
       "oncogenic", "oncogenic",
       color = "white",
       backgroundColor = DT::styleEqual(
-        c("Very strong", "Strong", "Moderate"),
-        c("#5A5A5A", "#898989", "#BBBBBB"))
+         c( "Strong", "Moderate"),
+        c("#898989", "#BBBBBB"))
+        #c("Very strong", "Strong", "Moderate"),
+        #c("#5A5A5A", "#898989", "#BBBBBB"))
     )
 }
 dt

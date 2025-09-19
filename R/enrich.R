@@ -97,14 +97,14 @@ get_go_enrichment <- function(query_entrez,
             dplyr::if_else(
               !is.na(.data$qvalue),
               as.numeric(formatC(.data$qvalue, format = "e",
-                                 digits = 1)),
+                                 digits = 3)),
               as.numeric(NA))) |>
         dplyr::mutate(
           pvalue =
             dplyr::if_else(
               !is.na(.data$pvalue),
               as.numeric(formatC(.data$pvalue, format = "e",
-                                 digits = 1)),
+                                 digits = 3)),
               as.numeric(NA)))
     )
 
@@ -381,14 +381,14 @@ get_universal_enrichment <- function(query_entrez,
             dplyr::if_else(
               !is.na(.data$qvalue),
               as.numeric(formatC(.data$qvalue, format = "e",
-                                 digits = 1)),
+                                 digits = 3)),
               as.numeric(NA))) |>
         dplyr::mutate(
           pvalue =
             dplyr::if_else(
               !is.na(.data$pvalue),
               as.numeric(formatC(.data$pvalue, format = "e",
-                                 digits = 1)),
+                                 digits = 3)),
               as.numeric(NA))) |>
         dplyr::mutate(
           db = dplyr::if_else(is.na(.data$db) &

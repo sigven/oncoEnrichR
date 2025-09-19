@@ -5,8 +5,7 @@
 
 * The query set is annotated with data from [COMPARTMENTS](https://compartments.jensenlab.org/Search), a weekly updated database of subcellular localization data for human proteins, and results are here presented in two different views:
 
-   1. A subcellular _anatogram_ - acting as a "heatmap" of subcellular structures associated with proteins in the query set
-       * Compartments are here limited to the key compartments (n = 24) defined within the [gganatogram package](https://github.com/jespermaag/gganatogram#cellular-structures)
+   1. An interactive subcellular compartment heatmap - indicating compartments dominant within the query set
    2. A subcellular _data browser_
        * All unique subcellular compartment annotations and their target members ("By Compartment")
        * Subcellular compartment annotations per gene are provided with a __confidence score__ between 3 and 5 - indicating the quality/reliability of a given compartment annotation
@@ -20,59 +19,61 @@
 
 #### Subcellular anatogram
 
-::: {.panel-tabset}
-
-##### Heatmap - query set
-
 <br>
 
-* In the heatmap below, *value* refers to the fraction of target genes that are annotated with a particular compartment/subcellular structure
+* In the anotogram below, color reflects the fraction of all target genes (importantly, limited to those that _have_ subcellular compartment annotations from COMPARTMENTS) that are annotated with a particular compartment/subcellular structure
 <br><br>
 
-```{r gganatogram_plot}
+```{r bscui_plot}
 #| echo: false
 #| output: asis
-#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0) == TRUE
-#| fig-width: 10
-#| fig-height: 5
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['comp_density']]) > 0) == TRUE
+#| fig-width: 14
+#| fig-height: 12
 
-suppressPackageStartupMessages(library(gganatogram))
+suppressPackageStartupMessages(library(bscui))
 
 subcellcomp_geneset_density <- 
-  onc_enrich_report[['data']][['subcellcomp']][['anatogram']]
+  onc_enrich_report[['data']][['subcellcomp']][['comp_density']]
 
 if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
   subcellcomp_geneset_density <- 
     subcellcomp_geneset_density |>
-    dplyr::filter(organ != "cytosol")
+    dplyr::filter(name != "Cytosol")
 }
 
-gganatogram::gganatogram(data = subcellcomp_geneset_density,
-                         outline = T,
-                         fillOutline = 'lightgray',
-                         organism = 'cell',
-                         fill = 'value') +
-  ggplot2::theme_void() +
-  ggplot2::coord_fixed() +
-  ggplot2::scale_fill_gradient(low ="#FFEDA0", high = "#800026")
+fig <- oncoEnrichR::subcell_map$figure |>
+  bscui::set_bscui_ui_elements(oncoEnrichR::subcell_map$ui_elements) |>
+  bscui::set_bscui_styles(
+    dplyr::select(
+      subcellcomp_geneset_density,
+      c("id", "fill")
+    ),
+  )
+
+fig
 
 ```
 <br><br>
 
+
 ```{r subcellcomp_density_barplot}
 #| echo: false
 #| output: asis
-#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['anatogram']]) > 0) == TRUE
+#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['subcellcomp']][['comp_density']]) > 0) == TRUE
 
-plot_data <- onc_enrich_report[['data']][['subcellcomp']][['anatogram']] |>
-  dplyr::arrange(value)
-plot_data$organ <- factor(plot_data$organ, levels = plot_data$organ)
+plot_data <- 
+  onc_enrich_report[['data']][['subcellcomp']][['comp_density']] |>
+  dplyr::arrange(proportion) |>
+  dplyr::mutate(percent = proportion * 100) |>
+  tail(25)
+plot_data$name <- factor(plot_data$name, levels = plot_data$name)
 plot_data$toDownlight <- "NO"
 
 if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
   plot_data <- plot_data |>
     dplyr::mutate(toDownlight = dplyr::if_else(
-      organ == "cytosol",
+      name == "Cytosol",
       as.character("YES"),
       as.character(toDownlight)
     ))
@@ -80,11 +81,11 @@ if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
 
 p <- ggplot2::ggplot(
   plot_data, 
-  ggplot2::aes( x = organ, y = value, fill = toDownlight) ) +
+  ggplot2::aes( x = name, y = percent, fill = toDownlight) ) +
   ggplot2::geom_bar( stat = "identity" ) +
   ggplot2::ylab("Percent of query gene set") +
   ggplot2::scale_fill_manual(
-    values = c("YES"="gray", "NO"="BLACK" ), guide = FALSE ) +
+    values = c("YES"="gray", "NO"="black" ), guide = FALSE ) +
   ggplot2::xlab("") +
   ggplot2::ylim(0,100) +
   ggplot2::theme_classic() +
@@ -98,13 +99,11 @@ p <- ggplot2::ggplot(
     axis.title.y = ggplot2::element_text(family = "Helvetica", size = 11)
   )
 
-plotly::ggplotly(p, width = 600, height = 600)
+plotly::ggplotly(p, width = 600, height = 800)
 
 ```
 
 
-
-:::
 
 #### Subcellular data browser
 
@@ -115,6 +114,8 @@ plotly::ggplotly(p, width = 600, height = 600)
 ##### By compartment
 
 * Genes listed per compartment are calculated using only compartment annotations with a minimum confidence level (pr. channel) of: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
+
+* A maximum of **n = 75** genes annotated to each compartment are shown here - sorted by their strength of association to cancer (all compartment genes are listed in the Excel workbook)
 
 <br>
 

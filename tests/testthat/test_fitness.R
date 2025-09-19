@@ -7,7 +7,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )
     ),
     c("targets","n_targets")
@@ -17,7 +17,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     is.data.frame(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     )
   )
@@ -26,7 +26,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     c("symbol",
@@ -46,7 +46,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     NROW(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     as.integer(0)
@@ -56,7 +56,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     NROW(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("AQP4"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     as.integer(0)
@@ -73,7 +73,7 @@ test_that("Target priority scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_target_priority_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )
     ),
     c("targets","n_pri_targets")
@@ -83,7 +83,7 @@ test_that("Target priority scores (Project Score) - testing ", {
     is.data.frame(
       oncoEnrichR:::get_target_priority_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     )
   )
@@ -92,7 +92,7 @@ test_that("Target priority scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_target_priority_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     c("symbol","tumor_type",
@@ -103,7 +103,7 @@ test_that("Target priority scores (Project Score) - testing ", {
     NROW(
       oncoEnrichR:::get_target_priority_scores(
         qgenes = c("EGFR","KRAS"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     as.integer(0)
@@ -113,7 +113,7 @@ test_that("Target priority scores (Project Score) - testing ", {
     NROW(
       oncoEnrichR:::get_target_priority_scores(
         qgenes = c("AQP4"),
-        depmapdb = oedb$depmapdb
+        cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     as.integer(0)

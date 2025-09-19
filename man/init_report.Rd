@@ -26,11 +26,11 @@ init_report(
   enrichment_min_geneset_size = 10,
   enrichment_max_geneset_size = 500,
   enrichment_plot_num_terms = 20,
-  enrichment_simplify_go = F,
+  enrichment_simplify_go = T,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
   subcellcomp_show_cytosol = F,
-  regulatory_min_confidence = "D",
+  regulatory_min_resources = 2,
   fitness_max_score = -2,
   show_ppi = T,
   show_disease = T,
@@ -107,7 +107,7 @@ init_report(
 
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not}
 
-\item{regulatory_min_confidence}{minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')}
+\item{regulatory_min_resources}{minimum resources supporting regulatory interactions (TF-target) retrieved from Collectri (min = 0, max = 3)}
 
 \item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
 

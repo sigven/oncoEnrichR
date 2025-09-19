@@ -27,14 +27,14 @@ load_db <- function(cache_dir = NA,
   lgr::lgr$info( paste0("Loading oncoEnrichR annotation databases"))
 
   if (is.na(cache_dir)) {
-    lgr::lgr$fatal(paste0("Argument cache_dir = '",
-                          cache_dir, "' is not defined"))
+    lgr::lgr$fatal(
+      glue::glue("Argument cache_dir = '{cache_dir}' is not defined"))
     stop()
   }
 
   if (!dir.exists(cache_dir)) {
-    lgr::lgr$fatal(paste0("Argument cache_dir = '",
-                          cache_dir, "' does not exist"))
+    lgr::lgr$fatal(
+      glue::glue("Argument cache_dir = '{cache_dir}' does not exist"))
     stop()
   }
 
@@ -52,7 +52,7 @@ load_db <- function(cache_dir = NA,
 
   if (!dir.exists(cache_version_dir)) {
     dir.create(cache_version_dir)
-    lgr::lgr$info( paste0("Data will be cached in ", cache_version_dir))
+    lgr::lgr$info(glue::glue("Data will be cached in {cache_version_dir}"))
   }
 
   oedb <- list()
@@ -65,7 +65,7 @@ load_db <- function(cache_dir = NA,
                    "otdb",
                    "pfamdb",
                    "pathwaydb",
-                   "depmapdb",
+                   "cellmodeldb",
                    "survivaldb",
                    "release_notes",
                    "subcelldb",
@@ -91,9 +91,11 @@ load_db <- function(cache_dir = NA,
       cat(fname_local, '\n')
       oedb[[elem]] <- readRDS(fname_local)
       if (!is.null(oedb[[elem]])) {
-        lgr::lgr$info(paste0(
-          "Reading from cache_dir = '", cache_version_dir, "', argument force_download = F"))
-        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
+        lgr::lgr$info(
+          glue::glue(
+            "Reading from cache_dir = '{cache_version_dir}', argument force_download = F"))
+        lgr::lgr$info(
+          glue::glue("Object '{elem}' sucessfully loaded"))
       }
 
     } else {
@@ -101,7 +103,8 @@ load_db <- function(cache_dir = NA,
       md5checksum_remote <- md5checksum_package
 
       if(googledrive == T){
-        lgr::lgr$info("Downloading remote oncoEnrichR dataset from Google Drive to cache_dir")
+        lgr::lgr$info(
+          "Downloading remote oncoEnrichR dataset from Google Drive to cache_dir")
         dl <- googledrive::with_drive_quiet(
           googledrive::drive_download(
             fname_gd,
@@ -118,7 +121,8 @@ load_db <- function(cache_dir = NA,
           db_id_ref[db_id_ref$name == elem,]$filename
         )
 
-        lgr::lgr$info("Downloading remote oncoEnrichR dataset from UiO server to cache_dir")
+        lgr::lgr$info(
+          "Downloading remote oncoEnrichR dataset from UiO server to cache_dir")
         utils::download.file(
           url = fname_uio,
           destfile = fname_local,
@@ -133,15 +137,20 @@ load_db <- function(cache_dir = NA,
       if (md5checksum_remote == md5checksum_local) {
         oedb[[elem]] <- readRDS(fname_local)
         if (!is.null(oedb[[elem]])) {
-          lgr::lgr$info(paste0(
-            "Reading from cache_dir = ' (", cache_version_dir, "'), argument force_download = F"))
-          lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
-          lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
+          lgr::lgr$info(
+            glue::glue(
+              "Reading from cache_dir = '{cache_version_dir}', ",
+              "argument force_download = F"))
+          lgr::lgr$info(
+            glue::glue("Object '{elem}' sucessfully loaded"))
+          lgr::lgr$info(
+            glue::glue("md5 checksum is valid: {md5checksum_remote}"))
         }
       } else {
-        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
-                              ") is inconsistent with remote file (",
-                              md5checksum_remote,")"))
+        lgr::lgr$error(
+          glue::glue(
+            "md5 checksum of local file ({md5checksum_local}) is ",
+            "inconsistent with remote file ({md5checksum_remote})"))
         stop()
       }
 
@@ -183,7 +192,7 @@ load_db <- function(cache_dir = NA,
 #' @param subcellcomp_min_confidence minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)
 #' @param subcellcomp_min_channels minimum number of channels that support a subcellular annotation in COMPARTMENTS
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
-#' @param regulatory_min_confidence minimum confidence level for regulatory interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D')
+#' @param regulatory_min_resources minimum resources supporting regulatory interactions (TF-target) retrieved from Collectri (min = 0, max = 3)
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
@@ -211,8 +220,6 @@ load_db <- function(cache_dir = NA,
 init_report <- function(oeDB,
                         project_title = "_Project title_",
                         project_owner = "_Project owner_",
-                        #html_floating_toc = T,
-                        #html_report_theme = "default",
                         query_id_type = "symbol",
                         ignore_id_err = TRUE,
                         project_description = "_Project description_",
@@ -232,11 +239,11 @@ init_report <- function(oeDB,
                         enrichment_min_geneset_size = 10,
                         enrichment_max_geneset_size = 500,
                         enrichment_plot_num_terms = 20,
-                        enrichment_simplify_go = F,
+                        enrichment_simplify_go = T,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
                         subcellcomp_show_cytosol = F,
-                        regulatory_min_confidence = "D",
+                        regulatory_min_resources = 2,
                         fitness_max_score = -2,
                         show_ppi = T,
                         show_disease = T,
@@ -263,7 +270,6 @@ init_report <- function(oeDB,
   stopifnot(!is.null(oeDB))
   stopifnot(!is.null(oeDB$release_notes))
   stopifnot(!is.null(oeDB$tcgadb))
-  stopifnot(!is.null(oeDB$subcelldb$gganatogram_legend))
 
   ## two main elements of report object
   # 1. data - contains all annotations and enrichment results
@@ -302,9 +308,6 @@ init_report <- function(oeDB,
   rep[["config"]][["project_title"]] <- project_title
   rep[["config"]][["project_description"]] <- project_description
   rep[["config"]][["project_owner"]] <- project_owner
-  #rep[["config"]][["rmarkdown"]] <- list()
-  #rep[["config"]][["rmarkdown"]][["floating_toc"]] <- html_floating_toc
-  #rep[["config"]][["rmarkdown"]][["theme"]] <- html_report_theme
 
   ## config - query (id type and option to ignore errors)
   rep[["config"]][["query"]] <- list()
@@ -316,21 +319,28 @@ init_report <- function(oeDB,
 
   rep[["config"]][["regulatory"]] <- list()
   rep[["config"]][["regulatory"]][["target_levels"]] <-
-    c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C","TF_TARGET_D",
-      "TARGET_A","TARGET_B","TARGET_C","TARGET_D")
+    c("TF_TARGET_1","TF_TARGET_2",
+      "TF_TARGET_3","TF_TARGET_4",
+      "TF_TARGET_5","TF_TARGET_6",
+      "TARGET_1","TARGET_2",
+      "TARGET_3","TARGET_4",
+      "TARGET_5","TARGET_6")
   rep[["config"]][["regulatory"]][["target_colors"]] <-
-    c("#08306b","#08519c","#2171b5", "#4292c6",
-      "#08306b","#08519c","#2171b5", "#4292c6")
+    c("#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b",
+      "#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b")
 
   rep[["config"]][["regulatory"]][["tf_levels"]] <-
-    c("TF_TARGET_A","TF_TARGET_B","TF_TARGET_C","TF_TARGET_D",
-      "TF_A","TF_B","TF_C","TF_D")
+    c("TF_TARGET_1","TF_TARGET_2",
+      "TF_TARGET_3","TF_TARGET_4",
+      "TF_TARGET_5","TF_TARGET_6",
+      "TF_1","TF_1","TF_2",
+      "TF_3","TF_4","TF_5")
   rep[["config"]][["regulatory"]][["tf_colors"]] <-
-    c("#08306b","#08519c","#2171b5", "#4292c6",
-      "#08306b","#08519c","#2171b5", "#4292c6")
+    c("#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b",
+      "#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b")
 
-  rep[["config"]][["regulatory"]][["min_confidence"]] <-
-    regulatory_min_confidence
+  rep[["config"]][["regulatory"]][["min_resources"]] <-
+    regulatory_min_resources
 
   ## config - color codes and thresholds for
   ## synthetic lethality prediction percentiles
@@ -492,8 +502,8 @@ init_report <- function(oeDB,
     subcellcomp_min_channels
   rep[['config']][['subcellcomp']][['show_cytosol']] <-
     subcellcomp_show_cytosol
-  rep[['config']][['subcellcomp']][['gganatogram_legend']] <-
-    oeDB$subcelldb$gganatogram_legend
+  #rep[['config']][['subcellcomp']][['gganatogram_legend']] <-
+  #  oeDB$subcelldb$gganatogram_legend
 
   rep[['config']][['complex']] <- list()
   rep[['config']][['complex']][['breaks']] <-
@@ -537,9 +547,9 @@ init_report <- function(oeDB,
   rep[["data"]][["synleth"]][['single_pair_member']] <- data.frame()
 
   ## regulatory interactions (DoRothEA)
-  rep[["data"]][["regulatory"]][["interactions"]] <- list()
-  rep[["data"]][["regulatory"]][["interactions"]][["global"]] <- data.frame()
-  rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]] <- data.frame()
+  rep[["data"]][["regulatory"]][["interactions"]] <- data.frame()
+  #rep[["data"]][["regulatory"]][["interactions"]][["global"]] <- data.frame()
+  #rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]] <- data.frame()
 
   rep[["data"]][["regulatory"]][["network"]] <- list()
   rep[["data"]][["regulatory"]][["network"]][["edges"]] <- data.frame()
@@ -637,7 +647,7 @@ init_report <- function(oeDB,
   ## Subcellular localizations
   rep[["data"]][["subcellcomp"]][["all"]] <- data.frame()
   rep[["data"]][["subcellcomp"]][["grouped"]] <- data.frame()
-  rep[["data"]][["subcellcomp"]][["anatogram"]] <- data.frame()
+  rep[["data"]][["subcellcomp"]][["comp_density"]] <- data.frame()
 
   ## TCGA aberrations
   rep[["data"]][["tcga"]][["recurrent_variants"]] <- data.frame()
@@ -721,9 +731,9 @@ init_report <- function(oeDB,
 #' max = 3, default: 1)
 #' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap
 #' should show highlight proteins located in the cytosol or not (default: FALSE)
-#' @param regulatory_min_confidence minimum confidence level for regulatory
-#' interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D',
-#' default: 'D')
+#' @param regulatory_min_resources minimum resource level for regulatory
+#' interactions (TF-target) retrieved from Collectri (min = 0, max = 5,
+#' default: 0)
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor
 #' from BAGEL) for genes retrieved from DepMap/Project Score, default:-2
 #' @param ppi_add_nodes number of nodes to add to target set when computing the
@@ -821,7 +831,7 @@ onco_enrich <- function(query = NULL,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
                         subcellcomp_show_cytosol = FALSE,
-                        regulatory_min_confidence = "D",
+                        regulatory_min_resources = 2,
                         fitness_max_score = -2,
                         ppi_add_nodes = 30,
                         ppi_string_min_score = 0.9,
@@ -880,16 +890,16 @@ onco_enrich <- function(query = NULL,
     val <- assertthat::validate_that(
       is.character(bgset))
     if (!is.logical(val)) {
-      lgr::lgr$info( paste0(
-        "ERROR: ", val))
+      lgr::lgr$info( glue::glue("ERROR: {val}"))
       return()
     }
   }
 
   val <- assertthat::validate_that(length(query) >= 1)
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
-      "ERROR: query set must contain at least two entries - length of query is: ", length(query)))
+    lgr::lgr$info( glue::glue(
+      "ERROR: query set must contain at least two entries - ",
+      "length of query is: {length(query)}"))
     return()
   }
 
@@ -900,55 +910,89 @@ onco_enrich <- function(query = NULL,
                                      "fdr", "none")
   )
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
+    lgr::lgr$info( glue::glue(
       "ERROR: 'enrichment_p_value_adj' must take on any of the following values: ",
       "'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'",
-      " (value provided was '", enrichment_p_value_adj,"')"))
+      " (value provided was '{enrichment_p_value_adj}')"))
     return()
   }
 
-  val <- assertthat::validate_that(
-    regulatory_min_confidence %in% c("A", "B",
-                                          "C", "D")
-  )
-  if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'regulatory_min_confidence' must take on any of the following values: 'A', 'B', 'C', 'D'",
-      " (value provided was '", regulatory_min_confidence,"')"))
+  val <- regulatory_min_resources >= 1 &
+    regulatory_min_resources <= 6 &
+    is.numeric(regulatory_min_resources)
+
+  if (val == F) {
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'regulatory_min_resources' must be a numerical value ",
+      "greater than 1 and less than 6 (current type and value: ",
+      "'{typeof(regulatory_min_resources)}' - {regulatory_min_resources})"))
     return()
   }
 
   ## Number of allowed query genes
-  oncoenrichr_query_limit <- 1000
+  oncoenrichr_hard_query_limit <- 2000
+  oncoenrichr_soft_query_limit <- 500
+
+  show_aberration_recurrence <- show_aberration
+
+  if(length(query) > oncoenrichr_soft_query_limit){
+    if (!("galaxy" %in% names(dot_args))){
+      lgr::lgr$info(
+        glue::glue(
+          "NOTE: oncoEnrichR is most well suited for the analysis of up to n = ",
+          "{oncoenrichr_soft_query_limit} entries. Query contained n = ",
+          "{length(query)} identifiers, results may take longer to compute."))
+      lgr::lgr$info(
+        paste0("NOTE: Omitting some modules (PPI, co-expression, aberration",
+               "recurrence) due to large query size")
+      )
+    }
+
+    show_aberration_recurrence <- FALSE
+    show_ppi <- FALSE
+    show_coexpression <- FALSE
+    #enrichment_simplify_go <- TRUE
+
+  }
 
   if (length(names(dot_args)) > 0) {
     if ("galaxy" %in% names(dot_args))
-      lgr::lgr$info(
-                 "NOTE: Running oncoEnrichR workflow in Galaxy mode")
+      lgr::lgr$info("NOTE: Running oncoEnrichR workflow in Galaxy mode")
       if (is.logical(dot_args$galaxy)) {
         if (dot_args$galaxy == T) {
-          oncoenrichr_query_limit <- 200
+          oncoenrichr_hard_query_limit <- 200
         }
       }
   }
 
-  if (length(query) > oncoenrichr_query_limit) {
+  if (length(query) > oncoenrichr_hard_query_limit) {
     lgr::lgr$info(
-      paste0("WARNING: oncoEnrichR is limited to the analysis of n = ",
-             oncoenrichr_query_limit," entries. Query contained n = ",
-             length(query), " identifiers, limiting to first ",
-             oncoenrichr_query_limit," genes"))
-    if(dot_args$galaxy == T){
-      lgr::lgr$info(
-        paste0("WARNING: oncoEnrichR in Galaxy is limited to the analysis of n = ",
-               oncoenrichr_query_limit," entries (running through the stand-alone R package ",
-               "allows longer query list (n = 1000). Query contained n = ",
-               length(query), " identifiers, limiting to first ",
-               oncoenrichr_query_limit," genes"))
+      glue::glue(
+        "WARNING: oncoEnrichR is limited to the analysis of n = ",
+        "{oncoenrichr_hard_query_limit} entries. Query contained n = ",
+        "{length(query)} identifiers, limiting to first ",
+        "{oncoenrichr_hard_query_limit} genes"))
+    if ("galaxy" %in% names(dot_args)){
+      if(dot_args$galaxy == T){
+        lgr::lgr$info(
+          glue::glue(
+            "WARNING: oncoEnrichR in Galaxy is limited to the analysis of n = ",
+            "{oncoenrichr_hard_query_limit} entries (running through the ",
+            "stand-alone R package allows longer query list (n = 2000). ",
+            "Query contained n = {length(query)} identifiers, limiting to first ",
+            "{oncoenrichr_hard_query_limit} genes"))
+      }
     }
 
     query <- utils::head(unique(query),
-                         oncoenrichr_query_limit)
+                         oncoenrichr_hard_query_limit)
+    lgr::lgr$info(
+      paste0("NOTE: skipping some modules (PPI, co-expression, aberration recurrence)")
+    )
+    show_aberration_recurrence <- FALSE
+    show_ppi <- FALSE
+    show_coexpression <- FALSE
+    enrichment_simplify_go <- TRUE
   }
 
   val <- assertthat::validate_that(
@@ -960,11 +1004,11 @@ onco_enrich <- function(query = NULL,
         "ensembl_gene")
   )
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
+    lgr::lgr$info( glue::glue(
       "ERROR: 'query_id_type' must take on of the following values: ",
       "'symbol', 'entrezgene', 'refseq_transcript_id', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
-      " (value provided was '", query_id_type,"')"))
+      " (value provided was '{query_id_type}')"))
     return()
   }
 
@@ -975,22 +1019,21 @@ onco_enrich <- function(query = NULL,
         "ensembl_gene")
   )
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
+    lgr::lgr$info( glue::glue(
       "ERROR: 'bgset_id_type' must take on any of the following values: ",
       "'symbol', 'entrezgene', 'refseq_transcript_id', 'ensembl_mrna', ",
       "'refseq_protein', 'ensembl_protein', 'uniprot_acc', 'ensembl_gene'",
-      " (value provided was '", bgset_id_type,"')"))
+      " (value provided was '{bgset_id_type}')"))
     return()
   }
 
   val <- fitness_max_score <= 0 & is.numeric(fitness_max_score)
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'fitness_max_score' must be a value (scaled Bayes factor from BAGEL) less than zero ",
-      "(current type and value: '",typeof(fitness_max_score),"' - ",
-      fitness_max_score,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'fitness_max_score' must be a value (scaled Bayes factor ",
+      "from BAGEL) less than zero (current type and value: '",
+      "{typeof(fitness_max_score)}' - {fitness_max_score})"))
     return()
   }
 
@@ -1001,11 +1044,10 @@ onco_enrich <- function(query = NULL,
       (ppi_string_min_score <= 1)
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'ppi_string_min_score' must take a numeric value - greater than 0 and less than 1 ",
-      "(current type and value: '",typeof(ppi_string_min_score),"' - ",
-      ppi_string_min_score,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'ppi_string_min_score' must take a numeric value - ",
+      "greater than 0 and less than 1 (current type and value: '",
+      "{typeof(ppi_string_min_score)}' - {ppi_string_min_score})"))
     return()
   }
 
@@ -1015,11 +1057,11 @@ onco_enrich <- function(query = NULL,
     (ppi_biogrid_min_evidence <= 10)
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'ppi_biogrid_min_evidence' must be an integer/whole number and take a value from 2 to 10 ",
-      "(current type and value: '",typeof(ppi_biogrid_min_evidence),"' - ",
-      ppi_biogrid_min_evidence,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'ppi_biogrid_min_evidence' must be an integer/whole ",
+      "number and take a value from 2 to 10 ",
+      "(current type and value: '{typeof(ppi_biogrid_min_evidence)}' ",
+      "- {ppi_biogrid_min_evidence})"))
     return()
   }
 
@@ -1029,11 +1071,10 @@ onco_enrich <- function(query = NULL,
       enrichment_plot_num_terms <= 30
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'enrichment_plot_num_terms' must be an integer/whole number and take a value from 10 to 30 ",
-      "(current type and value: '",typeof(enrichment_plot_num_terms),"' - ",
-      enrichment_plot_num_terms,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'enrichment_plot_num_terms' must be an integer/whole number ",
+      "and take a value from 10 to 30 (current type and value: '",
+      "{typeof(enrichment_plot_num_terms)}' - {enrichment_plot_num_terms})"))
     return()
   }
 
@@ -1043,11 +1084,10 @@ onco_enrich <- function(query = NULL,
     subcellcomp_min_confidence <= 5
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'subcellcomp_min_confidence' must be an integer/whole number and take a value from 3 to 5 ",
-      "(current type and value: '",typeof(subcellcomp_min_confidence),"' - ",
-      subcellcomp_min_confidence,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'subcellcomp_min_confidence' must be an integer/whole number ",
+      "and take a value from 3 to 5 (current type and value: '",
+      "{typeof(subcellcomp_min_confidence)}' - {subcellcomp_min_confidence})"))
     return()
   }
 
@@ -1057,11 +1097,11 @@ onco_enrich <- function(query = NULL,
     subcellcomp_min_channels <= 3
 
   if (val == F) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'subcellcomp_min_channels' must be an integer/whole number and not larger than the selected number of channel types",
-      "(current type and value: '",typeof(subcellcomp_min_channels),"' - ",
-      subcellcomp_min_channels,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'subcellcomp_min_channels' must be an integer/whole number ",
+      "and not larger than 3 ",
+      "(current type and value: '{typeof(subcellcomp_min_channels)}' - ",
+      "{subcellcomp_min_channels})"))
     return()
   }
 
@@ -1071,11 +1111,10 @@ onco_enrich <- function(query = NULL,
       enrichment_p_value_cutoff > 0 & enrichment_p_value_cutoff < 1)
 
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
-      "ERROR: 'enrichment_p_value_cutoff' must be of type numeric and be greater than 0 and less than 1 ",
-      "(current type and value: '",typeof(enrichment_p_value_cutoff),"' - ",
-      enrichment_p_value_cutoff,")")
-    )
+    lgr::lgr$info( glue::glue(
+      "ERROR: 'enrichment_p_value_cutoff' must be of type numeric and ",
+      "be greater than 0 and less than 1 (current type and value: '",
+      "{typeof(enrichment_p_value_cutoff)}' - {enrichment_p_value_cutoff})"))
     return()
   }
 
@@ -1085,11 +1124,9 @@ onco_enrich <- function(query = NULL,
 
   if (!is.logical(val)) {
     lgr::lgr$info( paste0(
-      "ERROR: 'enrichment_q_value_cutoff' must be of type numeric and be greater than 0 and less than 1 ",
-      "(current type and value: '",typeof(enrichment_q_value_cutoff),"' - ",
-      enrichment_q_value_cutoff,")")
-
-    )
+      "ERROR: 'enrichment_q_value_cutoff' must be of type numeric and be ",
+      "greater than 0 and less than 1 (current type and value: '",
+      "{typeof(enrichment_q_value_cutoff)}' - {enrichment_q_value_cutoff})"))
     return()
   }
 
@@ -1113,8 +1150,6 @@ onco_enrich <- function(query = NULL,
     oeDB = oeDB,
     project_title = project_title,
     project_owner = project_owner,
-    #html_report_theme = html_report_theme,
-    #html_floating_toc = html_floating_toc,
     query_id_type = query_id_type,
     ignore_id_err = ignore_id_err,
     project_description = project_description,
@@ -1137,7 +1172,7 @@ onco_enrich <- function(query = NULL,
     subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     subcellcomp_min_confidence = subcellcomp_min_confidence,
     subcellcomp_min_channels = subcellcomp_min_channels,
-    regulatory_min_confidence = regulatory_min_confidence,
+    regulatory_min_resources = regulatory_min_resources,
     fitness_max_score = fitness_max_score,
     show_ppi = show_ppi,
     ppi_show_drugs = ppi_show_drugs,
@@ -1171,8 +1206,9 @@ onco_enrich <- function(query = NULL,
 
   val <- assertthat::validate_that(NROW(qgenes_match$found) >= 1)
   if (!is.logical(val)) {
-    lgr::lgr$info( paste0(
-      "ERROR: query set must contain at least one valid entry - number of validated entries: ", NROW(qgenes_match$found)))
+    lgr::lgr$info( glue::glue(
+      "ERROR: query set must contain at least one valid entry ",
+      "- number of validated entries: {NROW(qgenes_match$found)}"))
     return()
   }
 
@@ -1213,8 +1249,10 @@ onco_enrich <- function(query = NULL,
   if (NROW(qgenes_match[["found"]]) < 5) {
     onc_rep[['config']][['show']][['enrichment']] <- F
     lgr::lgr$info(
-      paste0("WARNING: Function (GO) and pathway enrichment is NOT performed for gene sets of size < 5. Query contained n = ",
-             NROW(qgenes_match[["found"]])," valid entries"))
+      glue::glue(
+        "WARNING: Function (GO) and pathway enrichment is NOT performed ",
+        "for gene sets of size < 5. Query contained n = ",
+        "{NROW(qgenes_match[['found']])} valid entries"))
   }
 
 
@@ -1234,8 +1272,9 @@ onco_enrich <- function(query = NULL,
           qtype = "background")
       if (background_genes_match[["match_status"]] == "imperfect_stop" |
           NROW(background_genes_match[['found']]) <= 1) {
-        lgr::lgr$info( paste0("WARNING: Background geneset not defined properly - ",
-                          "using all protein-coding genes instead"))
+        lgr::lgr$info(
+          paste0("WARNING: Background geneset not defined properly - ",
+                 "using all protein-coding genes instead"))
         background_entrezgene <- as.character(
           unique(oeDB[['genedb']][['all']]$entrezgene)
         )
@@ -1310,9 +1349,9 @@ onco_enrich <- function(query = NULL,
         qgenes = query_symbol,
         genedb = oeDB[['genedb']][['all']],
         ligand_receptor_db =
-          oeDB[['ligandreceptordb']][['cellchatdb']][['db']],
+          oeDB[['ligandreceptordb']][['db']],
         ligand_receptor_xref =
-          oeDB[['ligandreceptordb']][['cellchatdb']][['xref']])
+          oeDB[['ligandreceptordb']][['xref']])
   }
 
   ## Include enrichment analyses in the report (pathway, GO, MSigDB)
@@ -1469,15 +1508,14 @@ onco_enrich <- function(query = NULL,
         compartments_min_channels = subcellcomp_min_channels,
         show_cytosol = subcellcomp_show_cytosol,
         genedb = oeDB[['genedb']][['all']],
-        compartments = oeDB[['subcelldb']][['compartments']],
-        go_gganatogram_map = oeDB[['subcelldb']][['go_gganatogram_map']])
+        compartments = oeDB[['subcelldb']])
 
      onc_rep[["data"]][["subcellcomp"]][["all"]] <-
        subcellcomp_annotations[["all"]]
      onc_rep[["data"]][["subcellcomp"]][["grouped"]] <-
        subcellcomp_annotations[["grouped"]]
-     onc_rep[["data"]][["subcellcomp"]][["anatogram"]] <-
-       subcellcomp_annotations[["anatogram"]]
+     onc_rep[["data"]][["subcellcomp"]][["comp_density"]] <-
+       subcellcomp_annotations[["comp_density"]]
 
   }
 
@@ -1486,7 +1524,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["fitness"]][["fitness_scores"]] <-
       get_fitness_lof_scores(
         qgenes = query_symbol,
-        depmapdb = oeDB[['depmapdb']])
+        cellmodeldb = oeDB[['cellmodeldb']])
 
     if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] <= 10) {
       onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] <- 5
@@ -1495,14 +1533,15 @@ onco_enrich <- function(query = NULL,
     if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] >= 20) {
       onc_rep[["config"]][["fitness"]][["plot_height_fitness"]]  <-
         onc_rep[["config"]][["fitness"]][["plot_height_fitness"]] +
+
         as.integer((
-          onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] - 20)/5.6)
+          min(200,onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]]) - 20)/5.6)
     }
 
     onc_rep[["data"]][["fitness"]][["target_priority_scores"]] <-
       get_target_priority_scores(
         qgenes = query_symbol,
-        depmapdb = oeDB[['depmapdb']])
+        cellmodeldb = oeDB[['cellmodeldb']])
   }
 
 
@@ -1524,123 +1563,125 @@ onco_enrich <- function(query = NULL,
           vtype = v)
     }
 
-    onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-      oeDB$tcgadb[["recurrent_variants"]] |>
-      dplyr::inner_join(
-        dplyr::select(qgenes_match$found, c("symbol")),
-        by = c("SYMBOL" = "symbol"), relationship = "many-to-many") |>
-      dplyr::distinct()
-
-    if (nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0) {
-      cosmic_variants <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-        dplyr::select(c("VAR_ID", "COSMIC_MUTATION_ID")) |>
-        dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) |>
+    if(show_aberration_recurrence == TRUE){
+      onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
+        oeDB$tcgadb[["recurrent_variants"]] |>
+        dplyr::inner_join(
+          dplyr::select(qgenes_match$found, c("symbol")),
+          by = c("SYMBOL" = "symbol"), relationship = "many-to-many") |>
         dplyr::distinct()
 
-      if (nrow(cosmic_variants) > 0) {
+      if (nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0) {
+        cosmic_variants <-
+          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+          dplyr::select(c("VAR_ID", "COSMIC_MUTATION_ID")) |>
+          dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) |>
+          dplyr::distinct()
 
-        cosmic_variants <- as.data.frame(
-          cosmic_variants |>
-          tidyr::separate_rows("COSMIC_MUTATION_ID", sep ="&") |>
-          dplyr::mutate(
-            COSMIC_MUTATION_ID = paste0(
-              "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
-              .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
-              .data$COSMIC_MUTATION_ID,"</a>"
-            )) |>
-          dplyr::group_by(.data$VAR_ID) |>
-          dplyr::summarise(
-            COSMIC_MUTATION_ID =
-              paste(
-                .data$COSMIC_MUTATION_ID, collapse = ", "
-              ),
-            .groups = "drop")
-        )
+        if (nrow(cosmic_variants) > 0) {
+
+          cosmic_variants <- as.data.frame(
+            cosmic_variants |>
+            tidyr::separate_rows("COSMIC_MUTATION_ID", sep ="&") |>
+            dplyr::mutate(
+              COSMIC_MUTATION_ID = paste0(
+                "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
+                .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
+                .data$COSMIC_MUTATION_ID,"</a>"
+              )) |>
+            dplyr::group_by(.data$VAR_ID) |>
+            dplyr::summarise(
+              COSMIC_MUTATION_ID =
+                paste(
+                  .data$COSMIC_MUTATION_ID, collapse = ", "
+                ),
+              .groups = "drop")
+          )
+
+          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
+            onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
+            dplyr::select(-c("COSMIC_MUTATION_ID")) |>
+            dplyr::left_join(
+              cosmic_variants,
+              by = c("VAR_ID"),
+              relationship = "many-to-many")
+        }
 
         onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
           onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-          dplyr::select(-c("COSMIC_MUTATION_ID")) |>
           dplyr::left_join(
-            cosmic_variants,
-            by = c("VAR_ID"),
-            relationship = "many-to-many")
+            oeDB[['tcgadb']][['pfam']],
+            by = "PFAM_ID",
+            relationship = "many-to-many") |>
+          dplyr::mutate(
+            PROTEIN_DOMAIN = dplyr::if_else(
+              !is.na(.data$PFAM_ID),
+              paste0(
+              "<a href=\"http://pfam.xfam.org/family/",
+              .data$PFAM_ID,
+              "\" target='_blank'>",
+              .data$PFAM_DOMAIN_NAME,
+              "</a>"),
+              as.character(NA)
+            )
+          ) |>
+          dplyr::select(
+            -c("PFAM_DOMAIN_NAME", "PFAM_ID")) |>
+          dplyr::left_join(
+            dplyr::select(oeDB[['genedb']][['all']],
+                          c("symbol", "ensembl_gene_id")),
+            by = c("SYMBOL" = "symbol"),
+            relationship = "many-to-many") |>
+          dplyr::mutate(
+            ENSEMBL_GENE_ID =
+              paste0(
+                "<a href='https://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=",
+                .data$ensembl_gene_id,"' target='_blank'>",
+                .data$ensembl_gene_id,"</a>")) |>
+          dplyr::mutate(
+            ENSEMBL_TRANSCRIPT_ID =
+              paste0(
+                "<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
+                .data$ensembl_gene_id,
+                ";t=",
+                .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
+                .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
+          dplyr::select(-c("VAR_ID")) |>
+          dplyr::rename(CONSEQUENCE_ALTERNATE = "VEP_ALL_CSQ") |>
+          dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
+            stringr::str_detect(.data$MUTATION_HOTSPOT, "exonic") &
+              stringr::str_detect(.data$MUTATION_HOTSPOT, "[0-9]-[0-9]"),
+            as.character(NA),
+            as.character(.data$MUTATION_HOTSPOT)
+          )) |>
+          tidyr::separate(
+            .data$MUTATION_HOTSPOT,
+            c("tmp1","tmp2","tmp3","tmp4","tmp5","tmp6"),
+            sep = "\\|", remove = T, fill = "right") |>
+          dplyr::mutate(MUTATION_HOTSPOT = paste(
+            .data$tmp2, .data$tmp4, .data$tmp5, .data$tmp6, sep="|"
+          )) |>
+          dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
+            !is.na(.data$MUTATION_HOTSPOT) &
+              stringr::str_detect(.data$MUTATION_HOTSPOT, "NA\\|NA"),
+            as.character(NA),
+            as.character(.data$MUTATION_HOTSPOT)
+          )) |>
+          dplyr::select(c("SYMBOL",
+                        "CONSEQUENCE",
+                        "PROTEIN_CHANGE",
+                        "MUTATION_HOTSPOT",
+                        "PROTEIN_DOMAIN",
+                        "LOSS_OF_FUNCTION",
+                        "MUTATION_HOTSPOT_MATCH",
+                        "ENSEMBL_GENE_ID",
+                        "ENSEMBL_TRANSCRIPT_ID",
+                        "PRIMARY_SITE",
+                        "SITE_RECURRENCE",
+                        "TOTAL_RECURRENCE",
+                        "COSMIC_MUTATION_ID",
+                        "CONSEQUENCE_ALTERNATE"))
       }
-
-      onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-        dplyr::left_join(
-          oeDB[['tcgadb']][['pfam']],
-          by = "PFAM_ID",
-          relationship = "many-to-many") |>
-        dplyr::mutate(
-          PROTEIN_DOMAIN = dplyr::if_else(
-            !is.na(.data$PFAM_ID),
-            paste0(
-            "<a href=\"http://pfam.xfam.org/family/",
-            .data$PFAM_ID,
-            "\" target='_blank'>",
-            .data$PFAM_DOMAIN_NAME,
-            "</a>"),
-            as.character(NA)
-          )
-        ) |>
-        dplyr::select(
-          -c("PFAM_DOMAIN_NAME", "PFAM_ID")) |>
-        dplyr::left_join(
-          dplyr::select(oeDB[['genedb']][['all']],
-                        c("symbol", "ensembl_gene_id")),
-          by = c("SYMBOL" = "symbol"),
-          relationship = "many-to-many") |>
-        dplyr::mutate(
-          ENSEMBL_GENE_ID =
-            paste0(
-              "<a href='https://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=",
-              .data$ensembl_gene_id,"' target='_blank'>",
-              .data$ensembl_gene_id,"</a>")) |>
-        dplyr::mutate(
-          ENSEMBL_TRANSCRIPT_ID =
-            paste0(
-              "<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
-              .data$ensembl_gene_id,
-              ";t=",
-              .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-              .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
-        dplyr::select(-c("VAR_ID")) |>
-        dplyr::rename(CONSEQUENCE_ALTERNATE = "VEP_ALL_CSQ") |>
-        dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
-          stringr::str_detect(.data$MUTATION_HOTSPOT, "exonic") &
-            stringr::str_detect(.data$MUTATION_HOTSPOT, "[0-9]-[0-9]"),
-          as.character(NA),
-          as.character(.data$MUTATION_HOTSPOT)
-        )) |>
-        tidyr::separate(
-          .data$MUTATION_HOTSPOT,
-          c("tmp1","tmp2","tmp3","tmp4","tmp5","tmp6"),
-          sep = "\\|", remove = T, fill = "right") |>
-        dplyr::mutate(MUTATION_HOTSPOT = paste(
-          .data$tmp2, .data$tmp4, .data$tmp5, .data$tmp6, sep="|"
-        )) |>
-        dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
-          !is.na(.data$MUTATION_HOTSPOT) &
-            stringr::str_detect(.data$MUTATION_HOTSPOT, "NA\\|NA"),
-          as.character(NA),
-          as.character(.data$MUTATION_HOTSPOT)
-        )) |>
-        dplyr::select(c("SYMBOL",
-                      "CONSEQUENCE",
-                      "PROTEIN_CHANGE",
-                      "MUTATION_HOTSPOT",
-                      "PROTEIN_DOMAIN",
-                      "LOSS_OF_FUNCTION",
-                      "MUTATION_HOTSPOT_MATCH",
-                      "ENSEMBL_GENE_ID",
-                      "ENSEMBL_TRANSCRIPT_ID",
-                      "PRIMARY_SITE",
-                      "SITE_RECURRENCE",
-                      "TOTAL_RECURRENCE",
-                      "COSMIC_MUTATION_ID",
-                      "CONSEQUENCE_ALTERNATE"))
     }
 
     for (psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])) {
@@ -1687,22 +1728,19 @@ onco_enrich <- function(query = NULL,
 
   if (show_regulatory == T) {
 
-    for (collection in c('global','pancancer')) {
-      onc_rep[["data"]][["regulatory"]][["interactions"]][[collection]] <-
-        annotate_tf_targets(
-          query_symbol,
-          genedb = oeDB[['genedb']][['all']],
-          tf_target_interactions = oeDB[['tftargetdb']],
-          collection = collection,
-          regulatory_min_confidence =
-            regulatory_min_confidence)
-    }
+    onc_rep[["data"]][["regulatory"]][["interactions"]] <-
+      annotate_tf_targets(
+        qgenes = query_symbol,
+        genedb = oeDB[['genedb']][['all']],
+        tf_target_interactions = oeDB[['tftargetdb']],
+        regulatory_min_resources =
+          regulatory_min_resources)
 
-    if (NROW(onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]) > 0) {
+    if (NROW(onc_rep[["data"]][["regulatory"]][["interactions"]]) > 0) {
       onc_rep[["data"]][["regulatory"]][["network"]] <-
         retrieve_tf_target_network(
           tf_target_interactions =
-            onc_rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]]
+            onc_rep[["data"]][["regulatory"]][["interactions"]]
         )
     }
   }
@@ -2104,13 +2142,11 @@ write <- function(report,
                    "regulatory",
                    "ligand_receptor",
                    "subcellcomp",
-                   #"cell_tissue",
                    "aberration",
                    "recurrent_variants",
                    "coexpression",
                    "prognostic_association_I",
-                   "prognostic_association_II"
-    )) {
+                   "prognostic_association_II")) {
 
       show_elem <- elem
       if (elem == "cancer_association") {

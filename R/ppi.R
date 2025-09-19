@@ -20,10 +20,10 @@ get_network_hubs <- function(edges = NULL,
 
   ## hub score (Kleinberg"s hub centrality)
   #hscore <- igraph::hub_score(d)
-  hscore <- igraph::authority_score(d)
+  hscore <- igraph::hits_scores(d)
   hub_scores <- data.frame(
-    symbol = names(sort(hscore$vector,decreasing = T)),
-    hub_score = round(sort(hscore$vector,decreasing = T), digits = 3),
+    symbol = names(sort(hscore$hub, decreasing = T)),
+    hub_score = round(sort(hscore$hub, decreasing = T), digits = 3),
     stringsAsFactors = F) |>
     dplyr::left_join(
       dplyr::select(
@@ -39,7 +39,6 @@ get_network_hubs <- function(edges = NULL,
 
   #closeness_score <- igraph::closeness(d, mode="all")
   #degree.cent <- centr_degree(d, mode = "all")
-
 
   return(hub_scores)
 }
@@ -131,7 +130,7 @@ get_biogrid_network_nodes_edges <-
         dplyr::desc(.data$pmid)) |>
       dplyr::mutate(
         evidence = paste(
-          .data$method,
+          .data$experimental_system,
           .data$throughput,
           .data$pmid, sep ="|"
         )
@@ -157,7 +156,7 @@ get_biogrid_network_nodes_edges <-
                      dplyr::desc(.data$pmid)) |>
       dplyr::mutate(
         evidence = paste(
-          .data$method,
+          .data$experimental_system,
           .data$throughput,
           .data$pmid, sep ="|"
         )

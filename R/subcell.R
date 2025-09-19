@@ -5,22 +5,17 @@ annotate_subcellular_compartments <-
            compartments_min_channels = 1,
            show_cytosol = F,
            genedb = NULL,
-           compartments = NULL,
-           go_gganatogram_map = NULL) {
+           compartments = NULL){
 
     stopifnot(!is.null(query_entrez))
     stopifnot(is.integer(query_entrez))
     stopifnot(!is.null(genedb))
     stopifnot(!is.null(compartments))
-    stopifnot(!is.null(go_gganatogram_map))
     stopifnot(is.numeric(compartments_min_confidence))
     stopifnot(is.numeric(compartments_min_channels))
 
     validate_db_df(genedb, dbtype = "genedb")
     validate_db_df(compartments, dbtype = "compartments")
-
-    validate_db_df(go_gganatogram_map, dbtype = "go_gganatogram")
-
     lgr::lgr$info( "COMPARTMENTS: retrieval of subcellular compartments for target set")
 
     target_genes <- data.frame(
@@ -29,16 +24,19 @@ annotate_subcellular_compartments <-
         dplyr::select(genedb,
                       c("symbol",
                       "entrezgene",
+                      "cancer_max_rank",
                       "genename")),
         by = c("entrezgene"), relationship = "many-to-many")
 
     target_compartments <- list()
     target_compartments[["all"]] <- data.frame()
     target_compartments[["grouped"]] <- data.frame()
+    target_compartments[["comp_density"]] <- data.frame()
 
     target_compartments_all <- as.data.frame(
       dplyr::inner_join(
-        compartments, target_genes, by = c("entrezgene"), relationship = "many-to-many") |>
+        compartments, target_genes,
+        by = c("entrezgene"), relationship = "many-to-many") |>
         dplyr::filter(!is.na(.data$symbol)) |>
         dplyr::filter(.data$confidence >= compartments_min_confidence) |>
         dplyr::mutate(
@@ -50,12 +48,13 @@ annotate_subcellular_compartments <-
         dplyr::group_by(
           .data$entrezgene,
           .data$symbol,
+          .data$cancer_max_rank,
           .data$genename,
           .data$go_id,
           .data$go_term
         ) |>
         dplyr::summarise(
-          minimum_confidence = min(.data$confidence),
+          maximum_confidence = max(.data$confidence),
           supporting_channels = paste(
             sort(unique(.data$annotation_channel)),
             collapse ="|"),
@@ -76,8 +75,9 @@ annotate_subcellular_compartments <-
           .data$n_supporting_channels >= compartments_min_channels
         ) |>
         dplyr::arrange(
+          dplyr::desc(.data$cancer_max_rank),
           .data$symbol,
-          dplyr::desc(.data$minimum_confidence),
+          dplyr::desc(.data$maximum_confidence),
           dplyr::desc(.data$n_supporting_channels)
         )
     )
@@ -86,11 +86,21 @@ annotate_subcellular_compartments <-
       target_compartments_all <- as.data.frame(
         target_compartments_all |>
           dplyr::arrange(
-            dplyr::desc(.data$minimum_confidence),
+            dplyr::desc(.data$maximum_confidence),
+            dplyr::desc(.data$cancer_max_rank),
             .data$symbol) |>
           dplyr::left_join(
-            go_gganatogram_map,
-            by = "go_id", relationship = "many-to-many") |>
+            dplyr::select(
+              oncoEnrichR::subcell_map$map,
+              c("id","name","go_id","subcellular_location_id")),
+                by = "go_id",
+            relationship = "many-to-many"
+          ) |>
+          ## ignore extracellular space and secreted
+          dplyr::filter(
+            .data$id != "SL0112" &
+              .data$id != "SL0243"
+          ) |>
           dplyr::mutate(
             genelink =
               paste0("<a href ='http://www.ncbi.nlm.nih.gov/gene/",
@@ -104,13 +114,20 @@ annotate_subcellular_compartments <-
 
       target_compartments[["grouped"]] <- as.data.frame(
         target_compartments_all |>
-          dplyr::group_by(.data$go_id, .data$go_term, .data$compartment) |>
+          dplyr::arrange(
+            .data$go_id,
+            .data$go_term,
+            .data$compartment,
+            dplyr::desc(.data$cancer_max_rank),
+          ) |>
+          dplyr::group_by(
+            .data$go_id, .data$go_term, .data$compartment) |>
           dplyr::summarise(
-            targets = paste(unique(.data$symbol),
+            targets = paste(head(unique(.data$symbol),75),
                             collapse = ", "),
-            targetlinks = paste(unique(.data$genelink),
+            targetlinks = paste(head(unique(.data$genelink),75),
                                 collapse = ", "),
-            n = dplyr::n()) |>
+            n = dplyr::n(), .groups = "drop") |>
           dplyr::arrange(dplyr::desc(.data$n)) |>
           dplyr::ungroup() |>
           dplyr::select(-c("go_id", "go_term"))
@@ -125,29 +142,39 @@ annotate_subcellular_compartments <-
                       dplyr::everything())
 
       n_genes <- length(unique(target_compartments_all$symbol))
-      target_compartments[["anatogram"]] <-
-        gganatogram::cell_key$cell |>
-        dplyr::select(-c("value"))
 
-      anatogram_values <- as.data.frame(
+      target_compartments[['comp_density']] <- as.data.frame(
         target_compartments_all |>
-          dplyr::select(c("symbol", "ggcompartment")) |>
-          dplyr::filter(!is.na(.data$ggcompartment)) |>
+          dplyr::select(c("symbol", "id","name")) |>
+          dplyr::filter(!is.na(.data$id)) |>
           dplyr::distinct() |>
-          dplyr::group_by(.data$ggcompartment) |>
-          dplyr::summarise(n_comp = dplyr::n()) |>
+          dplyr::group_by(.data$id, .data$name) |>
+          dplyr::summarise(
+            n_comp = dplyr::n(),
+            genes = paste(.data$symbol, collapse=", "),
+            .groups = "drop") |>
           dplyr::ungroup() |>
-          dplyr::mutate(value = round((.data$n_comp / n_genes) * 100, digits = 4)) |>
-          dplyr::rename(organ = "ggcompartment") |>
-          dplyr::select(c("organ","value"))
+          dplyr::filter(
+            stringr::str_detect(.data$genes,",")
+          ) |>
+          dplyr::mutate(proportion = round(
+            (.data$n_comp / n_genes), digits = 4)) |>
+          dplyr::arrange(dplyr::desc(.data$proportion))
       )
 
-      target_compartments[["anatogram"]] <-
-        target_compartments[["anatogram"]] |>
-        dplyr::left_join(anatogram_values, by = "organ", relationship = "many-to-many") |>
-        dplyr::mutate(value = dplyr::if_else(
-          is.na(.data$value), 0 , as.numeric(.data$value)))
+      target_compartments[['comp_density']]$bin <-
+        cut(
+          target_compartments[['comp_density']]$proportion,
+          breaks = seq(0, 1, by = 0.1),
+          include.lowest = TRUE, labels = FALSE
+        )
 
+      target_compartments[['comp_density']] <-
+        target_compartments[['comp_density']] |>
+        dplyr::left_join(
+          oncoEnrichR::color_palette$subcell_compartments,
+          by = "bin"
+        )
 
     }
   return(target_compartments)

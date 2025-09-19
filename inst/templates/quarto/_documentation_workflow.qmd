@@ -14,16 +14,16 @@ We encourage users of _oncoEnrichR_ to properly cite not only the software, but 
 ::: {.column width="47.5%"}
 
 * <i>Cancer association module:</i>
-  * [@Nakken2023-bp;@Sondka2018-wf;@Ochoa2021-jc;@Martinez-Jimenez2020-qx;@Repana2019-dd;@Lever2019-xp]
+  * [@Nakken2023-bp;@Buniello2025-ws;@Martinez-Jimenez2020-qx;@Repana2019-dd;@Lever2019-xp]
 
 * <i>Cancer hallmark evidence:</i>
-  * [@Nakken2023-bp;@Ochoa2021-jc;@Hanahan2011-da]
+  * [@Nakken2023-bp;@Buniello2025-ws;@Hanahan2011-da]
   
 * <i>Drug association module:</i>
-  * [@Nakken2023-bp;@Ochoa2021-jc;@Sioutos2007-nl]
+  * [@Nakken2023-bp;@Buniello2025-ws;@Sioutos2007-nl]
   
 * <i>Gene fitness scores:</i>
-  * [@Nakken2023-bp;@Behan2019-tf;@Pacini2021-xm]
+  * [@Nakken2023-bp;@Behan2019-tf;@Pacini2024-ga]
 
 * <i>Synthetic lethality module:</i>
   * [@Nakken2023-bp;@De_Kegel2021-xo]
@@ -43,16 +43,16 @@ We encourage users of _oncoEnrichR_ to properly cite not only the software, but 
 ::: {.column width="47.5%"}
 
 * <i>Protein-protein interaction module:</i>
-  * [@Nakken2023-bp;@Von_Mering2005-jy;@Stark2006-ux;@Clauset2004-ov;@Kleinberg1999-oo]
+  * [@Nakken2023-bp;@Szklarczyk2023-fa;@Oughtred2021-li;@Clauset2004-ov;@Kleinberg1999-oo]
 
 * <i>Regulatory interaction module:</i>
-  * [@Nakken2023-bp;@Garcia-Alonso2019-mr;@Turei2016-wq]
+  * [@Nakken2023-bp;@Muller-Dott2023-yn;@Turei2016-wq]
   
 * <i>Functional enrichment module:</i>
   * [@Nakken2023-bp;@Yu2012-yk;@Kanehisa2000-nm;@Joshi-Tope2005-bw;@Kandasamy2010-te;@Kelder2012-vj;@Ashburner2000-sy;@Subramanian2005-ci]
 
 * <i>Subcellular compartment module:</i>
-  * [@Nakken2023-bp;@Binder2014-py;@Maag2018-yv]
+  * [@Nakken2023-bp;@Binder2014-py]
 
 * <i>Prognostic association module:</i>
   * [@Nakken2023-bp;@Uhlen2017-mg;@Smith2022-mk]
@@ -105,7 +105,7 @@ Here we outline the specific configuration values used to generate this report, 
   * `show_top_diseases_only` = __`r onc_enrich_report[['config']][['disease']][['show_top_diseases']]`__
 
 * <i>Regulatory interactions:</i>
-  * `regulatory_min_confidence` = __`r onc_enrich_report[['config']][['regulatory']][['min_confidence']]`__
+  * `regulatory_min_resources` = __`r onc_enrich_report[['config']][['regulatory']][['min_resources']]`__
 
 :::
 
@@ -222,7 +222,7 @@ for(n in names(onc_enrich_report[['config']][['resources']])){
   }
 }
 
-cat("\n*<sup>\\*</sup>KEGG and CGC are freely available for academic, non-commercial use. For commercial usage, end users need to consult [https://www.pathway.jp](https://www.pathway.jp) and [https://cancer.sanger.ac.uk/cosmic/license](https://cancer.sanger.ac.uk/cosmic/license) for licensing inquiries.*\n")
+cat("\n*<sup>\\*</sup>KEGG is freely available for academic, non-commercial use. For commercial usage, end users need to consult [https://www.pathway.jp](https://www.pathway.jp) for licensing inquiries.*\n")
 cat("\n")
 
 ```

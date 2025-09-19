@@ -25,7 +25,7 @@ onco_enrich(
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
   subcellcomp_show_cytosol = FALSE,
-  regulatory_min_confidence = "D",
+  regulatory_min_resources = 2,
   fitness_max_score = -2,
   ppi_add_nodes = 30,
   ppi_string_min_score = 0.9,
@@ -116,9 +116,9 @@ max = 3, default: 1)}
 \item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap
 should show highlight proteins located in the cytosol or not (default: FALSE)}
 
-\item{regulatory_min_confidence}{minimum confidence level for regulatory
-interactions (TF-target) retrieved from DoRothEA ('A','B','C', or 'D',
-default: 'D')}
+\item{regulatory_min_resources}{minimum resource level for regulatory
+interactions (TF-target) retrieved from Collectri (min = 0, max = 5,
+default: 0)}
 
 \item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor
 from BAGEL) for genes retrieved from DepMap/Project Score, default:-2}

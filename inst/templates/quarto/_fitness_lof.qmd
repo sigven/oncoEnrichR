@@ -3,10 +3,10 @@
 ::: {.callout-note}
 ## Synopsis
 
-* The [Cancer Dependency Map](https://depmap.org) and [Project Score](https://score.depmap.sanger.ac.uk/) have performed systematic genome-scale CRISPR/Cas9 drop-out screens in a large number of highly-annotated cancer models to identify genes required for cell fitness in defined molecular contexts
+* The [Cell Model Passports](https://cellmodelpassports.sanger.ac.uk/) resource represent a hub for preclinical cancer models, primarily including cell lines, with rich molecular and phenotypic annotations, including gene fitness data from the cancer [Dependency Map](https://depmap.org).
 * Here, we are showing, across the main human tissue types:
    * Genes in the query set that are annotated with a [statistically significant effect on cell fitness](https://score.depmap.sanger.ac.uk/documentation) in any of the screened cancer cell lines (__fitness score__ is here considered a quantitative measure of the reduction of cell viability elicited by a gene inactivation, via CRISPR/Cas9 targeting). The fitness score is computed based on the [BAGEL](https://github.com/francescojm/BAGELR) and [CRISPRCleanR](https://github.com/francescojm/CRISPRcleanR) algorithms. 
-   * The underlying cell viability data comes from the integration of data in n = 912 cell lines, using both [DepMap (2020_Q2)](https://score.depmap.sanger.ac.uk/downloads) and [Project Score (20210311)](https://score.depmap.sanger.ac.uk/downloads), as published in [Pacini et al., Nat Commun, 2021](https://pubmed.ncbi.nlm.nih.gov/33712601/)
+   * The underlying cell viability data comes from the integration of CRISPR dependency scores in n = 921 cell lines (Sanger/Broad), leveraging [DepMap (2021_Q2)](https://score.depmap.sanger.ac.uk/downloads), as published in [Pacini et al., Cancer Cell, 2024](https://pubmed.ncbi.nlm.nih.gov/38215750/)
 
 * Settings 
    * Maximum loss-of-fitness score pr. gene (BAGEL - scaled Bayes Factor): __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
@@ -18,6 +18,9 @@
 ::: {.panel-tabset}
 
 #### Loss-of-fitness distribution
+
+* A maximum of **n = 200** genes with the highest number of tissue-specific cell lines with significant loss-of-fitness effect are shown in the plot below (the complete set of genes, including the loss-of-fitness scores per cell line, can be found in the Excel output of oncoEnrichR)
+
 
 ```{r fitness_lof_plot}
 #| echo: false
@@ -40,14 +43,23 @@ targets_wide <- as.data.frame(
     dplyr::mutate(cell_lines = stringr::str_replace_all(.data$cell_lines, "\\.", "-"))
 )
   
+top_fitness_hits <- targets_wide |>
+  dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) |>
+  dplyr::arrange(symbol) |>
+  dplyr::select(symbol) |>
+  dplyr::distinct() |>
+  tail(200)
+
+
 fitness_lof_oe_plot <- targets_wide |>
   dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) |>
+  dplyr::inner_join(top_fitness_hits, by = "symbol") |>
   ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
   ggplot2::geom_bar(stat = "identity") +
   ggplot2::coord_flip() +
   ggplot2::ylab("Number of cell lines with significant loss-of-fitness") +
   ggplot2::xlab("") +
-  ggplot2::scale_fill_manual(values = oncoEnrichR::tissue_colors) +
+  ggplot2::scale_fill_manual(values = oncoEnrichR::color_palette$tissue) +
   ggplot2::theme(
     panel.grid.minor = ggplot2::element_blank(),
     axis.text = ggplot2::element_text(family = "Helvetica", size = 11),
@@ -55,7 +67,7 @@ fitness_lof_oe_plot <- targets_wide |>
     axis.title.x = ggplot2::element_text(family = "Helvetica", size = 12),
     legend.title = ggplot2::element_blank(),
     #set thickness of axis ticks
-    axis.ticks = ggplot2::element_line(size = 0.2),
+    axis.ticks = ggplot2::element_line(linewidth = 0.2),
     #remove plot background
     plot.background = ggplot2::element_blank()
   )
@@ -98,8 +110,9 @@ fitness_lof_oe_df <- onc_enrich_report[['data']][['fitness']][['fitness_scores']
   dplyr::summarise(ps_link = paste(.data$model_link_ps, collapse = ", "),
                    .groups = "drop") |>
   dplyr::ungroup() |>
-  dplyr::select(.data$symbol_link_ps, .data$tissue, .data$ps_link) |>
-  dplyr::rename(cell_lines = .data$ps_link, symbol = .data$symbol_link_ps) |>
+  dplyr::select(c("symbol_link_ps","tissue", "ps_link")) |>
+  dplyr::rename(cell_lines = ps_link, 
+                symbol = symbol_link_ps) |>
   dplyr::mutate(loss_of_fitness = T) |>
   head(2000)
 

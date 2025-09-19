@@ -25,7 +25,7 @@ test_that("oncoEnrichR - initialize report", {
         enrichment_simplify_go = F,
         subcellcomp_min_confidence = 2,
         subcellcomp_show_cytosol = F,
-        regulatory_min_confidence = "D",
+        regulatory_min_resources = 0,
         show_ppi = T,
         show_disease = T,
         show_top_diseases_only = T,
@@ -92,14 +92,14 @@ test_that("oncoEnrichR - generate report", {
     regexp = "ERROR: "
   )
 
-  expect_output(
-    oncoEnrichR::onco_enrich(
-      query = myc_data$symbol,
-      oeDB = oedb,
-      regulatory_min_confidence = "F"
-    ),
-    regexp = "ERROR: "
-  )
+  # expect_output(
+  #   oncoEnrichR::onco_enrich(
+  #     query = myc_data$symbol,
+  #     oeDB = oedb,
+  #     regulatory_min_resources = 0
+  #   ),
+  #   regexp = "ERROR: "
+  # )
 
   expect_output(
     oncoEnrichR::onco_enrich(

@@ -59,12 +59,12 @@ hpa_prognostic_genes <- function(qgenes,
       by=c("ensembl_gene_id"),
       relationship = "many-to-many") |>
     dplyr::mutate(hpa_link = paste0(
-      "<a href='https://www.proteinatlas.org/",
+      "<a href='https://proteinatlas.org/",
       .data$ensembl_gene_id,
       "-",
       .data$symbol,
-      "/pathology/",
-      stringr::str_replace_all(.data$property,"_","+"),"'",
+      "/pathology/cancer'",
+      #stringr::str_replace_all(.data$property,"_","+"),"'",
       " target='_blank'>",
       stringr::str_to_title(
         stringr::str_replace_all(.data$property,"_"," ")

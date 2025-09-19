@@ -1,8 +1,9 @@
 
-annotate_ligand_receptor_interactions <- function(qgenes,
-                                                  genedb = NULL,
-                                                  ligand_receptor_db = NULL,
-                                                  ligand_receptor_xref = NULL) {
+annotate_ligand_receptor_interactions <- function(
+    qgenes,
+    genedb = NULL,
+    ligand_receptor_db = NULL,
+    ligand_receptor_xref = NULL) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
@@ -29,7 +30,8 @@ annotate_ligand_receptor_interactions <- function(qgenes,
           !is.na(.data$symbol)),
         by = c("symbol"), relationship = "many-to-many") |>
       dplyr::filter(!is.na(.data$entrezgene)) |>
-      dplyr::inner_join(query_df, by = "symbol", relationship = "many-to-many")
+      dplyr::inner_join(
+        query_df, by = "symbol", relationship = "many-to-many")
   )
 
   query_hits <- list()
@@ -42,8 +44,10 @@ annotate_ligand_receptor_interactions <- function(qgenes,
 
   valid_query_hits <-
     query_hits[['ligand']] |>
-    dplyr::inner_join(query_hits[['receptor']],
-                      by = "interaction_id", relationship = "many-to-many")
+    dplyr::inner_join(
+      query_hits[['receptor']],
+      by = "interaction_id",
+      relationship = "many-to-many")
 
   ligand_receptor_results <- list()
   ligand_receptor_results[['cell_cell_contact']] <-
@@ -54,43 +58,23 @@ annotate_ligand_receptor_interactions <- function(qgenes,
     data.frame()
 
   if (NROW(valid_query_hits) > 0) {
-    ligand_receptor_results[['cell_cell_contact']] <-
-      as.data.frame(
-        ligand_receptor_db |>
-          dplyr::filter(.data$annotation == "Cell-Cell Contact") |>
-          dplyr::inner_join(valid_query_hits,
-                            by = "interaction_id", relationship = "many-to-many")
-      ) |>
-      dplyr::select(-c("interaction_id",
-                       "annotation",
-                       "interaction_members")) |>
-      dplyr::distinct()
 
-    ligand_receptor_results[['secreted_signaling']] <-
-      as.data.frame(
-        ligand_receptor_db |>
-          dplyr::filter(.data$annotation == "Secreted Signaling") |>
-          dplyr::inner_join(valid_query_hits,
-                            by = "interaction_id", relationship = "many-to-many")
-      ) |>
-      dplyr::select(-c("interaction_id",
-                       "annotation",
-                       "interaction_members")) |>
-      dplyr::distinct()
-
-
-    ligand_receptor_results[['ecm_receptor']] <-
-      as.data.frame(
-        ligand_receptor_db |>
-          dplyr::filter(.data$annotation == "ECM-Receptor") |>
-          dplyr::inner_join(valid_query_hits,
-                            by = "interaction_id", relationship = "many-to-many")
-      ) |>
-      dplyr::select(-c("interaction_id",
-                       "annotation",
-                       "interaction_members")) |>
-      dplyr::distinct()
-
+    for(ann in c('Cell-Cell Contact','Secreted Signaling','ECM-Receptor')){
+      ann_lc <- stringr::str_replace_all(tolower(ann)," |-","_")
+      ligand_receptor_results[[ann_lc]] <-
+        as.data.frame(
+          ligand_receptor_db |>
+            dplyr::filter(.data$annotation == ann) |>
+            dplyr::inner_join(
+              valid_query_hits,
+              by = "interaction_id",
+              relationship = "many-to-many")
+        ) |>
+        dplyr::select(-c("interaction_id",
+                         "annotation",
+                         "interaction_members")) |>
+        dplyr::distinct()
+    }
   }
 
   return(ligand_receptor_results)

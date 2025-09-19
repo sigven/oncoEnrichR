@@ -3,7 +3,10 @@
 ::: {.callout-note}
 ## Synopsis
 
-* Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are here interrogating ligand-receptor interactions for members of the query set. Putative interactions are displayed along three different axes with respect to cell-cell communication:
+* Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are 
+here interrogating ligand-receptor interactions for members of the query set. 
+Putative interactions are displayed along three different axes with respect 
+to cell-cell communication:
 
    1) Secreted Signaling (Paracrine/autocrine signaling)
    2) ECM-Receptor (extracellular matrix-receptor interactions)
@@ -85,7 +88,6 @@ DT::datatable(
   escape = F, 
   extensions=c("Buttons","Responsive"), 
   width = "100%",
-  #style = 'bootstrap',
   rownames = F,
   options=list(buttons = c('csv','excel'),
                pageLength = 10,
@@ -151,7 +153,6 @@ DT::datatable(
   escape = F, 
   extensions=c("Buttons","Responsive"), 
   width = "100%",
-  #style = 'bootstrap',
   rownames = F,
   options=list(buttons = c('csv','excel'),
                pageLength = 10,
@@ -216,7 +217,6 @@ DT::datatable(
   escape = F, 
   extensions=c("Buttons","Responsive"), 
   width = "100%",
-  #style = 'bootstrap',
   rownames = F,
   options=list(buttons = c('csv','excel'),
                pageLength = 10,

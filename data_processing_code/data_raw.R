@@ -1,37 +1,54 @@
-library(gganatogram)
 
-source('data_processing_code/data_utility_functions.R')
+source('../oncoEnrichR/data_processing_code/data_utility_functions.R')
 
-msigdb_version <- 'v2024.1.Hs'
-wikipathways_version <- "20250210"
+####--- Database versions and update flags ----####
+msigdb_version <- 'v2025.1.Hs'
+wikipathways_version <- "20250910"
 netpath_version <- "2010"
-opentargets_version <- "2024.09"
-kegg_version <- "20250225"
-gencode_version <- "47"
-uniprot_release <- "2025_01"
+opentargets_version <- "2025.09"
+kegg_version <- "20250603"
+gencode_version <- "48"
+uniprot_release <- "2025_03"
+biogrid_release <- "4.4.249"
 
 ## Which databases to update or retrieve from last updated state
 db_updates <- list()
 db_updates[['omnipathdb']] <- F
 db_updates[['hpa']] <- F
+db_updates[['ot']] <- F
 db_updates[['tcga']] <- F
 db_updates[['cancer_hallmarks']] <- F
 db_updates[['omnipath_complexdb']] <- F
-db_updates[['omnipath_regulatory']] <- F
+db_updates[['tftargetdb']] <- F
 db_updates[['subcelldb']] <- F
 db_updates[['ligand_receptor_db']] <- F
+db_updates[['cellmodeldb']] <- F
+db_updates[['biogrid']] <- F
+db_updates[['pfamdb']] <- F
 
-oe_version <- "1.5.3"
+oe_version <- "1.6.0"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"
 data_output_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/output"
 
-release_notes <- list()
+## oncoenrichr db object
+oedb <- list()
+
+## Initialize sub-lists for gene elements
+oedb[['genedb']] <- list()
+oedb[['genedb']][['cancer_hallmark']] <- list()
+oedb[['genedb']][['proteincomplexdb']] <- list()
+oedb[['genedb']][['transcript_xref']] <- list()
+oedb[['genedb']][['all']] <- list()
+
+
+## Release notes
+oedb[['release_notes']] <- list()
 software_db_version <-
   readr::read_tsv(
-    file = "data_processing_code/RELEASE_NOTES.txt",
+    file = "../oncoEnrichR/data_processing_code/RELEASE_NOTES.txt",
     skip = 1, col_names = T, show_col_types = F,
     comment = "#") |>
   dplyr::mutate(license_url = dplyr::case_when(
@@ -55,7 +72,7 @@ software_db_version <-
 
 i <- 1
 while(i <= nrow(software_db_version)){
-  release_notes[[software_db_version[i,]$key]] <-
+  oedb[['release_notes']][[software_db_version[i,]$key]] <-
     list('url' = software_db_version[i,]$url,
          'description' =
            software_db_version[i,]$description,
@@ -72,7 +89,8 @@ while(i <= nrow(software_db_version)){
   i <- i + 1
 }
 rm(software_db_version)
-genedb <- list()
+
+
 
 
 ####---Gene info----####
@@ -113,70 +131,20 @@ gene_info <- gOncoX[['basic']]$records |>
 
 
 ####---Protein domains----####
-pfamdb <- as.data.frame(
-  readr::read_tsv(
-    file.path(data_raw_dir,
-              "pfam",
-              "pfam.uniprot.tsv.gz"),
-    show_col_types = F) |>
-    dplyr::select(-uniprot_acc) |>
-    dplyr::rename(uniprot_acc = uniprot_acc_noversion) |>
-    ## reviewed accessions only
-    dplyr::filter(nchar(uniprot_acc) == 6) |>
-    dplyr::group_by(uniprot_acc,
-                    pfam_id,
-                    pfam_short_name,
-                    pfam_long_name) |>
-    dplyr::summarise(
-      domain_freq = dplyr::n(),
-      .groups = "drop")
+oedb[['pfamdb']] <- get_pfam_annotations(
+  raw_db_dir = data_raw_dir,
+  update = db_updates[['pfamdb']]
 )
 
 ####---BIOGRID----####
-biogrid <- as.data.frame(
-  readr::read_tsv(
-    file.path(
-      data_raw_dir,
-      "biogrid",
-      "BIOGRID-Physical.tsv.gz"),
-    col_names =
-    c("entrezgene_A","entrezgene_B",
-      "method","pmid",
-      "throughput"), show_col_types = F)) |>
-  dplyr::arrange(entrezgene_A, entrezgene_B) |>
-  dplyr::mutate(pmid =
-    stringr::str_replace(
-      stringr::str_trim(pmid),"PUBMED:","")) |>
-  dplyr::mutate(pmid = dplyr::if_else(
-    !stringr::str_detect(pmid,"^([0-9]{5,})$"),
-    as.numeric(NA),
-    as.numeric(pmid)
-  )) |>
-  dplyr::mutate(tmp_A = dplyr::if_else(
-    .data$entrezgene_B < .data$entrezgene_A,
-    .data$entrezgene_B,
-    .data$entrezgene_A
-  )) |>
-  dplyr::mutate(tmp_B = dplyr::if_else(
-    .data$entrezgene_B < .data$entrezgene_A,
-    .data$entrezgene_A,
-    .data$entrezgene_B
-  )) |>
-  dplyr::select(
-    -c("entrezgene_A","entrezgene_B")
-  ) |>
-  dplyr::rename(
-    entrezgene_A = "tmp_A",
-    entrezgene_B = "tmp_B"
-  ) |>
-  dplyr::filter(
-    entrezgene_A != entrezgene_B
-  ) |>
-  dplyr::distinct()
-
+oedb[['biogrid']] <- get_biogrid_physical_interactions(
+  raw_db_dir = data_raw_dir,
+  biogrid_release = biogrid_release,
+  update = db_updates[['biogrid']]
+)
 
 ####---Cancer hallmark annotations----####
-genedb[['cancer_hallmark']] <-
+oedb[['genedb']][['cancer_hallmark']] <-
   get_cancer_hallmarks(
     opentargets_version = opentargets_version,
     raw_db_dir = data_raw_dir,
@@ -187,7 +155,11 @@ genedb[['cancer_hallmark']] <-
 ts_oncogene_annotations <-
   geneOncoX:::assign_cancer_gene_roles(
     gox_basic = gOncoX[['basic']],
-    min_sources_driver = 2) |>
+    min_sources_driver = 1) |>
+  dplyr::filter(
+    !(driver == T &
+        driver_support == "CancerMine")
+  ) |>
   dplyr::select(
     entrezgene,
     tsg,
@@ -210,17 +182,20 @@ opentarget_associations <-
     min_num_sources = 2,
     min_overall_score = 0.02,
     release = opentargets_version,
-    direct_associations_only = T)
+    direct_associations_only = T,
+    update = db_updates[['ot']])
 
-otdb <- quantify_gene_cancer_relevance(
+oedb[['otdb']] <- quantify_gene_cancer_relevance(
   ot_associations = opentarget_associations,
   cache_dir = data_raw_dir)
 
-genedb[['transcript_xref']] <- get_unique_transcript_xrefs(
-  raw_db_dir = data_raw_dir,
-  gene_oncox = gOncoX,
-  update = T
-)
+####---Transcript xrefs ----####
+oedb[['genedb']][['transcript_xref']] <-
+  get_unique_transcript_xrefs(
+    raw_db_dir = data_raw_dir,
+    gene_oncox = gOncoX,
+    update = T
+  )
 
 
 ####---OmniPathDB - gene annotations ----####
@@ -230,14 +205,14 @@ omnipathdb <- get_omnipath_gene_annotations(
   update = db_updates[['omnipathdb']]
 )
 
-####---OmniPathDB - TF interactions ----####
-tf_target_interactions <- get_tf_target_interactions(
+####---OmniPathDB/Collectri - TF-target interactions ----####
+oedb[['tftargetdb']] <- get_regulatory_collectri(
   raw_db_dir = data_raw_dir,
-  update = db_updates[['omnipath_regulatory']]
+  update = db_updates[['tftargetdb']]
 )
 
 ####---Pathway annotations ----####
-pathwaydb <- get_pathway_annotations(
+oedb[['pathwaydb']] <- get_pathway_annotations(
   raw_db_dir = data_raw_dir,
   gene_info = gene_info,
   wikipathways_version = wikipathways_version,
@@ -252,21 +227,15 @@ pathwaydb <- get_pathway_annotations(
 )
 
 ####---OmniPathDB - protein complexes ----####
-genedb[['proteincomplexdb']] <- get_protein_complexes(
+oedb[['genedb']][['proteincomplexdb']] <- get_protein_complexes(
   raw_db_dir = data_raw_dir,
   update = db_updates[['omnipath_complexdb']]
 )
 
 ####---OTP - Targeted cancer drugs ---####
-cancerdrugdb <- get_cancer_drugs(
+oedb[['cancerdrugdb']] <- get_cancer_drugs(
   raw_db_dir = data_raw_dir
 )
-
-####--- Gene Ontology ---####
-go_terms_pr_gene <- get_gene_go_terms(
-  raw_db_dir = data_raw_dir
-)
-
 
 ## Append all gene annotations to a single dataframe
 ## 1) Remove transcripts
@@ -276,117 +245,181 @@ go_terms_pr_gene <- get_gene_go_terms(
 ## 5) Add gene function summary descriptions from NCBI/UniProt
 ## 6) Assign unknown function rank
 
-genedb[['all']] <- generate_gene_xref_df(
+oedb[['genedb']][['all']] <- generate_gene_xref_df(
   raw_db_dir = data_raw_dir,
   gene_info = gene_info,
-  transcript_xref_db = genedb[['transcript_xref']],
+  transcript_xref_db = oedb[['genedb']][['transcript_xref']],
   ts_oncogene_annotations = ts_oncogene_annotations,
   opentarget_associations = opentarget_associations,
   gene_oncox = gOncoX,
-  go_terms_pr_gene = go_terms_pr_gene,
-  otdb = otdb,
-  cancerdrugdb = cancerdrugdb,
+  otdb = oedb[['otdb']],
+  cancerdrugdb = oedb[['cancerdrugdb']],
   update = T
 )
 
+#oedb[['genedb']] <- genedb
+
 ####--- Ligand-Receptor interactions ----####
-ligandreceptordb <- get_ligand_receptors(
-  raw_db_dir = data_raw_dir,
-  keggdb = pathwaydb$kegg,
-  update = db_updates[['ligand_receptor_db']]
+oedb[['ligandreceptordb']] <- get_ligand_receptors(
+   raw_db_dir = data_raw_dir,
+   keggdb = oedb[['pathwaydb']][['kegg']],
+   update = db_updates[['ligand_receptor_db']]
 )
 
 ####----COMPARTMENTS - subcellular compartments---####
-subcelldb <- get_subcellular_annotations(
+oedb[['subcelldb']] <- get_subcellular_annotations(
   raw_db_dir = data_raw_dir,
-  transcript_xref_db = genedb[['transcript_xref']],
+  transcript_xref_db = oedb[['genedb']][['transcript_xref']],
   update = db_updates[['subcelldb']]
 )
 
-####---- Project Score/DepMap ----####
-depmapdb <- get_fitness_data_crispr(
+####---- Cell Model Passports/CRISPR Fitness ----####
+oedb[['cellmodeldb']] <- get_fitness_data_CMP(
   raw_db_dir = data_raw_dir,
+  update = db_updates[['cellmodeldb']],
   gene_info = gene_info
 )
 
 ####--- Cancer-KM-Survival (CSHL) ---####
-survivaldb <- get_survival_associations(
+oedb[['survivaldb']] <- get_survival_associations(
   gene_info = gene_info,
   raw_db_dir = data_raw_dir
 )
 
 ###--- Predicted SL paralogs ---####
-slparalogdb <- get_paralog_SL_predictions(
+oedb[['slparalogdb']] <- get_paralog_SL_predictions(
   raw_db_dir = data_raw_dir,
   gene_info = gene_info
 )
 
 ####--- Human Protein Atlas ---####
-hpa <- get_hpa_associations(
+oedb[['hpa']] <- get_hpa_associations(
   raw_db_dir = data_raw_dir,
-  gene_xref = genedb[['all']],
+  gene_xref = oedb[['genedb']][['all']],
   update = db_updates[['hpa']]
 )
 
 ####----TCGA aberration data ----####
-tcgadb <- get_tcga_db(
+oedb[['tcgadb']] <- get_tcga_db(
   raw_db_dir = data_raw_dir,
   update = db_updates[['tcga']],
-  gene_xref = genedb[['all']]
+  gene_xref = oedb[['genedb']][['all']]
 )
 
-#tissuecelldb <- get_tissue_celltype_specificity(
-#  raw_db_dir = data_raw_dir
-#)
-
-oedb <- list()
-oedb[['cancerdrugdb']] <- cancerdrugdb
-oedb[['release_notes']] <- release_notes
-oedb[['subcelldb']] <- subcelldb
-oedb[['ligandreceptordb']] <- ligandreceptordb
-oedb[['genedb']] <- genedb
-oedb[['otdb']] <- otdb
-oedb[['pfamdb']] <- pfamdb
-oedb[['tftargetdb']] <- tf_target_interactions
-#oedb[['tissuecelldb']] <- tissuecelldb
-oedb[['hpa']] <- hpa
-oedb[['survivaldb']] <- survivaldb
-oedb[['depmapdb']] <- depmapdb
-oedb[['tcgadb']] <- tcgadb
-oedb[['pathwaydb']] <- pathwaydb
-oedb[['slparalogdb']] <- slparalogdb
-oedb[['biogrid']] <- biogrid
-
-save(oedb, file="inst/internal_db/oedb.rda")
+save(oedb, file = file.path(
+  here::here(), "inst", "internal_db", "oedb.rda"))
 
 ####--- Clean-up ----####
-rm(pfamdb)
-rm(tcgadb)
-rm(hpa)
 rm(omnipathdb)
-rm(otdb)
-rm(pathwaydb)
-rm(release_notes)
-rm(cancerdrugdb)
-rm(genedb)
 rm(gene_info)
-rm(depmapdb)
-rm(survivaldb)
 rm(opentarget_associations)
 rm(ts_oncogene_annotations)
-rm(subcelldb)
-rm(tf_target_interactions)
-rm(ligandreceptordb)
-rm(go_terms_pr_gene)
-rm(slparalogdb)
 rm(gOncoX)
-rm(biogrid)
 
-tissue_colors <-
-  pals::stepped(24)
 
-usethis::use_data(tissue_colors, overwrite = T)
+####--- Color palettes ----####
+color_palette <- list()
 
+color_palette[['tissue']] <-
+  colorspace::qualitative_hcl(28, palette = "Dark 2")
+  #pals::stepped(30)
+
+subcell_compartment_colors <-
+  c("#F7FCB9",
+    "#FFEDA0",
+    "#FEC966",
+    "#FBAD4C",
+    "#F98F3B",
+    "#F2672E",
+    "#D8432B",
+    "#B92C2E",
+    "#981B2E",
+    "#800026")
+
+color_palette[['subcell_compartments']] <-
+  data.frame(
+    'bin' = seq(1:10),
+    'fill' = subcell_compartment_colors)
+usethis::use_data(color_palette, overwrite = T)
+
+####--- Animal cell compartments ----####
+# This is a TSV file with subcellular compartment names, IDs, and
+# that are visible in the bscui map figure (https://www.swissbiopics.org/name/Animal_cell)
+visible_compartments_swissbio <-
+  readr::read_tsv(
+    "data_processing_code/animal_cell_compartments.tsv",
+    show_col_types = F)
+
+####--- Subcellular compartment map ----####
+bscui_map <- list()
+bscui_map[['figure']] <-
+  bscui::bscui(
+    xml2::read_xml(system.file(
+      "examples",
+      "Animal_cells.svg.gz",
+      package = "bscui"
+    )))
+
+bscui_map[['map']] <- readr::read_tsv(system.file(
+  "examples",
+  "uniprot_cellular_locations.txt.gz",
+  package = "bscui"),
+  col_types=strrep("c", 6)) |>
+  dplyr::mutate(
+    id = stringr::str_remove(
+      `Subcellular location ID`, "-")) |>
+  janitor::clean_names() |>
+  dplyr::mutate(
+    gene_ontologies = stringr::str_replace(
+      gene_ontologies,"GO:","GO_")) |>
+  tidyr::separate(
+    gene_ontologies, c("go_id","go_term"),
+    sep=":", remove = T) |>
+  dplyr::mutate(go_id = stringr::str_replace(
+    go_id,"_",":")) |>
+  dplyr::filter(!is.na(go_id)) |>
+
+  dplyr::semi_join(
+    visible_compartments_swissbio,
+    by = "name"
+  ) |>
+
+  ## ignore extracellular space and secreted, as
+  ## well as very generic compartmental concepts
+  dplyr::filter(
+    id != "SL0112" & # Extracellular space
+      id != "SL0243" & # Secreted
+      id != "SL0086" & # Cytoplasm
+      id != "SL0162" & # Membrane
+      id != "SL0191" & # Nucleus
+      id != "SL0209" & # Plastid
+      id != "SL0038" & # Cell junction
+      id != "SL0280" & # Cell projection
+      #id != "" & # Cytoplasmic vesicle
+      id != "SL0244" # Secretory vesicle
+      #id != "" # Host vacuole
+
+  ) |>
+  dplyr::select(-c("go_term","category"))
+
+bscui_map[['ui_elements']] <-
+  bscui_map[['map']] |>
+  dplyr::mutate(
+    ui_type = "selectable",
+    title = glue::glue(
+      '<div style="width:350px; height:200px; ',
+      'overflow:auto; padding:5px;',
+      'font-size:75%;',
+      'border:black 1px solid; background:#FFFFF0AA;">',
+      "<strong>{name}</strong>: {description}",
+      "</div>",
+      .sep=" "
+    )
+  ) |>
+  dplyr::select(id, ui_type, title)
+
+subcell_map <- bscui_map
+usethis::use_data(subcell_map, overwrite = T)
 
 #googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
 gd_records <- list()
@@ -400,7 +433,7 @@ for(elem in c('cancerdrugdb',
            'otdb',
            'pfamdb',
            'pathwaydb',
-           'depmapdb',
+           'cellmodeldb',
            'survivaldb',
            'subcelldb',
            'slparalogdb',
@@ -419,8 +452,9 @@ for(elem in c('cancerdrugdb',
       )
   }
 
-  local_rds_fpath <- file.path(data_output_dir, paste0("v",oe_version),
-                           paste0(elem,"_v", oe_version, ".rds"))
+  local_rds_fpath <- file.path(
+    data_output_dir, paste0("v",oe_version),
+    paste0(elem,"_v", oe_version, ".rds"))
   saveRDS(oedb[[elem]],
           file = local_rds_fpath)
 
@@ -444,20 +478,11 @@ for(elem in c('cancerdrugdb',
       md5Checksum =
         gd_records[[elem]]$drive_resource[[1]]$md5Checksum)
 
-  size <- NA
-  hsize <- NA
-
-  if(elem != "subcelldb"){
-    size <- utils::object.size(oedb[[elem]])
-    hsize <- R.utils::hsize.object_size(size)
-  }else{
-    size <- utils::object.size(oedb[[elem]][['compartments']])
-    hsize <- R.utils::hsize.object_size(size)
-  }
+  size <- utils::object.size(oedb[[elem]])
+  hsize <- R.utils::hsize.object_size(size)
 
   google_rec_df$size <- as.character(size)
   google_rec_df$hsize <- hsize
-
 
   db_id_ref <- db_id_ref |>
     dplyr::bind_rows(google_rec_df)
@@ -493,6 +518,19 @@ cp_output_cols <-
 
 usethis::use_data(cp_output_cols, overwrite = T)
 
+base_urls <- list()
+base_urls[['otp']] <- "https://platform.opentargets.org"
+base_urls[['ncbi']] <- "https://www.ncbi.nlm.nih.gov"
+base_urls[['wpway']] <- "https://www.wikipathways.org"
+base_urls[['kegg']] <- "https://www.genome.jp"
+base_urls[['cmp']] <- "https://cellmodelpassports.sanger.ac.uk"
+base_urls[['ensembl']] <- "https://www.ensembl.org/Homo_sapiens"
+base_urls[['string']] <- "https://string-db.org"
+base_urls[['hpa']] <- "https://www.proteinatlas.org"
+base_urls[['pfam']] <- "https://www.ebi.ac.uk/interpro"
+
+usethis::use_data(base_urls, overwrite = T)
+
 ####---Zenodo upload ----####
 
 # zenodo_files_for_upload <-
@@ -518,43 +556,12 @@ usethis::use_data(cp_output_cols, overwrite = T)
 #usethis::use_data(db_props, overwrite = T)
 
 #oedb_rec <- zenodo$publishRecord(oedb_rec$id)
-
-db_packages <-
-  c('CellChat',
-    'rWikiPathways',
-    'ComplexHeatmap',
-    'bcellViper',
-    'dorothea',
-    'Rtsne',
-    'KEGGREST',
-    'expm',
-    'irlba',
-    'pbapply',
-    'reticulate',
-    'RSpectra',
-    'sna',
-    'FNN',
-    'tweenr',
-    'reticulate',
-    'TCGAbiolinksGUI.data',
-    'TCGAbiolinks',
-    'rlogging',
-    'zen4R',
-    'biomaRt',
-    'redland',
-    'rdflib',
-    'magrittr',
-    'log4r',
-    'keyring',
-    'OmnipathR',
-    'geneOncoX',
-    'pharmOncoX',
-    'phenOncoX')
+#
 
 renv_packages <- jsonlite::fromJSON("renv.lock")
-for(c in db_packages){
-  renv_packages$Packages[[c]] <- NULL
-}
+#for(c in db_packages){
+#  renv_packages$Packages[[c]] <- NULL
+#}
 docker_renv <- jsonlite::toJSON(
   renv_packages, flatten = T, auto_unbox = T) |>
   jsonlite::prettify()

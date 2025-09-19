@@ -34,7 +34,8 @@ for(n in c('favorable','unfavorable')){
   
     prognostic_assoc_data[[n]] <- 
       onc_enrich_report[['data']][['cancer_prognosis']][['hpa']][['assocs']] |> 
-      dplyr::filter(evidence_direction == n) |>
+      dplyr::filter(
+        stringr::str_detect(evidence_direction,paste0(" ",n,"$"))) |>
       dplyr::select(-evidence_direction)
     
     if(nrow(prognostic_assoc_data[[n]]) == 0){
@@ -180,7 +181,7 @@ DT::datatable(prognostic_genes_unfavorable, escape = F,
 
 
 ```
-<br><br>
+
 
 ```{r prognostic_missing_unfavorable}
 #| echo: false
