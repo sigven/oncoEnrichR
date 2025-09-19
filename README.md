@@ -6,7 +6,7 @@ molecular knowledge that allows for biological interpretation along
 multiple dimensions, both at the systems level and at the level of individual genes.
 
 Web-based access to **oncoEnrichR** is available at 
-[**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.5.3). 
+[**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.0). 
 _The web version of oncoEnrichR is not currently operating with the latest version, 
 we are working to get the latest version in place also in Galaxy._
 
