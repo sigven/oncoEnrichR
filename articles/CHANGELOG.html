@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Changelog • oncoEnrichR</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -33,7 +32,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,6 +82,55 @@
 
     
     
+<div class="section level2">
+<h2 id="version-1-6-0">Version 1.6.0<a class="anchor" aria-label="anchor" href="#version-1-6-0"></a>
+</h2>
+<ul>
+<li><p>Date: 2025-09-19</p></li>
+<li>
+<p>Updates</p>
+<ul>
+<li>Data updates
+<ul>
+<li>WikiPathways - 20250910</li>
+<li>COMPARTMENTS - 2025-07</li>
+<li>BIOGRID - v4.4.249</li>
+<li>Open Targets Platform (2025.09)</li>
+<li>MSigDB (including GO) - v2025.1.Hs</li>
+<li>KEGG - 20250603</li>
+<li>CellChatDB v2</li>
+</ul>
+</li>
+<li>New interactive subcellular compartment visualization, utilizing the
+<a href="https://cran.r-project.org/web/packages/bscui/vignettes/bscui.html" class="external-link">bscui
+package</a>
+</li>
+<li>CRISPR KO fitness score data and target priority scores now
+retrieved from <a href="https://cellmodelpassports.sanger.ac.uk/" class="external-link">Cell
+Model Passports</a>
+</li>
+<li>Signed transcription factor (TF) - target gene interactions now
+retrieved from <a href="https://github.com/saezlab/CollecTRI" class="external-link">CollecTRI</a>
+<ul>
+<li>new argument to <code><a href="../reference/onco_enrich.html">onco_enrich()</a></code>:
+<code>regulatory_min_resources</code> - minimum number of supporting
+resources for each TF-target interaction (default: 2)</li>
+</ul>
+</li>
+<li>Abandoned Cancer Gene Census (CGC) as a source for oncogene/tumor
+suppressor classification (within <a href="https://github.com/sigven/geneOncoX" class="external-link">geneOncoX</a>), due to
+changes in data licensing terms</li>
+<li>Increased maximum allowed size of query set to <em>n = 2000</em>
+genes. Note that, for large query sets, some modules may take longer
+time to compute (GO enrichment in particular), and some modules will be
+explicitly turned off to avoid issues/crash (e.g. PPI network,
+co-expression, recurrent SNV/InDels)</li>
+<li>Updating the web-based version of oncoEnrichR (Galaxy) is still work
+in progress</li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="version-1-5-3">Version 1.5.3<a class="anchor" aria-label="anchor" href="#version-1-5-3"></a>
 </h2>
@@ -923,7 +971,7 @@ no longer missing from web-based analysis (oncotools.elixir.no) - file
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
