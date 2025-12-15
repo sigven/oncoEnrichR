@@ -11,6 +11,7 @@
 ^db$
 ^_pkgdown\.yml$
 ^pkgdown$
-.bumpversion.cfg
 data_processing_code
 #inst/internal_db
+^.bumpversion.toml
+^.renv
