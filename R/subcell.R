@@ -3,7 +3,6 @@ annotate_subcellular_compartments <-
   function(query_entrez,
            compartments_min_confidence = 3,
            compartments_min_channels = 1,
-           show_cytosol = F,
            genedb = NULL,
            compartments = NULL){
 

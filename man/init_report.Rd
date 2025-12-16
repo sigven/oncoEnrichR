@@ -29,7 +29,6 @@ init_report(
   enrichment_simplify_go = T,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
-  subcellcomp_show_cytosol = F,
   regulatory_min_resources = 2,
   fitness_max_score = -2,
   show_ppi = T,
@@ -105,9 +104,7 @@ init_report(
 
 \item{subcellcomp_min_channels}{minimum number of channels that support a subcellular annotation in COMPARTMENTS}
 
-\item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not}
-
-\item{regulatory_min_resources}{minimum resources supporting regulatory interactions (TF-target) retrieved from Collectri (min = 0, max = 3)}
+\item{regulatory_min_resources}{minimum resources supporting regulatory interactions (TF-target) retrieved from CollecTRI (min = 1, max = 6)}
 
 \item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score}
 

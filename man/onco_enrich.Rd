@@ -24,8 +24,7 @@ onco_enrich(
   enrichment_simplify_go = TRUE,
   subcellcomp_min_confidence = 3,
   subcellcomp_min_channels = 1,
-  subcellcomp_show_cytosol = FALSE,
-  regulatory_min_resources = 2,
+  regulatory_min_resources = 1,
   fitness_max_score = -2,
   ppi_add_nodes = 30,
   ppi_string_min_score = 0.9,
@@ -113,12 +112,9 @@ compartment annotation in COMPARTMENTS (min = 3, max = 5, default: 3)}
 subcellular compartment annotation in COMPARTMENTS (min = 1,
 max = 3, default: 1)}
 
-\item{subcellcomp_show_cytosol}{logical indicating if subcellular heatmap
-should show highlight proteins located in the cytosol or not (default: FALSE)}
-
 \item{regulatory_min_resources}{minimum resource level for regulatory
-interactions (TF-target) retrieved from Collectri (min = 0, max = 5,
-default: 0)}
+interactions (TF-target) retrieved from Collectri (min = 1, max = 6,
+default: 1)}
 
 \item{fitness_max_score}{maximum loss-of-fitness score (scaled Bayes factor
 from BAGEL) for genes retrieved from DepMap/Project Score, default:-2}

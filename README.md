@@ -5,7 +5,7 @@ in the context of cancer. The package leverages an extensive amount of prior
 molecular knowledge that allows for biological interpretation along 
 multiple dimensions, both at the systems level and at the level of individual genes.
 
-Web-based access to **oncoEnrichR** is available at 
+Web-based access to **oncoEnrichR** (through the [Galaxy platform](https://usegalaxy.org/)) is available at 
 [**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.0). 
 _The web version of oncoEnrichR is not currently operating with the latest version, 
 we are working to get the latest version in place also in Galaxy._
@@ -33,11 +33,10 @@ cancer-relevant annotations and analyses in an interactive report.
 
 ## News
 
+-   December 16th 2025: [**1.6.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-6-1)
 -   September 19th 2025: [**1.6.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-6-0)
 -   February 27th 2025: [**1.5.3 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-5-3)
 -   September 9th 2024: [**1.5.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-5-2)
--   August 3rd 2024: [**1.5.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-5-1)
--   August 16th 2023: [**1.4.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-4-2)
 
 ## Example report
 

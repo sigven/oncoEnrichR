@@ -2,7 +2,7 @@
 annotate_tf_targets <- function(qgenes,
                                 genedb = NULL,
                                 tf_target_interactions = NULL,
-                                regulatory_min_resources = 2) {
+                                regulatory_min_resources = 1) {
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
@@ -13,7 +13,7 @@ annotate_tf_targets <- function(qgenes,
   validate_db_df(tf_target_interactions, dbtype = "collectri")
   stopifnot(is.numeric(regulatory_min_resources))
   stopifnot(regulatory_min_resources >= 1 &
-              regulatory_min_resources <= 3)
+              regulatory_min_resources <= 6)
 
   lgr::lgr$info(
     paste0("Collectri: retrieval of regulatory interactions involving members of target set"))
