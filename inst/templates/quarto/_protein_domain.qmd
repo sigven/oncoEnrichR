@@ -1,6 +1,6 @@
 ### Protein domains
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 Here we show the most frequent protein domains ([PFAM](https://www.ebi.ac.uk/interpro/entry/pfam/#table)) that occur within members of the query set

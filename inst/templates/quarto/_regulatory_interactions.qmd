@@ -1,6 +1,6 @@
 ### Regulatory interactions
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Using data from the [OmniPathR/CollecTRI](https://saezlab.github.io/CollecTRI/) resource, we are here interrogating *previously established* transcription factor (TF) - target interactions for members of the query set. CollecTRI-derived regulons contain signed transcription factor (TF) - target gene interactions compiled from 12 different resources.
@@ -123,7 +123,7 @@ crosstalk::bscols(
       "target_gene", "Target", tf_target_sd, ~target),
     crosstalk::filter_slider(
       "n_resources", "Confidence level (supporting resources)", 
-      step = 1, min = 2, max = 6,
+      step = 1, min = 1, max = 6,
       tf_target_sd, ~n_resources)
   )
 )
@@ -213,7 +213,7 @@ crosstalk::bscols(
     crosstalk::filter_select("target_gene", "Target", tf_only_sd, ~target),
     crosstalk::filter_slider(
       "n_resources", "Confidence level (supporting resources)", 
-      step = 1, min = 2, max = 6,
+      step = 1, min = 1, max = 6,
       tf_only_sd, ~n_resources)
   )
 )
@@ -294,7 +294,7 @@ crosstalk::bscols(
     crosstalk::filter_select("target_gene", "Target", target_only_sd, ~target),
     crosstalk::filter_slider(
       "n_resources", "Confidence level (supporting resources)", 
-      step = 1, min = 2, max = 6,
+      step = 1, min = 1, max = 6,
       target_only_sd, ~n_resources)
   )
 )

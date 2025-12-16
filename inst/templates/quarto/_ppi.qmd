@@ -1,6 +1,6 @@
 ### Protein-protein interaction network
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * We here create dedicated protein-protein interaction networks for members of the query set, shown using data from the two largest resources on protein-protein interactions:
@@ -14,7 +14,7 @@
 
 :::
 
-::: {.callout-note collapse="true"}
+::: { .callout-note collapse="true"}
 ## Network legend
 
   * Target set proteins are shaped as **circles**, other interacting proteins are shaped as **rectangles** (note that sizes of nodes do not carry any value), drugs are shaped as **diamonds**
@@ -33,7 +33,7 @@
 
 #### PPI network - STRING 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Settings
 
   * STRING interaction network type: __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
@@ -146,7 +146,7 @@ cat('<br><br>')
 
 #### PPI network - BioGRID 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Settings
 
   * The BioGRID network is expanded with __n = `r onc_enrich_report[['config']][['ppi']][['biogrid']][['add_nodes']]`__ targets that are not part of the query set, but that interact with members of the query set

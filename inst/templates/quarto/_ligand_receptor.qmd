@@ -1,6 +1,6 @@
 ### Ligand-receptor interactions 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Using data from the [CellChatDB](http://www.cellchat.org/) resource, we are 

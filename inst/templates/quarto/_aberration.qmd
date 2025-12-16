@@ -1,6 +1,6 @@
 ### Tumor aberration frequencies
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 -   The somatic mutation frequencies of the target genes in \~10,000 tumor samples have been calculated with data from [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/)
@@ -840,7 +840,7 @@ cat('<br><br>')
 
 #### SNVs/InDels - recurrent variants
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 -   Browse recurrent, protein-coding somatic SNVs/InDels from TCGA in the query set
@@ -953,7 +953,7 @@ cat('<br><br>')
 
 #### Copy number alterations
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 -   Genes targeted by somatic copy number alterations (sCNAs) in tumor samples have been retrieved from TCGA, where copy number state have been estimated with [GISTIC](http://portals.broadinstitute.org/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=216&p=t)

@@ -1,6 +1,6 @@
 ### Gene fitness scores
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * The [Cell Model Passports](https://cellmodelpassports.sanger.ac.uk/) resource represent a hub for preclinical cancer models, primarily including cell lines, with rich molecular and phenotypic annotations, including gene fitness data from the cancer [Dependency Map](https://depmap.org).

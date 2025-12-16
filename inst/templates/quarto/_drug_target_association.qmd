@@ -1,6 +1,6 @@
 ### Drug associations
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Each protein/protein in the query set is annotated with:

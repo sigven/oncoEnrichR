@@ -1,6 +1,6 @@
 ### Tumor co-expression 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Using RNA-seq data from ~9,500 primary tumor samples in TCGA, a co-expression correlation matrix (Pearson rank correlation coefficient) was calculated, indicating pairs of genes that have their expression patterns correlated in tumors
