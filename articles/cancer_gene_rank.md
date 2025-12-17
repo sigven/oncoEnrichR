@@ -1,0 +1,43 @@
+# Cancer gene rank
+
+In oncoEnrichR, associations between human genes and phenotypes/diseases
+are harvested from the Open Targets Platform (OTP v2025.12),
+<https://platform.opentargets.org/downloads/data>, considering *direct*
+associations only). Associations are here quantified as numerical scores
+in the range 0-1, with larger values indicating a stronger association
+between the gene and the phenotype
+(<https://platform-docs.opentargets.org/associations#overall>).
+Phenotypes from OTP are provided as Experimental Factor Ontology (EFO)
+terms. For each OTP association, we integrate the underlying data type
+evidence, examples being genetic associations, text mining, pathway
+associations, or animal models.
+
+In order to minimize the impact of associations with very weak
+underlying evidence, we consider only associations with support from at
+least two data types, and with an overall association score \>= 0.02.
+Furthermore, in order to limit associations to cancer phenotypes, we
+have established a mapping between EFO terms and n = 32 primary tumor
+types/sites, using OncoTree as a starting point (the complete mapping is
+available in the R package <https://github.com/sigven/phenOncoX>).
+
+In order to establish an overall ranking of genes with respect to cancer
+relevance, we summarize, for each tumor type/site, the potential
+multiple OTP association scores found per gene, and compute a scaled
+rank between 0 and 1 (i.e. gene-tumor type rank). Next, we compute a
+global (i.e. pancancer) gene-cancer rank per gene by summarizing the
+gene-tumor type rank found across tumor types, with all genes ultimately
+ranked and scaled between 0 and 1 (illustration below).
+
+  
+
+[![](module_screenshots/oncoEnrichR_SuppFigure1.png)](https://sigven.github.io/oncoEnrichR/articles/module_screenshots/oncoEnrichR_SuppFigure1.png)
+
+  
+
+Note that the oncoEnrichR package contains a dedicated function
+[`cancer_association_rank()`](https://sigven.github.io/oncoEnrichR/reference/cancer_association_rank.md)
+that provides the relative importance of query genes with respect to a
+particular tumor type/site. The function takes as input a character
+vector with gene symbols, and returns a list with genes ranked according
+to strength of association to the given tumor type/site, i.e. using the
+strategy outlined above.

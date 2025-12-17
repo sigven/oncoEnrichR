@@ -1,0 +1,281 @@
+# Annotation resources
+
+## Resources - overview
+
+Data harvested and integrated from the following resources form the
+backbone of *oncoEnrichR*:
+
+- [Open Targets Platform](https://targetvalidation.org) - human
+  drug-target associations and comprehensive disease-target associations
+- [CancerMine](http://bionlp.bcgsc.ca/cancermine/) - literature-mined
+  database of drivers, proto-oncogenes and tumor suppressors in cancer
+- [Network of Cancer Genes](http://ncg.kcl.ac.uk/index.php) - Network of
+  cancer genes - a web resource to analyze duplicability, orthology and
+  network properties of cancer genes
+- [IntOGen](https://www.intogen.org) - Compendium of mutational driver
+  genes in cancer
+- [UniProt](https://uniprot.org) - Comprehensive and freely accessible
+  resource of protein sequence and functional information
+- [CollecTRI](https://github.com/saezlab/CollecTRI) - gene set resource
+  containing signed transcription factor (TF) - target (regulatory)
+  interactions
+- [CellChatDB](http://www.cellchat.org/) - ligand-receptor interaction
+  resource
+- [The Cancer Genome Atlas (TCGA)](https://portal.gdc.cancer.gov/) -
+  gene aberration frequencies, recurrent point mutations/indels, and
+  co-expression patterns in ~9,500 primary tumor samples
+- [The Human Protein Atlas](https://www.proteinatlas.org) - expression
+  data for healthy human tissues
+  ([GTex](https://gtexportal.org/home/))/cell types, and prognostic gene
+  expression associations in cancer
+- [Molecular Signatures Database
+  (MSigDB)](http://software.broadinstitute.org/gsea/msigdb/index.jsp) -
+  collection of annotated (e.g. towards pathways) genesets for
+  enrichment/over-representation analysis. This includes genesets from
+  [Gene Ontology](http://geneontology.org/),
+  [Reactome](https://reactome.org/),
+  [KEGG](https://www.genome.jp/kegg/pathway.html),
+  [WikiPathways](https://www.wikipathways.org/index.php/WikiPathways),
+  [BIOCARTA](https://maayanlab.cloud/Harmonizome/dataset/Biocarta+Pathways),
+  as well as curated
+  [immunologic](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C7)
+  and
+  [cancer-specific](https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp#C6)
+  signatures.
+- [NetPath](http://www.netpath.org) - signaling transduction pathways
+- [Pfam](https://pfam.xfam.org) - protein domain database
+- [STRING](https://string-db.org) - protein-protein interaction database
+- [BioGRID](https://thebiogrid.org/) - biomedical interaction repository
+  with data compiled through comprehensive curation efforts
+- [CORUM](https://mips.helmholtz-muenchen.de/corum/) - protein complex
+  database
+- [Compleat](https://fgr.hms.harvard.edu/compleat%3E) - protein complex
+  resource
+- [ComplexPortal](https://www.ebi.ac.uk/complexportal/home) - manually
+  curated, encyclopaedic resource of macro-molecular complexes
+- [hu.MAP2](http://humap2.proteincomplexes.org) - human protein complex
+  map
+- [COMPARTMENTS](https://compartments.jensenlab.org/Search) -
+  subcellular compartment database
+- [Cell Models Passports](https://cellmodelpassports.sanger.ac.uk/) -
+  Resource on the effects on cancer cell line viability elicited by
+  CRISPR-Cas9 mediated gene activation
+- [Genetic determinants of survival in
+  cancer](https://www.tcga-survival.com/) - Resource on the relative
+  prognostic impact of gene mutation, expression, methylation, and CNA
+  in human cancers
+- [Predicted synthetic lethality
+  interactions](https://pubmed.ncbi.nlm.nih.gov/34529928/) - Resource on
+  predicted synthetic lethality interactions between human gene paralogs
+  (using human cancer cell lines)
+
+## Resources - annotation types
+
+This section describes the underlying annotation types of *oncoEnrichR*
+in detail, and to what extent they are subject to quality
+control/filtering for use within the package.
+
+### Target-disease associations
+
+- Associations between genes and diseases/tumor types are harvested from
+  the [Open Targets Platform](https://targetvalidation.org). To increase
+  the confidence of target-disease associations shown, we include only
+  associations with support from at least two [data
+  types](https://platform-docs.opentargets.org/associations).
+  Associations with a weak rank score, i.e. those with an overall score
+  less than 0.02, have been excluded (complete range 0-1).
+
+### Target-drug associations
+
+- Target-drug associations are primarily harvested from the [Open
+  Targets Platform](https://targetvalidation.org). Through the use of
+  our own [phenOncoX R package](https://github.com/sigven/phenOncoX), a
+  dedicated resource on phenotype ontology mapping in cancer, we ensure
+  that target-drug associations included in *oncoEnrichR* are
+  exclusively for cancer conditions.
+
+### Tumor suppressor/proto-oncogene/cancer driver annotation
+
+- We assign two confidence levels with respect to genes having oncogenic
+  and/or tumor suppressive roles
+
+  - **Strong**
+    - Curated entry in NCG *and* with support/hits ( \>= 5 citations) in
+      the biomedical literature (CancerMine), **OR**
+  - **Moderate**
+    - Curated entry in NCG, *or* only support ( \>= 20 citations) in the
+      biomedical literature (CancerMine)
+  - Literature support for a tumor suppressive role is ignored if the
+    gene has 2.5 times as much literature support for an oncogenic role
+    (and *vice versa*)
+
+- Classification of genes as potential cancer drivers *require support
+  from at least one of the following sources*:
+
+  - [Network of Cancer Genes](http://ncg.kcl.ac.uk/) - canonical cancer
+    drivers
+  - [IntOGen](https://www.intogen.org) - predicted cancer driver genes
+  - [TCGA’s predicted cancer driver
+    genes](https://pubmed.ncbi.nlm.nih.gov/29625053/)
+
+### Gene cancer hallmark associations
+
+- The [hallmarks of cancer](https://pubmed.ncbi.nlm.nih.gov/21376230/)
+  comprise six biological capabilities acquired during the multistep
+  development of human tumors. Genes attributed to the hallmarks of
+  cancer have been retrieved from the [Open Targets
+  Platform/COSMIC](https://targetvalidation.org)
+
+### Gene copy number aberrations in tumors (somatic amplifications/homozygous deletions)
+
+- Somatic copy number amplifications and homozygous deletions have been
+  retrieved from [The Cancer Genome Atlas
+  (TCGA)](https://portal.gdc.cancer.gov/), focusing on gene-level calls
+  processed with their [copy number variation analysis
+  pipeline](https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/CNV_Pipeline/).
+  Copy number events included in *oncoEnrichR* are limited to high-level
+  amplifications (GISTIC2 CNA value: **2**) and homozygous deletions
+  (GISTIC2 CNA value: **-2**)
+
+### Recurrent gene mutations in tumors (somatic SNVs/InDels)
+
+- Recurrent somatic SNVs/InDels (occurring in more than one tumor
+  sample) have been retrieved from [The Cancer Genome Atlas
+  (TCGA)](https://portal.gdc.cancer.gov/). SNVs/InDels have been
+  annotated further with information on mutation hotspots in cancer
+  ([cancerhotspots.org](https://cancerhotspots.org)), protein domains
+  from [PFAM](https://pfam.xfam.org), and their predicted status as
+  loss-of-function variants
+  ([LOFTEE](https://github.com/konradjk/loftee)). Only protein-altering
+  and canonical splice site mutations are included.
+
+### Gene co-expression in tumors (RNA-seq)
+
+- Co-expression correlation coefficients between genes in tumors have
+  been pre-calculated, using RNAseq data available in [The Cancer Genome
+  Atlas (TCGA)](https://portal.gdc.cancer.gov/). We calculate separate
+  correlation coefficients for each tumor type, and we further more
+  limit pairs of co-expressed genes to those that include either a tumor
+  suppressor, an oncogene, or a predicted cancer driver (using the
+  classification outlined above). Only strong correlation coefficients
+  (Spearman’s rank \>= 0.7 or \<= -0.7) are included
+
+### Molecular gene signatures / pathways
+
+- A comprehensive set of pathway annotations and molecular gene
+  signatures form the basis for the functional enrichment module offered
+  by *oncoEnrichR*. We include a diverse set of molecular signatures
+  from [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/), annotations
+  with respect to molecular function, biological processes and cellular
+  components from [Gene Ontology (GO)](http://geneontology.org/), and
+  pathway annotations from
+  [KEGG](https://www.genome.jp/kegg/pathway.html),
+  [WikiPathways](https://www.wikipathways.org/),
+  [NetPath](http://netpath.org), and [Reactome](https://reactome.org/)
+
+### Gene fitness effects
+
+- Gene fitness effects are retrieved from data hosted within the [Cell
+  Model Passports](https://cellmodelpassports.sanger.ac.uk/) resource,
+  which include data from [DepMap](https://depmap.org). We include data
+  on genes with a statistically significant effect on cell fitness in
+  cancer cell lines (fitness score is here considered a quantitative
+  measure of the reduction of cell viability elicited by a gene
+  inactivation, via CRISPR/Cas9 targeting).
+
+### Subcellular compartment annotation
+
+- Subcellular localization/compartment annotations have been retrieved
+  from [COMPARTMENTS](https://compartments.jensenlab.org/Search). When
+  using oncoEnrichR, users have the possibility to configure the
+  stringency with respect to the target compartment annotations
+  retrieved:
+  - Confidence score for each target compartment annotation (range from
+    3 to 5)
+  - The type of **channels** that support annotations ( *Knowledge*,
+    *Text mining* or *Experimental*), as well as the required minimum
+    number of channels that should support a given target compartment
+    annotation
+
+### Protein complexes and protein domains
+
+- Protein complex annotations are retrieved from multiple resources,
+  including [CORUM](https://mips.helmholtz-muenchen.de/corum/),
+  [Compleat](https://fgr.hms.harvard.edu/compleat%3E),
+  [ComplexPortal](https://www.ebi.ac.uk/complexportal/home), and
+  [hu.MAP2](http://humap2.proteincomplexes.org). Protein domains are
+  retrieved from [Pfam](https://pfam.xfam.org)
+
+### Protein-protein interactions
+
+- Protein-protein interactions for members of the target set is explored
+  using data from two different resources:
+
+  1.  [STRING](https://string-db.org/) - a database of known and
+      predicted protein-protein interactions, including direct
+      (physical) and indirect (functional) associations. In oncoEnrichR,
+      the publicly available STRING
+      [API](https://string-db.org/cgi/help?subpage=api) is utilized for
+      network retrieval, and the users have the possibility to configure
+      the following:
+      - A required [minimum interaction
+        score](https://string-db.org/cgi/info), limiting the
+        interactions retrieved to those with an interaction score
+        greater or equal than this threshold. Interaction scores are
+        indicators of **confidence**, i.e. how likely STRING judges an
+        interaction to be true.
+      - The [type of
+        network](https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions)
+        to retrieve, either **physical** or **functional**
+      - The addition of proteins (maximum 50) that are not part of the
+        query set, but that interact most confidently with proteins in
+        the query set
+  2.  [BioGRID](https://thebiogrid.org/) - a biomedical interaction
+      repository with data compiled through comprehensive curation
+      efforts
+      - A required *minimum number of evidence items* that support each
+        interaction (i.e. from multiple types of low or high-throughput
+        experiments, e.g. affinity capture-MS, or affinity
+        capture-Western). Default: 3, maximum: 10
+      - The addition of proteins (maximum 50) that are not part of the
+        query set, but that interact most confidently with proteins in
+        the query set
+
+### Gene regulatory interactions
+
+- Signed regulatory interactions (TF-target) have been retrieved from
+  the [CollecTRI](https://github.com/saezlab/CollecTRI) resource. Users
+  have the possibility to configure the stringency with respect to the
+  confidence level of the regulatory interactions shown (number of
+  supporting resources).
+
+### Prognostic gene associations
+
+- Prognostic associations (gene expression versus survival) are
+  collected from [The Human Pathology
+  Atlas](https://www.proteinatlas.org/humanproteome/pathology), which
+  have undertaken correlation analyses of mRNA expression levels of
+  human genes in tumor tissue and the clinical outcome (survival) for
+  ~8,000 cancer patients (underlying data from TCGA). Correlation
+  analyses resulted in more than 10,000 prognostic genes. We show
+  prognostic genes with regard to cancer type and whether they are
+  favorable or unfavorable in terms of clinical outcome. Furthermore, we
+  show prognostic associations established by
+  [tcga-survival.com](https://tcga-survival.com), which relates various
+  types of gene aberrations (expression or methylation levels,
+  CNA/mutation status) in tumor samples to patient survival.
+
+### Ligand-receptor interactions
+
+- Ligand-receptor interactions have been collected from the
+  [CellChatDB](http://www.cellchat.org) resource. In the *oncoEnrichR*
+  module for these interactions, only interactions where **both ligand
+  and receptor are found in the query set** are shown.
+
+### Synthetic lethality interactions
+
+- Predicted synthetic lethality interactions between human gene paralogs
+  have been collected from [De Kegel et al., Cell Systems,
+  2021](https://pubmed.ncbi.nlm.nih.gov/34529928/). Interactions are
+  shown for which both members are part of the query set, and
+  interactions where only a single member of the query set is present.

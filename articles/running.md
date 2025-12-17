@@ -1,0 +1,127 @@
+# Running
+
+## Key functions
+
+*oncoEnrichR* performs its operations through the following three
+functions:
+
+### 1. `oncoEnrichR::load_db()`
+
+- Loads the underlying annotation data repository for oncoEnrichR, and
+  saves it to a local cache directory.
+
+  
+
+### 2. `oncoEnrichR::onco_enrich()`
+
+- Consists of two main processing steps:
+
+  1\) Takes an input/query list of human gene/protein identifiers
+  (e.g. UniProt accession, RefSeq/Ensembl transcript identifer etc.) as
+  input and conducts uniform identifier conversion
+
+  2\) Performs extensive annotation, enrichment and membership analyses
+  of the query set against underlying data sources on cancer-relevant
+  properties of human genes and their interrelationships.
+
+- Technically, the method returns a *list object* with all contents of
+  the analyses performed. The specific arguments/options and default
+  values are outlined below:
+
+  ``` r
+  onco_enrich(
+    query = NULL,
+    oeDB = NULL,
+    query_id_type = "symbol",
+    ignore_id_err = TRUE,
+    project_title = "_Project title_",
+    project_owner = "_Project owner_",
+    project_description = "_Project description_",
+    bgset = NULL,
+    bgset_id_type = "symbol",
+    bgset_description = "All protein-coding genes",
+    enrichment_p_value_cutoff = 0.05,
+    enrichment_p_value_adj = "BH",
+    enrichment_q_value_cutoff = 0.2,
+    enrichment_min_geneset_size = 10,
+    enrichment_max_geneset_size = 500,
+    enrichment_plot_num_terms = 20,
+    enrichment_simplify_go = TRUE,
+    subcellcomp_min_confidence = 3,
+    subcellcomp_min_channels = 1,
+    regulatory_min_resources = 1,
+    fitness_max_score = -2,
+    ppi_add_nodes = 30,
+    ppi_string_min_score = 0.9,
+    ppi_string_network_type = "functional",
+    ppi_biogrid_min_evidence = 3,
+    ppi_node_shadow = TRUE,
+    ppi_show_drugs = TRUE,
+    ppi_show_isolated_nodes = FALSE,
+    show_ppi = TRUE,
+    show_disease = TRUE,
+    show_top_diseases_only = TRUE,
+    show_cancer_hallmarks = TRUE,
+    show_drug = TRUE,
+    show_enrichment = TRUE,
+    show_aberration = FALSE,
+    show_coexpression = FALSE,
+    show_ligand_receptor = FALSE,
+    show_regulatory = FALSE,
+    show_unknown_function = TRUE,
+    show_prognostic = TRUE,
+    show_subcell_comp = FALSE,
+    show_synleth = FALSE,
+    show_fitness = TRUE,
+    show_complex = TRUE,
+    show_domain = FALSE)
+  ```
+
+See [detailed descriptions of all options
+here](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.html)
+Note that not all modules of the report are enabled by default. The user
+can enable or disable specific modules by setting the corresponding
+`show_` arguments to `TRUE` or `FALSE`.
+
+  
+
+### 3. `oncoEnrichR::write()`
+
+- Consists of two main processing steps:
+
+  1\) Transformation of the raw analysis results returned by
+  *oncoEnrichR::onco_enrich()* into various visualizations and
+  interactive tables
+
+  2\) Assembly and generation of the final analysis report through
+
+  - A\) a structured and interactive *oncoEnrichR* HTML report
+  - B\) a multisheet Excel workbook
+
+  
+
+## Example run
+
+A target list of *n = 134* high-confidence interacting proteins with the
+c-MYC oncoprotein were previously identified through BioID protein
+proximity assay in standard cell culture and in tumor xenografts
+([Dingar et al., J Proteomics,
+2015](https://www.ncbi.nlm.nih.gov/pubmed/25452129)). We ran this target
+list through the *oncoEnrichR* analysis workflow using the following
+configurations for the `onco_enrich` method:
+
+- `project_title = "cMYC_BioID_screen"`
+- `project_owner = "Raught et al."`
+
+and produced the [following HTML report with
+results](https://doi.org/10.5281/zenodo.17958385).
+
+Below are R commands provided to reproduce the example output. **NOTE**:
+Replace “\<LOCAL_FOLDER\>” with a directory on your local computer:
+
+- [`library(oncoEnrichR)`](https://sigven.github.io/oncoEnrichR)
+- `myc_interact_targets <- read.csv(system.file("extdata","myc_data.csv", package = "oncoEnrichR"), stringsAsFactors = F)`
+- `oeDB <- oncoEnrichR::load_db(cache_dir = "<LOCAL_FOLDER>")`
+- `myc_report <- oncoEnrichR::onco_enrich(query = myc_interact_targets$symbol, oeDB = oeDB, project_title = "cMYC BioID screen", project_owner = "Raught et al.")`
+- `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "<LOCAL_FOLDER>/myc_report_oncoenrichr.html", format = "html")`
+- `oncoEnrichR::write(report = myc_report, oeDB = oeDB, file = "<LOCAL_FOLDER>/myc_report_oncoenrichr.xlsx", format = "excel")`

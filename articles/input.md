@@ -1,0 +1,53 @@
+# Input
+
+## Input data
+
+The main input to oncoEnrichR is a list of human genes, typically the
+top ranked hits from a high-throughput screen. The gene list can be
+provided by using any of the following identifiers:
+
+- Primary gene symbols (e.g. **`KRAS`**)
+- Entrez gene IDs (e.g. **`3845`**)
+- Uniprot accessions (e.g. **`P01116`**)
+- Ensembl gene identifiers (e.g. **`ENSG00000133703`**)
+- Ensembl transcript identifiers (e.g. **`ENST00000311936`**)
+- Ensembl protein identifiers (e.g. **`ENSP00000308495`**)
+- RefSeq transcript identifiers (e.g. **`NM_004985`**)
+- RefSeq peptide identifiers (e.g. **`NP_004976`**)
+
+The type of identifier used should be specified using the
+`--query_id_type` argument. Similarly, if a background gene set is
+specified (through the `--bgset` argument, for use in enrichment
+analysis), the identifier type should be set with the `--bgset_id_type`
+argument.
+
+If the user submits gene symbols which are no longer considered as
+primary gene symbols, oncoEnrichR attempts to map such cases as
+synonyms/aliases for the primary gene symbols.
+
+### Number of input genes
+
+In order to keep the size of the HTML output report at a manageable
+level, there is currently an upper limit of
+
+- **`n = 2000`**
+
+genes that can be used as input to the tool. When the number of input
+genes exceeds *n = 500*, oncoEnrichR will disable selected modules
+(protein-protein interaction networks, co-expression retrieval, and TCGA
+SNV/InDel recurrence), as we have experienced challenges running them
+with huge input sets. When running the tool through Galaxy, the
+limitation with respect to the number of input genes is stricter
+(**`n = 200`**). Note also that if the number of input genes is very low
+(i.e. **n = 1-5**), some analysis modules are not applicable for
+analysis (functional enrichment, protein-protein interaction network
+etc).
+
+**IMPORTANT NOTE**: Due to its large size, the HTML report can be slow
+to load when generating full reports with the maximum number of genes (n
+= 2000). We generally recommend to use oncoEnrichR with smaller
+querysets (\< 500), as this will produce reports that can be more
+efficiently loaded and viewed. If you want to submit a query that pushes
+the limit (n = 1000), we recommend that you carefully configure the
+report contents/modules, in that sense producing more manageable
+reports.

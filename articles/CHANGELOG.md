@@ -1,0 +1,559 @@
+# Changelog
+
+## Version 1.6.1
+
+- Date: 2025-12-17
+
+- Updates
+
+  - Data updates
+    - WikiPathways - 20251210
+    - COMPARTMENTS - 2025-12
+    - BIOGRID - v5.0.252
+    - Open Targets Platform (2025.12)
+      - Target tractability
+      - Cancer gene ranks
+  - Included `.onLoad` function in `zzz.R` to check for required package
+    versions upon loading the package (`clusterProfiler`, `igraph`,
+    `textclean`)
+
+## Version 1.6.0
+
+- Date: 2025-09-19
+
+- Updates
+
+  - Data updates
+    - WikiPathways - 20250910
+    - COMPARTMENTS - 2025-07
+    - BIOGRID - v4.4.249
+    - Open Targets Platform (2025.09)
+    - MSigDB (including GO) - v2025.1.Hs
+    - KEGG - 20250603
+    - CellChatDB v2
+  - New interactive subcellular compartment visualization, utilizing the
+    [bscui
+    package](https://cran.r-project.org/web/packages/bscui/vignettes/bscui.html)
+  - CRISPR KO fitness score data and target priority scores now
+    retrieved from [Cell Model
+    Passports](https://cellmodelpassports.sanger.ac.uk/)
+  - Signed transcription factor (TF) - target gene interactions now
+    retrieved from [CollecTRI](https://github.com/saezlab/CollecTRI)
+    - new argument to
+      [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+      `regulatory_min_resources` - minimum number of supporting
+      resources for each TF-target interaction (default: 2)
+  - Abandoned Cancer Gene Census (CGC) as a source for oncogene/tumor
+    suppressor classification (within
+    [geneOncoX](https://github.com/sigven/geneOncoX)), due to changes in
+    data licensing terms
+  - Increased maximum allowed size of query set to *n = 2000* genes.
+    Note that, for large query sets, some modules may take longer time
+    to compute (GO enrichment in particular), and some modules will be
+    explicitly turned off to avoid issues/crash (e.g. PPI network,
+    co-expression, recurrent SNV/InDels)
+  - Updating the web-based version of oncoEnrichR (Galaxy) is still work
+    in progress
+
+## Version 1.5.3
+
+- Date: 2025-02-27
+
+- Updates
+
+  - Data updates
+    - KEGG - 20250225
+    - WikiPathways - 20250210
+    - COMPARTMENTS - 2025-01
+    - BIOGRID - v4.4.241
+    - Open Targets Platform (2024.09)
+
+- Fixed [https://github.com/sigven/oncoEnrichR/issues/37](#issue37)
+
+## Version 1.5.2
+
+- Date: 2024-09-09
+
+- Updates
+
+  - Updated pre-processing code that pulls in missing pathway
+    annotations (KEGG)
+  - Data updates
+    - KEGG - 20240904
+    - WikiPathways - 20240810 (fixed bug in report display)
+    - MSigDB (including GO) - v2024.1.Hs
+    - COMPARTMENTS - 2024-09
+    - BIOGRID - v4.4.237
+  - Created a dedicated function
+    [`cancer_association_rank()`](https://sigven.github.io/oncoEnrichR/reference/cancer_association_rank.md),
+    which ranks a query gene set according to strength of association
+    (using data from the Open Targets Platform) to a primary tumor
+    type/site.
+
+## Version 1.5.1
+
+- Date: 2024-08-03
+
+- Updates
+
+  - Minor patch that highlights `quarto` as package dependency in
+    installation instructions
+
+## Version 1.5.0
+
+- Date: 2024-08-02
+
+### Changed
+
+- Data updates
+  - Open Targets Platform (2024.06)
+  - WikiPathways (20240710)
+  - COMPARTMENTS (2024-07)
+  - KEGG (20240626)
+  - BioGRID (v4.4.236)
+  - Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.7.6
+- Functionality
+  - Cell/tissue-type enrichment is no longer available (TissueEnrich
+    package is deprecated)
+  - HTML report is now based on the [quarto
+    framework](https://quarto.org) rather than RMarkdown
+  - Many modules are now disabled by default in order to reduce size of
+    HTML report output when running in default mode (primarily a Galaxy
+    consideration)
+  - Limit protein complexes to those harboring at least two members from
+    the query set
+
+## Version 1.4.2
+
+- Date: 2023-08-16
+
+### Changed
+
+- Data updates
+  - WikiPathways (20230810)
+  - COMPARTMENTS (2023-08)
+  - KEGG (20230710)
+  - BioGRID (v4.4.224)
+  - Open Targets Platform (2023.06)
+  - Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.6.3:
+    - Experimental Factor Ontology (v3.56.0)
+    - Human Disease Ontology (2023-07-20)
+  - A limited set of TCGA amplifications/deletions were erroneously left
+    out in v1.4.1 (gene alias matching) - fixed in v1.4.2
+- Functionality
+  - Updated *Citation Note* sections in report
+  - Fixed some typos in the report template
+
+## Version 1.4.1
+
+- Date: 2023-06-18
+
+### Changed
+
+- Data updates
+  - TCGA (20220329 - v37.0)
+  - WikiPathways (20230610)
+  - CancerMine (v50, 20230301)
+  - COMPARTMENTS (2023-05)
+  - KEGG (20230330)
+  - BioGRID (v4.4.222)
+  - Open Targets Platform (2023.02)
+  - Cancer Gene Census (v98)
+  - Network of Cancer Genes (v7.1)
+  - MSigDB (v2023.1.Hs)
+  - Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.6.1:
+    - Experimental Factor Ontology (v3.54.0)
+    - Human Disease Ontology (2023-05-31)
+- Functionality
+  - Added *Citation Note* section for each output module - key citations
+  - Added data licensing terms in *Documentation & Settings* module
+
+## Version 1.4.0
+
+- Date: 2023-02-21
+
+### Changed
+
+- Data updates
+  - TCGA (20221212 - v36.0)
+  - WikiPathways (20230210)
+  - CancerMine (20230114)
+  - COMPARTMENTS (2023-01)
+  - KEGG (20230101)
+  - Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to
+    v0.5.6:
+    - Experimental Factor Ontology (v3.50.0)
+    - Human Disease Ontology (2023-01-31)
+- Functionality
+  - *Loading of databases*
+    - Downloading through Google Drive can somethis cause trouble due to
+      downloading limitations issued by Google. As an alternative
+      approach, one can now download datasets using another host (server
+      hosted by the University of Oslo), through the argument
+      `googledrive = FALSE` in
+      [`oncoEnrichR::load_db()`](https://sigven.github.io/oncoEnrichR/reference/load_db.md)
+  - *Protein-protein interactions*
+    - Users can opt to show isolated nodes (nodes with no interactions)
+      or not - logical argument to
+      [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+      `ppi_show_isolated_nodes` (default *FALSE*)
+    - Added protein-protein interaction network based on interactions
+      found in [BioGRID](https://thebiogrid.org)
+      - Users can set a minimum required threshold for the number of
+        evidence items required for each interaction in BioGRID
+      - New numerical argument to
+        [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+        `ppi_biogrid_min_evidence`
+    - Users can restrict the STRING network to *physical* interactions
+      only or an extended network also including indirect ( *functional*
+      ) interactions - [API network
+      type](https://string-db.org/help/api/#getting-the-string-network-interactions)
+      - New character argument to
+        [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+        `ppi_string_network_type` (*physical* or *functional*)
+    - Previous argument `ppi_score_threshold` is now named
+      `ppi_string_min_score`, with a scale that goes from 0 to 1 (as
+      opposed to 0-1000 in previous versions)
+  - *Subcellular compartment annotations*
+    - Now using the regularly updated
+      [COMPARTMENTS](https://compartments.jensenlab.org/Search) resource
+      as the underlying source for annotation
+    - Users can set a minimum confidence score for each target
+      compartment annotation (range from 3 (least confident) to 5 (most
+      confident)), as well as the required minimum number of channels (
+      *Knowledge*, *Text mining* or *Experimental*) that should support
+      a given target compartment annotation
+      - New arguments to
+        [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+        `subcellcomp_min_confidence`, `subcellcomp_min_channels`
+  - *Annotation of oncogenic/tumor suppressive roles*
+    - A revised approach to assign roles as proto-oncogenes or tumor
+      suppressors is implemented, in which we assign each role with a
+      confidence level (*Moderate/Strong/Very strong*) pending upon
+      support in manually curated resources (Network of Cancer Genes
+      (NCG) or Cancer Gene Census (CGC)) or support in the biomedical
+      literature (CancerMine)
+  - *Cancer driver annotation*
+    - A more conservative approach for driver gene status is
+      implemented: requiring support from *at least two* distinct
+      resources (Network of Cancer Genes (NCG), Cancer Gene Census,
+      TCGA, IntOGen, or CancerMine)
+  - *Argument renaming* - Renamed arguments to
+    [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md)
+    for improved naming consistency:
+    - `ppi_string_min_score`
+    - `ppi_string_network_type`
+    - `ppi_biogrid_min_evidence`
+    - `ppi_show_drugs`
+    - `ppi_show_isolated_nodes`
+    - `regulatory_min_confidence`
+    - `enrichment_p_value_cutoff`
+    - `enrichment_q_value_cutoff`
+    - `enrichment_p_value_adj`
+    - `enrichment_plot_num_terms`
+    - `enrichment_simplify_go`
+    - `enrichment_max_geneset_size`
+    - `enrichment_min_geneset_size`
+    - `subcellcomp_min_confidence`
+    - `subcellcomp_show_cytosol`
+    - `subcellcomp_min_channels`
+  - *Other*
+    - added oncoEnrichR favicon to output HTML reports
+
+## Version 1.3.2
+
+- Date: 2022-09-27
+
+### Changed
+
+- Cancer driver classification in `Cancer associations` section. Driver
+  classification is based on the union of IntOGen mutational driver
+  catalogue (v2020-02-01) and Network of Cancer Genes (canonical
+  drivers, v7.0)
+
+## Version 1.3.1
+
+- Date: 2022-09-23
+
+### Added
+
+- Data updates:
+  - CancerMine (20220920 - v48)
+  - TCGA (20220727 - v34.0)
+  - WikiPathways (20220910)
+  - Upgraded
+    [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap) to
+    v0.4.0:
+    - Experimental Factor Ontology (v3.46.0)
+    - Human Disease Ontology (2022-08-29)
+- Recurrent somatic variants (SNVs/InDels, as found in TCGA) are
+  appended to Excel output worksheet, tab `RECURRENT_VARIANTS`
+
+### Fixed
+
+- A few erroneous mutation hotspots in `Tumor aberration frequencies`
+  section
+
+### Changed
+
+- Slight modification to column names in `Drug associations` section
+- Added links to `ENSEMBL_GENE_ID` in `Tumor aberration frequencies`
+  section
+
+## Version 1.3.0
+
+- Date: 2022-09-12
+
+### Added
+
+- Data updates:
+  - MSigDB (August 2022.1)
+
+### Changed
+
+- Fixed some artefacts (`-AS1` entries) in the output of CancerMine
+- Added `approved_drugs` as a column to the `Drug associations` section
+  of the output report
+
+## Version 1.2.2
+
+- Date: 2022-09-02
+
+### Added
+
+- Data updates:
+  - WikiPathways (20220810)
+  - KEGG (20220809)
+
+### Changed
+
+- Now using [googledrive](https://googledrive.tidyverse.org) as data
+  repository host, due to unstable code using Zenodo
+
+## Version 1.2.1
+
+- Date: 2022-07-13
+
+### Added
+
+- Data updates:
+  - WikiPathways (20220610)
+  - Open Targets Platform (2022.06)
+  - CancerMine (v47)
+
+## Version 1.2.0
+
+- Date: 2022-06-24
+
+### Changed
+
+- Moved to [zenodo.org](https://doi.org/10.5281/zenodo.6684347) for
+  hosting underlying datasets, accessed with
+  [zen4R](https://github.com/eblondel/zen4R/)
+- MAF objects (TCGA) no longer loaded from GitHub
+- Function
+  [`oncoEnrichR::write()`](https://sigven.github.io/oncoEnrichR/reference/write.md)
+  now requires the oncoEnrichR database object (`oeDB`) as an argument
+
+## Version 1.1.1
+
+- Date: 2022-06-16
+
+### Added
+
+- Data updates:
+  - WikiPathways (20220610)
+- Configurations for
+  [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md)
+  populated at the end of HTML report
+
+### Changed
+
+- Option renaming
+  - `show_prognostic_cancer_assoc` renamed to `show_prognostic`.
+  - `show_tcga_aberration` renamed to `show_aberration`
+  - `show_regulatory_interactions` renamed to `show_regulatory`
+  - `show_tcga_coexpression` renamed to `show_coexpression`
+
+### Fixed
+
+- Bug: database loading missing `pfamdb`
+- Relaxed dependency versions (caused conflicts for R versions \< 4.2)
+
+## Version 1.1.0
+
+- Date: 2022-06-10
+
+### Added
+
+- Data updates:
+  - CancerMine (v46)
+  - Open Targets Platform (2022.04)
+  - WikiPathways (20220510)
+  - GENCODE (v40)
+  - CGC (v96)
+  - TCGA (GDC release 32)
+  - EFO (v42.0)
+- Module that shows the occurrence of protein domains among query set
+  members
+- Protein-complex cancer relevance score
+- New options
+  - `ppi_node_shadow` - logical indicating if nodes in the PPI network
+    should carry a shadow or not
+  - `show_domain` - logical indicating if report should add section on
+    protein domain frequencies in query set
+
+### Changed
+
+- Re-ordering of HTML sections, multiple cosmetic changes
+- GO enrichment plots: now showing q-value and enrichment factors in bar
+  plots
+- Revised method to compute tumor-type specific cancer rank (and global)
+- Dedicated *output* article with output views on
+  sigven.github.io/oncoEnrichR
+
+### Fixed
+
+- Bug: duplicate records in retrieved co-expression pairs
+- Removed most redundant protein complexes in OmniPath
+
+## Version 1.0.9
+
+- Date: 2022-03-31
+
+### Added
+
+- Data updates:
+  - CancerMine (v43)
+  - Open Targets Platform (2022.02)
+  - WikiPathways (20220310)
+  - Project Score (July 2021 release)
+- New analysis section: *Synthetic lethality* - shows how members of the
+  queryset overlaps with predicted synthetic lethality interactions (as
+  published by De Kegel et al., Cell Systems, 2021)
+  - add this section in the output with option `--show_synleth`
+
+### Fixed
+
+- Bug in query identification for background set
+- Bug in rank of top gene-cancer associations
+
+### Changed
+
+- Option `--show_crispr_lof` renamed to `--show_fitness`. Corresponding
+  section in HTML report renamed from `CRISPR/Cas9 loss-of-fitness` to
+  `Gene fitness scores`.
+- Renamed sections in HTML report:
+  - `TCGA co-expression` –\> `Tumor co-expression`
+  - `TCGA aberration frequency` —\> `Tumor aberration frequencies`
+  - `TCGA prognostic associations` —\> `Prognostic associations`
+- Sections that include *tabsets* are now organized so that the initial
+  active tab always contains data (with the exception of all tabs being
+  empty)
+
+## Version 1.0.8
+
+- Date: 2022-02-18
+
+### Added
+
+- Data updates:
+  - WikiPathways (20220210)
+  - CancerMine (v42)
+  - MSigDB (v7.5.1)
+  - GENCODE (v39)
+  - Gene summary (NCBI)
+  - Reactome/GO (MSigDB v7.5.1)
+  - KEGG (20211223)
+
+### Changed
+
+- Refactoring of code and data for mapping gene identifiers
+- Refactoring of code for database loading
+
+## Version 1.0.7
+
+- Date: 2021-11-30
+
+### Added
+
+- Data updates
+  - WikiPathways (20211110)
+  - Open Targets Platform (2021.11)
+  - EFO (v3.36.0)
+  - TCGA (v31, 2021-10-29)
+  - CancerMine (v40)
+  - Human Protein Atlas (v21)
+  - UniProt KB (2021_04)
+  - PFAM domains (release 35, November 2021)
+
+### Changed
+
+- Management of annotation databases have been re-designed, reducing the
+  size and installation of *oncoEnrichR* significantly. The re-design
+  results in the addition of an initial step in the analysis; **database
+  loading**.
+
+## Version 1.0.6
+
+- Date: 2021-10-27
+
+### Added
+
+- Data updates
+  - KEGG (20211013)
+  - WikiPathways (20211010)
+  - Open Targets Platform (2021.09)
+  - EFO (v3.35.0), DiseaseOntology (v2021-10-11)
+  - TCGA (v30, 2021-09-23)
+  - Protein complex annotations - additions from
+    [Compleat](https://fgr.hms.harvard.edu/compleat),
+    [ComplexPortal](https://www.ebi.ac.uk/complexportal/home),
+    [PDB](https://www.rcsb.org/),
+    [hu.MAP2](http://humap2.proteincomplexes.org/)
+- New functionality
+  - Report modules
+    - **Regulatory interactions** -
+      ([DoRothEA](https://saezlab.github.io/dorothea/))
+      - View overlap between members of queryset with previously
+        established regulatory interactions (TF-target relationships)
+        from the DoRothEA resource
+    - **Ligand-receptor interactions** -
+      ([CellChatDB](http://www.cellchat.org/))
+      - Explore potential ligand-receptor interactions in the query set,
+        as found in the CellChat database
+  - Report styling options
+    - Choose your own Bootswatch theme for HTML report - option
+      `html_report_theme`
+    - Choose where the table of contents are placed in the HTML report
+      (floating-left or static at the top) - option `html_floating_toc`
+  - Arguments to `oncoEnichR::onco_enrich()`:
+    - `html_floating_toc` - logical, if set to FALSE, table of contents
+      in HTML report will be placed on top of the main document
+    - `html_report_theme` - character, choose between different
+      Bootswatch themes for style in HTML report
+    - `show_regulatory` - logical, show regulatory interactions module
+      (DoRothEA)
+    - `min_confidence_reg_interaction` - character, minimum confidence
+      of regulatory interactions included from DoRothEA (‘A’,‘B’,‘C’, or
+      ‘D’)
+    - `show_ligand_receptor` - logical, show ligand-receptor interaction
+      module (CellChatDB)
+    - `num_terms_enrichment_plot` - integer, number of enriched Gene
+      Ontology terms (max) to show in enrichment barplots (module
+      *Functional Enrichment*)
+  - Default gene rankings
+    - In the modules **Regulatory Interactions** and **Tissue and cell
+      type enrichment**, interactions/targets are ranked according to a
+      quantitative cancer association score *cancer_max_rank* (maximum
+      gene-cancer association rank (Open Targets Platform) across
+      primary sites)
+
+### Fixed
+
+- Report *disclaimer* occurring at the bottom of the report is no longer
+  missing from web-based analysis (oncotools.elixir.no) - file
+  `_site.yml` in `inst/templates`
