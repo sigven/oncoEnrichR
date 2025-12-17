@@ -24,7 +24,7 @@ cancer-relevant annotations and analyses in an interactive report
 (examples from the report shown below).
 
 Web-based access to **oncoEnrichR** (through the [Galaxy platform](https://usegalaxy.org/)) 
-is available at <font size="4">[**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.0)</font>
+is available at <font size="4">[**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.1)</font>
 _The web version of oncoEnrichR is not currently operating with the latest version, we are working to get the latest version in place also in Galaxy._
 
 <br>
