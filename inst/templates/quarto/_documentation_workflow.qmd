@@ -3,7 +3,7 @@
 
 ### Citation policy
 
-::: {.callout-important}
+::: { .callout-important}
 ## Citation policies for usage of report contents
 
 We encourage users of _oncoEnrichR_ to properly cite not only the software, but also the underlying data sources and other software tools used in the analysis. Below, we provide a guide as to the underlying citations for the various output modules of the report.
@@ -116,31 +116,30 @@ Here we outline the specific configuration values used to generate this report, 
 ::: {.column width="47.5%"}
 
 
-* <i>Subcellular compartments:</i>
-  * `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
-  * `subcellcomp_min_channels` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_channels']]`__
-  * `subcellcomp_show_cytosol` = __`r onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']]`__
+- <i>Subcellular compartments:</i>
+   - `subcellcomp_min_confidence` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_confidence']]`__
+   - `subcellcomp_min_channels` = __`r onc_enrich_report[['config']][['subcellcomp']][['minimum_channels']]`__
 
-* <i>Gene fitness scores:</i>
-  * `fitness_max_score` = __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
+- <i>Gene fitness scores:</i>
+   - `fitness_max_score` = __`r onc_enrich_report[['config']][['fitness']][['max_BF_score']]`__
 
-* <i>Enrichment:</i>
-  * `enrichment_p_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
-  * `enrichment_q_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
-  * `enrichment_p_value_adj` = __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
-  * `enrichment_min_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
-  * `enrichment_max_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
-  * `enrichment_simplify_go` = __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
-  * `enrichment_plot_num_terms` = __`r onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]`__
+- <i>Enrichment:</i>
+   - `enrichment_p_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['p_value_cutoff']]`__
+   - `enrichment_q_value_cutoff` = __`r onc_enrich_report[['config']][['enrichment']][['q_value_cutoff']]`__
+   - `enrichment_p_value_adj` = __`r onc_enrich_report[['config']][['enrichment']][['p_adjust_method']]`__
+   - `enrichment_min_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['min_gs_size']]`__
+   - `enrichment_max_geneset_size` = __`r onc_enrich_report[['config']][['enrichment']][['max_gs_size']]`__
+   - `enrichment_simplify_go` = __`r onc_enrich_report[['config']][['enrichment']][['simplify_go']]`__
+   - `enrichment_plot_num_terms` = __`r onc_enrich_report[['config']][['enrichment']][['enrichment_plot_num_terms']]`__
 
-* <i>Protein-protein interactions:</i>
-  * `ppi_string_min_score` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
-  * `ppi_string_network_type` = __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
-  * `ppi_biogrid_min_evidence` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
-  * `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__
-  * `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['string']][['visnetwork_shadow']]`__
-  * `ppi_show_drugs` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
-  * `ppi_show_isolated_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
+- <i>Protein-protein interactions:</i>
+   - `ppi_string_min_score` = __`r onc_enrich_report[['config']][['ppi']][['string']][['minimum_score']]`__
+   - `ppi_string_network_type` = __`r onc_enrich_report[['config']][['ppi']][['string']][['network_type']]`__
+   - `ppi_biogrid_min_evidence` = __`r onc_enrich_report[['config']][['ppi']][['biogrid']][['minimum_evidence']]`__
+   - `ppi_add_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['add_nodes']]`__
+   - `ppi_node_shadow` = __`r onc_enrich_report[['config']][['ppi']][['string']][['visnetwork_shadow']]`__
+   - `ppi_show_drugs` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_drugs']]`__
+   - `ppi_show_isolated_nodes` = __`r onc_enrich_report[['config']][['ppi']][['string']][['show_isolated_nodes']]`__
 
 :::
 
@@ -152,7 +151,7 @@ Here we outline the specific configuration values used to generate this report, 
 
 The analysis performed in the _oncoEnrichR report_ is based on multiple tools and knowledge resources, as outlined below.
 
-::: {.callout-important}
+::: { .callout-important}
 ## Licensing note
 
 Some resources (highlighted below) require specific licensing agreements if you plan to utilize their data (and thus this report) in a commercial, non-research setting.

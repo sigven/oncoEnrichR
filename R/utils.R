@@ -884,18 +884,6 @@ add_excel_sheet <- function(
           stringsAsFactors = F
         ),
         data.frame(
-          category = 'SUBCELL',
-          configuration = 'show_cytosol',
-          value = as.character(report$config$subcellcomp$show_cytosol),
-          stringsAsFactors = F
-        ),
-        data.frame(
-          category = 'CELL_TISSUE',
-          configuration = 'show_cell_tissue',
-          value = as.character(report$config$show$cell_tissue),
-          stringsAsFactors = F
-        ),
-        data.frame(
           category = 'PPI',
           configuration = 'show_ppi',
           value = as.character(report$config$show$ppi),

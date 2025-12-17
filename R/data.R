@@ -20,3 +20,11 @@
 #' @format A character vector of 23 variables
 #'
 "cp_output_cols"
+
+#' Base URLs used in oncoEnrichR for linking out to external databases
+#'
+#'
+#' @format A list of characters strings with base URLs
+#'
+"base_urls"
+

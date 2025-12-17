@@ -3,7 +3,6 @@ annotate_subcellular_compartments <-
   function(query_entrez,
            compartments_min_confidence = 3,
            compartments_min_channels = 1,
-           show_cytosol = F,
            genedb = NULL,
            compartments = NULL){
 
@@ -123,9 +122,9 @@ annotate_subcellular_compartments <-
           dplyr::group_by(
             .data$go_id, .data$go_term, .data$compartment) |>
           dplyr::summarise(
-            targets = paste(head(unique(.data$symbol),75),
+            targets = paste(utils::head(unique(.data$symbol),75),
                             collapse = ", "),
-            targetlinks = paste(head(unique(.data$genelink),75),
+            targetlinks = paste(utils::head(unique(.data$genelink),75),
                                 collapse = ", "),
             n = dplyr::n(), .groups = "drop") |>
           dplyr::arrange(dplyr::desc(.data$n)) |>

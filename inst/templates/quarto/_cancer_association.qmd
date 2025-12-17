@@ -1,6 +1,6 @@
 ### Cancer associations
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Each target in the query set is annotated with known associations to cancer phenotypes (_ontology terms_) established from multiple data types through the [Open Targets Platform](https://targetvalidation.org). Annotations are provided both through descriptive associations and [rank scores](https://sigven.github.io/oncoEnrichR/articles/cancer_gene_rank.html)

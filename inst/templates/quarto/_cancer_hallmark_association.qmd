@@ -1,6 +1,6 @@
 ### Cancer hallmark evidence
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Each gene in the query set is annotated with cancer hallmarks evidence ([Hanahan & Weinberg, Cell, 2011](https://pubmed.ncbi.nlm.nih.gov/21376230/)), indicating genes associated with essential alterations in cell physiology that can dictate malignant growth.

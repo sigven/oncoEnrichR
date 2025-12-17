@@ -1,6 +1,6 @@
 ### Protein complexes 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 Here we show how members of the query set that are involved in *known* protein complexes, using two different collections of protein complex annotations:

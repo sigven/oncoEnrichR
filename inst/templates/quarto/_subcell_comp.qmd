@@ -1,6 +1,7 @@
 ### Subcellular compartments 
 
-::: {.callout-note}
+::: { .callout-note}
+
 ## Synopsis
 
 * The query set is annotated with data from [COMPARTMENTS](https://compartments.jensenlab.org/Search), a weekly updated database of subcellular localization data for human proteins, and results are here presented in two different views:
@@ -11,7 +12,6 @@
        * Subcellular compartment annotations per gene are provided with a __confidence score__ between 3 and 5 - indicating the quality/reliability of a given compartment annotation
           * Minimum confidence score (pr. COMPARTMENTS channel) - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_confidence`__
           * Minimum number of supporting COMPARTMENTS channels pr. annotation - user-provided: __`r onc_enrich_report$config$subcellcomp$minimum_channels`__
-          * Ignore cytosol as a subcellular location: __`r !onc_enrich_report$config$subcellcomp$show_cytosol`__
 
 :::
 
@@ -36,11 +36,11 @@ suppressPackageStartupMessages(library(bscui))
 subcellcomp_geneset_density <- 
   onc_enrich_report[['data']][['subcellcomp']][['comp_density']]
 
-if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
-  subcellcomp_geneset_density <- 
-    subcellcomp_geneset_density |>
-    dplyr::filter(name != "Cytosol")
-}
+#if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
+#  subcellcomp_geneset_density <- 
+#    subcellcomp_geneset_density |>
+#    dplyr::filter(name != "Cytosol")
+#}
 
 fig <- oncoEnrichR::subcell_map$figure |>
   bscui::set_bscui_ui_elements(oncoEnrichR::subcell_map$ui_elements) |>
@@ -70,14 +70,14 @@ plot_data <-
 plot_data$name <- factor(plot_data$name, levels = plot_data$name)
 plot_data$toDownlight <- "NO"
 
-if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
-  plot_data <- plot_data |>
-    dplyr::mutate(toDownlight = dplyr::if_else(
-      name == "Cytosol",
-      as.character("YES"),
-      as.character(toDownlight)
-    ))
-}
+# if(onc_enrich_report[['config']][['subcellcomp']][['show_cytosol']] == F){
+#   plot_data <- plot_data |>
+#     dplyr::mutate(toDownlight = dplyr::if_else(
+#       name == "Cytosol",
+#       as.character("YES"),
+#       as.character(toDownlight)
+#     ))
+# }
 
 p <- ggplot2::ggplot(
   plot_data, 

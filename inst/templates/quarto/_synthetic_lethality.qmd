@@ -1,7 +1,7 @@
 ### Synthetic lethality
 
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Using recently published predictions on synthetic lethal interactions in human cancer cell lines ([De Kegel et al., Cell Syst., 2021](https://pubmed.ncbi.nlm.nih.gov/34529928/)), we here show whether members of the query set are found among these interactions.

@@ -2,7 +2,8 @@
 
 #### Gene expression associations - Human Protein Atlas
 
-::: {.callout-note}
+::: { .callout-note}
+
 ## Synopsis
 
 * Based on data from the [Human Protein Atlas - Pathology Atlas](https://www.proteinatlas.org/humanproteome/pathology), we are here listing significant results from correlation analyses of mRNA expression levels of human genes in tumor tissue and the clinical outcome (survival) for ~8,000 cancer patients (TCGA)
@@ -199,7 +200,7 @@ cat('<br><br>')
 
 #### Genetic determinants of survival in cancer
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * Based on data recently calculated by [Smith et al., Cell Reports, 2022](https://pubmed.ncbi.nlm.nih.gov/35354049/), we here show the relative prognostic implications of genes in the query set, for different genetic features ( here limited to **expression**, **mutation**, **methylation**, and **CNA**).

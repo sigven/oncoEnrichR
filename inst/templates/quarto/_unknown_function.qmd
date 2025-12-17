@@ -1,6 +1,6 @@
 ### Poorly characterized genes
 
-::: {.callout-note}
+::: { .callout-note}
 ## Synopsis
 
 * The aim of this section is to highlight poorly characterized protein-coding genes or protein-coding genes with unknown function in the query set

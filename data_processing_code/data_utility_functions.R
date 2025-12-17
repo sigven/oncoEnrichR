@@ -3576,7 +3576,7 @@ get_synthetic_lethality_pairs <- function(
 
 get_biogrid_physical_interactions <- function(
     raw_db_dir = NA,
-    biogrid_release = "4.4.249",
+    biogrid_release = "5.0.252",
     update = F){
 
   rds_fname <- file.path(

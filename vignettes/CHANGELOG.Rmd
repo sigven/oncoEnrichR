@@ -7,6 +7,23 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+## Version 1.6.1
+
+* Date: 2025-12-17
+
+* Updates
+  * Data updates
+     * WikiPathways - 20251210
+     * COMPARTMENTS - 2025-12
+     * BIOGRID - v5.0.252
+     * Open Targets Platform (2025.12)
+       * Target tractability
+       * Cancer gene ranks
+       
+  * Included `.onLoad` function in `zzz.R` to check for required package versions
+  upon loading the package (`clusterProfiler`, `igraph`, `textclean`)
+  
+
 ## Version 1.6.0
 
 * Date: 2025-09-19

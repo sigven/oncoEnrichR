@@ -3,13 +3,13 @@ source('../oncoEnrichR/data_processing_code/data_utility_functions.R')
 
 ####--- Database versions and update flags ----####
 msigdb_version <- 'v2025.1.Hs'
-wikipathways_version <- "20250910"
+wikipathways_version <- "20251210"
 netpath_version <- "2010"
-opentargets_version <- "2025.09"
+opentargets_version <- "2025.12"
 kegg_version <- "20250603"
-gencode_version <- "48"
-uniprot_release <- "2025_03"
-biogrid_release <- "4.4.249"
+gencode_version <- "49"
+uniprot_release <- "2025_04"
+biogrid_release <- "5.0.252"
 
 ## Which databases to update or retrieve from last updated state
 db_updates <- list()
@@ -26,7 +26,7 @@ db_updates[['cellmodeldb']] <- F
 db_updates[['biogrid']] <- F
 db_updates[['pfamdb']] <- F
 
-oe_version <- "1.6.0"
+oe_version <- "1.6.1"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"

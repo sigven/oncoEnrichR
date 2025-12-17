@@ -191,8 +191,7 @@ load_db <- function(cache_dir = NA,
 #' @param enrichment_simplify_go remove highly similar GO terms in results from GO enrichment/over-representation analysis
 #' @param subcellcomp_min_confidence minimun confidence level for subcellular compartment annotation in COMPARTMENTS (min = 3, max = 5)
 #' @param subcellcomp_min_channels minimum number of channels that support a subcellular annotation in COMPARTMENTS
-#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap should highlight cytosol as a subcellular protein location or not
-#' @param regulatory_min_resources minimum resources supporting regulatory interactions (TF-target) retrieved from Collectri (min = 0, max = 3)
+#' @param regulatory_min_resources minimum resources supporting regulatory interactions (TF-target) retrieved from CollecTRI (min = 1, max = 6)
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor from BAGEL) for genes retrieved from Project Score
 #' @param show_ppi logical indicating if report should contain protein-protein interaction data (STRING)
 #' @param show_disease logical indicating if report should contain disease associations (Open Targets Platform, association_score >= 0.05, support from at least two data types)
@@ -242,7 +241,6 @@ init_report <- function(oeDB,
                         enrichment_simplify_go = T,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
-                        subcellcomp_show_cytosol = F,
                         regulatory_min_resources = 2,
                         fitness_max_score = -2,
                         show_ppi = T,
@@ -500,10 +498,6 @@ init_report <- function(oeDB,
     subcellcomp_min_confidence
   rep[['config']][['subcellcomp']][['minimum_channels']] <-
     subcellcomp_min_channels
-  rep[['config']][['subcellcomp']][['show_cytosol']] <-
-    subcellcomp_show_cytosol
-  #rep[['config']][['subcellcomp']][['gganatogram_legend']] <-
-  #  oeDB$subcelldb$gganatogram_legend
 
   rep[['config']][['complex']] <- list()
   rep[['config']][['complex']][['breaks']] <-
@@ -729,11 +723,9 @@ init_report <- function(oeDB,
 #' @param subcellcomp_min_channels minimum number of channels that support a
 #' subcellular compartment annotation in COMPARTMENTS (min = 1,
 #' max = 3, default: 1)
-#' @param subcellcomp_show_cytosol logical indicating if subcellular heatmap
-#' should show highlight proteins located in the cytosol or not (default: FALSE)
 #' @param regulatory_min_resources minimum resource level for regulatory
-#' interactions (TF-target) retrieved from Collectri (min = 0, max = 5,
-#' default: 0)
+#' interactions (TF-target) retrieved from Collectri (min = 1, max = 6,
+#' default: 1)
 #' @param fitness_max_score maximum loss-of-fitness score (scaled Bayes factor
 #' from BAGEL) for genes retrieved from DepMap/Project Score, default:-2
 #' @param ppi_add_nodes number of nodes to add to target set when computing the
@@ -830,8 +822,7 @@ onco_enrich <- function(query = NULL,
                         enrichment_simplify_go = TRUE,
                         subcellcomp_min_confidence = 3,
                         subcellcomp_min_channels = 1,
-                        subcellcomp_show_cytosol = FALSE,
-                        regulatory_min_resources = 2,
+                        regulatory_min_resources = 1,
                         fitness_max_score = -2,
                         ppi_add_nodes = 30,
                         ppi_string_min_score = 0.9,
@@ -924,7 +915,7 @@ onco_enrich <- function(query = NULL,
   if (val == F) {
     lgr::lgr$info( glue::glue(
       "ERROR: 'regulatory_min_resources' must be a numerical value ",
-      "greater than 1 and less than 6 (current type and value: ",
+      "greater than 0 and less than 7 (current type and value: ",
       "'{typeof(regulatory_min_resources)}' - {regulatory_min_resources})"))
     return()
   }
@@ -1169,7 +1160,6 @@ onco_enrich <- function(query = NULL,
     enrichment_max_geneset_size = enrichment_max_geneset_size,
     enrichment_simplify_go = enrichment_simplify_go,
     enrichment_plot_num_terms = enrichment_plot_num_terms,
-    subcellcomp_show_cytosol = subcellcomp_show_cytosol,
     subcellcomp_min_confidence = subcellcomp_min_confidence,
     subcellcomp_min_channels = subcellcomp_min_channels,
     regulatory_min_resources = regulatory_min_resources,
@@ -1185,7 +1175,6 @@ onco_enrich <- function(query = NULL,
     show_coexpression = show_coexpression,
     show_subcell_comp = show_subcell_comp,
     show_fitness = show_fitness,
-    #show_cell_tissue = show_cell_tissue,
     show_ligand_receptor = show_ligand_receptor,
     show_regulatory = show_regulatory,
     show_unknown_function = show_unknown_function,
@@ -1506,7 +1495,6 @@ onco_enrich <- function(query = NULL,
         query_entrez = as.integer(query_entrezgene),
         compartments_min_confidence = subcellcomp_min_confidence,
         compartments_min_channels = subcellcomp_min_channels,
-        show_cytosol = subcellcomp_show_cytosol,
         genedb = oeDB[['genedb']][['all']],
         compartments = oeDB[['subcelldb']])
 

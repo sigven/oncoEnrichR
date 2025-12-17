@@ -12,7 +12,7 @@ cat('<br><br>')
 
 ```
    
-::: {.callout-note}
+::: { .callout-note}
 ## Identifier mapping results
 
 * A total of __n = `r NROW(onc_enrich_report[['data']][['query']][['target']])`__ target identifiers were provided (type: _`r onc_enrich_report[['config']][['query']][['id_type']]`_, option _ignore_id_err_ = `r onc_enrich_report[["config"]][["query"]][["ignore_err"]]`)
