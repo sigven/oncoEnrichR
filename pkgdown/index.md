@@ -89,7 +89,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
--   December 16th 2025: [**1.6.1 release**](articles/CHANGELOG.html#version-1-6-1)
+-   December 17th 2025: [**1.6.1 release**](articles/CHANGELOG.html#version-1-6-1)
 -   September 19th 2025: [**1.6.0 release**](articles/CHANGELOG.html#version-1-6-0)
 -   February 27th 2025: [**1.5.3 release**](articles/CHANGELOG.html#version-1-5-3)
 -   September 9th 2024: [**1.5.2 release**](articles/CHANGELOG.html#version-1-5-2)
@@ -104,7 +104,7 @@ Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.17158614"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17158614.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.17958385"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17958385.svg" alt="DOI"/></a>
 
 <br>
 

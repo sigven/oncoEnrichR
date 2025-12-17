@@ -40,7 +40,7 @@ cancer-relevant annotations and analyses in an interactive report.
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.17158614"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17158614.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.17958385"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17958385.svg" alt="DOI"/></a>
 
 ## Citation
 
