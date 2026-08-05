@@ -7,16 +7,21 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
+        genedb = oedb$genedb$all,
         cellmodeldb = oedb$cellmodeldb
       )
     ),
-    c("targets","n_targets")
+    c("targets",
+      "n_targets",
+      "n_essential",
+      "common_essential")
   )
 
   expect_true(
     is.data.frame(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
+        genedb = oedb$genedb$all,
         cellmodeldb = oedb$cellmodeldb
       )$targets
     )
@@ -26,11 +31,13 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     names(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
+        genedb = oedb$genedb$all,
         cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
     c("symbol",
       "symbol_link_ps",
+      "essential_gene",
       "model_name",
       "scaled_BF",
       "tissue",
@@ -38,14 +45,15 @@ test_that("Gene fitness scores (Project Score) - testing ", {
       "cancer_type",
       "sample_site",
       "tissue_status",
-      "n_gene_tissue",
-      "n_gene")
+      "n_models_dependent_tissue",
+      "n_models_dependent_total")
   )
 
   expect_gt(
     NROW(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("EGFR","KRAS"),
+        genedb = oedb$genedb$all,
         cellmodeldb = oedb$cellmodeldb
       )$targets
     ),
@@ -56,6 +64,7 @@ test_that("Gene fitness scores (Project Score) - testing ", {
     NROW(
       oncoEnrichR:::get_fitness_lof_scores(
         qgenes = c("AQP4"),
+        genedb = oedb$genedb$all,
         cellmodeldb = oedb$cellmodeldb
       )$targets
     ),

@@ -836,120 +836,8 @@ cat('\n')
 cat('<br><br>')
 
 ```
-:::
-
-#### SNVs/InDels - recurrent variants
-
-::: { .callout-note}
-## Synopsis
-
--   Browse recurrent, protein-coding somatic SNVs/InDels from TCGA in the query set
-    -   Variants are listed as one record *per tissue/site*, in effect making the same variant occurring in multiple rows
-    -   Only variants with a site-specific frequency \>= 2 are shown
-    -   Variants can be filtered based on various properties, e.g. **Site/tissue variant recurrence**, as well as overall recurrence across all tumor sites (column **Pan-cancer variant recurrence**)
-    -   Notably, each variant have been annotated/classified with a
-        1.  *loss-of-function* status
-        2.  Status as [ <b>somatic mutation hotspots </b>]{style="background-color:black; padding:2x; color:white"} in cancer, according to [cancerhotspots.org](https://cancerhotspots.org). Format: *\<GENE\>\|\<CODON\>\|\<AMINO_ACID_VARIANT\>\|\<Q-VALUE\>*
--   Top 1,000 recurrent variants are listed here (all variants are listed in the Excel output of *oncoEnrichR*)
 
 :::
-
-<br>
-
-```{r filter_tcga_recurrence}
-#| echo: false
-#| output: asis
-
-missing_recurrent_tcga_variants <- TRUE
-if(nrow(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0){
-  missing_recurrent_tcga_variants <- FALSE
-}
-
-```
-
-```{r table_browse_recurrent_vars}
-#| echo: false
-#| output: asis
-#| eval: !expr as.logical(NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) > 0) == TRUE
-
-
-vars <- onc_enrich_report[['data']][['tcga']][['recurrent_variants']] |>
-  dplyr::mutate(SITE_RECURRENCE = as.integer(SITE_RECURRENCE))
-
-mutation_hotspot_levels <- levels(as.factor(
-  vars$MUTATION_HOTSPOT))
-
-
-vars <- vars |>
-  dplyr::arrange(
-    dplyr::desc(SITE_RECURRENCE), 
-    dplyr::desc(LOSS_OF_FUNCTION)) |>
-  dplyr::mutate(CONSEQUENCE = stringr::str_replace_all(
-    CONSEQUENCE, "&", ", "
-  )) |>
-  head(1000)
-
-if(length(mutation_hotspot_levels) > 0){
-  vars <- vars |>
-    dplyr::arrange(MUTATION_HOTSPOT, dplyr::desc(SITE_RECURRENCE))
-}
-
-recurrent_vars_tcga <- crosstalk::SharedData$new(
-  vars)
-
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("SYMBOL","Gene symbol",recurrent_vars_tcga, ~SYMBOL),
-    crosstalk::filter_select("CONSEQUENCE", "Variant consequence", recurrent_vars_tcga, ~CONSEQUENCE),
-    crosstalk::filter_select("PRIMARY_SITE", "Primary site/tissue", recurrent_vars_tcga, ~PRIMARY_SITE),
-    crosstalk::filter_select("MUTATION_HOTSPOT", 
-                             "Cancer mutation hotspot", 
-                             recurrent_vars_tcga, ~MUTATION_HOTSPOT)
-  ),
-  list(
-    crosstalk::filter_checkbox("LOSS_OF_FUNCTION", "Loss-of-function status", 
-                               recurrent_vars_tcga, ~LOSS_OF_FUNCTION),
-    crosstalk::filter_slider("TOTAL_RECURRENCE", "Pancancer variant recurrence", 
-                             recurrent_vars_tcga, ~TOTAL_RECURRENCE),
-    crosstalk::filter_slider("SITE_RECURRENCE", "Site/tissue variant recurrence", 
-                             recurrent_vars_tcga, ~SITE_RECURRENCE)
-    
-  )
-)
-
-htmltools::br()
-dt <- DT::datatable(recurrent_vars_tcga, escape = F, 
-              extensions=c("Buttons","Responsive"), 
-              width = "100%",
-              options=list(buttons = c('csv','excel'),dom = 'Bfrtip')
-)
-
-if(length(mutation_hotspot_levels) > 0){
-  dt <- dt |>
-    DT::formatStyle(
-      "MUTATION_HOTSPOT","MUTATION_HOTSPOT",
-      color = "white", fontWeight = "bold",
-      backgroundColor = DT::styleEqual(
-        mutation_hotspot_levels, rep("black", length(mutation_hotspot_levels)))
-    )
-}
-dt
-htmltools::br()
-htmltools::br()
-
-
-```
-
-```{r tcga_recurrent_variants_missing}
-#| echo: false
-#| output: asis
-#| eval: !expr NROW(onc_enrich_report[['data']][['tcga']][['recurrent_variants']]) == 0
-
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;<b>NO</b> query proteins with recurrent coding somatic variants in TCGA were found (likely due to too small or too large query set; for the latter case, no recurrent variants are shown if query set exceeds n = 500). &nbsp;&nbsp; </span></i></li></ul>',sep='\n')
-cat('\n')
-cat('<br><br>')
-
-```
 
 #### Copy number alterations
 
@@ -963,7 +851,7 @@ cat('<br><br>')
 -   The values in the heatmaps reflect the percent of all tumor samples pr. primary site with the gene amplified/lost (**percent_mutated**)
     -   Genes in the heatmap are ranked according to alteration frequency across all sites (i.e. *pan-cancer*), limited to the top 70 genes in the query set
 -   Frequencies across all subtypes per primary site are listed in an interactive table
-    -   Only including genes that are aberrant in \>= 5 percent of samples for a given tumor type/subtype (and more than 5 samples in total)
+    -   Only including genes that are aberrant in \>= 2 percent of samples for a given tumor type/subtype (with at least 25 samples in the cohort)
     -   Limited here to top 1,000 gene-subtype frequencies (all aberration frequencies are listed in the Excel output of *oncoEnrichR*)
 
 :::
@@ -995,7 +883,12 @@ fig <- plotly::plot_ly(
       y = rownames(gene_aberration_top_mat),
       x = colnames(gene_aberration_top_mat),
       z = gene_aberration_top_mat,
-      hovertext = "Percent mutated",
+      hovertemplate = paste(
+        "Cancer type: %{x}",
+        "Gene: %{y}",
+        "Percent mutated: %{z}",
+        "<extra></extra>",
+        sep = "<br>"),
       yaxis = "y") |>
     plotly::layout(
       title = "Amplifications",
@@ -1021,7 +914,7 @@ fig
 #| output: asis
 #| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_ampl']]) == TRUE
 
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in copy number amplifications (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heat map not shown - limited number of genes in the queryset are involved in recurrent copy number amplifications (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -1052,7 +945,12 @@ fig <- plotly::plot_ly(
       y = rownames(gene_aberration_top_mat),
       x = colnames(gene_aberration_top_mat),
       z = gene_aberration_top_mat,
-      hovertext = "Percent mutated",
+      hovertemplate = paste(
+        "Cancer type: %{x}",
+        "Gene: %{y}",
+        "Percent mutated: %{z}",
+        "<extra></extra>",
+        sep = "<br>"),
       yaxis = "y") |>
     plotly::layout(
       title = 'Homozygous deletions',
@@ -1079,7 +977,7 @@ htmltools::br()
 #| output: asis
 #| eval: !expr is.null(onc_enrich_report[['data']][['tcga']][['aberration']][['matrix']][['cna_homdel']]) == TRUE
 
-cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heatmap not shown - limited number of genes in the queryset are involved in homozygous deletions (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
+cat('\n <ul><li>  <i> <span style="font-size: 105%; padding: 3px; background-color:#989898; color:white">&nbsp;&nbsp;Heatmap not shown - limited number of genes in the queryset are involved in recurrent homozygous deletions (<b>< 3, as reported in TCGA cohorts</b>)&nbsp;&nbsp; </span></i></li></ul>',sep='\n')
 cat('\n')
 cat('<br><br>')
 
@@ -1101,8 +999,9 @@ all_targets_vtypes <-
   dplyr::bind_rows(
     onc_enrich_report[['data']][['tcga']][['aberration']][['table']][['cna_ampl']]
   ) |>
-  dplyr::arrange(dplyr::desc(percent_mutated)) |>
-  dplyr::filter(percent_mutated >= 5 & samples_mutated >= 5) |>
+  dplyr::arrange(dplyr::desc(.data$percent_mutated)) |>
+  #dplyr::filter(
+  #  .data$percent_mutated >= 2) |>
   head(1000)
 
 ```
@@ -1117,7 +1016,7 @@ oe_targets_tcga <- crosstalk::SharedData$new(all_targets_vtypes)
 crosstalk::bscols(
   list(
     crosstalk::filter_select(
-      "primary_site", "Primary site/tissue", oe_targets_tcga, ~primary_site),
+      "primary_site", "Primary cancer site/tissue", oe_targets_tcga, ~primary_site),
     crosstalk::filter_select(
       "variant_type", "Aberration type", oe_targets_tcga, ~variant_type),
     crosstalk::filter_slider(
@@ -1126,8 +1025,10 @@ crosstalk::bscols(
       min = 0, max = 100)
   ),
   list(
-    crosstalk::filter_select("primary_diagnosis", "Diagnosis", oe_targets_tcga, ~primary_diagnosis),
-    crosstalk::filter_slider("cohort_size", "Cohort Size", oe_targets_tcga, ~cohort_size)
+    crosstalk::filter_select(
+      "primary_diagnosis", "Diagnosis", oe_targets_tcga, ~primary_diagnosis),
+    crosstalk::filter_slider(
+      "cohort_size", "Cohort Size", oe_targets_tcga, ~cohort_size)
   )
 )
 

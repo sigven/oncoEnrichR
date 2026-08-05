@@ -71,7 +71,8 @@ load_db <- function(cache_dir = NA,
                    "subcelldb",
                    "slparalogdb",
                    "tcgadb",
-                   "tftargetdb")
+                   "tftargetdb",
+                   "tissuecelldb")
 
   for (elem in oe_datasets) {
 
@@ -453,27 +454,11 @@ init_report <- function(oeDB,
       "#005a32")
 
   rep[["config"]][["cell_tissue"]] <- list()
-  rep[["config"]][["cell_tissue"]][["tissue_enrichment_levels"]] <-
-    c('Tissue enriched',
-      'Group enriched',
-      'Tissue enhanced',
-      'Mixed',
-      'Low tissue specificity',
-      'Not detected')
-  rep[["config"]][["cell_tissue"]][["ctype_enrichment_levels"]] <-
-    c('Cell type enriched',
-      'Group enriched',
-      'Cell type enhanced',
-      'Mixed',
-      'Low cell type specificity',
-      'Not detected')
-  rep[["config"]][["cell_tissue"]][["enrichment_colors"]] <-
-    c("#084594",
-      "#2171B5",
-      "#4292C6",
-      "#6BAED6",
-      "#9ECAE1",
-      "#b8b8ba")
+  ## Quantile used at data-prep time to define "highly expressed" genes
+  ## per tissue/cell type (oeDB$tissuecelldb[[..]]$enrichment_background_summary)
+  ## - kept here only for report captions, not used to refilter data
+  rep[["config"]][["cell_tissue"]][["high_expr_quantile"]] <- 0.75
+  rep[["config"]][["cell_tissue"]][["fdr_threshold"]] <- 0.05
 
   rep[["config"]][["unknown_function"]] <- list()
   rep[["config"]][["unknown_function"]][["rank"]] <-
@@ -540,10 +525,8 @@ init_report <- function(oeDB,
   rep[["data"]][["synleth"]][['both_in_pair']] <- data.frame()
   rep[["data"]][["synleth"]][['single_pair_member']] <- data.frame()
 
-  ## regulatory interactions (DoRothEA)
+  ## regulatory interactions (CollecTRI)
   rep[["data"]][["regulatory"]][["interactions"]] <- data.frame()
-  #rep[["data"]][["regulatory"]][["interactions"]][["global"]] <- data.frame()
-  #rep[["data"]][["regulatory"]][["interactions"]][["pancancer"]] <- data.frame()
 
   rep[["data"]][["regulatory"]][["network"]] <- list()
   rep[["data"]][["regulatory"]][["network"]][["edges"]] <- data.frame()
@@ -575,9 +558,9 @@ init_report <- function(oeDB,
     data.frame()
   rep[['data']][['cell_tissue']][['tissue_enrichment']][['per_type']] <-
     data.frame()
-  rep[['data']][['cell_tissue']][['tissue_overview']][['category_df']] <-
+  rep[['data']][['cell_tissue']][['tissue_overview']][['per_gene']] <-
     data.frame()
-  rep[['data']][['cell_tissue']][['tissue_overview']][['exp_dist_df']] <-
+  rep[['data']][['cell_tissue']][['tissue_overview']][['tau_distribution']] <-
     data.frame()
 
   rep[['data']][['cell_tissue']][['scRNA_overview']] <- list()
@@ -586,9 +569,9 @@ init_report <- function(oeDB,
     data.frame()
   rep[['data']][['cell_tissue']][['scRNA_enrichment']][['per_type']] <-
     data.frame()
-  rep[['data']][['cell_tissue']][['scRNA_overview']][['category_df']] <-
+  rep[['data']][['cell_tissue']][['scRNA_overview']][['per_gene']] <-
     data.frame()
-  rep[['data']][['cell_tissue']][['scRNA_overview']][['exp_dist_df']] <-
+  rep[['data']][['cell_tissue']][['scRNA_overview']][['tau_distribution']] <-
     data.frame()
 
   ## drug targets
@@ -624,6 +607,9 @@ init_report <- function(oeDB,
   rep[["data"]][["fitness"]][['fitness_scores']] <- list()
   rep[["data"]][["fitness"]][['fitness_scores']][["targets"]] <- data.frame()
   rep[["data"]][["fitness"]][['fitness_scores']][["n_targets"]] <- 0
+  rep[["data"]][["fitness"]][['fitness_scores']][["n_essential"]] <- 0
+  rep[["data"]][["fitness"]][['fitness_scores']][["common_essential"]] <-
+    data.frame()
   rep[["data"]][["fitness"]][['target_priority_scores']] <- list()
   rep[["data"]][["fitness"]][['target_priority_scores']][['targets']] <-
     data.frame()
@@ -644,7 +630,6 @@ init_report <- function(oeDB,
   rep[["data"]][["subcellcomp"]][["comp_density"]] <- data.frame()
 
   ## TCGA aberrations
-  rep[["data"]][["tcga"]][["recurrent_variants"]] <- data.frame()
   rep[["data"]][["tcga"]][["aberration"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["table"]] <- list()
   rep[["data"]][["tcga"]][["aberration"]][["matrix"]] <- list()
@@ -658,9 +643,12 @@ init_report <- function(oeDB,
     else{
       rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]] <- list()
       i <- 1
-      while(i <= nrow(oeDB$tcgadb$maf_codes)) {
-        site <- oeDB$tcgadb$maf_codes[i,]$primary_site
-        code <- oeDB$tcgadb$maf_codes[i,]$code
+      while(i <= nrow(oeDB$tcgadb$code$maf)) {
+        site <- oeDB$tcgadb$code$maf[i,]$primary_site
+        code <- oeDB$tcgadb$code$maf[i,]$code
+      #while(i <= nrow(oeDB$tcgadb$maf_codes)) {
+        #site <- oeDB$tcgadb$maf_codes[i,]$primary_site
+        #code <- oeDB$tcgadb$maf_codes[i,]$code
         rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]][[site]] <-
           list()
         rep[["data"]][["tcga"]][["aberration"]][["table"]][[v]][[site]][['code']] <-
@@ -765,9 +753,10 @@ init_report <- function(oeDB,
 #' @param show_coexpression logical indicating if report should contain TCGA
 #' co-expression data (RNAseq) of query set with oncogenes/tumor
 #' suppressor genes (default: TRUE)
-#' #param show_cell_tissue logical indicating if report should contain
-#' tissue-specificity and single cell-type specificity assessments
-#' (Human Protein Atlas) of target genes (default: FALSE)
+#' @param show_cell_tissue logical indicating if report should contain
+#' tissue-specificity and cell-type specificity assessments (expression
+#' specificity (tau) and enrichment of highly expressed genes,
+#' Human Protein Atlas) of target genes (default: FALSE)
 #' @param show_ligand_receptor logical indicating if report should contain
 #' ligand-receptor interactions (CellChatDB, default: TRUE)
 #' @param show_regulatory logical indicating if report should contain data on
@@ -839,6 +828,7 @@ onco_enrich <- function(query = NULL,
                         show_enrichment = TRUE,
                         show_aberration = FALSE,
                         show_coexpression = FALSE,
+                        show_cell_tissue = FALSE,
                         show_ligand_receptor = FALSE,
                         show_regulatory = FALSE,
                         show_unknown_function = TRUE,
@@ -939,7 +929,7 @@ onco_enrich <- function(query = NULL,
       )
     }
 
-    show_aberration_recurrence <- FALSE
+    #show_aberration_recurrence <- FALSE
     show_ppi <- FALSE
     show_coexpression <- FALSE
     #enrichment_simplify_go <- TRUE
@@ -980,7 +970,6 @@ onco_enrich <- function(query = NULL,
     lgr::lgr$info(
       paste0("NOTE: skipping some modules (PPI, co-expression, aberration recurrence)")
     )
-    show_aberration_recurrence <- FALSE
     show_ppi <- FALSE
     show_coexpression <- FALSE
     enrichment_simplify_go <- TRUE
@@ -988,9 +977,12 @@ onco_enrich <- function(query = NULL,
 
   val <- assertthat::validate_that(
     query_id_type %in%
-      c("symbol", "entrezgene",
-        "refseq_transcript_id", "ensembl_mrna",
-        "refseq_protein", "ensembl_protein",
+      c("symbol",
+        "entrezgene",
+        "refseq_transcript_id",
+        "ensembl_mrna",
+        "refseq_protein",
+        "ensembl_protein",
         "uniprot_acc",
         "ensembl_gene")
   )
@@ -1173,6 +1165,7 @@ onco_enrich <- function(query = NULL,
     show_enrichment = show_enrichment,
     show_aberration = show_aberration,
     show_coexpression = show_coexpression,
+    show_cell_tissue = show_cell_tissue,
     show_subcell_comp = show_subcell_comp,
     show_fitness = show_fitness,
     show_ligand_receptor = show_ligand_receptor,
@@ -1190,8 +1183,10 @@ onco_enrich <- function(query = NULL,
       qgenes = query,
       q_id_type = query_id_type,
       ignore_id_err = ignore_id_err,
-      genedb = oeDB[['genedb']][['all']],
-      transcript_xref = oeDB[['genedb']][['transcript_xref']])
+      genedb =
+        oeDB[['genedb']][['all']],
+      transcript_xref =
+        oeDB[['genedb']][['transcript_xref']])
 
   val <- assertthat::validate_that(NROW(qgenes_match$found) >= 1)
   if (!is.logical(val)) {
@@ -1219,7 +1214,6 @@ onco_enrich <- function(query = NULL,
                "ppi",
                "aberration",
                "coexpression",
-               #"cell_tissue",
                "cancer_hallmark",
                "fitness",
                "regulatory_interactions",
@@ -1512,6 +1506,7 @@ onco_enrich <- function(query = NULL,
     onc_rep[["data"]][["fitness"]][["fitness_scores"]] <-
       get_fitness_lof_scores(
         qgenes = query_symbol,
+        genedb = oeDB[['genedb']][['all']],
         cellmodeldb = oeDB[['cellmodeldb']])
 
     if (onc_rep[["data"]][["fitness"]][["fitness_scores"]][["n_targets"]] <= 10) {
@@ -1549,127 +1544,6 @@ onco_enrich <- function(query = NULL,
           genedb = oeDB[['genedb']][['all']],
           tcgadb = oeDB[['tcgadb']],
           vtype = v)
-    }
-
-    if(show_aberration_recurrence == TRUE){
-      onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-        oeDB$tcgadb[["recurrent_variants"]] |>
-        dplyr::inner_join(
-          dplyr::select(qgenes_match$found, c("symbol")),
-          by = c("SYMBOL" = "symbol"), relationship = "many-to-many") |>
-        dplyr::distinct()
-
-      if (nrow(onc_rep[["data"]][["tcga"]][["recurrent_variants"]]) > 0) {
-        cosmic_variants <-
-          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-          dplyr::select(c("VAR_ID", "COSMIC_MUTATION_ID")) |>
-          dplyr::filter(!is.na(.data$COSMIC_MUTATION_ID)) |>
-          dplyr::distinct()
-
-        if (nrow(cosmic_variants) > 0) {
-
-          cosmic_variants <- as.data.frame(
-            cosmic_variants |>
-            tidyr::separate_rows("COSMIC_MUTATION_ID", sep ="&") |>
-            dplyr::mutate(
-              COSMIC_MUTATION_ID = paste0(
-                "<a href=\"https://cancer.sanger.ac.uk/cosmic/search?q=",
-                .data$COSMIC_MUTATION_ID,"\" target='_blank'>",
-                .data$COSMIC_MUTATION_ID,"</a>"
-              )) |>
-            dplyr::group_by(.data$VAR_ID) |>
-            dplyr::summarise(
-              COSMIC_MUTATION_ID =
-                paste(
-                  .data$COSMIC_MUTATION_ID, collapse = ", "
-                ),
-              .groups = "drop")
-          )
-
-          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-            onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-            dplyr::select(-c("COSMIC_MUTATION_ID")) |>
-            dplyr::left_join(
-              cosmic_variants,
-              by = c("VAR_ID"),
-              relationship = "many-to-many")
-        }
-
-        onc_rep[["data"]][["tcga"]][["recurrent_variants"]] <-
-          onc_rep[["data"]][["tcga"]][["recurrent_variants"]] |>
-          dplyr::left_join(
-            oeDB[['tcgadb']][['pfam']],
-            by = "PFAM_ID",
-            relationship = "many-to-many") |>
-          dplyr::mutate(
-            PROTEIN_DOMAIN = dplyr::if_else(
-              !is.na(.data$PFAM_ID),
-              paste0(
-              "<a href=\"http://pfam.xfam.org/family/",
-              .data$PFAM_ID,
-              "\" target='_blank'>",
-              .data$PFAM_DOMAIN_NAME,
-              "</a>"),
-              as.character(NA)
-            )
-          ) |>
-          dplyr::select(
-            -c("PFAM_DOMAIN_NAME", "PFAM_ID")) |>
-          dplyr::left_join(
-            dplyr::select(oeDB[['genedb']][['all']],
-                          c("symbol", "ensembl_gene_id")),
-            by = c("SYMBOL" = "symbol"),
-            relationship = "many-to-many") |>
-          dplyr::mutate(
-            ENSEMBL_GENE_ID =
-              paste0(
-                "<a href='https://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=",
-                .data$ensembl_gene_id,"' target='_blank'>",
-                .data$ensembl_gene_id,"</a>")) |>
-          dplyr::mutate(
-            ENSEMBL_TRANSCRIPT_ID =
-              paste0(
-                "<a href='https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=",
-                .data$ensembl_gene_id,
-                ";t=",
-                .data$ENSEMBL_TRANSCRIPT_ID,"' target='_blank'>",
-                .data$ENSEMBL_TRANSCRIPT_ID,"</a>")) |>
-          dplyr::select(-c("VAR_ID")) |>
-          dplyr::rename(CONSEQUENCE_ALTERNATE = "VEP_ALL_CSQ") |>
-          dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
-            stringr::str_detect(.data$MUTATION_HOTSPOT, "exonic") &
-              stringr::str_detect(.data$MUTATION_HOTSPOT, "[0-9]-[0-9]"),
-            as.character(NA),
-            as.character(.data$MUTATION_HOTSPOT)
-          )) |>
-          tidyr::separate(
-            .data$MUTATION_HOTSPOT,
-            c("tmp1","tmp2","tmp3","tmp4","tmp5","tmp6"),
-            sep = "\\|", remove = T, fill = "right") |>
-          dplyr::mutate(MUTATION_HOTSPOT = paste(
-            .data$tmp2, .data$tmp4, .data$tmp5, .data$tmp6, sep="|"
-          )) |>
-          dplyr::mutate(MUTATION_HOTSPOT = dplyr::if_else(
-            !is.na(.data$MUTATION_HOTSPOT) &
-              stringr::str_detect(.data$MUTATION_HOTSPOT, "NA\\|NA"),
-            as.character(NA),
-            as.character(.data$MUTATION_HOTSPOT)
-          )) |>
-          dplyr::select(c("SYMBOL",
-                        "CONSEQUENCE",
-                        "PROTEIN_CHANGE",
-                        "MUTATION_HOTSPOT",
-                        "PROTEIN_DOMAIN",
-                        "LOSS_OF_FUNCTION",
-                        "MUTATION_HOTSPOT_MATCH",
-                        "ENSEMBL_GENE_ID",
-                        "ENSEMBL_TRANSCRIPT_ID",
-                        "PRIMARY_SITE",
-                        "SITE_RECURRENCE",
-                        "TOTAL_RECURRENCE",
-                        "COSMIC_MUTATION_ID",
-                        "CONSEQUENCE_ALTERNATE"))
-      }
     }
 
     for (psite in names(onc_rep[["data"]][["tcga"]][["aberration"]][["table"]][["snv_indel"]])) {
@@ -1750,52 +1624,37 @@ onco_enrich <- function(query = NULL,
 
   }
 
-  # if (show_cell_tissue == T) {
-  #   onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
-  #     gene_tissue_cell_spec_cat(
-  #       qgenes = query_symbol,
-  #       q_id_type = "symbol",
-  #       resolution = "tissue",
-  #       genedb = oeDB[['genedb']][['all']],
-  #       hpa_enrichment_db_df =
-  #         oeDB[['tissuecelldb']][['tissue']][['te_df']],
-  #       hpa_expr_db_df =
-  #         oeDB[['tissuecelldb']][['tissue']][['expr_df']])
-  #
-  #   onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
-  #     gene_tissue_cell_enrichment(
-  #       qgenes_entrez = as.integer(query_entrezgene),
-  #       resolution = "tissue",
-  #       background_entrez = as.integer(background_entrezgene),
-  #       genedb = oeDB[['genedb']][['all']],
-  #       hpa_enrichment_db_df =
-  #         oeDB[['tissuecelldb']][['tissue']][['te_df']],
-  #       hpa_enrichment_db_SE =
-  #         oeDB[['tissuecelldb']][['tissue']][['te_SE']])
+  if (show_cell_tissue == T) {
+    onc_rep[["data"]][["cell_tissue"]][['tissue_overview']] <-
+      gene_tissue_celltype_specificity(
+        qgenes = query_symbol,
+        resolution = "tissue",
+        genedb = oeDB[['genedb']][['all']],
+        tissuecelldb = oeDB[['tissuecelldb']][['tissue']])
 
-  #   onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
-  #     gene_tissue_cell_spec_cat(
-  #       qgenes = as.integer(query_entrezgene),
-  #       q_id_type = "entrezgene",
-  #       resolution = "single_cell",
-  #       genedb = oeDB[['genedb']][['all']],
-  #       hpa_enrichment_db_df =
-  #         oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-  #       hpa_expr_db_df =
-  #         oeDB[['tissuecelldb']][['single_cell']][['expr_df']])
-  #
-  #   onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
-  #     gene_tissue_cell_enrichment(
-  #       qgenes_entrez = as.integer(query_entrezgene),
-  #       background_entrez = as.integer(background_entrezgene),
-  #       resolution = "single_cell",
-  #       genedb = oeDB[['genedb']][['all']],
-  #       hpa_enrichment_db_df =
-  #         oeDB[['tissuecelldb']][['single_cell']][['te_df']],
-  #       hpa_enrichment_db_SE =
-  #         oeDB[['tissuecelldb']][['single_cell']][['te_SE']])
-  #
-  # }
+    onc_rep[["data"]][["cell_tissue"]][['tissue_enrichment']] <-
+      gene_tissue_celltype_enrichment(
+        qgenes = query_symbol,
+        resolution = "tissue",
+        background_entrez = background_entrezgene,
+        genedb = oeDB[['genedb']][['all']],
+        tissuecelldb = oeDB[['tissuecelldb']][['tissue']])
+
+    onc_rep[["data"]][["cell_tissue"]][['scRNA_overview']] <-
+      gene_tissue_celltype_specificity(
+        qgenes = query_symbol,
+        resolution = "celltype",
+        genedb = oeDB[['genedb']][['all']],
+        tissuecelldb = oeDB[['tissuecelldb']][['celltype']])
+
+    onc_rep[["data"]][["cell_tissue"]][['scRNA_enrichment']] <-
+      gene_tissue_celltype_enrichment(
+        qgenes = query_symbol,
+        resolution = "celltype",
+        background_entrez = background_entrezgene,
+        genedb = oeDB[['genedb']][['all']],
+        tissuecelldb = oeDB[['tissuecelldb']][['celltype']])
+  }
 
   return(onc_rep)
 
@@ -2113,6 +1972,7 @@ write <- function(report,
 
     table_style_index <- 15
     for (elem in c("settings",
+                   "data_versions",
                    "query",
                    "unknown_function",
                    "cancer_association",
@@ -2131,8 +1991,10 @@ write <- function(report,
                    "ligand_receptor",
                    "subcellcomp",
                    "aberration",
-                   "recurrent_variants",
+                   #"recurrent_variants",
                    "coexpression",
+                   "cell_tissue_specificity",
+                   "cell_tissue_enrichment",
                    "prognostic_association_I",
                    "prognostic_association_II")) {
 
@@ -2141,9 +2003,9 @@ write <- function(report,
         show_elem <- "disease"
       }
 
-      if (elem == "recurrent_variants") {
-        show_elem <- "aberration"
-      }
+      #if (elem == "recurrent_variants") {
+      #  show_elem <- "aberration"
+      #}
       if (elem == "ppi_string"){
         show_elem <- "ppi"
       }
@@ -2166,8 +2028,11 @@ write <- function(report,
       if (elem == "fitness_scores" | elem == "fitness_prioritized") {
         show_elem <- "fitness"
       }
+      if (elem == "cell_tissue_enrichment" | elem == "cell_tissue_specificity") {
+        show_elem <- "cell_tissue"
+      }
 
-      if (elem != "settings") {
+      if (!(elem %in% c("settings", "data_versions"))) {
         if (report[['config']][['show']][[show_elem]] == FALSE) {
           next
         }

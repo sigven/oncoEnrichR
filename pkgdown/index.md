@@ -25,7 +25,8 @@ cancer-relevant annotations and analyses in an interactive report
 
 Web-based access to **oncoEnrichR** (through the [Galaxy platform](https://usegalaxy.org/)) 
 is available at <font size="4">[**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.1)</font>
-_The web version of oncoEnrichR is not currently operating with the latest version, we are working to get the latest version in place also in Galaxy._
+
+__NOTE__: _Web-based access to oncoEnrichR is unfortunately not operating with the latest release due to Galaxy/Docker issues. Please use the R package for the latest version of the tool._
 
 <br>
 
@@ -52,6 +53,10 @@ following scientific questions for a given gene list:
 -   Which protein complexes involve proteins in the query set?
 -   Which subcellular compartments (nucleus, cytosol, plasma membrane
     etc) are dominant localizations for proteins in the query set?
+-   Are genes in the query set preferentially expressed in specific
+    human tissues or cell types, and which tissues/cell types are
+    significantly enriched among the most highly expressed genes in
+    the query set (Human Protein Atlas)?
 -   Which protein-protein interactions are known within the query set?
     Are there interactions between members of the query set and other
     cancer-relevant proteins (e.g. proto-oncogenes, tumor-suppressors or
@@ -89,6 +94,7 @@ See also the [output views](articles/output.html) that addresses each of the que
 
 ## News
 
+-   August 6th 2026: [**1.6.2 release**](articles/CHANGELOG.html#version-1-6-2)
 -   December 17th 2025: [**1.6.1 release**](articles/CHANGELOG.html#version-1-6-1)
 -   September 19th 2025: [**1.6.0 release**](articles/CHANGELOG.html#version-1-6-0)
 -   February 27th 2025: [**1.5.3 release**](articles/CHANGELOG.html#version-1-5-3)
@@ -104,7 +110,7 @@ Sigve Nakken, Sveinung Gundersen, Fabian L. M. Bernal, Dimitris Polychronopoulos
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.17958385"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17958385.svg" alt="DOI"/></a>
+<a href="https://doi.org/10.5281/zenodo.21814264"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.21814264.svg" alt="DOI"/></a>
 
 <br>
 

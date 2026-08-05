@@ -264,7 +264,12 @@ mutation_survival_fig <- plotly::plot_ly(
     y = rownames(mutation_zscore_matrix),
     x = colnames(mutation_zscore_matrix),
     z = mutation_zscore_matrix,
-    hovertext = "Z-score",
+    hovertemplate = paste(
+      "Cancer type: %{x}",
+      "Gene: %{y}",
+      "Z-score: %{z}",
+      "<extra></extra>",
+      sep = "<br>"),
     yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (mutation)',
@@ -339,7 +344,12 @@ expression_survival_fig <- plotly::plot_ly(
     y = rownames(expression_zscore_matrix),
     x = colnames(expression_zscore_matrix),
     z = expression_zscore_matrix,
-    hovertext = "Z-score",
+    hovertemplate = paste(
+      "Cancer type: %{x}",
+      "Gene: %{y}",
+      "Z-score: %{z}",
+      "<extra></extra>",
+      sep = "<br>"),
     yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (expression)',
@@ -419,7 +429,12 @@ cna_survival_fig <- plotly::plot_ly(
     y = rownames(cna_zscore_matrix),
     x = colnames(cna_zscore_matrix),
     z = cna_zscore_matrix,
-    hovertext = "Z-score",
+    hovertemplate = paste(
+      "Cancer type: %{x}",
+      "Gene: %{y}",
+      "Z-score: %{z}",
+      "<extra></extra>",
+      sep = "<br>"),
     yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (CNA)',
@@ -497,7 +512,12 @@ meth_survival_fig <- plotly::plot_ly(
     y = rownames(meth_zscore_matrix),
     x = colnames(meth_zscore_matrix),
     z = meth_zscore_matrix,
-    hovertext = "Z-score",
+    hovertemplate = paste(
+      "Cancer type: %{x}",
+      "Gene: %{y}",
+      "Z-score: %{z}",
+      "<extra></extra>",
+      sep = "<br>"),
     yaxis = "y") |>
   plotly::layout(
     title = 'Target survival associations (methylation)',

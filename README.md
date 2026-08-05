@@ -7,8 +7,9 @@ multiple dimensions, both at the systems level and at the level of individual ge
 
 Web-based access to **oncoEnrichR** (through the [Galaxy platform](https://usegalaxy.org/)) is available at 
 [**https://oncotools.elixir.no**](https://oncotools.elixir.no/tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fsigven%2Foncoenrichr%2Foncoenrichr_wrapper%2F1.6.1). 
-_The web version of oncoEnrichR is not currently operating with the latest version, 
-we are working to get the latest version in place also in Galaxy._
+
+__NOTE__: _Web-based access to oncoEnrichR is unfortunately not operating with the latest release due to Galaxy/Docker issues. Please use the R package for the latest version of the tool._
+
 
 **oncoEnrichR** is primarily intended for exploratory analysis and prioritization 
 of a gene list (referred to here as **query set**) from high-throughput cancer 
@@ -33,6 +34,7 @@ cancer-relevant annotations and analyses in an interactive report.
 
 ## News
 
+-   August 6th 2026: [**1.6.2 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-6-2)
 -   December 16th 2025: [**1.6.1 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-6-1)
 -   September 19th 2025: [**1.6.0 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-6-0)
 -   February 27th 2025: [**1.5.3 release**](https://sigven.github.io/oncoEnrichR/articles/CHANGELOG.html#version-1-5-3)
@@ -40,7 +42,7 @@ cancer-relevant annotations and analyses in an interactive report.
 
 ## Example report
 
-<a href="https://doi.org/10.5281/zenodo.17958385"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17958385.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.21814264"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.21814264.svg" alt="DOI"></a>
 
 ## Citation
 

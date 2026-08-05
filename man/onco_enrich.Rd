@@ -41,6 +41,7 @@ onco_enrich(
   show_enrichment = TRUE,
   show_aberration = FALSE,
   show_coexpression = FALSE,
+  show_cell_tissue = FALSE,
   show_ligand_receptor = FALSE,
   show_regulatory = FALSE,
   show_unknown_function = TRUE,
@@ -169,10 +170,12 @@ aberration plots (amplifications/deletions, default: TRUE)}
 
 \item{show_coexpression}{logical indicating if report should contain TCGA
 co-expression data (RNAseq) of query set with oncogenes/tumor
-suppressor genes (default: TRUE)
-#param show_cell_tissue logical indicating if report should contain
-tissue-specificity and single cell-type specificity assessments
-(Human Protein Atlas) of target genes (default: FALSE)}
+suppressor genes (default: TRUE)}
+
+\item{show_cell_tissue}{logical indicating if report should contain
+tissue-specificity and cell-type specificity assessments (expression
+specificity (tau) and enrichment of highly expressed genes,
+Human Protein Atlas) of target genes (default: FALSE)}
 
 \item{show_ligand_receptor}{logical indicating if report should contain
 ligand-receptor interactions (CellChatDB, default: TRUE)}

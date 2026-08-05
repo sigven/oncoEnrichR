@@ -73,8 +73,9 @@ validate_query_genes <- function(qgenes,
 
     target_genes <- target_genes |>
       dplyr::left_join(gdb,
-                       by = c("qid" = qtype_id), relationship = "many-to-many") |>
-      dplyr::mutate(!!rlang::sym(qtype_id) := qid) |>
+                       by = c("qid" = qtype_id),
+                       relationship = "many-to-many") |>
+      dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) |>
       dplyr::distinct()
 
   } else {
@@ -96,7 +97,7 @@ validate_query_genes <- function(qgenes,
     gene_xref_map <-
       transcript_xref |>
       dplyr::filter(.data$property == qtype_id) |>
-      dplyr::rename(!!rlang::sym(qtype_id) := value) |>
+      dplyr::rename(!!rlang::sym(qtype_id) := .data$value) |>
       dplyr::select(c("entrezgene"), rlang::sym(qtype_id))
 
     target_genes <- as.data.frame(
@@ -105,10 +106,13 @@ validate_query_genes <- function(qgenes,
         ## map query to entrezgene
         dplyr::left_join(
           gene_xref_map,
-          by = c("qid" = qtype_id), relationship = "many-to-many") |>
-        dplyr::mutate(!!rlang::sym(qtype_id) := qid) |>
+          by = c("qid" = qtype_id),
+          relationship = "many-to-many") |>
+        dplyr::mutate(!!rlang::sym(qtype_id) := .data$qid) |>
         ## append other gene annotations
-        dplyr::left_join(gdb, by = c("entrezgene"), relationship = "many-to-many") |>
+        dplyr::left_join(
+          gdb, by = c("entrezgene"),
+          relationship = "many-to-many") |>
         dplyr::distinct() |>
         dplyr::group_by(
           .data$symbol,
@@ -137,14 +141,21 @@ validate_query_genes <- function(qgenes,
       queryset[['match_status']] <- "imperfect_go"
 
       if (q_id_type == 'symbol') {
-        lgr::lgr$info( paste0("WARNING: ", qtype, " gene identifiers NOT found as primary symbols: ",paste0(queryset[['not_found']]$qid, collapse = ", ")))
-        lgr::lgr$info( paste0("Trying to map ", qtype, " gene identifiers as gene aliases/synonyms: ",paste0(queryset[['not_found']]$qid, collapse = ", ")))
+        lgr::lgr$info(
+          paste0("WARNING: ", qtype,
+                 " gene identifiers NOT found as primary symbols: ",
+                 paste0(queryset[['not_found']]$qid, collapse = ", ")))
+        lgr::lgr$info(
+          paste0("Trying to map ", qtype,
+                 " gene identifiers as gene aliases/synonyms: ",
+                 paste0(queryset[['not_found']]$qid, collapse = ", ")))
 
         query_as_alias <-
           dplyr::inner_join(
             dplyr::select(queryset[['not_found']], c("qid")),
             alias2entrez,
-            by = c("qid" = "alias"), relationship = "many-to-many")
+            by = c("qid" = "alias"),
+            relationship = "many-to-many")
 
         ## Check that alias is not an alias for existing query entries (found)
         ## anti_join against found entries
@@ -161,7 +172,8 @@ validate_query_genes <- function(qgenes,
 
             query_as_alias <- query_as_alias |>
               dplyr::left_join(gdb,
-                               by = "entrezgene", relationship = "many-to-many") |>
+                               by = "entrezgene",
+                               relationship = "many-to-many") |>
               dplyr::distinct() |>
               dplyr::mutate(alias = T)
 
@@ -177,7 +189,8 @@ validate_query_genes <- function(qgenes,
 
             if (nrow(queryset[['not_found']]) > 0) {
               lgr::lgr$warn(
-                paste0(stringr::str_to_title(qtype)," gene identifiers NOT found: ",
+                paste0(stringr::str_to_title(qtype),
+                       " gene identifiers NOT found: ",
                        paste0(queryset[['not_found']]$qid, collapse = ", "),
                        " (make sure that unambiguous primary identifiers/symbols are used)"))
             } else {
@@ -193,7 +206,8 @@ validate_query_genes <- function(qgenes,
 
       } else {
         lgr::lgr$warn(paste0(
-          stringr::str_to_title(qtype), " gene identifiers NOT found: ",
+          stringr::str_to_title(qtype),
+          " gene identifiers NOT found: ",
           paste0(queryset[['not_found']]$qid, collapse = ", ")))
       }
 
@@ -345,8 +359,8 @@ validate_db <- function(oe_db) {
       "slparalogdb",
       "subcelldb",
       "tcgadb",
-      "tftargetdb")
-      #"tissuecelldb")
+      "tftargetdb",
+      "tissuecelldb")
 
   for (db in db_entries) {
     if (!(db %in% names(oe_db))) {
@@ -382,7 +396,7 @@ validate_db_df <- function(df, dbtype = "genedb") {
                "tcga_site_code",
                "tcga_clinical_strata_code",
                "tcga_coexpression",
-               "tcga_recurrent_variants",
+               #"tcga_recurrent_variants",
                "protein_complex",
                "protein_domain",
                "ligand_receptor_db",
@@ -396,11 +410,13 @@ validate_db_df <- function(df, dbtype = "genedb") {
                "go_gganatogram",
                "opentarget_disease_assoc",
                "opentarget_disease_site_rank",
-               #"enrichment_db_hpa_singlecell",
-               #"enrichment_db_hpa_tissue",
+               "tissuecelldb_specificity",
+               "tissuecelldb_enrichment_membership",
                "ppi_nodes",
                "slparalog",
                "fitness_scores",
+               "fitness_genes",
+               "fitness_models",
                "target_priority_scores",
                "survival_km_cshl",
                "ppi_edges")
@@ -469,7 +485,6 @@ validate_db_df <- function(df, dbtype = "genedb") {
               "tot_samples",
               "percent_mutated",
               "percentile",
-              "decile",
               "clinical_strata_code",
               "diagnosis_code",
               "site_code")
@@ -492,11 +507,8 @@ validate_db_df <- function(df, dbtype = "genedb") {
     cols <- c("symbol",
               "symbol_partner",
               "r",
-              "p_value",
-              "tumor",
-              "tumor_suppressor",
-              "oncogene",
-              "cancer_driver")
+              "adj_pvalue",
+              "tumor")
   }
 
   if (dbtype == "tcga_diagnosis_code") {
@@ -524,16 +536,19 @@ validate_db_df <- function(df, dbtype = "genedb") {
               "global_assoc_rank")
   }
 
-  if (dbtype == "enrichment_db_hpa_singlecell") {
+  if (dbtype == "tissuecelldb_specificity") {
     cols <- c("ensembl_gene_id",
-              "category",
-              "cell_type")
+              "tau",
+              "n_contexts",
+              "max_expression",
+              "max_context",
+              "top_contexts",
+              "top_expressions")
   }
 
-  if (dbtype == "enrichment_db_hpa_tissue") {
-    cols <- c("ensembl_gene_id",
-              "category",
-              "tissue")
+  if (dbtype == "tissuecelldb_enrichment_membership") {
+    cols <- c("category",
+              "ensembl_gene_id")
   }
 
   if (dbtype == "hpadb") {
@@ -557,11 +572,6 @@ validate_db_df <- function(df, dbtype = "genedb") {
                  "mode_of_regulation")
   }
 
-
-  if (dbtype == "go_gganatogram") {
-    cols <- c("ggcompartment",
-                  "go_id")
-  }
   if (dbtype == "protein_complex") {
     cols <- c('complex_id',
               'complex_name',
@@ -631,16 +641,24 @@ validate_db_df <- function(df, dbtype = "genedb") {
   }
 
   if (dbtype == "fitness_scores") {
-    cols <- c('symbol',
-              'model_name',
-              'model_id',
-              'loss_of_fitness',
+    cols <- c('model_id',
               'scaled_BF',
+              'loss_of_fitness',
+              'gene_id_cmpassports')
+  }
+  if(dbtype == "fitness_models"){
+    cols <- c('model_id',
+              'model_name',
               'tissue',
               'cancer_type',
-              'tissue_status',
-              'entrezgene',
               'sample_site',
+              'tissue_status')
+  }
+
+  if(dbtype == "fitness_genes"){
+    cols <- c('entrezgene',
+              'symbol',
+              'essential_gene',
               'gene_id_cmpassports')
   }
 
@@ -1005,6 +1023,22 @@ add_excel_sheet <- function(
         )
       )
 
+  }
+
+  if (analysis_output == "data_versions") {
+    for (res in report$config$resources) {
+      target_df <- target_df |>
+        dplyr::bind_rows(
+          data.frame(
+            DATABASE = res$name,
+            VERSION = res$version,
+            DESCRIPTION = res$description,
+            URL = res$url,
+            LICENSE = res$license,
+            stringsAsFactors = F
+          )
+        )
+    }
   }
 
   if (analysis_output == "query") {
@@ -1433,10 +1467,6 @@ add_excel_sheet <- function(
             annotation_source = report$config$resources$tcga$name,
             version = report$config$resources$tcga$version) |>
           dplyr::rename(tcga_cohort = "tumor") |>
-          dplyr::select(-c("entrezgene")) |>
-          dplyr::rename(partner_oncogene = "oncogene",
-                        partner_tumor_suppressor = "tumor_suppressor",
-                        partner_cancer_driver = "cancer_driver") |>
           dplyr::select(c("annotation_source", "version"),
                         dplyr::everything())
       }
@@ -1479,78 +1509,6 @@ add_excel_sheet <- function(
     }
   }
 
-
-  if (analysis_output == "recurrent_variants") {
-
-    if (is.data.frame(report$data$tcga$recurrent_variants)) {
-      if (NROW(report$data$tcga$recurrent_variants) > 0) {
-        df <-
-          report$data$tcga$recurrent_variants
-
-        colnames(df) <- tolower(colnames(df))
-        df <- as.data.frame(
-          df |>
-            dplyr::mutate(
-              site_recurrence = as.numeric(.data$site_recurrence)
-            ) |>
-            dplyr::arrange(
-              dplyr::desc(.data$total_recurrence),
-              dplyr::desc(.data$site_recurrence)) |>
-            dplyr::mutate(
-              annotation_source = report$config$resources$tcga$name,
-              version = report$config$resources$tcga$version) |>
-            dplyr::mutate(
-              ensembl_gene_id =
-                stringr::str_trim(
-                  textclean::replace_html(.data$ensembl_gene_id)
-                )
-            ) |>
-            dplyr::mutate(
-              ensembl_transcript_id =
-                stringr::str_trim(
-                  textclean::replace_html(.data$ensembl_transcript_id)
-                )
-            ) |>
-            dplyr::mutate(
-              protein_domain =
-                stringr::str_trim(
-                  textclean::replace_html(.data$protein_domain)
-                )
-            ) |>
-            dplyr::mutate(
-              cosmic_mutation_id =
-                stringr::str_trim(
-                  textclean::replace_html(.data$cosmic_mutation_id)
-                )
-            ) |>
-            dplyr::mutate(
-              site_recurrence = paste(.data$primary_site,
-                                      .data$site_recurrence, sep =":")
-            ) |>
-            dplyr::group_by(
-              .data$symbol, .data$consequence,
-              .data$protein_change, .data$protein_domain,
-              .data$mutation_hotspot,
-              .data$loss_of_function,
-              .data$ensembl_gene_id,
-              .data$ensembl_transcript_id,
-              .data$total_recurrence,
-              .data$cosmic_mutation_id
-            ) |>
-            dplyr::summarise(site_recurrence = paste(
-              .data$site_recurrence, collapse = ", "
-            ), .groups = "drop") |>
-            dplyr::arrange(
-              dplyr::desc(.data$total_recurrence)
-            )
-
-        )
-
-        target_df <- target_df |>
-          dplyr::bind_rows(df)
-      }
-    }
-  }
 
   if (analysis_output == "aberration") {
 
@@ -1638,8 +1596,8 @@ add_excel_sheet <- function(
           dplyr::mutate(
             annotation_source = report$config$resources$cellmodeldb$name,
             version = report$config$resources$cellmodeldb$version) |>
-          dplyr::select(-c("symbol_link_ps", "model_link_ps",
-                           "n_gene")) |>
+          dplyr::select(-c("symbol_link_ps",
+                           "model_link_ps")) |>
           dplyr::select(c("annotation_source", "version"),
                         dplyr::everything())
       }
@@ -1735,18 +1693,48 @@ add_excel_sheet <- function(
 
   }
 
-  if (analysis_output == "cell_tissue") {
+  if (analysis_output == "cell_tissue_specificity") {
+
+    target_df <- data.frame()
+    for (e in c("tissue_overview", "scRNA_overview")) {
+      if (is.data.frame(report$data$cell_tissue[[e]]$per_gene)) {
+        if (NROW(report$data$cell_tissue[[e]]$per_gene) > 0) {
+          df <-
+            report$data$cell_tissue[[e]]$per_gene |>
+            dplyr::mutate(
+              annotation_source = report$config$resources$hpa$name,
+              version = report$config$resources$hpa$version,
+              category = stringr::str_replace(e,"_overview","")) |>
+            dplyr::select(c("annotation_source",
+                          "version",
+                          "category"),
+                          dplyr::everything())
+
+          target_df <- target_df |>
+            dplyr::bind_rows(df) |>
+            dplyr::mutate(
+              genename =
+                stringr::str_trim(
+                  textclean::replace_html(.data$genename)
+                )
+            )
+        }
+      }
+    }
+  }
+
+  if (analysis_output == "cell_tissue_enrichment") {
 
     target_df <- data.frame()
     for (e in c("tissue_enrichment", "scRNA_enrichment")) {
-      if (is.data.frame(report$data$cell_tissue[[e]]$per_gene)) {
-        if (NROW(report$data$cell_tissue[[e]]$per_gene) > 0) {
+      if (is.data.frame(report$data$cell_tissue[[e]]$per_type)) {
+        if (NROW(report$data$cell_tissue[[e]]$per_type) > 0) {
           if (e == "tissue_enrichment") {
             df <-
-              report$data$cell_tissue[[e]]$per_gene |>
+              report$data$cell_tissue[[e]]$per_type |>
               dplyr::mutate(
-                annotation_source = report$config$resources$gtex$name,
-                version = report$config$resources$gtex$version,
+                annotation_source = report$config$resources$hpa$name,
+                version = report$config$resources$hpa$version,
                 category = stringr::str_replace(e,"_enrichment","")) |>
               dplyr::select(c("annotation_source",
                             "version",
@@ -1756,7 +1744,7 @@ add_excel_sheet <- function(
 
           } else {
             df <-
-              report$data$cell_tissue[[e]]$per_gene |>
+              report$data$cell_tissue[[e]]$per_type |>
               dplyr::mutate(
                 annotation_source = report$config$resources$hpa$name,
                 version = report$config$resources$hpa$version,
@@ -1767,13 +1755,7 @@ add_excel_sheet <- function(
               dplyr::rename(tissue_or_celltype = "cell_type")
           }
           target_df <- target_df |>
-            dplyr::bind_rows(df) |>
-            dplyr::mutate(
-              genename =
-                stringr::str_trim(
-                  textclean::replace_html(.data$genename)
-                )
-            )
+            dplyr::bind_rows(df)
         }
       }
     }

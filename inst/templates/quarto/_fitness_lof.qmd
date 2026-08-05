@@ -32,9 +32,9 @@
 targets_wide <- as.data.frame(
   onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] |>
     dplyr::group_by(.data$symbol,
-                    .data$n_gene_tissue,
+                    .data$n_models_dependent_tissue,
                     .data$symbol_link_ps,
-                    .data$n_gene,
+                    .data$n_models_dependent_total,
                     .data$tissue) |>
     dplyr::summarise(cell_lines = paste(.data$model_name, collapse = ", "),
                      ps_link = paste(.data$model_link_ps, collapse = ", "),
@@ -44,7 +44,8 @@ targets_wide <- as.data.frame(
 )
   
 top_fitness_hits <- targets_wide |>
-  dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) |>
+  dplyr::mutate(symbol = forcats::fct_reorder(
+    symbol, n_models_dependent_total)) |>
   dplyr::arrange(symbol) |>
   dplyr::select(symbol) |>
   dplyr::distinct() |>
@@ -52,9 +53,11 @@ top_fitness_hits <- targets_wide |>
 
 
 fitness_lof_oe_plot <- targets_wide |>
-  dplyr::mutate(symbol = forcats::fct_reorder(symbol, n_gene)) |>
+  dplyr::mutate(
+    symbol = forcats::fct_reorder(symbol, n_models_dependent_total)) |>
   dplyr::inner_join(top_fitness_hits, by = "symbol") |>
-  ggplot2::ggplot(ggplot2::aes(x = symbol, y = n_gene_tissue, fill = tissue)) +
+  ggplot2::ggplot(
+    ggplot2::aes(x = symbol, y = n_models_dependent_tissue, fill = tissue)) +
   ggplot2::geom_bar(stat = "identity") +
   ggplot2::coord_flip() +
   ggplot2::ylab("Number of cell lines with significant loss-of-fitness") +
@@ -89,10 +92,42 @@ cat('<br><br>')
 
 ```
 
+#### Common essential genes
+
+* Here we list target genes defined as _common essential_ (i.e. genes that exert a loss-of-fitness
+effect across many cell lines and are essential for the survival of most cell types, regardless of their cancer type), as defined in [Pacini et al., Cancer Cell, 2024](https://pubmed.ncbi.nlm.nih.gov/38215750/)
+
+* **`r round((onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_essential']] / NROW(onc_enrich_report$data$query$target)) * 100, digits = 1)`%** of genes in the query set are annotated as common essential genes in DepMap/Project Score
+
+```{r fitness_common_essential}
+#| echo: false
+#| output: asis
+#| eval: !expr onc_enrich_report[['data']][['fitness']][['fitness_scores']][['n_essential']] > 0
+
+htmltools::br()
+
+fitness_common_essential_df <- 
+  onc_enrich_report[['data']][['fitness']][['fitness_scores']][['common_essential']] |>
+  dplyr::rename(symbol = symbol_link_ps) |>
+  head(500)
+
+DT::datatable(
+  fitness_common_essential_df, 
+  escape = F, 
+  extensions = c("Buttons","Responsive"), 
+  width = "100%",
+  options = list(buttons = c('csv','excel'),
+               dom = 'Bfrtip', 
+               pagelength = 20)
+  )
+
+
+```
 
 #### Loss-of-fitness table
 
-* A maximum of **n = 2000** *tissue-specific-cell-lines-per-gene* are shown in the table below (the complete set of genes, including the loss-of-fitness scores per cell line, can be found in the Excel output of oncoEnrichR)
+* A maximum of **n = 2000** *tissue-specific cell lines per gene* are shown in the table below (the complete set of genes, including the loss-of-fitness scores per cell line, can be found in the Excel output of oncoEnrichR)
+* Note that we here omit entries for _common essential genes_ (i.e. genes that are essential for the survival of most cell types, regardless of their cancer type), as defined in [Pacini et al., Cancer Cell, 2024](https://pubmed.ncbi.nlm.nih.gov/38215750/)
 
 ```{r fitness_lof_table}
 #| echo: false
@@ -101,11 +136,13 @@ cat('<br><br>')
 
 htmltools::br()
 
-fitness_lof_oe_df <- onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] |>
+fitness_lof_oe_df <- 
+  onc_enrich_report[['data']][['fitness']][['fitness_scores']][['targets']] |>
+  dplyr::filter(.data$essential_gene == F) |>
   dplyr::group_by(.data$symbol,
-                  .data$n_gene_tissue,
+                  .data$n_models_dependent_tissue,
                   .data$symbol_link_ps,
-                  .data$n_gene,
+                  .data$n_models_dependent_total,
                   .data$tissue) |>
   dplyr::summarise(ps_link = paste(.data$model_link_ps, collapse = ", "),
                    .groups = "drop") |>
@@ -155,7 +192,7 @@ cat('<br><br>')
 
 #### Target priority scores
 
-* Promising candidate therapeutic targets are indicated through __[target priority scores](https://score.depmap.sanger.ac.uk/documentation#scores)__. Target priority scores are based on integration of CRISPR knockout gene fitness effects with genomic biomarker and patient data ([Behan et al., Nature, 2019](https://pubmed.ncbi.nlm.nih.gov/30971826/)). All genes are assigned a target priority score between 0 – 100 from lowest to highest priority. In the heatmap shown below, genes in the query set are ranked according to their respective priority scores across all cancers (i.e. _Pan-cancer_), limited to the top 100 candidates.
+* Promising candidate therapeutic targets are indicated through __[target priority scores](https://score.depmap.sanger.ac.uk/documentation#scores)__. Target priority scores are based on integration of CRISPR knockout gene fitness effects with genomic biomarker and patient data ([Pacini et al., Cancer Cell, 2024](https://pubmed.ncbi.nlm.nih.gov/38215750/)). All genes are assigned a target priority score between 0 – 100 from lowest to highest priority. In the heatmap shown below, genes in the query set are ranked according to their respective priority scores across all cancers (i.e. _Pancancer_), limited to the top 100 candidates.
 
 
 <br>

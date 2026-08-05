@@ -15,22 +15,18 @@ tcga_oncoplot_genes <-
     stopifnot(
       identical(names(tcgadb),
                 c("coexpression",
+                  "coexpression_summary",
                   "aberration",
-                  "recurrent_variants",
                   "median_ttype_expression",
-                  "pfam",
-                  "maf_codes",
                   "maf",
-                  "site_code",
-                  "diagnosis_code",
-                  "clinical_strata_code")
+                  "code")
       ))
     validate_db_df(genedb, dbtype = "genedb")
     validate_db_df(tcgadb$aberration, dbtype = "tcga_aberration")
-    validate_db_df(tcgadb$site_code, dbtype = "tcga_site_code")
-    validate_db_df(tcgadb$diagnosis_code, dbtype = "tcga_diagnosis_code")
-    validate_db_df(tcgadb$clinical_strata_code, dbtype = "tcga_clinical_strata_code")
-    stopifnot(site %in% unique(tcgadb$site_code$primary_site))
+    validate_db_df(tcgadb$code$site, dbtype = "tcga_site_code")
+    validate_db_df(tcgadb$code$diagnosis, dbtype = "tcga_diagnosis_code")
+    validate_db_df(tcgadb$code$clinical_strata, dbtype = "tcga_clinical_strata_code")
+    stopifnot(site %in% unique(tcgadb$code$site$primary_site))
     stopifnot(qsource == "symbol" | qsource == "entrezgene")
     stopifnot(cstrata == "site" | cstrata == "site_diagnosis")
     query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
@@ -51,11 +47,12 @@ tcga_oncoplot_genes <-
       dplyr::inner_join(
         dplyr::select(query_genes_df, "symbol"),
         by = c("symbol"), relationship = "many-to-many") |>
-      dplyr::left_join(tcgadb[['site_code']],
-                       by = "site_code", relationship = "many-to-many") |>
-      dplyr::left_join(tcgadb[['diagnosis_code']],
+      dplyr::left_join(tcgadb[['code']][['site']],
+                       by = "site_code",
+                       relationship = "many-to-many") |>
+      dplyr::left_join(tcgadb[['code']][['diagnosis']],
                        by = "diagnosis_code", relationship = "many-to-many") |>
-      dplyr::left_join(tcgadb[['clinical_strata_code']],
+      dplyr::left_join(tcgadb[['code']][['clinical_strata']],
                        by = "clinical_strata_code", relationship = "many-to-many") |>
       dplyr::select(-c("site_code",
                        "diagnosis_code",
@@ -78,7 +75,8 @@ tcga_oncoplot_genes <-
 
     #n_omitted <- nrow(query_genes_df) - nrow(tcga_gene_stats)
     lgr::lgr$info(
-      paste0("Choosing genes for oncoplot - highest SNV/InDel frequency in TCGA cohort - ", site))
+      paste0("Choosing genes for oncoplot - highest SNV/InDel",
+             "frequency in TCGA cohort - ", site))
 
     return(top_mutated_genes)
 
@@ -100,21 +98,18 @@ tcga_aberration_matrix <- function(qgenes,
   stopifnot(
     identical(names(tcgadb),
               c("coexpression",
+                "coexpression_summary",
                 "aberration",
-                "recurrent_variants",
                 "median_ttype_expression",
-                "pfam",
-                "maf_codes",
                 "maf",
-                "site_code",
-                "diagnosis_code",
-                "clinical_strata_code")
+                "code")
     ))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tcgadb$aberration, dbtype = "tcga_aberration")
-  validate_db_df(tcgadb$site_code, dbtype = "tcga_site_code")
-  validate_db_df(tcgadb$diagnosis_code, dbtype = "tcga_diagnosis_code")
-  validate_db_df(tcgadb$clinical_strata_code, dbtype = "tcga_clinical_strata_code")
+  validate_db_df(tcgadb$code$site, dbtype = "tcga_site_code")
+  validate_db_df(tcgadb$code$diagnosis, dbtype = "tcga_diagnosis_code")
+  validate_db_df(tcgadb$code$clinical_strata,
+                 dbtype = "tcga_clinical_strata_code")
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
   stopifnot(cstrata == "site")
   stopifnot(vtype == "cna_ampl" | vtype == "cna_homdel")
@@ -169,12 +164,15 @@ tcga_aberration_matrix <- function(qgenes,
   }
 
   tcga_gene_stats <- tcga_gene_stats |>
-    dplyr::left_join(tcgadb[['site_code']],
-                     by = "site_code", relationship = "many-to-many") |>
-    dplyr::left_join(tcgadb[['diagnosis_code']],
-                     by = "diagnosis_code", relationship = "many-to-many") |>
-    dplyr::left_join(tcgadb[['clinical_strata_code']],
-                     by = "clinical_strata_code", relationship = "many-to-many") |>
+    dplyr::left_join(tcgadb[['code']][['site']],
+                     by = "site_code",
+                     relationship = "many-to-many") |>
+    dplyr::left_join(tcgadb[['code']][['diagnosis']],
+                     by = "diagnosis_code",
+                     relationship = "many-to-many") |>
+    dplyr::left_join(tcgadb[['code']][['clinical_strata']],
+                     by = "clinical_strata_code",
+                     relationship = "many-to-many") |>
     dplyr::select(-c("site_code",
                      "diagnosis_code",
                      "clinical_strata_code")) |>
@@ -184,7 +182,9 @@ tcga_aberration_matrix <- function(qgenes,
   ## return NULL if less than 3 query genes are found with copy number data from TCGA
   num_genes <- length(unique(tcga_gene_stats$symbol))
   if (num_genes < 3) {
-    lgr::lgr$info( paste0("NOTE: Limited number of genes (< 3) in query set with TCGA aberration data - type '", vtype, "'"))
+    lgr::lgr$info( paste0(
+      "NOTE: Limited number of genes (< 3) in query set with ",
+      "recurrent aberration data in TCGA - '", vtype, "'"))
     return(NULL)
   }
 
@@ -295,21 +295,17 @@ tcga_aberration_table <- function(qgenes,
   stopifnot(
     identical(names(tcgadb),
               c("coexpression",
+                "coexpression_summary",
                 "aberration",
-                "recurrent_variants",
                 "median_ttype_expression",
-                "pfam",
-                "maf_codes",
                 "maf",
-                "site_code",
-                "diagnosis_code",
-                "clinical_strata_code")
+                "code")
     ))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tcgadb$aberration, dbtype = "tcga_aberration")
-  validate_db_df(tcgadb$site_code, dbtype = "tcga_site_code")
-  validate_db_df(tcgadb$diagnosis_code, dbtype = "tcga_diagnosis_code")
-  validate_db_df(tcgadb$clinical_strata_code, dbtype = "tcga_clinical_strata_code")
+  validate_db_df(tcgadb$code$site, dbtype = "tcga_site_code")
+  validate_db_df(tcgadb$code$diagnosis, dbtype = "tcga_diagnosis_code")
+  validate_db_df(tcgadb$code$clinical_strata, dbtype = "tcga_clinical_strata_code")
 
   stopifnot(vtype %in% c("snv_indel", "cna_homdel", "cna_ampl"))
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
@@ -331,32 +327,44 @@ tcga_aberration_table <- function(qgenes,
 
   aberration_data <- tcgadb[['aberration']] |>
     dplyr::inner_join(
-      dplyr::select(query_genes_df, c("symbol",
-                                    "entrezgene")),
-                      by=c("symbol"), relationship = "many-to-many") |>
-    dplyr::left_join(tcgadb[['site_code']],
-                     by = "site_code", relationship = "many-to-many") |>
-    dplyr::left_join(tcgadb[['diagnosis_code']],
-                     by = "diagnosis_code", relationship = "many-to-many") |>
-    dplyr::left_join(tcgadb[['clinical_strata_code']],
-                     by = "clinical_strata_code", relationship = "many-to-many") |>
-    dplyr::select(-c("site_code",
-                     "diagnosis_code",
-                     "clinical_strata_code")) |>
-    dplyr::filter(.data$clinical_strata == "site_diagnosis" &
-                    .data$variant_type == vtype &
-                    .data$primary_site != "Pancancer") |>
-    dplyr::select(c("symbol",
-                  "entrezgene",
-                  "primary_site",
-                  "primary_diagnosis",
-                  "variant_type",
-                  "samples_mutated",
-                  "tot_samples",
-                  "percent_mutated",
-                  "percentile")) |>
+      dplyr::select(
+        query_genes_df,
+        c("symbol", "entrezgene")),
+      by=c("symbol"),
+      relationship = "many-to-many") |>
+    dplyr::left_join(
+      tcgadb[['code']][['site']],
+      by = "site_code",
+      relationship = "many-to-many") |>
+    dplyr::left_join(
+      tcgadb[['code']][['diagnosis']],
+      by = "diagnosis_code",
+      relationship = "many-to-many") |>
+    dplyr::left_join(
+      tcgadb[['code']][['clinical_strata']],
+      by = "clinical_strata_code",
+      relationship = "many-to-many") |>
+    dplyr::select(
+      -c("site_code",
+         "diagnosis_code",
+         "clinical_strata_code")) |>
+    dplyr::filter(
+      .data$clinical_strata == "site_diagnosis" &
+        .data$variant_type == vtype &
+        .data$primary_site != "Pancancer") |>
+    dplyr::select(
+      c("symbol",
+        "entrezgene",
+        "primary_site",
+        "primary_diagnosis",
+        "variant_type",
+        "samples_mutated",
+        "tot_samples",
+        "percent_mutated",
+        "percentile")) |>
     dplyr::rename(cohort_size = "tot_samples") |>
-    dplyr::filter(!stringr::str_detect(.data$primary_diagnosis,"^Other")) |>
+    dplyr::filter(!stringr::str_detect(
+      .data$primary_diagnosis,"^Other")) |>
     dplyr::distinct() |>
     dplyr::mutate(gene = paste0(
       "<a href ='http://www.ncbi.nlm.nih.gov/gene/",
@@ -389,24 +397,21 @@ tcga_coexpression <- function(qgenes,
   stopifnot(
     identical(names(tcgadb),
               c("coexpression",
+                "coexpression_summary",
                 "aberration",
-                "recurrent_variants",
                 "median_ttype_expression",
-                "pfam",
-                "maf_codes",
                 "maf",
-                "site_code",
-                "diagnosis_code",
-                "clinical_strata_code")
+                "code")
     ))
   validate_db_df(genedb, dbtype = "genedb")
   validate_db_df(tcgadb$coexpression, dbtype = "tcga_coexpression")
-  validate_db_df(tcgadb$site_code, dbtype = "tcga_site_code")
-  validate_db_df(tcgadb$diagnosis_code, dbtype = "tcga_diagnosis_code")
-  validate_db_df(tcgadb$clinical_strata_code, dbtype = "tcga_clinical_strata_code")
+  validate_db_df(tcgadb$code$site, dbtype = "tcga_site_code")
+  validate_db_df(tcgadb$code$diagnosis, dbtype = "tcga_diagnosis_code")
+  validate_db_df(tcgadb$code$clinical_strata, dbtype = "tcga_clinical_strata_code")
 
   stopifnot(qsource == "symbol" | qsource == "entrezgene")
-  query_genes_df <- data.frame('symbol' = qgenes, stringsAsFactors = F)
+  query_genes_df <-
+    data.frame('symbol' = qgenes, stringsAsFactors = F)
   if (qsource == "entrezgene") {
     stopifnot(is.integer(qgenes))
     query_genes_df <- data.frame(entrezgene = qgenes, stringsAsFactors = F)
@@ -421,6 +426,9 @@ tcga_coexpression <- function(qgenes,
       query_genes_df, by = "symbol", relationship = "many-to-many") |>
       dplyr::distinct()
   }
+
+  coexp_target_1 <- data.frame()
+  coexp_target_2 <- data.frame()
 
   coexp_target_1 <- tcgadb[['coexpression']] |>
     dplyr::mutate(corrtype = dplyr::if_else(
@@ -438,13 +446,66 @@ tcga_coexpression <- function(qgenes,
                   "corrtype",
                   "correlation",
                   "r",
-                  "p_value",
+                  "adj_pvalue",
                   "tumor")) |>
-    dplyr::left_join(
-      query_genes_df, by = c("symbol" = "symbol"), relationship = "many-to-many") |>
-    dplyr::filter(!is.na(.data$entrezgene))
+    dplyr::inner_join(
+      query_genes_df, by = c("symbol" = "symbol"),
+      relationship = "many-to-many")
 
-  coexp_target_tcga <- tcgadb[['coexpression']] |>
+  if(NROW(coexp_target_1) > 0){
+    coexp_target_1 <- coexp_target_1 |>
+      dplyr::select(-c("entrezgene")) |>
+      dplyr::left_join(
+        dplyr::select(
+          genedb,
+          c("name","oncogene",
+            "cancer_driver",
+            "tumor_suppressor",
+            "symbol","SM_tractability_category")),
+        by = c("symbol_partner" = "symbol"),
+        relationship = "many-to-many"
+      ) |>
+      dplyr::rename(
+        target_gene = "symbol",
+        partner_gene = "symbol_partner",
+        partner_genename = "name",
+        partner_tractability = "SM_tractability_category",
+        partner_oncogene = "oncogene",
+        partner_driver = "cancer_driver",
+        partner_tumor_suppressor = "tumor_suppressor"
+      ) |>
+      dplyr::filter(
+        .data$partner_oncogene == TRUE |
+          .data$partner_driver == TRUE |
+          .data$partner_tumor_suppressor == TRUE
+      )
+
+    if(NROW(coexp_target_1) > 0){
+      coexp_target_1 <- coexp_target_1 |>
+        dplyr::left_join(
+          dplyr::select(
+            tcgadb$coexpression_summary,
+            c("symbol","expr","tumor")),
+          by = c("partner_gene" = "symbol",
+                 "tumor" = "tumor")) |>
+        dplyr::rename(
+          partner_expression = "expr"
+        ) |>
+        dplyr::left_join(
+          dplyr::select(
+            tcgadb$coexpression_summary,
+            c("symbol","expr","tumor")),
+          by = c("target_gene" = "symbol",
+                 "tumor" = "tumor")) |>
+        dplyr::rename(
+          target_expression = "expr"
+        )
+    }
+  }else{
+    coexp_target_1 <- data.frame()
+  }
+
+  coexp_target_2 <- tcgadb[['coexpression']] |>
     dplyr::mutate(corrtype = dplyr::if_else(
       .data$r < 0,
       "Negative",
@@ -456,101 +517,186 @@ tcga_coexpression <- function(qgenes,
       .data$r >= 0.8 ~ "Very strong positive",
       TRUE ~ as.character(NA))) |>
     dplyr::select(c("symbol",
-                  "symbol_partner",
-                  "corrtype",
-                  "correlation",
-                  "r",
-                  "p_value",
-                  "tumor")) |>
-    dplyr::left_join(query_genes_df,
-                     by = c("symbol_partner" = "symbol"), relationship = "many-to-many") |>
-    dplyr::filter(!is.na(.data$entrezgene))
+                    "symbol_partner",
+                    "corrtype",
+                    "correlation",
+                    "r",
+                    "adj_pvalue",
+                    "tumor")) |>
+    dplyr::inner_join(
+      query_genes_df, by = c("symbol_partner" = "symbol"),
+      relationship = "many-to-many")
 
-  if (NROW(coexp_target_tcga) == 0) {
-    return(coexp_target_tcga)
+  if(NROW(coexp_target_2) > 0){
+    coexp_target_2 <- coexp_target_2 |>
+      dplyr::select(-c("entrezgene")) |>
+      dplyr::left_join(
+        dplyr::select(
+          genedb,
+          c("name","oncogene",
+            "cancer_driver",
+            "tumor_suppressor",
+            "symbol","SM_tractability_category")),
+        by = c("symbol" = "symbol"),
+        relationship = "many-to-many"
+      ) |>
+      dplyr::rename(
+        target_gene = "symbol_partner",
+        partner_gene = "symbol",
+        partner_genename = "name",
+        partner_tractability = "SM_tractability_category",
+        partner_oncogene = "oncogene",
+        partner_driver = "cancer_driver",
+        partner_tumor_suppressor = "tumor_suppressor"
+      ) |>
+      dplyr::filter(
+        .data$partner_oncogene == TRUE |
+          .data$partner_driver == TRUE |
+          .data$partner_tumor_suppressor == TRUE
+      )
+
+    if(NROW(coexp_target_2) > 0){
+      coexp_target_2 <- coexp_target_2 |>
+        dplyr::left_join(
+          dplyr::select(
+            tcgadb$coexpression_summary,
+            c("symbol","expr","tumor")),
+          by = c("partner_gene" = "symbol",
+                 "tumor" = "tumor")) |>
+        dplyr::rename(
+          partner_expression = "expr"
+        ) |>
+        dplyr::left_join(
+          dplyr::select(
+            tcgadb$coexpression_summary,
+            c("symbol","expr","tumor")),
+          by = c("target_gene" = "symbol",
+                 "tumor" = "tumor")) |>
+        dplyr::rename(
+          target_expression = "expr"
+        )
+    }
+  }else{
+    coexp_target_2 <- data.frame()
   }
-  coexp_target_tcga <- coexp_target_tcga |>
-    dplyr::mutate(tmp = .data$symbol) |>
-    dplyr::mutate(symbol = .data$symbol_partner) |>
-    dplyr::mutate(symbol_partner = .data$tmp) |>
-    dplyr::select(-c("tmp")) |>
-    dplyr::bind_rows(coexp_target_1) |>
+
+  coexp_target_tcga <- dplyr::bind_rows(
+    coexp_target_1,
+    coexp_target_2) |>
     dplyr::distinct() |>
-    dplyr::left_join(
-      dplyr::select(genedb,
-                    c("name","oncogene","cancer_driver",
-                      "tumor_suppressor",
-                      "symbol","SM_tractability_category")),
-      by = c("symbol_partner" = "symbol"), relationship = "many-to-many") |>
-    dplyr::rename(target_gene = "symbol",
-                  partner_gene = "symbol_partner",
-                  partner_genename = "name",
-                  target_tractability = "SM_tractability_category") |>
     dplyr::mutate(r = as.numeric(round(.data$r, digits = 3))) |>
-    dplyr::filter(stringr::str_detect(.data$tumor,"BRCA|LUAD|SKCM|COAD|SARC|PRAD|ESCA|MESO|UCEC|OV|CHOL|THCA|COAD|BLCA|STAD|KIRP|GBM|HNSC")) |>
+    dplyr::filter(stringr::str_detect(
+      .data$tumor,
+      paste0(
+        "BRCA|LUAD|LUSC|SKCM|COAD|SARC|",
+        "PRAD|PAAD|ESCA|MESO|KIRC|UCEC|",
+        "OV|CHOL|THCA|COAD|BLCA|STAD|",
+        "KIRP|GBM|READ|DLBC|CESC|HNSC|",
+        "KICH|TGCT|UVM|LGG|ACC|LAML"))) |>
     dplyr::mutate(primary_site = "Breast") |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "LUAD" | .data$tumor == "LUSC","Lung", as.character(.data$primary_site))) |>
+      .data$tumor == "LUAD" |
+        .data$tumor == "LUSC","Lung",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "STAD" | .data$tumor == "ESCA","Esophagus/Stomach", as.character(.data$primary_site))) |>
+      .data$tumor == "ACC","Adrenal Gland",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "BLCA","Bladder", as.character(.data$primary_site))) |>
+      .data$tumor == "TGCT","Testis",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "SARC","Soft Tissue", as.character(.data$primary_site))) |>
+      .data$tumor == "STAD" |
+        .data$tumor == "ESCA","Esophagus/Stomach",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "HNSC","Head and Neck", as.character(.data$primary_site))) |>
+      .data$tumor == "BLCA","Bladder",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "UCEC","Endometrium", as.character(.data$primary_site))) |>
+      .data$tumor == "SARC","Soft Tissue",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "LAML","Myeloid", as.character(.data$primary_site))) |>
+      .data$tumor == "HNSC","Head and Neck",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "SKCM","Skin", as.character(.data$primary_site))) |>
+      .data$tumor == "UCEC","Endometrium",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "GBM","Brain", as.character(.data$primary_site))) |>
+      .data$tumor == "LAML","Myeloid",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "PAAD","Pancreas", as.character(.data$primary_site))) |>
+      .data$tumor == "SKCM","Skin",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "COAD" | .data$tumor == "READ","Colon/Rectum", as.character(.data$primary_site))) |>
+      .data$tumor == "GBM" | .data$tumor == "LGG","Brain",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "PRAD","Prostate", as.character(.data$primary_site))) |>
+      .data$tumor == "CESC","Cervix",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "THCA","Thyroid", as.character(.data$primary_site))) |>
+      .data$tumor == "COAD" |
+        .data$tumor == "READ","Colon/Rectum",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "KIRP" | .data$tumor == "KICH","Kidney", as.character(.data$primary_site))) |>
+      .data$tumor == "PRAD","Prostate",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "OV","Ovary", as.character(.data$primary_site))) |>
+      .data$tumor == "THCA","Thyroid",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "MESO","Pleura", as.character(.data$primary_site))) |>
+      .data$tumor == "PAAD","Pancreas",
+      as.character(.data$primary_site))) |>
     dplyr::mutate(primary_site = dplyr::if_else(
-      .data$tumor == "CHOL","Biliary Tract", as.character(.data$primary_site)))
-
-  coexp_target_tcga <- coexp_target_tcga |>
-    dplyr::filter(stringr::str_detect(.data$correlation,"Very") |
-                    !is.na(.data$oncogene) |
-                    !is.na(.data$tumor_suppressor) |
-                    !is.na(.data$cancer_driver)) |>
+      .data$tumor == "KIRP" |
+        .data$tumor == "KIRC" |
+        .data$tumor == "KICH","Kidney",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "LIHC","Liver",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "OV","Ovary",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "MESO","Pleura",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "CHOL","Biliary Tract",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "UVM","Eye",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "DLBC","Lymphoid",
+      as.character(.data$primary_site))) |>
+    dplyr::mutate(primary_site = dplyr::if_else(
+      .data$tumor == "LAML","Myeloid",
+      as.character(.data$primary_site))) |>
     dplyr::arrange(dplyr::desc(.data$r)) |>
-    dplyr::select(c("target_gene",
-                  "partner_gene",
-                  "correlation",
-                  "r",
-                  "p_value",
-                  "primary_site"),
-                  dplyr::everything())
+    dplyr::select(
+      c("target_gene",
+        "partner_gene",
+        "correlation",
+        "r",
+        "adj_pvalue",
+        "primary_site",
+        "tumor",
+        "target_expression",
+        "partner_expression",
+        "partner_genename"),
+      dplyr::everything())
 
   coexp_target_tcga_positive <-
     dplyr::filter(coexp_target_tcga, .data$corrtype == "Positive") |>
-    utils::head(50000)
+    dplyr::arrange(dplyr::desc(.data$r))
   coexp_target_tcga_negative <-
     dplyr::filter(coexp_target_tcga, .data$corrtype == "Negative") |>
-    dplyr::arrange(.data$r) |>
-    utils::head(50000)
+    dplyr::arrange(.data$r)
 
   coexp_target_tcga <- as.data.frame(
     dplyr::bind_rows(coexp_target_tcga_negative,
-                     coexp_target_tcga_positive)
+                     coexp_target_tcga_positive) |>
+      utils::head(200000)
   )
-
 
   ### remove duplicates
   duplicated_recs <- coexp_target_tcga |>
@@ -572,9 +718,9 @@ tcga_coexpression <- function(qgenes,
         by = c("target_gene","partner_gene","tumor"))
 
     duplicated_recs <- duplicated_recs |>
-      dplyr::filter(!(.data$tumor_suppressor == F &
-                        .data$oncogene == F &
-                        .data$cancer_driver == F))
+      dplyr::filter(!(.data$partner_tumor_suppressor == F &
+                        .data$partner_oncogene == F &
+                        .data$partner_driver == F))
 
     remaining <- duplicated_recs |>
       dplyr::select(
@@ -597,11 +743,45 @@ tcga_coexpression <- function(qgenes,
 
     coexp_target_tcga <-
       nonduplicated_recs |>
-      dplyr::bind_rows(deduplicated_recs)
+      dplyr::bind_rows(deduplicated_recs) |>
+      dplyr::arrange(.data$r) |>
+      dplyr::distinct()
 
   }
 
-  return(coexp_target_tcga)
+  coexp_target_final <- coexp_target_tcga
+
+  if(NROW(coexp_target_tcga) > 0){
+    coexp_target_final <- data.frame()
+
+    for(n in c('Positive','Negative')){
+      coexp_data_raw <- coexp_target_tcga |>
+        dplyr::filter(.data$corrtype == n)
+
+      if(NROW(coexp_data_raw) > 0 &
+         "primary_site" %in% colnames(coexp_data_raw)){
+        for(ps in sort(unique(coexp_data_raw$primary_site))){
+          coexp_data_ps <- coexp_data_raw |>
+            dplyr::filter(.data$primary_site == ps)
+
+          if(NROW(coexp_data_ps) == 0){
+            next
+          }
+          coexp_data_ps <- coexp_data_ps |>
+            dplyr::arrange(dplyr::desc(abs(.data$r))) |>
+            utils::head(1000)
+
+          coexp_target_final <-
+            dplyr::bind_rows(
+              coexp_target_final,
+              coexp_data_ps)
+        }
+      }
+    }
+  }
+
+
+  return(coexp_target_final)
 
 }
 

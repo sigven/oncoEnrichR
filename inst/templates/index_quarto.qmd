@@ -13,7 +13,35 @@ include-in-header:
       .panel-tabset > .tab-content {
         border: none;
       }
+      .dataTables_wrapper .dataTables_paginate .page-item.active .page-link {
+        background-color: #014587;
+        border-color: #014587;
+        color: white;
+      }
+      .dataTables_wrapper .dataTables_paginate .page-link {
+        color: #014587;
+      }
+      .dataTables_wrapper .dataTables_paginate .page-link:hover {
+        color: #014587;
+      }
+      /* Force a single, consistent zebra-stripe shade on all tables,
+         regardless of which DT style variant a given module happens to
+         load (different variants use different striping classes -
+         table-striped vs. stripe/display - with different opacities,
+         which otherwise looks inconsistent across sections). */
+      table.dataTable > tbody > tr.odd > * {
+        box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.06) !important;
+      }
       </style>
+      <script>
+      /* Disable zenscroll's global click hijacking (bundled transitively via
+         an htmlwidget dependency). It intercepts clicks on ANY <a href="#">
+         anywhere on the page - including DataTables' pagination buttons,
+         which use a bare href="#" - and scrolls the page to the very top.
+         Must be set before zenscroll's own script executes, hence placed in
+         include-in-header rather than an after-body script. */
+      window.noZensmooth = true;
+      </script>
 nocite: |
   @Kanehisa2000-nm, @Joshi-Tope2005-bw, @Kelder2012-vj, @Ashburner2000-sy, 
   @Von_Mering2005-jy, @Petryszak2016-jp, @Giurgiu2019-yu, @Koscielny2017-ay, 

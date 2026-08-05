@@ -55,9 +55,9 @@ Suggests:
 VignetteBuilder: knitr 
 License: MIT + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 LazyData: true
 SystemRequirements: Quarto command line tool
     (<https://github.com/quarto-dev/quarto-cli>).
+Config/roxygen2/version: 8.0.0

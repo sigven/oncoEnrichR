@@ -1,0 +1,4 @@
+.navbar .nav-text,
+.navbar .nav-text[class*="text-"] {
+  color: #FFFFFF !important;
+}
