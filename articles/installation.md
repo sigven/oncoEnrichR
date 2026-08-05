@@ -14,7 +14,7 @@
 ## Installation of oncoEnrichR with R commands
 
 1.  `install.packages('remotes')`
-2.  `remotes::install_github('sigven/oncoEnrichR', ref = "v1.6.1")`
+2.  `remotes::install_github('sigven/oncoEnrichR', ref = "v1.6.2")`
 3.  [`library(oncoEnrichR)`](https://sigven.github.io/oncoEnrichR)
 
   

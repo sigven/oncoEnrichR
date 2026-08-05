@@ -1,5 +1,50 @@
 # Changelog
 
+## Version 1.6.2
+
+- Date: 2026-08-06
+
+- Updates
+
+  - Data updates
+    - WikiPathways - 20260710
+    - COMPARTMENTS - 2026-08
+    - BioGRID - v5.0.260
+    - Open Targets Platform (2026.06)
+    - MSigDB - v2026.1.Hs
+    - KEGG - 20260723
+    - Human Protein Atlas - v25.1
+    - UniProt KB - 2026_02
+  - New report module: **Tissue and cell type enrichment** (Human
+    Protein Atlas)
+    - Reinstates the module removed in v1.5.0 (previously based on the
+      now-deprecated `TissueEnrich` package), with a new underlying
+      methodology
+    - For each query gene, expression specificity across tissues/cell
+      type groups is quantified via the *tau* index ([Yanai et al.,
+      Bioinformatics,
+      2005](https://doi.org/10.1093/bioinformatics/bti042))
+    - A hypergeometric test identifies tissues/cell type groups in which
+      query genes are overrepresented among the most highly expressed
+      genes (top quartile), using HPA consensus tissue (51 tissues) and
+      single-cell-derived cell type group (53 cell types) expression
+      data
+    - New argument to
+      [`onco_enrich()`](https://sigven.github.io/oncoEnrichR/reference/onco_enrich.md):
+      `show_cell_tissue` (default: FALSE)
+    - Results included in the Excel output workbook
+  - Renamed report section `Project background` to `Analysis metadata`
+    (better reflects its content - project owner/description)
+  - Minor styling/usability improvements across several report sections
+    - Interactive heatmaps in *Prognostic associations* and *Tumor
+      aberration frequencies* now show descriptive hover labels
+      (e.g. “Cancer type”/“Gene”) rather than generic x/y/z
+    - Condensed numeric precision (fold enrichment, p-values) in
+      interactive tables, while preserving correct numeric column
+      sorting
+    - Fixed dark/black hover styling on table pagination controls,
+      introduced with a recent `DT` package update
+
 ## Version 1.6.1
 
 - Date: 2025-12-17

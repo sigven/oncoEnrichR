@@ -29,6 +29,7 @@ functions:
   values are outlined below:
 
   ``` r
+
   onco_enrich(
     query = NULL,
     oeDB = NULL,
@@ -66,6 +67,7 @@ functions:
     show_enrichment = TRUE,
     show_aberration = FALSE,
     show_coexpression = FALSE,
+    show_cell_tissue = FALSE,
     show_ligand_receptor = FALSE,
     show_regulatory = FALSE,
     show_unknown_function = TRUE,

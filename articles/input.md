@@ -34,14 +34,13 @@ level, there is currently an upper limit of
 
 genes that can be used as input to the tool. When the number of input
 genes exceeds *n = 500*, oncoEnrichR will disable selected modules
-(protein-protein interaction networks, co-expression retrieval, and TCGA
-SNV/InDel recurrence), as we have experienced challenges running them
-with huge input sets. When running the tool through Galaxy, the
-limitation with respect to the number of input genes is stricter
-(**`n = 200`**). Note also that if the number of input genes is very low
-(i.e. **n = 1-5**), some analysis modules are not applicable for
-analysis (functional enrichment, protein-protein interaction network
-etc).
+(protein-protein interaction networks, co-expression retrieval), as we
+have experienced challenges running them with huge input sets. When
+running the tool through Galaxy, the limitation with respect to the
+number of input genes is stricter (**`n = 200`**). Note also that if the
+number of input genes is very low (i.e. **n = 1-5**), some analysis
+modules are not applicable for analysis (functional enrichment,
+protein-protein interaction network etc).
 
 **IMPORTANT NOTE**: Due to its large size, the HTML report can be slow
 to load when generating full reports with the maximum number of genes (n

@@ -12,10 +12,11 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Changelog">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Changelog">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4MB4571K5"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -32,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">oncoEnrichR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,6 +83,62 @@
 
     
     
+<div class="section level2">
+<h2 id="version-1-6-2">Version 1.6.2<a class="anchor" aria-label="anchor" href="#version-1-6-2"></a>
+</h2>
+<ul>
+<li><p>Date: 2026-08-06</p></li>
+<li>
+<p>Updates</p>
+<ul>
+<li>Data updates
+<ul>
+<li>WikiPathways - 20260710</li>
+<li>COMPARTMENTS - 2026-08</li>
+<li>BioGRID - v5.0.260</li>
+<li>Open Targets Platform (2026.06)</li>
+<li>MSigDB - v2026.1.Hs</li>
+<li>KEGG - 20260723</li>
+<li>Human Protein Atlas - v25.1</li>
+<li>UniProt KB - 2026_02</li>
+</ul>
+</li>
+<li>New report module: <strong>Tissue and cell type enrichment</strong>
+(Human Protein Atlas)
+<ul>
+<li>Reinstates the module removed in v1.5.0 (previously based on the
+now-deprecated <code>TissueEnrich</code> package), with a new underlying
+methodology</li>
+<li>For each query gene, expression specificity across tissues/cell type
+groups is quantified via the <em>tau</em> index (<a href="https://doi.org/10.1093/bioinformatics/bti042" class="external-link">Yanai et al.,
+Bioinformatics, 2005</a>)</li>
+<li>A hypergeometric test identifies tissues/cell type groups in which
+query genes are overrepresented among the most highly expressed genes
+(top quartile), using HPA consensus tissue (51 tissues) and
+single-cell-derived cell type group (53 cell types) expression data</li>
+<li>New argument to <code><a href="../reference/onco_enrich.html">onco_enrich()</a></code>:
+<code>show_cell_tissue</code> (default: FALSE)</li>
+<li>Results included in the Excel output workbook</li>
+</ul>
+</li>
+<li>Renamed report section <code>Project background</code> to
+<code>Analysis metadata</code> (better reflects its content - project
+owner/description)</li>
+<li>Minor styling/usability improvements across several report sections
+<ul>
+<li>Interactive heatmaps in <em>Prognostic associations</em> and
+<em>Tumor aberration frequencies</em> now show descriptive hover labels
+(e.g. “Cancer type”/“Gene”) rather than generic x/y/z</li>
+<li>Condensed numeric precision (fold enrichment, p-values) in
+interactive tables, while preserving correct numeric column sorting</li>
+<li>Fixed dark/black hover styling on table pagination controls,
+introduced with a recent <code>DT</code> package update</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="version-1-6-1">Version 1.6.1<a class="anchor" aria-label="anchor" href="#version-1-6-1"></a>
 </h2>
@@ -1000,7 +1057,7 @@ no longer missing from web-based analysis (oncotools.elixir.no) - file
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
