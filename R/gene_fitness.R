@@ -1,95 +1,184 @@
-get_fitness_lof_scores <- function(qgenes,
-                                  qsource = "symbol",
-                                  cellmodeldb = NULL,
-                                  max_fitness_score = -2) {
+get_fitness_lof_scores <-
+  function(qgenes,
+           qsource = "symbol",
+           cellmodeldb = NULL,
+           genedb = NULL,
+           max_fitness_score = -2) {
 
-  lgr::lgr$appenders$console$set_layout(
-    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+    lgr::lgr$appenders$console$set_layout(
+      lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  lgr::lgr$info( paste0("Cell Model Passports (DepMap): retrieval of genes ",
-                    "associated with loss-of-fitness in cancer cell lines"))
-  stopifnot(!is.null(qgenes))
-  stopifnot(is.character(qgenes))
-  stopifnot(!is.null(cellmodeldb))
-  stopifnot(!is.null(cellmodeldb[['fitness_scores']]))
-  validate_db_df(cellmodeldb[['fitness_scores']],
-                               dbtype = "fitness_scores")
+    lgr::lgr$info( paste0(
+      "Cell Model Passports (DepMap): retrieval of genes ",
+      "associated with loss-of-fitness in cancer cell lines"))
+    stopifnot(!is.null(qgenes))
+    stopifnot(is.character(qgenes))
+    stopifnot(!is.null(cellmodeldb))
+    stopifnot(!is.null(cellmodeldb[['fitness_data']]))
+    validate_db_df(cellmodeldb[['fitness_data']][['scores']],
+                   dbtype = "fitness_scores")
+    validate_db_df(cellmodeldb[['fitness_data']][['models']],
+                   dbtype = "fitness_models")
+    validate_db_df(cellmodeldb[['fitness_data']][['genes']],
+                   dbtype = "fitness_genes")
+    stopifnot(!is.null(genedb))
+    validate_db_df(genedb, dbtype = "genedb")
 
-  target_genes <- data.frame("symbol" = qgenes, stringsAsFactors = F)
+    target_genes <- data.frame(
+      "symbol" = qgenes, stringsAsFactors = F)
 
-  fitness_lof_results <- list()
-  fitness_lof_results[["targets"]] <- data.frame()
-  fitness_lof_results[["n_targets"]] <- 0
+    fitness_lof_results <- list()
+    fitness_lof_results[["targets"]] <- data.frame()
+    fitness_lof_results[["n_targets"]] <- 0
+    fitness_lof_results[["n_essential"]] <- 0
+    fitness_lof_results[["common_essential"]] <- data.frame()
 
-  fitness_lof_hits <- as.data.frame(
-    target_genes |>
-    dplyr::inner_join(
-      cellmodeldb[['fitness_scores']],
-      by = c("symbol"), relationship = "many-to-many") |>
-    dplyr::arrange(.data$scaled_BF)
-  )
-  if (nrow(fitness_lof_hits) > 0) {
-
-    fitness_lof_results[["targets"]] <- as.data.frame(
-      fitness_lof_hits |>
-        dplyr::mutate(
-          model_link_ps = paste0(
-            "<a href='https://cellmodelpassports.sanger.ac.uk/passports/",
-            .data$model_id,"' target='_blank'>",
-            stringr::str_replace_all(
-              .data$model_name,"\\.","-"),"</a>")) |>
-        dplyr::mutate(
-          symbol_link_ps = paste0(
-            "<a href='https://www.ncbi.nlm.nih.gov/gene/",
-            .data$entrezgene,"' target='_blank'>",
-            .data$symbol,"</a>")) |>
-        dplyr::select(c("symbol",
-                      "symbol_link_ps",
-                      "model_name",
-                      "tissue",
-                      "model_link_ps",
-                      "cancer_type",
-                      "sample_site",
-                      "tissue_status",
-                      "scaled_BF")) |>
-        dplyr::filter(.data$scaled_BF <= max_fitness_score)
+    fitness_genes <- as.data.frame(
+      target_genes |>
+        dplyr::inner_join(
+          cellmodeldb[['fitness_data']][['genes']],
+          by = c("symbol"),
+          relationship = "many-to-many")
     )
+    if (NROW (fitness_genes) > 0){
+      fitness_lof_hits <- as.data.frame(
+        fitness_genes |>
+          dplyr::inner_join(
+            cellmodeldb[['fitness_data']][['scores']],
+            by = c("gene_id_cmpassports"),
+            relationship = "many-to-many") |>
+          dplyr::inner_join(
+            cellmodeldb[['fitness_data']][['models']],
+            by = c("model_id"), relationship = "many-to-many") |>
+          dplyr::left_join(
+            dplyr::select(
+              genedb, c("entrezgene", "name")),
+            by = c("entrezgene"),
+          ) |>
+          dplyr::rename(genename = "name") |>
+          dplyr::arrange(.data$scaled_BF)
+      )
+    } else {
+      fitness_lof_hits <- data.frame()
+    }
 
-    gene_pr_tissue_stats <- as.data.frame(
-      fitness_lof_results[["targets"]] |>
-        dplyr::group_by(.data$symbol, .data$tissue) |>
-        dplyr::summarise(n_gene_tissue = dplyr::n(),
-                         .groups = "drop")
-    )
 
-    gene_stats <- as.data.frame(
-      gene_pr_tissue_stats |>
-        dplyr::group_by(.data$symbol) |>
-        dplyr::summarise(n_gene = sum(.data$n_gene_tissue),
-                         .groups = "drop")
-    )
+    if (nrow(fitness_lof_hits) > 0) {
 
-    fitness_lof_results[['targets']] <- fitness_lof_results[['targets']] |>
-      dplyr::left_join(gene_pr_tissue_stats,
-                       by = c("symbol","tissue"), relationship = "many-to-many") |>
-      dplyr::left_join(gene_stats, by = "symbol", relationship = "many-to-many") |>
-      dplyr::select(c("symbol",
-                    "symbol_link_ps",
-                    "model_name",
-                    "scaled_BF",
-                    "tissue",
-                    "model_link_ps",
-                    "cancer_type",
-                    "sample_site",
-                    "tissue_status",
-                    "n_gene_tissue",
-                    "n_gene"))
+      fitness_lof_results[["targets"]] <- as.data.frame(
+        fitness_lof_hits |>
+          dplyr::mutate(
+            model_link_ps = paste0(
+              "<a href='https://cellmodelpassports.sanger.ac.uk/passports/",
+              .data$model_id,"' target='_blank'>",
+              stringr::str_replace_all(
+                .data$model_name,"\\.","-"),"</a>")) |>
+          dplyr::mutate(
+            symbol_link_ps = paste0(
+              "<a href='https://www.ncbi.nlm.nih.gov/gene/",
+              .data$entrezgene,"' target='_blank'>",
+              .data$symbol,"</a>")) |>
+          dplyr::select(c("symbol",
+                          "symbol_link_ps",
+                          "genename",
+                          "essential_gene",
+                          "model_name",
+                          "tissue",
+                          "model_link_ps",
+                          "cancer_type",
+                          "sample_site",
+                          "tissue_status",
+                          "scaled_BF")) |>
+          dplyr::filter(.data$scaled_BF <= max_fitness_score)
+      )
 
-    fitness_lof_results[["n_targets"]] <- nrow(gene_stats)
+      gene_pr_tissue_stats <- as.data.frame(
+        fitness_lof_results[["targets"]] |>
+          dplyr::group_by(
+            .data$symbol, .data$tissue) |>
+          dplyr::summarise(
+            n_models_dependent_tissue = dplyr::n(),
+            .groups = "drop")
+      )
+
+      gene_stats <- as.data.frame(
+        gene_pr_tissue_stats |>
+          dplyr::mutate(tissue_number = paste0(
+            .data$tissue,":",.data$n_models_dependent_tissue)) |>
+          dplyr::arrange(
+            .data$symbol,
+            dplyr::desc(.data$n_models_dependent_tissue)) |>
+          dplyr::group_by(.data$symbol) |>
+          dplyr::summarise(
+            model_dependencies = paste0(
+              .data$tissue_number,
+              collapse = ", "),
+            n_models_dependent_total = sum(
+              .data$n_models_dependent_tissue),
+            .groups = "drop")
+      )
+
+      fitness_lof_results[['targets']] <-
+        fitness_lof_results[['targets']] |>
+        dplyr::left_join(
+          gene_pr_tissue_stats,
+          by = c("symbol","tissue"),
+          relationship = "many-to-many") |>
+        dplyr::left_join(
+          gene_stats,
+          by = "symbol",
+          relationship = "many-to-many") |>
+        dplyr::select(
+          c("symbol",
+            "symbol_link_ps",
+            "genename",
+            "essential_gene",
+            "model_name",
+            "scaled_BF",
+            "tissue",
+            "model_link_ps",
+            "cancer_type",
+            "sample_site",
+            "tissue_status",
+            "model_dependencies",
+            "n_models_dependent_tissue",
+            "n_models_dependent_total")) |>
+        dplyr::distinct()
+
+      fitness_lof_results[["n_targets"]] <-
+        NROW(gene_stats)
+      fitness_lof_results[["n_essential"]] <-
+        fitness_lof_results[['targets']] |>
+        dplyr::filter(.data$essential_gene == TRUE) |>
+        dplyr::select(c("symbol")) |>
+        dplyr::distinct() |>
+        nrow()
+
+      if(fitness_lof_results[['n_essential']] > 0){
+        lgr::lgr$info( paste0("Detected n = ",
+                              fitness_lof_results[['n_essential']],
+                              " common essential genes associated with loss-of-fitness"))
+        fitness_lof_results[['common_essential']] <-
+          fitness_lof_results[['targets']] |>
+          dplyr::filter(.data$essential_gene == TRUE) |>
+          dplyr::select(c("symbol_link_ps",
+                          "genename",
+                          "model_dependencies",
+                          "n_models_dependent_total")) |>
+          dplyr::arrange(dplyr::desc(.data$n_models_dependent_total)) |>
+          dplyr::distinct()
+      } else {
+        lgr::lgr$info( "No essential genes associated with loss-of-fitness detected")
+      }
+      fitness_lof_results[['targets']]$genename <-
+        NULL
+      fitness_lof_results[['targets']]$model_dependencies <-
+        NULL
+    }
+
+    return(fitness_lof_results)
   }
 
-  return(fitness_lof_results)
-}
 
 get_target_priority_scores <-
   function(qgenes,
