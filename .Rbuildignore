@@ -15,3 +15,4 @@ data_processing_code
 #inst/internal_db
 ^.bumpversion.toml
 ^.renv
+^\.claude$
