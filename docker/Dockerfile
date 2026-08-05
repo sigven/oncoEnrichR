@@ -48,7 +48,7 @@ RUN apt-get update && \
 ## PINNED versions of all packages can be found in /renv.lock (JSON format)
 RUN R -e "install.packages(repos = NULL, 'https://cloud.r-project.org/src/contrib/renv_1.1.5.tar.gz', lib = '/usr/lib/R/library/')"
 COPY renv.lock /
-COPY oncoEnrichR_1.6.1.tar.gz /
+COPY oncoEnrichR_1.6.2.tar.gz /
 
 #RUN R -e "library(renv)"
 
@@ -56,7 +56,7 @@ RUN R -e "library(renv); renv::restore(prompt = F, library = '/usr/lib/R/library
 WORKDIR /
 
 ## PINNED version - oncoEnrichR
-RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.6.1.tar.gz', lib = '/usr/lib/R/library/')"
+RUN R -e "install.packages(repos = NULL, 'oncoEnrichR_1.6.2.tar.gz', lib = '/usr/lib/R/library/')"
 
 RUN set -e -x && \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -68,4 +68,4 @@ RUN gdebi --non-interactive quarto-linux-amd64.deb
 RUN rm -f quarto-linux-amd64.deb
 
 RUN rm -rf /root/.cache
-RUN rm -rf /oncoEnrichR_1.6.1.tar.gz
+RUN rm -rf /oncoEnrichR_1.6.2.tar.gz

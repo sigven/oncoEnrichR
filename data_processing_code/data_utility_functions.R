@@ -341,13 +341,13 @@ get_opentarget_associations <-
                       ensembl_gene_id = target_ensembl_gene_id) |>
         dplyr::mutate(disease_efo_id = stringr::str_replace(
           disease_efo_id,":","_")) |>
-        dplyr::filter(score >= min_overall_score) |>
+        dplyr::filter(association_score >= min_overall_score) |>
         dplyr::filter(stringr::str_count(datatype_items,",") >= min_num_sources - 1) |>
         dplyr::mutate(association_key =
                         paste(disease_efo_id,
                               "T",
                               datatype_support,
-                              score,
+                              association_score,
                               sep=":")) |>
         dplyr::group_by(ensembl_gene_id) |>
         dplyr::summarise(
@@ -359,7 +359,6 @@ get_opentarget_associations <-
       dplyr::left_join(opentarget_associations,
                        by = "ensembl_gene_id",
                        relationship = "many-to-many")
-
 
     saveRDS(ot_associations, file = rds_fname)
     return(ot_associations)
@@ -699,7 +698,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
       drug_is_approved = T)$records |>
       dplyr::filter(!is.na(primary_site)) |>
       dplyr::filter(
-        stringr::str_detect(drug_clinical_source,"FDA|DailyMed|ATC")) |>
+        stringr::str_detect(drug_clinical_source,"FDA|DailyMed|ATC|EMA")) |>
       dplyr::select(
         disease_efo_label, target_entrezgene,
         drug_name, molecule_chembl_id) |>
@@ -714,6 +713,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
       dplyr::summarise(indications = paste(
         sort(unique(disease_efo_label)), collapse="; "
       ), .groups = "drop") |>
+      dplyr::distinct() |>
       dplyr::ungroup() |>
       dplyr::mutate(indications = stringr::str_replace(
         indications,
@@ -725,7 +725,8 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
       dplyr::group_by(entrezgene) |>
       dplyr::summarise(approved_drugs = paste(
         drug_indications, collapse=", "),
-        .groups = "drop")
+        .groups = "drop") |>
+      dplyr::distinct()
   )
 
   black_list <- data.frame(
@@ -750,7 +751,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
                   drug_name,
                   primary_site,
                   molecule_chembl_id,
-                  drug_max_ct_phase) |>
+                  drug_max_clinical_stage) |>
     dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::distinct() |>
     dplyr::rename(entrezgene = target_entrezgene) |>
@@ -767,7 +768,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
       drug_action_inhibition = F,
       drug_cancer_indication = F,
       drug_classified_cancer = F,
-      drug_minimum_phase_any_indication = 0)$records |>
+      drug_minimum_phase_any_indication = 1)$records |>
     dplyr::filter(!is.na(molecule_chembl_id)) |>
     dplyr::filter(drug_cancer_relevance != "by_other_condition_otp" &
                     drug_cancer_relevance != "by_cancer_target_otp") |>
@@ -777,7 +778,7 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
                   drug_name,
                   primary_site,
                   molecule_chembl_id,
-                  drug_max_ct_phase) |>
+                  drug_max_clinical_stage) |>
     dplyr::anti_join(black_list, by = "drug_name") |>
     dplyr::rename(entrezgene = target_entrezgene) |>
     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
@@ -810,14 +811,15 @@ get_cancer_drugs <- function(raw_db_dir = NULL){
       cancer_drugs[[p]] |>
         dplyr::select(entrezgene,
                       drug_name,
-                      drug_max_ct_phase,
+                      drug_max_clinical_stage,
                       molecule_chembl_id) |>
         dplyr::distinct() |>
         dplyr::mutate(
           drug_link =
             paste0("<a href = 'https://platform.opentargets.org/drug/",
                    molecule_chembl_id,"' target='_blank'>",drug_name,"</a>")) |>
-        dplyr::arrange(entrezgene, desc(drug_max_ct_phase)) |>
+        dplyr::arrange(entrezgene,
+                       desc(drug_max_clinical_stage)) |>
         dplyr::group_by(entrezgene) |>
         dplyr::summarise(
           targeted_cancer_drugs =
@@ -1349,7 +1351,6 @@ get_fitness_data_CMP <- function(
     janitor::clean_names() |>
     dplyr::select(model_id, model_name,
                   synonyms, model_type,tissue,
-                  #crispr_ko_data, tissue,
                   cancer_type, tissue_status,
                   cancer_type_detail, cancer_type_ncit_id,
                   sample_site, gender,
@@ -1409,11 +1410,40 @@ get_fitness_data_CMP <- function(
     dplyr::filter(!is.na(entrezgene)) |>
     dplyr::left_join(
       dplyr::select(
-        gene_info, symbol,
+        gene_info, symbol, name,
         entrezgene), by = "entrezgene",
       relationship = "many-to-many") |>
     dplyr::select(
-      gene_id_cmpassports, entrezgene, symbol)
+      gene_id_cmpassports,
+      entrezgene, symbol)
+
+  ## Essential genes
+  essential_genes <- read.csv(
+    file = file.path(
+      raw_db_dir,
+      "cell_model_passports",
+      "essential_genes.csv"),
+    stringsAsFactors = F) |>
+    dplyr::rename(gene_id_cmpassports = gene_id) |>
+    dplyr::filter(common_essential == "true") |>
+    dplyr::mutate(essential_gene = T) |>
+    dplyr::select(gene_id_cmpassports,
+                  essential_gene)
+
+  gene_identifiers <-
+    gene_identifiers |>
+    dplyr::left_join(
+      essential_genes,
+      by = "gene_id_cmpassports",
+      relationship = "many-to-many") |>
+    dplyr::mutate(
+      essential_gene = dplyr::if_else(
+        is.na(essential_gene),
+        F,
+        essential_gene
+      )
+    )
+
 
   bayes_factors <- suppressMessages(as.matrix(
     readr::read_tsv(
@@ -1426,8 +1456,12 @@ get_fitness_data_CMP <- function(
 
   bayes_factors <-
     as.data.frame(
-      setNames(reshape2::melt(bayes_factors, na.rm = T),
-               c('gene_id_cmpassports', 'model_id', 'scaled_BF'))) |>
+      setNames(
+        reshape2::melt(
+          bayes_factors, na.rm = T),
+        c('gene_id_cmpassports',
+          'model_id',
+          'scaled_BF'))) |>
     dplyr::mutate(
       model_id = as.character(model_id),
       scaled_BF = as.numeric(scaled_BF) * -1) |>
@@ -1446,11 +1480,19 @@ get_fitness_data_CMP <- function(
 
 
   cell_model_passports <- list()
+
+
   cell_model_passports[['fitness_scores']] <-
-    as.data.frame(setNames(reshape2::melt(cell_fitness_scores, na.rm = T),
-                           c('gene_id_cmpassports', 'model_id', 'loss_of_fitness'))) |>
-    dplyr::mutate(model_id = as.character(model_id),
-                  loss_of_fitness = as.integer(loss_of_fitness)) |>
+    as.data.frame(
+      setNames(
+        reshape2::melt(
+          cell_fitness_scores, na.rm = T),
+        c('gene_id_cmpassports',
+          'model_id',
+          'loss_of_fitness'))) |>
+    dplyr::mutate(
+      model_id = as.character(model_id),
+      loss_of_fitness = as.integer(loss_of_fitness)) |>
     dplyr::filter(loss_of_fitness == 1) |>
     dplyr::left_join(
       dplyr::select(
@@ -1467,6 +1509,34 @@ get_fitness_data_CMP <- function(
         c("gene_id_cmpassports", "model_id"),
       relationship = "many-to-many") |>
     dplyr::arrange(symbol, scaled_BF)
+
+  cell_model_passports[['fitness_data']] <- list()
+  cell_model_passports[['fitness_data']][['models']] <-
+    cell_model_passports[['fitness_scores']] |>
+    dplyr::select(
+      c("model_id", "model_name",
+        "tissue", "cancer_type",
+        "sample_site", "tissue_status")) |>
+    dplyr::distinct()
+
+  cell_model_passports[['fitness_data']][['genes']] <-
+    cell_model_passports[['fitness_scores']] |>
+    dplyr::select(
+      c("gene_id_cmpassports",
+        "entrezgene","symbol",
+        "essential_gene")) |>
+    dplyr::distinct()
+
+  cell_model_passports[['fitness_data']][['scores']] <-
+    cell_model_passports[['fitness_scores']] |>
+    dplyr::select(
+      c("gene_id_cmpassports",
+        "model_id",
+        "loss_of_fitness",
+        "scaled_BF")) |>
+    dplyr::distinct()
+
+  cell_model_passports[['fitness_scores']] <- NULL
 
   ## Target priority scores
   cell_model_passports[['target_priority_scores']] <-
@@ -1496,8 +1566,13 @@ get_fitness_data_CMP <- function(
   ## order symbols by pancancer priority rank
   priority_order <-
     cell_model_passports$target_priority_scores |>
-    dplyr::filter(tumor_type == "Pancancer") |>
+    dplyr::group_by(symbol, gene_id) |>
+    dplyr::summarise(
+      priority_score = median(priority_score),
+      .groups = "drop") |>
     dplyr::arrange(desc(priority_score))
+    #dplyr::filter(tumor_type == "Pancancer") |>
+    #dplyr::arrange(desc(priority_score))
 
   cell_model_passports[['target_priority_scores']] <-
     cell_model_passports[['target_priority_scores']] |>
@@ -2920,10 +2995,16 @@ get_hpa_associations <- function(
       property = stringr::str_replace(.data$property, "_tcga","")
     ) |>
     dplyr::mutate(value = stringr::str_replace_all(
-     .data$value, "prognostic |\\)",""
+     .data$value, "prognostic ",""
     )) |>
     dplyr::mutate(value = stringr::str_replace(
       .data$value, "orable \\(","orable|"
+    )) |>
+    dplyr::mutate(value = dplyr::if_else(
+      stringr::str_detect(.data$value, "\\)$") &
+        stringr::str_detect(.data$property, "pathology_prognostics"),
+      stringr::str_replace(.data$value, "\\)$",""),
+      as.character(.data$value)
     ))
 
   saveRDS(hpa, file = rds_fname)
@@ -2971,15 +3052,15 @@ get_mean_median_tpm <- function(
 get_tcga_db <- function(
   raw_db_dir = NULL,
   gene_xref = NULL,
-  tcga_release = "release41_20240828",
+  min_percent_mutated_cohort = 2,
+  min_cohort_size = 50,
+  tcga_release = "release45_20251204",
   update = F){
-
 
   rds_fname <- file.path(
     raw_db_dir,
     "tcga",
     "tcgadb.rds")
-
 
   ## NOTE: The processed data from Genomic Data Commons
   ## linked to here is retrieved with
@@ -2988,22 +3069,26 @@ get_tcga_db <- function(
   rnaseq_path <- file.path(
     raw_db_dir,
     "tcga",
-    "current_release",
+    "latest_release",
     "rnaseq"
   )
 
+  ## NOTE - Co-expression matrix is still made
+  ##.       with Xena dataset, not from latest GDC-
+  ##        processed data
   coexpression_tsv <- file.path(
     raw_db_dir,
     "tcga",
     paste0(
-      "co_expression_strong_moderate.",
+      "co_expression_",
       tcga_release,
-      ".tsv.gz"))
+      ".tsv.gz")
+    )
 
   tcga_clinical_rds <- file.path(
     raw_db_dir,
     "tcga",
-    "current_release",
+    "latest_release",
     "clinical",
     "tcga_clinical.rds"
   )
@@ -3011,7 +3096,7 @@ get_tcga_db <- function(
   tcga_aberration_rds <- file.path(
     raw_db_dir,
     "tcga",
-    "current_release",
+    "latest_release",
     "gene",
     "tcga_gene_aberration_rate.rds"
   )
@@ -3023,30 +3108,8 @@ get_tcga_db <- function(
   maf_path <- file.path(
     raw_db_dir,
     "tcga",
-    "current_release",
+    "latest_release",
     "snv_indel")
-
-
-  recurrent_variants_tsv <- file.path(
-    raw_db_dir,
-    "tcga",
-    "current_release",
-    "vcf",
-    "tcga_recurrent_coding_gvanno.grch38.tsv.gz"
-  )
-
-  # gene_xref <- gene_xref |>
-  #   dplyr::mutate(oncogene = dplyr::if_else(
-  #     .data$oncogene_confidence_level == "Moderate",
-  #     FALSE,
-  #     as.logical(.data$oncogene)
-  #   )) |>
-  #   dplyr::mutate(tumor_suppressor = dplyr::if_else(
-  #     .data$tsg_confidence_level == "Moderate",
-  #     FALSE,
-  #     as.logical(.data$tumor_suppressor)
-  #   ))
-
 
   if(update == F & file.exists(rds_fname)){
     tcgadb <- readRDS(file = rds_fname)
@@ -3055,13 +3118,16 @@ get_tcga_db <- function(
 
 
   tcga_clinical <-
-    readRDS(file = tcga_clinical_rds)
+    readRDS(file = tcga_clinical_rds) |>
+    dplyr::filter(.data$is_tumor == TRUE)
+
   tcga_aberration_stats <-
     readRDS(file = tcga_aberration_rds) |>
     dplyr::filter(
-      clinical_strata == "site" |
-        (clinical_strata == "site_diagnosis" &
-           percent_mutated >= 1))
+      ((.data$clinical_strata == "site" |
+        .data$clinical_strata == "site_diagnosis") &
+         .data$tot_samples >= min_cohort_size &
+           .data$percent_mutated >= min_percent_mutated_cohort))
 
   tcga_aberration_stats$genomic_strata <- NULL
   tcga_aberration_stats$entrezgene <- NULL
@@ -3104,7 +3170,10 @@ get_tcga_db <- function(
       relationship = "many-to-many") |>
     dplyr::select(-c(primary_site, primary_diagnosis,
                      clinical_strata))
+  tcga_aberration_stats$decile <- NULL
 
+  cat("***************\n")
+  cat("TCGA MAF dataset prep\n")
   maf_codes <- read.table(
     file = maf_codes_tsv,
     header = T, sep = "\t", quote ="")
@@ -3127,15 +3196,19 @@ get_tcga_db <- function(
       tmp$Tumor_Sample_Barcode <- stringr::str_replace(
         tmp$Tumor_Sample_Barcode,"-[0-9][0-9][A-Z]$","")
 
-      clinical <- tcga_clinical$slim |>
+      clinical <- tcga_clinical |>
         dplyr::filter(primary_site == primary_site) |>
         dplyr::select(bcr_patient_barcode, primary_diagnosis_very_simplified,
-                      MSI_status, Gleason_score, ER_status,
-                      PR_status, HER2_status,
-                      pancan_subtype_selected) |>
+                      msi_status, gleason_score, er_status,
+                      pr_status, her2_status,
+                      subtype_selected) |>
         dplyr::rename(Diagnosis = primary_diagnosis_very_simplified,
                       Tumor_Sample_Barcode = bcr_patient_barcode,
-                      PanCancer_subtype = pancan_subtype_selected) |>
+                      MSI_status = msi_status,
+                      HER2_status = her2_status,
+                      ER_status = er_status,
+                      PR_status = pr_status,
+                      Molecular_Subtype = subtype_selected) |>
         dplyr::semi_join(
           tmp, by = "Tumor_Sample_Barcode")
 
@@ -3146,143 +3219,35 @@ get_tcga_db <- function(
         "tmp.maf.gz", verbose = F, clinicalData = clinical)
       maf_datasets[[maf_code]] <- maf
     }
+    cat(i," - ",  maf_code, " - ",primary_site,'\n')
     i <- i + 1
-    cat(primary_site,'\n')
 
   }
   system('rm -f tmp.maf.gz')
 
 
-  pfam_domains <-
-    as.data.frame(PFAM.db::PFAMDE) |>
-    dplyr::rename(PFAM_ID = ac,
-                  PFAM_DOMAIN_NAME = de)
-
-  ##TCGA recurrent SNVs/InDels
-  recurrent_tcga_variants <- as.data.frame(readr::read_tsv(
-    file = recurrent_variants_tsv,
-    skip = 1, na = c("."), show_col_types = F) |>
-      dplyr::select(TCGA_SITE_RECURRENCE,
-                    CHROM, POS, REF, ALT,
-                    TCGA_TOTAL_RECURRENCE,
-                    PFAM_DOMAIN, HGVSc, LoF,
-                    MUTATION_HOTSPOT,
-                    MUTATION_HOTSPOT_MATCH,
-                    HGVSp_short,
-                    ONCOGENICITY_CLASSIFICATION,
-                    ONCOGENICITY_SCORE,
-                    ENSEMBL_TRANSCRIPT_ID,
-                    SYMBOL,
-                    COSMIC_MUTATION_ID,
-                    Consequence,
-                    AMINO_ACID_START,
-                    VEP_ALL_CSQ) |>
-      dplyr::mutate(VAR_ID = paste(
-        CHROM, POS, REF, ALT, sep = "_")
-      ) |>
-      dplyr::rename(PFAM_ID = PFAM_DOMAIN) |>
-      dplyr::mutate(LOSS_OF_FUNCTION = FALSE) |>
-      dplyr::mutate(LOSS_OF_FUNCTION = dplyr::if_else(
-        !is.na(LoF) & LoF == "HC",
-        as.logical(TRUE),
-        as.logical(LOSS_OF_FUNCTION),
-      )) |>
-      dplyr::rename(CONSEQUENCE = Consequence,
-                    TOTAL_RECURRENCE = TCGA_TOTAL_RECURRENCE,
-                    PROTEIN_CHANGE = HGVSp_short) |>
-      dplyr::select(SYMBOL,
-                    VAR_ID,
-                    CONSEQUENCE,
-                    PROTEIN_CHANGE,
-                    AMINO_ACID_START,
-                    PFAM_ID,
-                    HGVSc,
-                    MUTATION_HOTSPOT,
-                    MUTATION_HOTSPOT_MATCH,
-                    ONCOGENICITY_CLASSIFICATION,
-                    ONCOGENICITY_SCORE,
-                    LOSS_OF_FUNCTION,
-                    ENSEMBL_TRANSCRIPT_ID,
-                    COSMIC_MUTATION_ID,
-                    TCGA_SITE_RECURRENCE,
-                    TOTAL_RECURRENCE,
-                    VEP_ALL_CSQ) |>
-      tidyr::separate_rows(TCGA_SITE_RECURRENCE, sep=",") |>
-      tidyr::separate(TCGA_SITE_RECURRENCE, into =
-                        c("PRIMARY_SITE","SITE_RECURRENCE", "TCGA_SAMPLES"),
-                      sep = ":",
-                      remove = T) |>
-      dplyr::select(-TCGA_SAMPLES) |>
-      dplyr::distinct() |>
-      dplyr::mutate(PRIMARY_SITE = dplyr::case_when(
-        PRIMARY_SITE == "CNS_Brain" ~ "CNS/Brain",
-        PRIMARY_SITE == "Colon_Rectum" ~ "Colon/Rectum",
-        PRIMARY_SITE == "Head_and_Neck" ~ "Head and Neck",
-        PRIMARY_SITE == "Esophagus_Stomach" ~ "Esophagus/Stomach",
-        PRIMARY_SITE == "Bladder_Urinary_Tract" ~ "Bladder/Urinary Tract",
-        PRIMARY_SITE == "Adrenal_Gland" ~ "Adrenal Gland",
-        PRIMARY_SITE == "Biliary_Tract" ~ "Biliary Tract",
-        PRIMARY_SITE == "Ovary_Fallopian_Tube" ~ "Ovary/Fallopian Tube",
-        PRIMARY_SITE == "Soft_Tissue" ~ "Soft Tissue",
-        TRUE ~ as.character(PRIMARY_SITE))
-      ) |>
-      dplyr::filter(!stringr::str_detect(
-        CONSEQUENCE,"^(intron|intergenic|mature|non_coding|synonymous|upstream|downstream|3_prime|5_prime)"))
-  )
-
-  ## reduce number of properties in VEP_ALL_CSQ
-  csq_all_slim <- as.data.frame(
-    recurrent_tcga_variants |>
-    dplyr::select(VAR_ID, VEP_ALL_CSQ) |>
-    tidyr::separate_rows(VEP_ALL_CSQ, sep=",") |>
-    tidyr::separate(
-      VEP_ALL_CSQ, c("V1","V2","V3","V4",
-                     "V5","V6","V7","V8"),
-                     sep = ":") |>
-    dplyr::mutate(VEP_ALL_CSQ = paste(
-      V1,V7,V4,V5, sep=":"
-    )) |>
-    dplyr::group_by(VAR_ID) |>
-    dplyr::summarise(VEP_ALL_CSQ = paste(
-      unique(VEP_ALL_CSQ), collapse=", "
-    ), .groups = "drop")
-  )
-
-  recurrent_tcga_variants$VEP_ALL_CSQ <- NULL
-  recurrent_tcga_variants <- recurrent_tcga_variants |>
-    dplyr::left_join(
-      csq_all_slim, by = "VAR_ID",
-      relationship = "many-to-many") |>
-    dplyr::select(
-      SYMBOL, VAR_ID, CONSEQUENCE,
-      PROTEIN_CHANGE, MUTATION_HOTSPOT,
-      ONCOGENICITY_CLASSIFICATION,
-      ONCOGENICITY_SCORE,
-      AMINO_ACID_START, PFAM_ID,
-      LOSS_OF_FUNCTION, ENSEMBL_TRANSCRIPT_ID,
-      MUTATION_HOTSPOT_MATCH,
-      COSMIC_MUTATION_ID, PRIMARY_SITE,
-      SITE_RECURRENCE, TOTAL_RECURRENCE,
-      VEP_ALL_CSQ
-    )
-
+  cat("***************\n")
+  cat("TCGA co-expression prep\n")
 
   ##TCGA co-expression data
   raw_coexpression <-
     readr::read_tsv(
       coexpression_tsv,
-      col_names = c("symbol_A","symbol_B",
-                    "r","p_value","tumor"),
+      col_names = TRUE,
       show_col_types = F)
+
   coexpression_genes1 <- raw_coexpression |>
     dplyr::rename(symbol = symbol_A,
+                  expr = expr_A,
+                  expr_partner = expr_B,
                   symbol_partner = symbol_B) |>
     dplyr::left_join(
       dplyr::select(
         gene_xref, symbol,
         tumor_suppressor,
         oncogene, cancer_driver),
-      by = "symbol",  relationship = "many-to-many") |>
+      by = "symbol",
+      relationship = "many-to-many") |>
     dplyr::filter(
       tumor_suppressor == T |
         oncogene == T |
@@ -3290,6 +3255,8 @@ get_tcga_db <- function(
 
   coexpression_genes2 <- raw_coexpression |>
     dplyr::rename(symbol = symbol_B,
+                  expr = expr_B,
+                  expr_partner = expr_A,
                   symbol_partner = symbol_A) |>
     dplyr::left_join(
       dplyr::select(
@@ -3301,17 +3268,55 @@ get_tcga_db <- function(
         oncogene == T |
         cancer_driver == T)
 
-  rm(raw_coexpression)
-
-  tcga_coexp_db <- dplyr::bind_rows(
+  tcga_coexp <- dplyr::bind_rows(
     coexpression_genes1,
     coexpression_genes2) |>
+    dplyr::select(
+      symbol,
+      symbol_partner,
+      r,
+      fdr,
+      expr,
+      expr_partner,
+      tumor) |>
     dplyr::arrange(desc(r)) |>
-    dplyr::mutate(p_value = signif(
-      p_value, digits = 4)) |>
-    dplyr::filter(p_value < 1e-6) |>
-    dplyr::mutate(r = signif(r, digits = 3)) |>
-    dplyr::filter((r <= -0.7 & r < 0) | (r >= 0.7))
+    dplyr::mutate(adj_pvalue = signif(
+      as.numeric(fdr), digits = 4)) |>
+    dplyr::filter(abs(r) > 0.7) |>
+    dplyr::mutate(r = signif(r, digits = 3))
+
+  tcga_coexp_summary <- as.data.frame(
+    dplyr::bind_rows(
+      dplyr::select(
+        tcga_coexp,
+        symbol,
+        expr,
+        tumor),
+      dplyr::rename(
+        dplyr::select(
+          tcga_coexp,
+          symbol_partner,
+          expr_partner,
+          tumor),
+        symbol = symbol_partner,
+        expr = expr_partner)) |>
+      dplyr::left_join(
+        dplyr::select(
+          gene_xref, symbol,
+          tumor_suppressor,
+          oncogene, cancer_driver),
+        by = "symbol",
+        relationship = "many-to-many")
+    ) |>
+    dplyr::distinct()
+
+  tcga_coexp <- tcga_coexp |>
+    dplyr::select(-c("fdr","expr","expr_partner")) |>
+    dplyr::distinct()
+
+  cat("***************\n")
+  cat("TCGA median expression prep\n")
+
 
   gdc_projects <- as.data.frame(TCGAbiolinks::getGDCprojects()) |>
     dplyr::filter(is.na(dbgap_accession_number) &
@@ -3324,27 +3329,33 @@ get_tcga_db <- function(
     rnaseq_rds_fname <-
       file.path(
         rnaseq_path,
-        paste0("rnaseq_",
+        paste0("tcga_rnaseq_TPM_",
                tumor_code,
                ".rds")
       )
 
-    cat(tumor_code, '\n')
+    cat(i, " - ", tumor_code,
+        " (", gdc_projects[i,]$name, ')\n')
     if(file.exists(rnaseq_rds_fname)){
       exp_data <- readRDS(file = rnaseq_rds_fname)
+      gene_ids <- exp_data$SYMBOL
 
-      tpm_matrix <- exp_data$matrix$tpm$tumor
-      rm(exp_data)
+      for(e in c("SYMBOL","ENTREZGENE","GENENAME",
+                 "BIOTYPE", "ENSEMBL_GENE_ID")){
+        exp_data[[e]] <- NULL
+      }
 
-      colnames(tpm_matrix) <-
-        stringr::str_replace(
-          colnames(tpm_matrix),"-0[0-9][A-Z]$","")
+      tpm_matrix <- as.matrix(exp_data)
+      rownames(tpm_matrix) <- gene_ids
+      storage.mode(tpm_matrix) <- "numeric"
 
-      clinical_subtype_samples <- tcga_clinical$slim |>
+      clinical_subtype_samples <- tcga_clinical |>
         dplyr::filter(tumor == tumor_code) |>
         dplyr::filter(primary_diagnosis_very_simplified !=
                         "Other subtype(s)") |>
-        dplyr::select(site_diagnosis_code, bcr_patient_barcode)
+        dplyr::select(site_diagnosis_code,
+                      bcr_patient_barcode,
+                      tumor_sample_barcode)
 
       all_tpm_data <-  get_mean_median_tpm(
         tpm_matrix,
@@ -3358,7 +3369,7 @@ get_tcga_db <- function(
         for(subtype in subtypes){
 
           subtype_samples <- clinical_subtype_samples[
-            clinical_subtype_samples$site_diagnosis_code == subtype,]$bcr_patient_barcode
+            clinical_subtype_samples$site_diagnosis_code == subtype,]$tumor_sample_barcode
 
           tpm_matrix_subtype <- tpm_matrix[
             , colnames(tpm_matrix) %in% subtype_samples
@@ -3393,22 +3404,29 @@ get_tcga_db <- function(
     dplyr::left_join(
       dplyr::select(
         gene_xref, symbol, gene_biotype),
+      by = "symbol",
       relationship = "many-to-many"
     ) |>
-    dplyr::filter(gene_biotype == "protein-coding")
+    dplyr::filter(gene_biotype == "protein_coding")
+  cat("***************\n")
 
 
   tcgadb <- list()
-  tcgadb[['coexpression']] <- tcga_coexp_db
+  tcgadb[['coexpression']] <- tcga_coexp
+  tcgadb[['coexpression_summary']] <- tcga_coexp_summary
   tcgadb[['aberration']] <- tcga_aberration_stats
-  tcgadb[['recurrent_variants']] <- recurrent_tcga_variants
   tcgadb[['median_ttype_expression']] <- all_tcga_tpm_above_1
-  tcgadb[['pfam']] <- pfam_domains
-  tcgadb[['maf_codes']] <- maf_codes
   tcgadb[['maf']] <- maf_datasets
-  tcgadb[['site_code']] <- site_code
-  tcgadb[['diagnosis_code']] <- diagnosis_code
-  tcgadb[['clinical_strata_code']] <- clinical_strata_code
+  tcgadb[['code']] <- list()
+  tcgadb[['code']][['maf']] <- maf_codes
+  tcgadb[['code']][['site']] <- site_code
+  tcgadb[['code']][['diagnosis']] <- diagnosis_code
+  tcgadb[['code']][['clinical_strata']] <-
+    clinical_strata_code
+  #tcgadb[['maf_codes']] <- maf_codes
+  #tcgadb[['site_code']] <- site_code
+  #tcgadb[['diagnosis_code']] <- diagnosis_code
+  #tcgadb[['clinical_strata_code']] <- clinical_strata_code
 
   saveRDS(tcgadb, file = rds_fname)
 
@@ -3703,7 +3721,7 @@ get_subcellular_annotations <- function(
     return(compartmentdb)
   }
 
-  options(timeout = 300)
+  options(timeout = 3000)
   for(e in c('knowledge','experiments','textmining')){
     fname <- file.path(
       raw_db_dir, "compartments", paste0(
@@ -3898,5 +3916,207 @@ get_subcellular_annotations <- function(
 
   return(compartmentdb)
 
+}
+
+#' Get tissue and cell-type specificity data from Human Protein Atlas
+#'
+#' This function retrieves tissue and cell-type specificity data from the
+#' Human Protein Atlas (HPA) database. It downloads and processes the consensus
+#' transcript expression levels for genes across various tissues and cell types,
+#' providing normalized expression values.
+#'
+#' @param raw_db_dir Directory where the raw HPA data files are stored or will be downloaded.
+#' @param update Logical flag indicating whether to update the data by re-downloading it (
+#' default: FALSE).
+#'
+#' @return  A list containing two elements: 'tissue' and 'celltype', each of which
+#' is a list containing the processed expression data and the corresponding unit of measurement.
+#'
+#'
+get_tissue_celltype_specificity <- function(
+    raw_db_dir = NULL,
+    update = F){
+
+  ## https://www.proteinatlas.org/humanproteome/tissue/data#consensus_tissues_rna
+  ##
+  ## Consensus transcript expression levels summarized per gene in
+  ## 51 tissues based on transcriptomics data from HPA and GTEx.
+  ## The tab-separated file includes Ensembl
+  ## gene identifier ("Gene"), analysed sample ("Tissue"),
+  ## normalized expression ("nTPM"), the latter calculated
+  ## as the maximum nTPM value for each gene in the two data sources
+
+  exprdata <- list()
+  exprdata[['tissue']] <- list()
+  exprdata[['tissue']][['data']] <- data.frame()
+  exprdata[['tissue']][['unit']] <- NULL
+
+  ## https://www.proteinatlas.org/humanproteome/single+cell/single+cell+type/data#cell_type_group_data
+  ##
+  ## Transcript expression levels summarized per gene in 53 cell type groups
+  ## types from 36 datasets. The tab-separated file includes Ensembl
+  ## gene identifier ("Gene"), gene name ("Gene name"), cell type group
+  ## ("Cell type group") and normalized expression ("nCPM").
+
+  exprdata[['celltype']] <- list()#
+  exprdata[['celltype']][['data']] <- data.frame()
+  exprdata[['celltype']][['unit']] <- NULL
+
+  for(t in c("rna_tissue_consensus",
+             "rna_single_cell_type_group")){
+
+    local_hpa_file <- file.path(
+      raw_db_dir,
+      "hpa",
+      paste0(t, ".tsv.zip")
+    )
+
+    cat <- "tissue"
+    exprdata[[cat]][['unit']] <- "nTPM"
+    if(t == "rna_single_cell_type_group"){
+      cat <- "celltype"
+      exprdata[[cat]][['unit']] <- "nCPM"
+    }
+
+    #https://www.proteinatlas.org/download/tsv/rna_tissue_consensus.tsv.zip
+    if(!file.exists(local_hpa_file) | update == TRUE){
+      download.file(
+        url = paste0("https://www.proteinatlas.org/download/tsv/",
+                     t, ".tsv.zip"),
+        destfile = local_hpa_file
+      )
+    }
+
+    ##set max number of tissues/cell_types for
+    ##determination of groups in group-enriched genes
+    #max_types_in_group <- 5
+
+    data <- readr::read_tsv(
+      local_hpa_file,
+      show_col_types = F,
+      col_names = T)
+
+    exprdata[[cat]][['data']] <-
+      as.data.frame(
+        data[, c(1,3,4)] |>
+          purrr::set_names(
+            c("ensembl_gene_id",
+              "category",
+              "exp")) |>
+          dplyr::mutate(
+            category =
+              stringr::str_replace_all(category," |, ","_")) |>
+          dplyr::group_by(ensembl_gene_id, category) |>
+          dplyr::summarise(expression = mean(exp), .groups = "drop")
+      )
+
+  }
+  return(exprdata)
+
+}
+
+#' Calculate tissue/cell-type specificity scores
+#'
+#' Computes tau (τ) tissue specificity index for each gene
+#' τ ranges from 0 (ubiquitously expressed) to 1 (tissue-specific)
+#'
+#' Reference: Yanai et al. (2005) Bioinformatics 21:650-659
+#'
+#' @param expression_data Data frame with expression data
+#' @param gene_col Column name for gene identifier
+#' @param context_col Column name for tissue/cell type
+#' @param expr_col Column name for expression values
+#' @param top_n_contexts Number of top expressed contexts to include (default: 3)
+#'
+#' @return Data frame with tau scores per gene
+#'
+calculate_specificity_tau <- function(expression_data,
+                                      gene_col = "ensembl_gene_id",
+                                      context_col = "category",
+                                      expr_col = "expression",
+                                      top_n_contexts = 3) {
+
+  message("Calculating tissue/cell-type specificity scores (tau)...")
+
+  # Calculate tau: tau = sum(1 - expr_norm) / (n - 1)
+  # where n is the number of tissues/cell types, and expr_norm is
+  # expression normalized to the gene's maximum (max = 1)
+  tau_scores <- as.data.frame(expression_data) |>
+    dplyr::rename(
+      .gene = dplyr::all_of(gene_col),
+      .context = dplyr::all_of(context_col),
+      .expr = dplyr::all_of(expr_col)
+    ) |>
+    dplyr::group_by(.gene) |>
+    dplyr::arrange(dplyr::desc(.expr), .by_group = TRUE) |>
+    dplyr::mutate(expr_norm = .expr / max(.expr)) |>
+    dplyr::summarise(
+      tau = sum(1 - expr_norm) / (dplyr::n() - 1),
+      n_contexts = dplyr::n(),
+      max_expression = max(.expr),
+      max_context = .context[which.max(.expr)],
+      top_contexts = paste(
+        utils::head(.context, top_n_contexts), collapse = ";"),
+      top_expressions = paste(
+        round(utils::head(.expr, top_n_contexts), 2), collapse = ";"),
+      .groups = "drop"
+    ) |>
+    dplyr::rename(!!gene_col := .gene)
+
+  return(tau_scores)
+}
+
+
+#' Precompute per-context enrichment background
+#'
+#' For each tissue/cell type, determines the set of genes considered
+#' "highly expressed" (top quantile by expression) - the fixed background
+#' set used later by the hypergeometric enrichment test. Precomputed once
+#' here since it depends only on the reference expression data, not on
+#' any query gene list.
+#'
+#' @param expression_data Data frame with expression data
+#' @param gene_col Column name for gene identifier
+#' @param context_col Column name for tissue/cell type
+#' @param expr_col Column name for expression values
+#' @param high_expr_quantile Quantile threshold for defining
+#' "highly expressed" (default: 0.75)
+#' @return List with two data frames:
+#'   \code{membership} (context, gene pairs above the threshold) and
+#'   \code{context_summary} (one row per context, with background size
+#'   and the quantile threshold used)
+precompute_enrichment_background <- function(expression_data,
+                                              gene_col = "ensembl_gene_id",
+                                              context_col = "category",
+                                              expr_col = "expression",
+                                              high_expr_quantile = 0.75) {
+
+  message("Precomputing per-context enrichment background (highly expressed genes)...")
+
+  n_total_genes <- dplyr::n_distinct(expression_data[[gene_col]])
+
+  membership <- expression_data |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(context_col))) |>
+    dplyr::filter(
+      .data[[expr_col]] >=
+        stats::quantile(.data[[expr_col]], high_expr_quantile)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::select(dplyr::all_of(c(context_col, gene_col)))
+
+  context_summary <- membership |>
+    dplyr::count(
+      dplyr::across(dplyr::all_of(context_col)), name = "n_bg_genes") |>
+    dplyr::mutate(
+      n_total_genes = n_total_genes,
+      high_expr_quantile = high_expr_quantile
+    )
+
+  return(
+    list(
+      membership = membership,
+      context_summary = context_summary
+    )
+  )
 }
 

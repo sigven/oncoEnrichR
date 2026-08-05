@@ -2,31 +2,36 @@
 source('../oncoEnrichR/data_processing_code/data_utility_functions.R')
 
 ####--- Database versions and update flags ----####
-msigdb_version <- 'v2025.1.Hs'
-wikipathways_version <- "20251210"
+msigdb_version <- 'v2026.1.Hs'
+wikipathways_version <- "20260710"
 netpath_version <- "2010"
-opentargets_version <- "2025.12"
-kegg_version <- "20250603"
-gencode_version <- "49"
-uniprot_release <- "2025_04"
-biogrid_release <- "5.0.252"
+opentargets_version <- "2026.06"
+kegg_version <- "20260723"
+gencode_version <- "50"
+uniprot_release <- "2026_02"
+biogrid_release <- "5.0.260"
+
+## TCGA cohort filtering parameters
+min_pct_mutated_tcga_cohorts <- 2.0  # Minimum % of samples mutated in a cohort
+min_tcga_cohort_size <- 25            # Minimum number of samples in a cohort
 
 ## Which databases to update or retrieve from last updated state
 db_updates <- list()
-db_updates[['omnipathdb']] <- F
-db_updates[['hpa']] <- F
-db_updates[['ot']] <- F
-db_updates[['tcga']] <- F
-db_updates[['cancer_hallmarks']] <- F
-db_updates[['omnipath_complexdb']] <- F
-db_updates[['tftargetdb']] <- F
-db_updates[['subcelldb']] <- F
-db_updates[['ligand_receptor_db']] <- F
-db_updates[['cellmodeldb']] <- F
-db_updates[['biogrid']] <- F
-db_updates[['pfamdb']] <- F
+db_updates[['omnipathdb']] <- FALSE
+db_updates[['hpa']] <- FALSE
+db_updates[['tissuecelldb']] <- FALSE
+db_updates[['ot']] <- FALSE
+db_updates[['tcga']] <- FALSE
+db_updates[['cancer_hallmarks']] <- FALSE
+db_updates[['omnipath_complexdb']] <- FALSE
+db_updates[['tftargetdb']] <- FALSE
+db_updates[['subcelldb']] <- FALSE
+db_updates[['ligand_receptor_db']] <- FALSE
+db_updates[['cellmodeldb']] <- FALSE
+db_updates[['biogrid']] <- TRUE
+db_updates[['pfamdb']] <- FALSE
 
-oe_version <- "1.6.1"
+oe_version <- "1.6.2"
 
 data_raw_dir <-
   "/Users/sigven/project_data/packages/package__oncoEnrichR/db/raw"
@@ -194,7 +199,7 @@ oedb[['genedb']][['transcript_xref']] <-
   get_unique_transcript_xrefs(
     raw_db_dir = data_raw_dir,
     gene_oncox = gOncoX,
-    update = T
+    update = TRUE
   )
 
 
@@ -257,8 +262,6 @@ oedb[['genedb']][['all']] <- generate_gene_xref_df(
   update = T
 )
 
-#oedb[['genedb']] <- genedb
-
 ####--- Ligand-Receptor interactions ----####
 oedb[['ligandreceptordb']] <- get_ligand_receptors(
    raw_db_dir = data_raw_dir,
@@ -299,15 +302,58 @@ oedb[['hpa']] <- get_hpa_associations(
   update = db_updates[['hpa']]
 )
 
+####--- Tissue/cell-type expression specificity (HPA) ----####
+hpa_tissue_celltype <- get_tissue_celltype_specificity(
+  raw_db_dir = data_raw_dir,
+  update = db_updates[['tissuecelldb']]
+)
+
+hpa_high_expr_quantile <- 0.75
+
+oedb[['tissuecelldb']] <- list()
+for(res in c('tissue', 'celltype')){
+  oedb[['tissuecelldb']][[res]] <- list()
+  oedb[['tissuecelldb']][[res]][['expression']] <-
+    hpa_tissue_celltype[[res]][['data']]
+  oedb[['tissuecelldb']][[res]][['unit']] <-
+    hpa_tissue_celltype[[res]][['unit']]
+  oedb[['tissuecelldb']][[res]][['specificity']] <-
+    calculate_specificity_tau(
+      expression_data = hpa_tissue_celltype[[res]][['data']],
+      gene_col = "ensembl_gene_id",
+      context_col = "category",
+      expr_col = "expression",
+      top_n_contexts = 5
+    )
+
+  enrichment_background <- precompute_enrichment_background(
+    expression_data = hpa_tissue_celltype[[res]][['data']],
+    gene_col = "ensembl_gene_id",
+    context_col = "category",
+    expr_col = "expression",
+    high_expr_quantile = hpa_high_expr_quantile
+  )
+  oedb[['tissuecelldb']][[res]][['enrichment_membership']] <-
+    enrichment_background[['membership']]
+  oedb[['tissuecelldb']][[res]][['enrichment_background_summary']] <-
+    enrichment_background[['context_summary']]
+}
+rm(hpa_tissue_celltype, enrichment_background)
+
 ####----TCGA aberration data ----####
 oedb[['tcgadb']] <- get_tcga_db(
   raw_db_dir = data_raw_dir,
+  min_percent_mutated_cohort = min_pct_mutated_tcga_cohorts,
+  min_cohort_size = min_tcga_cohort_size,
   update = db_updates[['tcga']],
   gene_xref = oedb[['genedb']][['all']]
 )
 
+####--- Save internal oedb ----####
 save(oedb, file = file.path(
-  here::here(), "inst", "internal_db", "oedb.rda"))
+  here::here(), "inst",
+  "internal_db", "oedb.rda"))
+
 
 ####--- Clean-up ----####
 rm(omnipathdb)
@@ -439,7 +485,7 @@ for(elem in c('cancerdrugdb',
            'slparalogdb',
            'tcgadb',
            'tftargetdb',
-           #'tissuecelldb',
+           'tissuecelldb',
            'biogrid',
            'release_notes')){
 
@@ -530,6 +576,9 @@ base_urls[['hpa']] <- "https://www.proteinatlas.org"
 base_urls[['pfam']] <- "https://www.ebi.ac.uk/interpro"
 
 usethis::use_data(base_urls, overwrite = T)
+
+save(oedb, file = file.path(
+  data_output_dir, paste0("v",oe_version),"oedb.rda"))
 
 ####---Zenodo upload ----####
 
